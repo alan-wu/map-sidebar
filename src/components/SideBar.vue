@@ -10,6 +10,7 @@
       :size="'550'"
       :with-header="false"
       :wrapperClosable="false"
+      v-if="isDrawer"
     >
       <el-card class="box-card">
         <div slot="header" class="header">
@@ -21,7 +22,7 @@
             clearable
           ></el-input>
           <el-button @click="searchEvent">Search</el-button>
-          <i class="el-icon-close" style="float: right; padding: 3px 0" @click="close"></i>
+          <i class="el-icon-copy-document" style="float: right; padding: 3px 0" @click="dock"></i>
         </div>
         <SearchFilters class="filters" :entry="filterEntry" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
         <el-pagination class="pagination" hide-on-single-page small layout="prev, pager, next" :total="numberOfHits" @current-change="pageChange"></el-pagination>
@@ -43,6 +44,35 @@
         </div>
       </el-card>
     </el-drawer>
+    <el-card v-if="!isDrawer" class="box-card">
+        <div slot="header" class="header">
+          <el-input
+            class="search-input"
+            placeholder="Search"
+            v-model="searchInput"
+            @keyup.native="searchEvent"
+            clearable
+          ></el-input>
+          <el-button @click="searchEvent">Search</el-button>
+        </div>
+        <SearchFilters class="filters" :entry="filterEntry" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
+        <el-pagination class="pagination" hide-on-single-page small layout="prev, pager, next" :total="numberOfHits" @current-change="pageChange"></el-pagination>
+        <div class="wrapper">
+          <div class="wrapper-left">
+          </div>
+          <div class="wrapper-right">
+            <div class="content scrollbar"  v-loading="loadingCards">
+              <div class="card-container">
+                <span v-if="results.length > 0" class="dataset-table-title">Title</span>
+                <span v-if="results.length > 0" class="image-table-title">Image</span>
+              </div>
+              <div v-for="o in results" :key="o.id" class="step-item">
+                <DatasetCard :entry="o"></DatasetCard>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
   </div>
 </template>
 
@@ -66,6 +96,7 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
+import EventBus from './EventBus';
 
 locale.use(lang);
 Vue.use(Link);
@@ -80,23 +111,38 @@ Vue.use(Loading)
 
 var api_location = process.env.VUE_APP_API_LOCATION + "filter-search/";
 
-export default {
-  components: { SearchFilters, DatasetCard },
-  name: "SideBar",
-  props: ["visible"],
-  data: function () {
-    return {
+var initial_state = {
       searchInput: "",
       lastSearch: "",
       results: [],
       drawerOpen: false,
       numberOfHits: 0,
       filter:{},
-      loadingCards: true,
+      loadingCards: false,
       numberPerPage: 10,
       page: 1,
       start: 0
-    };
+}
+
+export default {
+  components: { SearchFilters, DatasetCard },
+  name: "SideBar",
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    isDrawer: {
+      type: Boolean,
+      default: true
+    },
+    entry: {
+      type: Object,
+      default: () => (initial_state)
+    }
+  },
+  data: function () {
+    return {...this.entry}
   },
   computed: {
     filterEntry: function () {
@@ -109,7 +155,6 @@ export default {
   },
   watch: {
     search: function (val) {
-      console.log("search change found");
       this.searchInput = val;
       this.lastSearch = val;
     },
@@ -128,13 +173,16 @@ export default {
         this.searchSciCrunch(search);
       }
     },
+    dock: function(){
+      EventBus.$emit("PopoverActionClick", {'type': 'Search', 'entry':this.$data});
+      this.drawerOpen = false;
+    },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.searchSciCrunch(this.searchInput);
       }
     },
     filterUpdate: function(filter){
-      console.log('filter update', filter)
       if(filter.facet === undefined){
         this.filter = {}
       } else {
@@ -169,7 +217,6 @@ export default {
         return
       }
       data.results.forEach((element) => {
-        console.log(element);
         this.results.push({
           description: element.name,
           contributors: element.contributors,
@@ -214,13 +261,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.side-bar{
+  position: relative;
+  height: 100%;
+}
+
 .open-tab{
   width: 20px;
   height: 40px;
   z-index: 25;
   position: absolute;
   top: calc(50vh - 80px);
-  right: -26px;
+  right: 0px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px var(--pale-grey);
   background-color: #F7FAFF;
@@ -292,6 +344,13 @@ export default {
 
 .card-container {
   display: flex;
+  position: sticky;
+  top:0;
+  background-color: white;
+  z-index: 300;
+  padding-top: 10px;
+  height: 20px;
+  border-bottom: 1px solid var(--pale-grey);
 }
 
 .dataset-table-title {
@@ -337,7 +396,7 @@ export default {
   flex-direction: row;
 }
 
-.el-icon-close {
+.el-icon-copy-document{
   cursor: pointer;
   font-size: 32px;
   width: 16px;
@@ -356,11 +415,10 @@ export default {
 
 .content {
   width: 518px;
-  height: 1000px;
+  height: 48rem;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px var(--pale-grey);
   background-color: #ffffff;
-  padding-top: 18px;
   overflow-y: scroll;
 }
 
@@ -389,6 +447,11 @@ export default {
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   background-color: #979797;
 }
+
+>>> .el-input__suffix{
+  padding-right: 10px;
+}
+
 </style>
 <style>
 .v-modal{
