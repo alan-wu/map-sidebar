@@ -1,31 +1,32 @@
 <template>
   <div class="filters">
+    <SvgSpriteColor/>
     <transition name="el-zoom-in-top">
-      <div v-show="showFilters" class="search-filters transition-box">
+      <span v-show="showFilters" class="search-filters transition-box">
           <el-cascader
           class="cascader"
-          placeholder="Filter"
-      :options="options"
-          :props="propss"
+          v-model="cascadeSelected"
+          placeholder=""
+          :collapse-tags="true"
+          :options="options"
+          :props="props"
           @change="cascadeEvent($event)"
-          :show-all-levels="false">
+          :show-all-levels="false"
+          :append-to-body="false">
         </el-cascader>
-      </div>
+        <div v-if="cascadeSelected.length === 0" class="filter-default-value"> 
+          <svg-icon icon="noun-filter" class="filter-icon-inside" />
+          Apply Filters
+        </div>
+      </span>
     </transition>
 
-    <div class="filter-collapsed" @click="showFilters = !showFilters">
-      <img class="filter-icon" :src="require('../../assets/noun-filter.svg')"/>
-      Filter
-     </div>
-    
-    <span
+      <el-select class="number-shown-select"  v-model="numberShown" placeholder="10" @change="numberShownChanged($event)">
+        <el-option v-for="item in numberDatasetsShown" :key="item" :label="item" :value="item"></el-option>
+      </el-select>
+      <span
         class="dataset-results-feedback"
-      >{{entry.numberOfHits }} Datasets for '{{entry.lastSearch}}' | Showing</span>
-      <span v-if="entry.lastSearch  !== ''">
-        <el-select class="number-shown-select" v-model="numberShown" placeholder="10" @change="numberShownChanged($event)">
-          <el-option v-for="item in numberDatasetsShown" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
-      </span>
+      >{{this.numberOfResultsText}}</span>
   </div>
 </template>
 
@@ -33,96 +34,96 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
-import { Link, Icon, Card, Button, Select, Cascader } from "element-ui";
-import "element-ui/lib/theme-chalk/index.css";
+import { Cascader, Option, Select } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
+import EventBus from './EventBus';
+import {SvgIcon, SvgSpriteColor} from '@abi-software/svg-sprite';
+Vue.component('svg-icon', SvgIcon);
 
 locale.use(lang);
-Vue.use(Link);
-Vue.use(Icon);
-Vue.use(Card);
-Vue.use(Button);
+Vue.use(Cascader);
+Vue.use(Option);
 Vue.use(Select);
-Vue.use(Cascader)
 
-const api_location = process.env.VUE_APP_API_LOCATION;
-const facet_endpoint = "get-facets/";
+var capitalise = function(string){
+  return string.replace(/\b\w/g, v => v.toUpperCase())
+}
 
 export default {
   name: "SearchFilters",
-  components: {},
+  components: {
+    SvgSpriteColor,
+  },
   props: {
     /**
      * Object containing information for
      * the required viewing.
      */
     entry: Object,
+    apiLocation: {
+      type: String,
+      default: ""
+    },
   },
   data: function () {
     return {
-      showFilters: false,
-      speciesSelected: [],
-      organSelected: [],
-      regionSelected: [],
-      genderSelected: [],
+      showFilters: true,
+      cascadeSelected: [],
       numberShown: 10,
-      species: ["All species", "Mouse", "Pig", "Human"],
-      organ: [
-        "All organs",
-        "Heart",
-        "Lung",
-        "Stomach",
-        "Urinary tract",
-        "Pancreas",
-        "Colon",
-      ],
-      regions: [
-        "All regions",
-        "Left ventricle",
-        "Right ventricle",
-        "ICN",
-        "Left atrium",
-      ],
-      facets: ['species', 'gender'],
-      gender: ["All sex", "Male", "Female", "Uknown"],
-      numberDatasetsShown: ["10", "20"],
-      defaultSelect: "10",
-      propss: { multiple: true },
+      filters: [],
+      facets: ['Species', 'Gender', 'Genotype'],
+      numberDatasetsShown: ["10", "20", "50"],
+      props: { multiple: true },
       options: [{
         value: 1,
         label: 'Species',
         children: [{
         }]
-      }]
+      }],
     };
+  },
+  computed: {
+    numberOfResultsText: function(){
+      return `${this.entry.numberOfHits} results | Showing`
+    }
   },
   methods: {
     populateCascader: function () {
-      var value = 1
-      this.options = []
-      this.facets.forEach((term)=>{
-        this.getFacet(term).then((facets)=>{
+      return new Promise( (resolve) => {
+        var value = 1
+        this.options = []
+        for(let i in this.facets){
           this.options.push({
-            value: value,
-            label: term,
-            children: []
-          })
-          value++;
-          facets.forEach((facet)=>{
-            this.options[this.options.length-1].children.push({
               value: value,
-              label: facet, 
+              label: this.facets[i],
+              children: []
             })
             value++;
+        }
+        var promiseList = []
+        for(let i in this.facets){
+          // Create a promise for each facet request
+          promiseList.push(this.getFacet(this.facets[i]).then((labels)=>{
+            // Populate children of each facet with scicrunch's facets
+            for(let j in labels){
+              this.options[i].children.push({
+                value: value,
+                label: capitalise(labels[j]), // Capitalisation is to match design specs
+              })
+              value++;
+            }
           })
-        })
+          )
+        }
+        Promise.allSettled(promiseList).then(()=>{resolve()})
       })
     },
-    getFacet: function (facet) {
+    getFacet: function (facetLabel) {
       return new Promise((resolve) => {
-        var facets = [`All ${facet}`];
-        this.callSciCrunch(api_location, facet_endpoint, facet).then(
+        var facets = [`All ${facetLabel}`];
+        let facet = facetLabel.toLowerCase()
+        this.callSciCrunch(this.apiLocation, this.facetEndpoint, facet).then(
           (facet_terms) => {
             facet_terms.forEach((element) => {
               facets.push(element["key"]);
@@ -132,83 +133,116 @@ export default {
         );
       })
     },
-    getSpecies: function () {
-      var species = ["All species"];
-      this.callSciCrunch(api_location, facet_endpoint, "species").then(
-        (species_terms) => {
-          species_terms.forEach((element) => {
-            species.push(element["key"]);
-          });
-          this.species = [...new Set(species)];
+    // switchFacetToRequest is used to set 'All' to lowercase. Api will not be case sensitive soon and this can be removed
+    switchFacetToRequest: function(facet){
+      if (!facet.includes('All')){
+        return facet.toLowerCase()
+      } else {
+        return facet
+      }
+    },
+    // switchTermToRequest is used to remove the count for sending a request to scicrunch
+    switchTermToRequest: function(term){
+      return term.split(' ')[0].toLowerCase()
+    },
+    updateLabels: function(counter){
+      for( let i in counter){
+        if( counter[i] > 0){
+          this.options[i].label = this.options[i].label.split(' ')[0] + ` (${counter[i]})`
+        } else {
+          this.options[i].label = this.options[i].label.split(' ')[0]
         }
-      );
+      }
     },
     cascadeEvent: function(event){
-      var output = { facet: undefined, term: undefined }
-      let id = event[0][1]
+      // If filters have been cleared, send an empty object
+      if(event[0] === undefined){
+       this.$emit("filterResults", {});
+       this.updateLabels([0,0,0]) // reset label counts
+       return
+      }
+      this.filters = []
+      // Label counts is used to show user how many are at each nested level.
+      //    i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
+      let labelCounts = [0,0,0]
+      // event[0][1] contains the index of the latest addition
       for(let i in this.options){
         for(let j in this.options[i].children){
-          if(this.options[i].children[j].value == id){
-            output.facet = this.options[i].children[j].label
-            output.term = this.options[i].label
+          for(let k in event){
+            if(event[k] !== undefined){
+              var id = event[k][1]
+              if(this.options[i].children[j].value == id){
+                let output = {}
+                output.facet = this.switchFacetToRequest(this.options[i].children[j].label)
+                output.term = this.switchTermToRequest(this.options[i].label)
+                this.filters.push(output)
+                labelCounts[i] += 1
+              }
+            }
           }
         }
       }
-      this.$emit("filterResults", output);
-      this.showFilters = false;
-
-    },
-    speciesFilterSearch: function (event) {
-      this.$emit("filterResults", { facet: event, term: "species" });
-    },
-    genderFilterSearch: function (event) {
-      this.$emit("filterResults", { facet: event, term: "gender" });
+      this.updateLabels(labelCounts)
+      this.$emit("filterResults", this.filters);
     },
     numberShownChanged: function (event){
       this.$emit("numberPerPage", event);
     },
-    getGenders: function () {
-      var gender = ["All sex"];
-      this.callSciCrunch(api_location, facet_endpoint, "gender").then(
-        (gender_terms) => {
-          gender_terms.forEach((element) => {
-            gender.push(element["key"]);
-          });
-          this.gender = [...new Set(gender)];
-        }
-      );
-    },
-    callSciCrunch: function (api_location, endpoint, term) {
+    callSciCrunch: function (apiLocation, endpoint, term) {
       return new Promise((resolve) => {
-        fetch(api_location + endpoint + term)
+        fetch(apiLocation + endpoint + term)
           .then((response) => response.json())
           .then((data) => {
             resolve(data);
           });
       });
     },
+    setCascader: function(tagName){
+      let labelCounts = [0,0,0]
+      for(let i in this.options){
+        for(let j in this.options[i].children){
+          if(tagName === this.options[i].children[j].label){
+            this.cascadeSelected = [[Number(i)+1,this.options[i].children[j].value]]
+            labelCounts[i] += 1
+          }
+        }
+      }
+      this.updateLabels(labelCounts)
+    }
+  },
+  created: function() {
+    //Create non-reactive local variables
+    this.facetEndpoint = "get-facets/";
   },
   mounted: function () {
-    this.populateCascader();
-    this.getSpecies();
-    this.getGenders();
+    this.populateCascader().then(()=>{
+      this.setCascader(this.entry.filterFacet);
+    })
+    EventBus.$on('filterUiUpdate', (payLoad) => {
+      this.setCascader(payLoad);
+    })
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.filters{
-    justify-content: center;
-    align-items: center;
+
+.filter-default-value{
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding-top: 10px;
+  padding-left: 16px;
 }
 
-.filter-icon{
-  width: 40px;
-  height: 24px;
+.filter-icon-inside{
+  width: 12px!important;
+  height: 12px!important;
   color: #292b66;
-  transform: scale(1.5);
-  bottom: -10px;
+  transform: scale(2)!important;
+  margin-bottom: 0px!important;
 }
 
 .cascader {
@@ -219,69 +253,58 @@ export default {
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
-  color: #292b66; 
+  color: #292b66;
   text-align: center;
+  padding-bottom: 6px;
+}
 
+.cascader >>> .el-scrollbar__wrap{
+  overflow-x: hidden;
+  margin-bottom: 2px !important;
+}
+
+.cascader >>> li[aria-owns*="cascader"] > .el-checkbox {
+  display: none;
 }
 
 .dataset-results-feedback{
-  text-align: left;
-}
-
-.filter-collapsed {
-  font-family: Asap;
-  font-size: 16px;
-  font-weight: 500;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  text-align: right;
-  color: #292b66;
-  width: 100px;
   float: right;
-  cursor: pointer;
-}
-
-.filter-select {
-  width: 120px;
-  height: 40px;
-  margin-right: 16px;
-  border-radius: 4px;
-  border: solid 1px #8300bf;
-  background-color: var(--white);
+  text-align: right;
+  color: rgb(48, 49, 51);
+  font-family: Asap;
+  font-size: 18px;
   font-weight: 500;
-  color: #8300bf;
-}
-
-.filters-row-2 {
-  padding-top: 16px;
-}
-
-.filter-select >>> .el-input__inner {
-  color: #8300bf;
-  padding-top: 0.25em;
-}
-
-.filter-select >>> .el-select-dropdown__item.selected {
-  color: #8300bf;
-  font-weight: normal;
-  font-family: Asap !important;
+  padding-top: 8px;
 }
 
 .search-filters {
-  text-align: left;
-        -moz-transition: height 0.5s;
-    -ms-transition: height 0.5s;
-    -o-transition: height 0.5s;
-    -webkit-transition: height 0.5s;
-    transition: height 0.5s;
+  position: relative;
+  float:left;
+  padding-right: 15px;
+  padding-bottom: 12px;
+}
+
+.number-shown-select{
+  float: right;
 }
 
 .number-shown-select >>> .el-input__inner{
   width: 68px;
-  height: 32px;
+  height: 40px;
+  color: rgb(48, 49, 51);
+}
+
+.search-filters >>> .el-cascader-node.is-active{
   color: #8300bf;
+}
+
+.search-filters >>> .el-cascader-node.in-active-path{
+  color: #8300bf;
+}
+
+.search-filters >>> .el-checkbox__input.is-checked > .el-checkbox__inner {
+  background-color: #8300bf;
+  border-color: #8300bf;
 }
 
 </style>

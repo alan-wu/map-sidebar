@@ -3,76 +3,58 @@
     <div v-if="!drawerOpen" @click="close" class="open-tab">
       <i class="el-icon-arrow-left"></i>
     </div>
+
     <el-drawer
+      custom-class="my-drawer"
       class="side-bar"
       :visible.sync="drawerOpen"
       :appendToBody="false"
-      :size="'550'"
+      :modal-append-to-body="false"
+      size=550
       :with-header="false"
       :wrapperClosable="false"
-      v-if="isDrawer"
+      :modal="false"
     >
-      <el-card class="box-card">
-        <div slot="header" class="header">
-          <el-input
-            class="search-input"
-            placeholder="Search"
-            v-model="searchInput"
-            @keyup.native="searchEvent"
-            clearable
-          ></el-input>
-          <el-button @click="searchEvent">Search</el-button>
-          <i class="el-icon-copy-document" style="float: right; padding: 3px 0" @click="dock"></i>
-        </div>
-        <SearchFilters class="filters" :entry="filterEntry" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
-        <el-pagination class="pagination" hide-on-single-page small layout="prev, pager, next" :total="numberOfHits" @current-change="pageChange"></el-pagination>
-        <div class="wrapper">
-          <div class="wrapper-left">
-            <i class="el-icon-arrow-right" @click="close"></i>
+    <div>
+      <div v-if="drawerOpen" @click="close" class="close-tab">
+        <i class="el-icon-arrow-right"></i>
+      </div>
+        <el-card class="box-card">
+          <div slot="header" class="header">
+            <el-input
+              class="search-input"
+              placeholder="Search"
+              v-model="searchInput"
+              @keyup.native="searchEvent"
+              clearable
+              @clear="clearSearchClicked"
+            ></el-input>
+            <el-button class="button" @click="searchEvent">Search</el-button>
           </div>
-          <div class="wrapper-right">
-            <div class="content scrollbar"  v-loading="loadingCards">
-              <div class="card-container">
-                <span v-if="results.length > 0" class="dataset-table-title">Title</span>
-                <span v-if="results.length > 0" class="image-table-title">Image</span>
-              </div>
-              <div v-for="o in results" :key="o.id" class="step-item">
-                <DatasetCard :entry="o"></DatasetCard>
-              </div>
+          <SearchFilters class="filters" ref="filtersRef" :entry="filterEntry"
+            :apiLocation="apiLocation" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
+          <div class="content scrollbar"  v-loading="loadingCards" ref="content">
+            <div class="error-feedback" v-if="results.length === 0 && !loadingCards && !sciCrunchError">
+              No results found - Please change your search / filter criteria.
             </div>
+            <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
+            <div v-for="o in results" :key="o.id" class="step-item">
+              <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
+            </div>
+            <el-pagination
+              class="pagination"
+              :current-page.sync="page"
+              hide-on-single-page
+              large
+              layout="prev, pager, next"
+              :page-size="numberPerPage"
+              :total="numberOfHits"
+              @current-change="pageChange">
+            </el-pagination>
           </div>
-        </div>
-      </el-card>
+        </el-card>
+      </div>
     </el-drawer>
-    <el-card v-if="!isDrawer" class="box-card">
-        <div slot="header" class="header">
-          <el-input
-            class="search-input"
-            placeholder="Search"
-            v-model="searchInput"
-            @keyup.native="searchEvent"
-            clearable
-          ></el-input>
-          <el-button @click="searchEvent">Search</el-button>
-        </div>
-        <SearchFilters class="filters" :entry="filterEntry" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
-        <el-pagination class="pagination" hide-on-single-page small layout="prev, pager, next" :total="numberOfHits" @current-change="pageChange"></el-pagination>
-        <div class="wrapper">
-          <div class="wrapper-left">
-          </div>
-          <div class="wrapper-right">
-            <div class="content scrollbar"  v-loading="loadingCards">
-              <div class="card-container">
-                <span v-if="results.length > 0" class="dataset-table-title">Title</span>
-                <span v-if="results.length > 0" class="image-table-title">Image</span>
-              </div>
-              <div v-for="o in results" :key="o.id" class="step-item">
-                <DatasetCard :entry="o"></DatasetCard>
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
   </div>
 </template>
 
@@ -81,17 +63,14 @@
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
 import {
-  Link,
-  Icon,
-  Card,
   Button,
-  Select,
-  Input,
+  Card,
   Drawer,
-  Pagination,
+  Icon,
+  Input,
   Loading,
+  Pagination,
 } from "element-ui";
-import "element-ui/lib/theme-chalk/index.css";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
@@ -99,17 +78,27 @@ import DatasetCard from "./DatasetCard";
 import EventBus from './EventBus';
 
 locale.use(lang);
-Vue.use(Link);
-Vue.use(Icon);
-Vue.use(Card);
 Vue.use(Button);
-Vue.use(Select);
-Vue.use(Input);
+Vue.use(Card);
 Vue.use(Drawer);
+Vue.use(Icon);
+Vue.use(Input);
+Vue.use(Loading);
 Vue.use(Pagination);
-Vue.use(Loading)
 
-var api_location = process.env.VUE_APP_API_LOCATION + "filter-search/";
+// handleErrors: A custom fetch error handler to recieve messages from the server
+//    even when an error is found
+var handleErrors = async function(response) {
+    if (!response.ok) {
+      let parse = await response.json()
+      if (parse){
+        throw new Error(parse.message)
+      } else {
+        throw new Error(response)
+      }
+    }
+  return response;
+}
 
 var initial_state = {
       searchInput: "",
@@ -118,10 +107,14 @@ var initial_state = {
       drawerOpen: false,
       numberOfHits: 0,
       filter:{},
+      filterFacet: undefined,
       loadingCards: false,
       numberPerPage: 10,
       page: 1,
-      start: 0
+      pageModel: 1,
+      start: 0,
+      hasSearched: false,
+      sciCrunchError: false
 }
 
 export default {
@@ -139,56 +132,60 @@ export default {
     entry: {
       type: Object,
       default: () => (initial_state)
-    }
+    },
+    apiLocation: {
+      type: String,
+      default: ""
+    },
   },
   data: function () {
-    return {...this.entry}
+    return {
+      ...this.entry,
+    }
   },
   computed: {
+    // This computed property populates filter data's entry object with $data from this sidebar
     filterEntry: function () {
       return {
         results: this.results,
         lastSearch: this.lastSearch,
         numberOfHits: this.numberOfHits,
+        filterFacet: this.filterFacet
       };
-    },
-  },
-  watch: {
-    search: function (val) {
-      this.searchInput = val;
-      this.lastSearch = val;
     },
   },
   methods: {
     close: function () {
       this.drawerOpen = !this.drawerOpen;
-      if(this.drawerOpen){
+      if(this.drawerOpen && !this.hasSearched){
         this.openSearch(this.searchInput);
       }
     },
-    openSearch: function (search) {
+    openSearch: function (search, filter=undefined) {
       this.drawerOpen = true;
-      if (this.searchInput !== search){
-        this.searchInput = search;
-        this.searchSciCrunch(search);
+      this.searchInput = search;
+      this.resetPageNavigation()
+      this.searchSciCrunch(search, filter);
+      if (filter){
+        this.filterFacet = filter[0].facet;
+        EventBus.$emit("filterUiUpdate", filter[0].facet);
       }
     },
-    dock: function(){
-      EventBus.$emit("PopoverActionClick", {'type': 'Search', 'entry':this.$data});
-      this.drawerOpen = false;
+    clearSearchClicked: function(){
+      this.searchInput = ''
+      this.resetPageNavigation()
+      this.searchSciCrunch(this.searchInput)
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
+        this.resetPageNavigation()
         this.searchSciCrunch(this.searchInput);
       }
     },
     filterUpdate: function(filter){
-      if(filter.facet === undefined){
-        this.filter = {}
-      } else {
-        this.filter = filter
-      }
-      this.searchSciCrunch(this.searchInput)
+      this.resetPageNavigation()
+      this.searchSciCrunch(this.searchInput, filter);
+      this.filter = filter
     },
     numberPerPageUpdate: function (val) {
       this.numberPerPage = val;
@@ -198,15 +195,51 @@ export default {
       this.start = (page-1) * this.numberPerPage;
       this.searchSciCrunch(this.searchInput);
     },
-    searchSciCrunch: function (search) {
+    searchSciCrunch: function (search, filter=undefined) {
       this.loadingCards = true;
-      let params = this.filter;
-      params.size = this.numberPerPage;
-      params.start = this.start;
-      this.callSciCrunch(api_location, search, params).then((result) => {
-        this.resultsProcessing(result);
-        this.loadingCards = false;
-      });
+      this.results = [];
+      this.disableCards();
+      let params = this.createParams(filter, this.start, this.numberPerPage)
+      this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
+        this.sciCrunchError = false
+        this.resultsProcessing(result)
+        this.$refs.content.style['overflow-y'] = 'scroll'
+      }).catch((result) => {
+        this.sciCrunchError = result.message
+      }).finally(() => {
+        this.loadingCards = false
+      })
+    },
+    disableCards: function(){
+      if(this.$refs.content){
+        this.$refs.content.scroll({top:0, behavior:'smooth'})
+        this.$refs.content.style['overflow-y'] = 'hidden'
+      }
+    },
+    resetPageNavigation: function(){
+      this.start = 0
+      this.page = 1
+    },
+    createParams: function(filter, start, size){
+      var params = {}
+      if (filter !== undefined){
+        params = filter
+      } else {
+         params = this.filter;
+      }
+      if(params.length > 0){
+        for(let i in params){
+          if(params[i].start){
+            params[i].start = start
+            params[i].size = size
+          }
+        }
+      } else {
+        params.start = start
+        params.size = size
+        params = [params]
+      }
+      return params
     },
     resultsProcessing: function (data) {
       this.lastSearch = this.searchInput
@@ -220,41 +253,69 @@ export default {
         this.results.push({
           description: element.name,
           contributors: element.contributors,
-          numberSamples: Array.isArray(element.sample)
-            ? element.sample.length
+          numberSamples: Array.isArray(element.samples)
+            ? element.samples.length
             : 1,
-          sexes: element.attributes
-            ? element.attributes.sex
-              ? [...new Set(element.attributes.map((v) => v.sex.value))]
+          sexes: element.samples
+            ? element.samples[0].sex
+              ? [...new Set(element.samples.map((v) => v.sex.value))]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          age: element.attributes
-            ? "ageCategory" in element.attributes[0]
-              ? element.attributes[0].ageCategory.value
+          organs: (element.organs && element.organs.length > 0)
+            ? [...new Set(element.organs.map((v) => v.name))]
+            : undefined,
+          ages: element.samples
+            ? "ageCategory" in element.samples[0]
+              ? [...new Set(element.samples.map((v) => v.ageCategory.value))]
               : undefined
             : undefined,
           updated: element.updated[0].timestamp.split("T")[0],
-          url: element.current[0].uri,
+          url: element.uri[0],
           datasetId: element.identifier,
+          csvFiles: element.csvFiles,
           id: id,
+          doi: element.doi,
+          scaffold: element.scaffolds ? true : false,
+          scaffolds: element.scaffolds ? element.scaffolds : false
         });
         id++;
       });
     },
-    callSciCrunch: function (api_location, search, params={}) {
-      return new Promise((resolve) => {
-        var endpoint = api_location;
+    createfilterParams: function(params){
+      var paramsString = ''
+      for(let param in params){
+        paramsString += (new URLSearchParams(params[param])).toString()
+        paramsString += '&'
+      }
+      paramsString = paramsString.slice(0, -1);
+      return paramsString
+    },
+    callSciCrunch: function (apiLocation, searchEndpoint, search, params={}) {
+      return new Promise((resolve, reject) => {
+        var endpoint = apiLocation + searchEndpoint;
         // Add parameters if we are sent them
         if (search !== '' && Object.entries(params).length !== 0){
-          endpoint = api_location + search + '/?' + (new URLSearchParams(params)).toString();
+          endpoint = endpoint + search + '/?' + this.createfilterParams(params)
+        } else {
+          endpoint = endpoint + '?' + this.createfilterParams(params)
         }
+
         fetch(endpoint)
+          .then(handleErrors)
           .then((response) => response.json())
-          .then((data) => {
-            resolve(data);
-          });
+          .then((data) => resolve(data))
+          .catch((data) => reject(data))
       });
     },
+  },
+  created: function () {
+    //Create non-reactive local variables
+    this.searchEndpoint = "filter-search/";
+  },
+  mounted: function() {
+    EventBus.$on("PopoverActionClick", (payLoad) => {
+      this.$emit("actionClick", payLoad);
+    });
   },
 };
 </script>
@@ -264,21 +325,27 @@ export default {
 .side-bar{
   position: relative;
   height: 100%;
+  pointer-events: none;
+}
+
+.side-bar >>> .el-drawer:focus{
+  outline:none;
 }
 
 .open-tab{
   width: 20px;
   height: 40px;
-  z-index: 25;
+  z-index: 8;
   position: absolute;
   top: calc(50vh - 80px);
   right: 0px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px var(--pale-grey);
+  border: solid 1px #e4e7ed;
   background-color: #F7FAFF;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .el-icon-arrow-left{
@@ -287,7 +354,41 @@ export default {
   color: #292b66;
 }
 
-.box-card{
+.el-icon-arrow-right{
+  font-size: 20px;
+  padding-top: 8px;
+  color: #292b66;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.close-tab{
+  float: left;
+  flex: 1;
+  width: 20px;
+  height: 40px;
+  z-index: 8;
+  margin-top: calc(50vh - 80px);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+  border: solid 1px #e4e7ed;
+  border-right: 0;
+  background-color: #F7FAFF;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.button{
+  background-color: #8300bf;
+  border: #8300bf;
+  color: white;
+}
+
+.box-card {
+  flex: 3;
+  height: 100%;
+  overflow: hidden;
   pointer-events: auto;
 }
 
@@ -296,90 +397,41 @@ export default {
   margin-bottom: 18px;
   text-align: left;
 }
+
 .search-input {
-  width: 298px;
+  width: 298px!important;
   height: 40px;
   padding-right: 14px;
   align-items: left;
 }
 
 .header {
-  height: 50px;
   border: solid 1px #292b66;
   background-color: #292b66;
   text-align: left;
 }
 
-.filters {
-  witdth: 518px;
-}
-
 .pagination {
-  padding-top: 10px;
-  background-color: #F7FAFF;
+  padding-bottom: 16px;
+  background-color: white;
+  text-align:center;
 }
 
 .pagination>>>button{
-  background-color: #F7FAFF !important;
+  background-color: white !important;
 }
 .pagination>>>li{
-  background-color: #F7FAFF !important;
+  background-color: white !important;
 }
 .pagination>>>li.active{
-  color: var(--vibrant-purple);
+  color: #8300bf;
 }
 
-.dataset-results-feedback {
-  width: 215px;
-  height: 16px;
+.error-feedback{
   font-family: Asap;
   font-size: 14px;
-  font-weight: 500;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  color: #292b66;
-}
-
-.card-container {
-  display: flex;
-  position: sticky;
-  top:0;
-  background-color: white;
-  z-index: 300;
-  padding-top: 10px;
-  height: 20px;
-  border-bottom: 1px solid var(--pale-grey);
-}
-
-.dataset-table-title {
-  flex: 1.3;
-  height: 16px;
-  font-family: Asap;
-  text-align: left !important;
-  padding-left: 16px;
-  font-size: 14px;
-  font-weight: 500;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  color: var(--slate-grey);
-}
-
-.image-table-title {
-  flex: 1;
-  padding-left: 16px;
-  font-family: Asap;
-  text-align: left !important;
-  font-size: 14px;
-  font-weight: 500;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  color: var(--slate-grey);
+  font-style: italic;
+  padding-top: 15px;
 }
 
 >>> .el-card__header {
@@ -389,47 +441,18 @@ export default {
 
 >>> .el-card__body {
   background-color: #f7faff;
-}
-
-.wrapper{
-  display: flex;
-  flex-direction: row;
-}
-
-.el-icon-copy-document{
-  cursor: pointer;
-  font-size: 32px;
-  width: 16px;
-  height: 16px;
-  color: #f9f9fa;
-  padding-right: 32px;
-}
-
-.el-icon-arrow-right{
-  cursor: pointer;
-  font-size: 20px;
-  top: 50%; 
-  position: absolute;
-  left: 0;
+  height: calc(100% - 8rem);
+  overflow-y: hidden;
 }
 
 .content {
   width: 518px;
-  height: 48rem;
+  height: calc(100vh - 20rem);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px var(--pale-grey);
+  border: solid 1px #e4e7ed;
   background-color: #ffffff;
   overflow-y: scroll;
-}
-
-.box-card {
-  height: 100%;
-  overflow: auto;
-}
-
-.active {
-  width: 380px !important;
-  height: 380px !important;
+  scrollbar-width: thin;
 }
 
 .scrollbar::-webkit-scrollbar-track {
@@ -439,6 +462,7 @@ export default {
 
 .scrollbar::-webkit-scrollbar {
   width: 12px;
+  right: -12px;
   background-color: #f5f5f5;
 }
 
@@ -452,13 +476,9 @@ export default {
   padding-right: 10px;
 }
 
-</style>
-<style>
-.v-modal{
-  pointer-events: none;
-  opacity: 0;
+>>> .my-drawer {
+  background: rgba(0,0,0,0);
+  box-shadow: none;
 }
-.el-drawer__wrapper{
-  pointer-events: none;
-}
+
 </style>

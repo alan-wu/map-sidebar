@@ -1,15 +1,15 @@
 <template>
   <div id="app">
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
-    <SideBar class="side-bar" ref="sideBar" :visible="sideBarVisibility"></SideBar>
+    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility"></SideBar>
   </div>
 </template>
 
 <script>
-import "element-ui/lib/theme-chalk/index.css";
 
 // optionally import default styles
-import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 import SideBar from './components/SideBar'
 
 export default {
@@ -19,7 +19,8 @@ export default {
   },
   data: function(){
     return {
-      sideBarVisibility: true
+      sideBarVisibility: true,
+      apiLocation: process.env.VUE_APP_API_LOCATION
     }
   },
 }
@@ -27,14 +28,12 @@ export default {
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  height:90%;
-  width: 90%;
+  height:100%;
+  width: 100%;
   position:absolute;
+  font-family: "Asap",sans-serif;
 }
-
+body {
+  margin:0px;
+}
 </style>
