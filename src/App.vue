@@ -3,7 +3,7 @@
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
-    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility"><div>Hello!</div></SideBar>
+    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility" :tabs="tabs" ></SideBar>
   </div>
 </template>
 
@@ -17,10 +17,33 @@ export default {
   components: {
     SideBar
   },
+  computed: {
+    tabs: function(){
+      let temp = [...this.tabArray]
+      for(let i in this.tabArray){
+        temp[i].contextCard = this.contextArray[i]
+      }
+      return temp
+    }
+  },
   data: function(){
     return {
+      tabArray: [{title: 'Flatmap', id:1},{title: 'Heart Scaffold', id:2},{title: 'Stomach Scaffold', id:3}],
+      contextArray: [null,{
+        title: "ICN fitted Scaffold",
+        description: "oints are mapped to their positions on a 3d heart that is mapped to the data.",
+        bannerImage: 'https://image.prntscr.com/image/BKgqmjSaQjK-B9hy_W7haQ.png',
+        key: [{
+          image: "https://image.prntscr.com/image/DO_ZZXl7RtOXgVDv-Vw6yA.png",
+          text: "Data type 1"
+        },{
+          image: "https://image.prntscr.com/image/tsnuRyFZTbmYfSjrMHTK8w.png",
+          text: "Data type 2"
+        }
+        ]
+      }, null],
       sideBarVisibility: true,
-      apiLocation: process.env.VUE_APP_API_LOCATION
+      apiLocation: 'http://localhost:5000/'
     }
   },
 }

@@ -18,40 +18,12 @@
       <div v-if="drawerOpen" @click="close" class="close-tab">
         <i class="el-icon-arrow-right"></i>
       </div>
-        <el-card >
-          <div slot="header" class="header">
-            <el-input
-              class="search-input"
-              placeholder="Search"
-              v-model="searchInput"
-              @keyup.native="searchEvent"
-              clearable
-              @clear="clearSearchClicked"
-            ></el-input>
-            <el-button class="button" @click="searchEvent">Search</el-button>
-          </div>
-          <SearchFilters class="filters" ref="filtersRef" :entry="filterEntry"
-            :apiLocation="apiLocation" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
-          <div class="content scrollbar"  v-loading="loadingCards" ref="content">
-            <div class="error-feedback" v-if="results.length === 0 && !loadingCards && !sciCrunchError">
-              No results found - Please change your search / filter criteria.
-            </div>
-            <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
-            <div v-for="o in results" :key="o.id" class="step-item">
-              <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
-            </div>
-            <el-pagination
-              class="pagination"
-              :current-page.sync="page"
-              hide-on-single-page
-              large
-              layout="prev, pager, next"
-              :page-size="numberPerPage"
-              :total="numberOfHits"
-              @current-change="pageChange">
-            </el-pagination>
-          </div>
-        </el-card>
+      <el-row class="tab-content" v-if="tabs.length > 1"> 
+        <tabs :tabTitles="tabs" :activeId="activeId" @titleClicked="titleClicked"/>
+      </el-row>
+        <template v-for="tab in tabs">
+          <sidebar-content v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :apiLocation="apiLocation" v-bind:key="tab.id"/>
+        </template>
       </div>
     </el-drawer>
   </div>
@@ -72,9 +44,8 @@ import {
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
-import SearchFilters from "./SearchFilters";
-import DatasetCard from "./DatasetCard";
-import EventBus from './EventBus';
+import SidebarContent from './SidebarContent.vue';
+import Tabs from './Tabs'
 
 locale.use(lang);
 Vue.use(Button);
@@ -84,20 +55,6 @@ Vue.use(Icon);
 Vue.use(Input);
 Vue.use(Loading);
 Vue.use(Pagination);
-
-// handleErrors: A custom fetch error handler to recieve messages from the server
-//    even when an error is found
-var handleErrors = async function(response) {
-    if (!response.ok) {
-      let parse = await response.json()
-      if (parse){
-        throw new Error(parse.message)
-      } else {
-        throw new Error(response)
-      }
-    }
-  return response;
-}
 
 var initial_state = {
       searchInput: "",
@@ -117,7 +74,7 @@ var initial_state = {
 }
 
 export default {
-  components: { SearchFilters, DatasetCard },
+  components: {SidebarContent, Tabs },
   name: "SideBar",
   props: {
     visible: {
@@ -136,191 +93,43 @@ export default {
       type: String,
       default: ""
     },
+    tabs: {
+      type: Array,
+      default: () => []
+    },
+    activeId: {
+      type: Number,
+      default: 1
+    }
   },
   data: function () {
     return {
       ...this.entry,
     }
   },
-  computed: {
-    // This computed property populates filter data's entry object with $data from this sidebar
-    filterEntry: function () {
-      return {
-        results: this.results,
-        lastSearch: this.lastSearch,
-        numberOfHits: this.numberOfHits,
-        filterFacet: this.filterFacet
-      };
-    },
-  },
   methods: {
     close: function () {
       this.drawerOpen = !this.drawerOpen;
-      if(this.drawerOpen && !this.hasSearched){
-        this.openSearch(this.searchInput);
-      }
     },
-    openSearch: function (search, filter=undefined) {
-      this.drawerOpen = true;
-      this.searchInput = search;
-      this.resetPageNavigation()
-      this.searchSciCrunch(search, filter);
-      if (filter){
-        this.filterFacet = filter[0].facet;
-        EventBus.$emit("filterUiUpdate", filter[0].facet);
-      }
+    titleClicked: function(id) {
+      this.activeId = id
+      this.$emit("titleClicked", id);
     },
-    clearSearchClicked: function(){
-      this.searchInput = ''
-      this.resetPageNavigation()
-      this.searchSciCrunch(this.searchInput)
-    },
-    searchEvent: function (event = false) {
-      if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.resetPageNavigation()
-        this.searchSciCrunch(this.searchInput);
-      }
-    },
-    filterUpdate: function(filter){
-      this.resetPageNavigation()
-      this.searchSciCrunch(this.searchInput, filter);
-      this.filter = filter
-    },
-    numberPerPageUpdate: function (val) {
-      this.numberPerPage = val;
-      this.pageChange(1);
-    },
-    pageChange: function(page){
-      this.start = (page-1) * this.numberPerPage;
-      this.searchSciCrunch(this.searchInput);
-    },
-    searchSciCrunch: function (search, filter=undefined) {
-      this.loadingCards = true;
-      this.results = [];
-      this.disableCards();
-      let params = this.createParams(filter, this.start, this.numberPerPage)
-      this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
-        this.sciCrunchError = false
-        this.resultsProcessing(result)
-        this.$refs.content.style['overflow-y'] = 'scroll'
-      }).catch((result) => {
-        this.sciCrunchError = result.message
-      }).finally(() => {
-        this.loadingCards = false
-      })
-    },
-    disableCards: function(){
-      if(this.$refs.content){
-        this.$refs.content.scroll({top:0, behavior:'smooth'})
-        this.$refs.content.style['overflow-y'] = 'hidden'
-      }
-    },
-    resetPageNavigation: function(){
-      this.start = 0
-      this.page = 1
-    },
-    createParams: function(filter, start, size){
-      var params = {}
-      if (filter !== undefined){
-        params = filter
-      } else {
-         params = this.filter;
-      }
-      if(params.length > 0){
-        for(let i in params){
-          if(params[i].start){
-            params[i].start = start
-            params[i].size = size
-          }
-        }
-      } else {
-        params.start = start
-        params.size = size
-        params = [params]
-      }
-      return params
-    },
-    resultsProcessing: function (data) {
-      this.lastSearch = this.searchInput
-      this.results = [];
-      let id = 0;
-      this.numberOfHits = data.numberOfHits;
-      if (data.results.length === 0){
-        return
-      }
-      data.results.forEach((element) => {
-        this.results.push({
-          description: element.name,
-          contributors: element.contributors,
-          numberSamples: Array.isArray(element.samples)
-            ? element.samples.length
-            : 1,
-          sexes: element.samples
-            ? element.samples[0].sex
-              ? [...new Set(element.samples.map((v) => v.sex.value))]
-              : undefined
-            : undefined, // This processing only includes each gender once into 'sexes'
-          organs: (element.organs && element.organs.length > 0)
-            ? [...new Set(element.organs.map((v) => v.name))]
-            : undefined,
-          ages: element.samples
-            ? "ageCategory" in element.samples[0]
-              ? [...new Set(element.samples.map((v) => v.ageCategory.value))]
-              : undefined
-            : undefined,
-          updated: element.updated[0].timestamp.split("T")[0],
-          url: element.uri[0],
-          datasetId: element.identifier,
-          csvFiles: element.csvFiles,
-          id: id,
-          doi: element.doi,
-          scaffold: element.scaffolds ? true : false,
-          scaffolds: element.scaffolds ? element.scaffolds : false
-        });
-        id++;
-      });
-    },
-    createfilterParams: function(params){
-      var paramsString = ''
-      for(let param in params){
-        paramsString += (new URLSearchParams(params[param])).toString()
-        paramsString += '&'
-      }
-      paramsString = paramsString.slice(0, -1);
-      return paramsString
-    },
-    callSciCrunch: function (apiLocation, searchEndpoint, search, params={}) {
-      return new Promise((resolve, reject) => {
-        var endpoint = apiLocation + searchEndpoint;
-        // Add parameters if we are sent them
-        if (search !== '' && Object.entries(params).length !== 0){
-          endpoint = endpoint + search + '/?' + this.createfilterParams(params)
-        } else {
-          endpoint = endpoint + '?' + this.createfilterParams(params)
-        }
-
-        fetch(endpoint)
-          .then(handleErrors)
-          .then((response) => response.json())
-          .then((data) => resolve(data))
-          .catch((data) => reject(data))
-      });
-    },
-  },
-  created: function () {
-    //Create non-reactive local variables
-    this.searchEndpoint = "filter-search/";
-  },
-  mounted: function() {
-    EventBus.$on("PopoverActionClick", (payLoad) => {
-      this.$emit("actionClick", payLoad);
-    });
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+.box-card {
+  flex: 3;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+
 .side-bar{
   position: relative;
   height: 100%;
@@ -452,27 +261,6 @@ export default {
   background-color: #ffffff;
   overflow-y: scroll;
   scrollbar-width: thin;
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar {
-  width: 12px;
-  right: -12px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  background-color: #979797;
-}
-
->>> .el-input__suffix{
-  padding-right: 10px;
 }
 
 >>> .my-drawer {
