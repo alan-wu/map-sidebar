@@ -3,7 +3,6 @@
     <div v-if="!drawerOpen" @click="close" class="open-tab">
       <i class="el-icon-arrow-left"></i>
     </div>
-
     <el-drawer
       custom-class="my-drawer"
       class="side-bar"
@@ -15,11 +14,11 @@
       :wrapperClosable="false"
       :modal="false"
     >
-    <div>
+    <div class="box-card">
       <div v-if="drawerOpen" @click="close" class="close-tab">
         <i class="el-icon-arrow-right"></i>
       </div>
-        <el-card class="box-card">
+        <el-card >
           <div slot="header" class="header">
             <el-input
               class="search-input"
