@@ -18,9 +18,7 @@
       <div v-if="drawerOpen" @click="close" class="close-tab">
         <i class="el-icon-arrow-right"></i>
       </div>
-      <el-row class="tab-content" v-if="tabs.length > 1"> 
-        <tabs :tabTitles="tabs" :activeId="activeId" @titleClicked="titleClicked"/>
-      </el-row>
+        <tabs :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
         <template v-for="tab in tabs">
           <sidebar-content v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :apiLocation="apiLocation" v-bind:key="tab.id"/>
         </template>
@@ -111,9 +109,8 @@ export default {
     close: function () {
       this.drawerOpen = !this.drawerOpen;
     },
-    titleClicked: function(id) {
-      this.activeId = id
-      this.$emit("titleClicked", id);
+    tabClicked: function(id) {
+      this.$emit("tabClicked", id);
     },
   },
 };

@@ -3,7 +3,7 @@
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
-    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility" :tabs="tabs" ></SideBar>
+    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility" :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked" ></SideBar>
   </div>
 </template>
 
@@ -30,22 +30,42 @@ export default {
     return {
       tabArray: [{title: 'Flatmap', id:1},{title: 'Heart Scaffold', id:2},{title: 'Stomach Scaffold', id:3}],
       contextArray: [null,{
+        title: "Neural paths mapped to a heart scaffold",
+        description: "Points are mapped to their positions on a 3d heart that is mapped to the data.",
+        bannerImage: 'https://image.prntscr.com/image/aNIksBFARaKwlKhpnDCKbA.png',
+        keys: [{
+          image: "https://image.prntscr.com/image/VqNcZ8fSQJu5TJEf9ahwvA.png",
+          text: "Neural path"
+        }],
+      },{
         title: "ICN fitted Scaffold",
-        description: "oints are mapped to their positions on a 3d heart that is mapped to the data.",
+        description: "Points are mapped to their positions on a 3d heart that is mapped to the data.",
         bannerImage: 'https://image.prntscr.com/image/BKgqmjSaQjK-B9hy_W7haQ.png',
-        key: [{
+        keys: [{
           image: "https://image.prntscr.com/image/DO_ZZXl7RtOXgVDv-Vw6yA.png",
           text: "Data type 1"
         },{
           image: "https://image.prntscr.com/image/tsnuRyFZTbmYfSjrMHTK8w.png",
           text: "Data type 2"
+        },{
+          image: "https://image.prntscr.com/image/DO_ZZXl7RtOXgVDv-Vw6yA.png",
+          text: "Data type 3"
+        },{
+          image: "https://image.prntscr.com/image/tsnuRyFZTbmYfSjrMHTK8w.png",
+          text: "Data type 4"
         }
         ]
-      }, null],
+      }],
       sideBarVisibility: true,
-      apiLocation: 'http://localhost:5000/'
+      apiLocation: 'http://localhost:5000/',
+      activeId: 1,
     }
   },
+  methods:{
+    tabClicked: function(id){
+      this.activeId = id
+    }
+  }
 }
 </script>
 

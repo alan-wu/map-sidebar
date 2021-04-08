@@ -1,16 +1,17 @@
 <template>
-  <div class="dataset-card-container"  ref="container">
-    <el-card class="context-card card" :body-style="{ padding: '0px', 'background-color': 'white', display: 'flex', width: '516px'}">
-                <img src="https://image.prntscr.com/image/BKgqmjSaQjK-B9hy_W7haQ.png" class="context-image card-left">
-        
-                <div class="card-right">
-                  <div>ICN Scaffold</div>
-                  <div>Points are mapped to their positions on a 3d heart that is mapped to the data.</div>
-                  <br/>
-                  <span><img src="https://image.prntscr.com/image/DO_ZZXl7RtOXgVDv-Vw6yA.png" style="height: 20px;"> Data type 1</span>
-                  <br/>
-                  <span><img src="https://image.prntscr.com/image/tsnuRyFZTbmYfSjrMHTK8w.png" style="height: 27px;"> Data type 2</span>
-                </div>
+  <div class="context-card-container"  ref="container">
+    <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
+    <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
+    <el-card v-show="showDetails" class="context-card card" :body-style="{ padding: '0px', 'background-color': 'white', display: 'flex', width: '516px'}">
+      <img :src="entry.bannerImage" class="context-image card-left">
+      <div class="card-right">
+        <div class="title">{{entry.title}}</div>
+        <div>{{entry.description}}</div>
+        <template v-for="key in entry.keys">
+          <br v-bind:key="key.text"/>
+          <span v-bind:key="key.text + 1"><img :src="key.image" style="height: 20px;"> {{key.text}}</span>
+        </template>
+      </div>
     </el-card>
   </div>
 </template>
@@ -45,6 +46,7 @@ export default {
   },
   data: function () {
     return {
+      showDetails: true
     };
   },
   computed: {
@@ -57,6 +59,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+.hide{
+  color: #e4e7ed;
+  cursor: pointer;
+}
+
 .context-card{
   background-color: white;
 }
@@ -80,5 +88,9 @@ export default {
 .card-right {
   flex: 1.3;
   padding-left: 6px;
+}
+
+.title{
+  font-weight: bold;
 }
 </style>
