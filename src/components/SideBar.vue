@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div ref="container">
     <div v-if="!drawerOpen" @click="close" class="open-tab">
       <i class="el-icon-arrow-left"></i>
     </div>
@@ -18,7 +18,7 @@
       <div v-if="drawerOpen" @click="close" class="close-tab">
         <i class="el-icon-arrow-right"></i>
       </div>
-        <tabs :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
+        <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
         <template v-for="tab in tabs">
           <sidebar-content v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :apiLocation="apiLocation" v-bind:key="tab.id" :ref="tab.id"/>
         </template>
@@ -43,6 +43,7 @@ import {
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SidebarContent from './SidebarContent.vue';
+import EventBus from './EventBus';
 import Tabs from './Tabs'
 
 locale.use(lang);
@@ -93,7 +94,7 @@ export default {
     },
     tabs: {
       type: Array,
-      default: () => []
+      default: () => [{title:'flatmap', id:1}]
     },
     activeId: {
       type: Number,
@@ -110,12 +111,30 @@ export default {
       this.drawerOpen = !this.drawerOpen;
     },
     openSearch: function(term, facets){
-      this.$refs[this.activeId].openSearch(term, facets)
-    }
+      this.drawerOpen = true
+      this.$refs[this.activeId][0].openSearch(term, facets)
+    },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
+    // Timer hack to force v-for refs to be available
+    forceRefRender: function(){
+      this.$refs.container.style.opacity = 0
+      this.drawerOpen = true
+      setTimeout(()=>{
+        this.drawerOpen = false
+      },1)
+      setTimeout(()=>{
+        this.$refs.container.style.opacity = '100%'
+      },512)
+      }
   },
+  mounted: function(){
+    EventBus.$on("PopoverActionClick", (payLoad) => {
+      this.$emit("actionClick", payLoad);
+    })
+    this.forceRefRender()
+  }
 };
 </script>
 

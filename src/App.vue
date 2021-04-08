@@ -3,7 +3,8 @@
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
-    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility" :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked" ></SideBar>
+    <el-button @click="openSearch">search 'heart' from refs</el-button>
+    <SideBar class="side-bar" ref="sideBar" :apiLocation=apiLocation :visible="sideBarVisibility" :activeId="activeId" @tabClicked="tabClicked" ></SideBar>
   </div>
 </template>
 
@@ -64,6 +65,9 @@ export default {
   methods:{
     tabClicked: function(id){
       this.activeId = id
+    },
+    openSearch: function(){
+      this.$refs.sideBar.openSearch('heart', [{facet: 'All Species', term:'species'}] )
     }
   }
 }

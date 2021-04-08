@@ -295,11 +295,6 @@ components: { SearchFilters, DatasetCard, ContextCard },
     //Create non-reactive local variables
     this.searchEndpoint = "filter-search/";
   },
-  mounted: function() {
-    EventBus.$on("PopoverActionClick", (payLoad) => {
-      this.$emit("actionClick", payLoad);
-    });
-  },
 };
 </script>
 
