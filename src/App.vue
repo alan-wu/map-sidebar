@@ -57,7 +57,7 @@ export default {
         ]
       }],
       sideBarVisibility: true,
-      apiLocation: 'http://localhost:5000/',
+      apiLocation: process.env.VUE_APP_API_LOCATION,
       activeId: 1,
     }
   },
