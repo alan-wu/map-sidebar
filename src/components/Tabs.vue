@@ -37,9 +37,13 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 
+.tab-container{
+  height: 36px;
+}
+
 .title {
   width: 101px;
-  height: 31px;
+  height: 36px;
   border: solid 1px #dcdfe6;
   border-bottom: none;
   background-color: white;
