@@ -120,6 +120,10 @@ components: { SearchFilters, DatasetCard, ContextCard },
       type: String,
       default: ""
     },
+    firstSearch: {
+      type: String,
+      default: ""
+    }
   },
   data: function () {
     return {
@@ -290,6 +294,9 @@ components: { SearchFilters, DatasetCard, ContextCard },
           .catch((data) => reject(data))
       });
     },
+  },
+  mounted: function(){
+    this.openSearch(this.firstSearch,[])
   },
   created: function () {
     //Create non-reactive local variables

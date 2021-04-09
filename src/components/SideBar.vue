@@ -20,7 +20,7 @@
       </div>
         <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
         <template v-for="tab in tabs">
-          <sidebar-content v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :apiLocation="apiLocation" v-bind:key="tab.id" :ref="tab.id"/>
+          <sidebar-content v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :firstSearch="tab.title" :apiLocation="apiLocation" v-bind:key="tab.id" :ref="tab.id"/>
         </template>
       </div>
     </el-drawer>
@@ -112,28 +112,17 @@ export default {
     },
     openSearch: function(term, facets){
       this.drawerOpen = true
-      this.$refs[this.activeId][0].openSearch(term, facets)
+      // Because refs are in v-for, nextTick is needed here
+      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(term, facets)})
     },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
-    // Timer hack to force v-for refs to be available
-    forceRefRender: function(){
-      this.$refs.container.style.opacity = 0
-      this.drawerOpen = true
-      setTimeout(()=>{
-        this.drawerOpen = false
-      },1)
-      setTimeout(()=>{
-        this.$refs.container.style.opacity = '100%'
-      },512)
-      }
   },
   mounted: function(){
     EventBus.$on("PopoverActionClick", (payLoad) => {
       this.$emit("actionClick", payLoad);
     })
-    this.forceRefRender()
   }
 };
 </script>
