@@ -87,6 +87,7 @@ export default {
           title: "View 3D scaffold",
           type: "Scaffold",
           discoverId: this.discoverId,
+          contextCard: scaffoldMetaMap[this.discoverId].contextCard 
         }
         EventBus.$emit("PopoverActionClick", action)
     },
