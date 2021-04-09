@@ -38,12 +38,12 @@ export default {
 <style scoped>
 
 .tab-container{
-  height: 36px;
+  height: 28px;
 }
 
 .title {
   width: 101px;
-  height: 36px;
+  height: 28px;
   border: solid 1px #dcdfe6;
   border-bottom: none;
   background-color: white;
@@ -58,6 +58,7 @@ export default {
   text-align:center;
   display: table-cell;
   vertical-align: middle;
+  font-size: 14px;
 }
 
 .title-text-table {
