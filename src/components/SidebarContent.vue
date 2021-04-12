@@ -1,6 +1,6 @@
 <template>
-  <el-card >
-      <div slot="header" class="header">
+  <el-card :body-style="bodyStyle" class="content-card"> 
+    <div slot="header" class="header">
       <context-card v-if="contextCardEntry" :entry="contextCardEntry"/>
       <el-input
           class="search-input"
@@ -11,16 +11,16 @@
           @clear="clearSearchClicked"
       ></el-input>
       <el-button class="button" @click="searchEvent">Search</el-button>
-      </div>
-      <SearchFilters class="filters" ref="filtersRef" :entry="filterEntry"
+    </div>
+    <SearchFilters class="filters" ref="filtersRef" :entry="filterEntry"
       :apiLocation="apiLocation" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
-      <div class="content scrollbar"  v-loading="loadingCards" ref="content">
+    <div class="content scrollbar"  v-loading="loadingCards" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards && !sciCrunchError">
           No results found - Please change your search / filter criteria.
       </div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
       <div v-for="o in results" :key="o.id" class="step-item">
-          <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
+        <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
       </div>
       <el-pagination
           class="pagination"
@@ -32,7 +32,7 @@
           :total="numberOfHits"
           @current-change="pageChange">
       </el-pagination>
-      </div>
+    </div>
   </el-card>
 </template>
 
@@ -128,6 +128,11 @@ components: { SearchFilters, DatasetCard, ContextCard },
   data: function () {
     return {
       ...this.entry,
+      bodyStyle: {
+        flex: "1 1 auto",
+        "flex-flow": "column",
+        display: "flex",
+      }
     }
   },
   computed: {
@@ -307,61 +312,11 @@ components: { SearchFilters, DatasetCard, ContextCard },
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.side-bar{
-  position: relative;
+
+.content-card {
   height: 100%;
-  pointer-events: none;
-}
-
-.side-bar >>> .el-drawer:focus{
-  outline:none;
-}
-
-.open-tab{
-  width: 20px;
-  height: 40px;
-  z-index: 8;
-  position: absolute;
-  top: calc(50vh - 80px);
-  right: 0px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #e4e7ed;
-  background-color: #F7FAFF;
-  text-align: center;
-  vertical-align: middle;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.el-icon-arrow-left{
-  font-size: 20px;
-  padding-top: 8px;
-  color: #292b66;
-}
-
-.el-icon-arrow-right{
-  font-size: 20px;
-  padding-top: 8px;
-  color: #292b66;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.close-tab{
-  float: left;
-  flex: 1;
-  width: 20px;
-  height: 40px;
-  z-index: 8;
-  margin-top: calc(50vh - 80px);
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #e4e7ed;
-  border-right: 0;
-  background-color: #F7FAFF;
-  text-align: center;
-  vertical-align: middle;
-  cursor: pointer;
-  pointer-events: auto;
+  flex-flow: column;
+  display: flex;
 }
 
 .button{
@@ -412,20 +367,19 @@ components: { SearchFilters, DatasetCard, ContextCard },
   padding-top: 15px;
 }
 
->>> .el-card__header {
+.content-card >>> .el-card__header {
   background-color: #292b66;
   border: solid 1px #292b66;
 }
 
->>> .el-card__body {
+.content-card >>> .el-card__body {
   background-color: #f7faff;
-  height: calc(100% - 8rem);
   overflow-y: hidden;
 }
 
 .content {
   width: 518px;
-  height: calc(100vh - 20rem);
+  flex: 1 1 auto;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px #e4e7ed;
   background-color: #ffffff;

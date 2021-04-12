@@ -14,14 +14,16 @@
       :wrapperClosable="false"
       :modal="false"
     >
-    <div class="box-card">
-      <div v-if="drawerOpen" @click="close" class="close-tab">
-        <i class="el-icon-arrow-right"></i>
-      </div>
-        <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
-        <template v-for="tab in tabs">
-          <sidebar-content v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :firstSearch="tab.title" :apiLocation="apiLocation" v-bind:key="tab.id" :ref="tab.id"/>
-        </template>
+      <div class="box-card">
+        <div v-if="drawerOpen" @click="close" class="close-tab">
+          <i class="el-icon-arrow-right"></i>
+        </div>
+        <div class="sidebar-container">
+          <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
+          <template v-for="tab in tabs">
+            <sidebar-content class="sidebar-content-container" v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :firstSearch="tab.title" :apiLocation="apiLocation" v-bind:key="tab.id" :ref="tab.id"/>
+          </template>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -32,13 +34,8 @@
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
 import {
-  Button,
-  Card,
   Drawer,
   Icon,
-  Input,
-  Loading,
-  Pagination,
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
@@ -47,13 +44,8 @@ import EventBus from './EventBus';
 import Tabs from './Tabs'
 
 locale.use(lang);
-Vue.use(Button);
-Vue.use(Card);
 Vue.use(Drawer);
 Vue.use(Icon);
-Vue.use(Input);
-Vue.use(Loading);
-Vue.use(Pagination);
 
 var initial_state = {
       searchInput: "",
@@ -137,7 +129,6 @@ export default {
   pointer-events: auto;
 }
 
-
 .side-bar{
   position: relative;
   height: 100%;
@@ -146,6 +137,12 @@ export default {
 
 .side-bar >>> .el-drawer:focus{
   outline:none;
+}
+
+.sidebar-container {
+  height: 100%;
+  flex-flow: column;
+  display: flex;
 }
 
 .open-tab{
@@ -195,12 +192,6 @@ export default {
   pointer-events: auto;
 }
 
-.button{
-  background-color: #8300bf;
-  border: #8300bf;
-  color: white;
-}
-
 .box-card {
   flex: 3;
   height: 100%;
@@ -208,72 +199,17 @@ export default {
   pointer-events: auto;
 }
 
-.step-item {
-  font-size: 14px;
-  margin-bottom: 18px;
-  text-align: left;
-}
-
-.search-input {
-  width: 298px!important;
-  height: 40px;
-  padding-right: 14px;
-  align-items: left;
-}
-
-.header {
-  border: solid 1px #292b66;
-  background-color: #292b66;
-  text-align: left;
-}
-
-.pagination {
-  padding-bottom: 16px;
-  background-color: white;
-  text-align:center;
-}
-
-.pagination>>>button{
-  background-color: white !important;
-}
-.pagination>>>li{
-  background-color: white !important;
-}
-.pagination>>>li.active{
-  color: #8300bf;
-}
-
-.error-feedback{
-  font-family: Asap;
-  font-size: 14px;
-  font-style: italic;
-  padding-top: 15px;
-}
-
->>> .el-card__header {
-  background-color: #292b66;
-  border: solid 1px #292b66;
-}
-
->>> .el-card__body {
-  background-color: #f7faff;
-  height: calc(100% - 8rem);
-  overflow-y: hidden;
-}
-
-.content {
-  width: 518px;
-  height: calc(100vh - 20rem);
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #e4e7ed;
-  background-color: #ffffff;
-  overflow-y: scroll;
-  scrollbar-width: thin;
-}
-
 >>> .my-drawer {
   background: rgba(0,0,0,0);
   box-shadow: none;
+}
+
+>>> .my-drawer .el-drawer__body {
+  height: 100%;
+}
+
+.sidebar-content-container {
+   flex: 1 1 auto; 
 }
 
 </style>
