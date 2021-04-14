@@ -80,8 +80,8 @@ var handleErrors = async function(response) {
 
 var initial_state = {
       searchInput: "",
-      lastSearchInput: "",
-      lastSearch: "",
+      lastSearch: "no search yet",
+      lastFilter: undefined,
       results: [],
       drawerOpen: false,
       numberOfHits: 0,
@@ -171,7 +171,7 @@ components: { SearchFilters, DatasetCard, ContextCard },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation()
-        this.searchSciCrunch(this.searchInput);
+        this.searchSciCrunch(this.searchInput, this.lastFilter);
       }
     },
     filterUpdate: function(filter){
@@ -188,27 +188,27 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.searchSciCrunch(this.searchInput);
     },
     searchSciCrunch: function (search, filter=undefined) {
-      this.lastSearchInput = search;
+      
+      //Only process if the search term is the same as the last search term
+      //This avoid old search being displayed.
+      if (this.lastSearch === search && this.lastFilter ===  filter){
+        return
+      }
+      this.lastFilter = filter
+
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
       let params = this.createParams(filter, this.start, this.numberPerPage)
       this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
-        //Only process if the search term is the same as the last search term.
-        //This avoid old search being displayed.
-        if (this.lastSearchInput == search) {
-          this.sciCrunchError = false
-          this.resultsProcessing(result)
-          this.$refs.content.style['overflow-y'] = 'scroll'
-        }
+        
+        this.sciCrunchError = false
+        this.resultsProcessing(result)
+        this.$refs.content.style['overflow-y'] = 'scroll'
       }).catch((result) => {
-        if (this.lastSearchInput == search) {
-          this.sciCrunchError = result.message
-        }
+        this.sciCrunchError = result.message
       }).finally(() => {
-        if (this.lastSearchInput == search) {
-          this.loadingCards = false
-        }
+        this.loadingCards = false
       })
     },
     disableCards: function(){
