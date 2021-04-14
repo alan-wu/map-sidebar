@@ -149,9 +149,6 @@ components: { SearchFilters, DatasetCard, ContextCard },
   methods: {
     close: function () {
       this.drawerOpen = !this.drawerOpen;
-      if(this.drawerOpen && !this.hasSearched){
-        this.openSearch(this.searchInput);
-      }
     },
     openSearch: function (search, filter=undefined) {
       this.drawerOpen = true;
@@ -308,9 +305,6 @@ components: { SearchFilters, DatasetCard, ContextCard },
           .catch((data) => reject(data))
       });
     },
-  },
-  mounted: function(){
-    this.openSearch(this.firstSearch,[])
   },
   created: function () {
     //Create non-reactive local variables
