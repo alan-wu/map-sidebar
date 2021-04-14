@@ -53,7 +53,6 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
-import EventBus from './EventBus';
 import ContextCard from './ContextCard.vue';
 
 locale.use(lang);
@@ -81,6 +80,7 @@ var handleErrors = async function(response) {
 
 var initial_state = {
       searchInput: "",
+      lastSearchInput: "",
       lastSearch: "",
       results: [],
       drawerOpen: false,
@@ -158,9 +158,9 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.searchInput = search;
       this.resetPageNavigation()
       this.searchSciCrunch(search, filter);
-      if (filter){
+      if (filter && filter[0]) {
         this.filterFacet = filter[0].facet;
-        EventBus.$emit("filterUiUpdate", filter[0].facet);
+        this.$refs.filtersRef.setCascader(filter[0].facet);
       }
     },
     clearSearchClicked: function(){
@@ -188,18 +188,27 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.searchSciCrunch(this.searchInput);
     },
     searchSciCrunch: function (search, filter=undefined) {
+      this.lastSearchInput = search;
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
       let params = this.createParams(filter, this.start, this.numberPerPage)
       this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
-        this.sciCrunchError = false
-        this.resultsProcessing(result)
-        this.$refs.content.style['overflow-y'] = 'scroll'
+        //Only process if the search term is the same as the last search term.
+        //This avoid old search being displayed.
+        if (this.lastSearchInput == search) {
+          this.sciCrunchError = false
+          this.resultsProcessing(result)
+          this.$refs.content.style['overflow-y'] = 'scroll'
+        }
       }).catch((result) => {
-        this.sciCrunchError = result.message
+        if (this.lastSearchInput == search) {
+          this.sciCrunchError = result.message
+        }
       }).finally(() => {
-        this.loadingCards = false
+        if (this.lastSearchInput == search) {
+          this.loadingCards = false
+        }
       })
     },
     disableCards: function(){
