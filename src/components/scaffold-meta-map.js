@@ -6,16 +6,10 @@ export default {
         bannerImage: 'https://raw.githubusercontent.com/Tehsurfer/map-sidebar/tabs/assets/temp-pics/icn.png',
         keys: [{
           image: "https://raw.githubusercontent.com/Tehsurfer/map-sidebar/tabs/assets/temp-pics/orange.png",
-          text: "Data type 1"
+          text: "ICN Subject 54-8"
         }, {
           image: "https://raw.githubusercontent.com/Tehsurfer/map-sidebar/tabs/assets/temp-pics/teal.png",
-          text: "Data type 2"
-        }, {
-          image: "https://raw.githubusercontent.com/Tehsurfer/map-sidebar/tabs/assets/temp-pics/orange.png",
-          text: "Data type 3"
-        }, {
-          image: "https://raw.githubusercontent.com/Tehsurfer/map-sidebar/tabs/assets/temp-pics/teal.png",
-          text: "Data type 4"
+          text: "ICN Subject 54-5"
         }
         ]
       },
