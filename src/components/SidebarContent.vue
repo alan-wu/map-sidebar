@@ -306,6 +306,15 @@ components: { SearchFilters, DatasetCard, ContextCard },
       });
     },
   },
+  mounted: function(){
+    // temporarily disable flatmap search since there are no datasets
+    if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap" ){
+      this.openSearch("",[])
+    } else {
+      this.openSearch(this.firstSearch,[])
+    }
+    
+  },
   created: function () {
     //Create non-reactive local variables
     this.searchEndpoint = "filter-search/";
