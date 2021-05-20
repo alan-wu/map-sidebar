@@ -123,7 +123,7 @@ export default {
     },
     getBanner: function () {
       let doi = this.splitDOI(this.entry.doi)
-      fetch(`https://api.blackfynn.io/discover/datasets/doi/${doi[0]}/${doi[1]}`)
+      fetch(`https://api.pennsieve.io/discover/datasets/doi/${doi[0]}/${doi[1]}`)
         .then((response) =>{
           if (!response.ok){
             throw Error(response.statusText)
