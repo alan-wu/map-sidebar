@@ -71,7 +71,7 @@ export default {
       cascadeSelected: [],
       numberShown: 10,
       filters: [],
-      facets: ['Species', 'Gender', 'Genotype'],
+      facets: ['Species', 'Gender', 'Genotype', 'Datasets'],
       numberDatasetsShown: ["10", "20", "50"],
       props: { multiple: true },
       options: [{
@@ -119,6 +119,13 @@ export default {
       })
     },
     getFacet: function (facetLabel) {
+      if (facetLabel === 'Datasets') {
+        // The datasets facet doesn't exist on SciCrunch yet, so manually set it
+        // for now.
+        return new Promise((resolve) => {
+          resolve([...new Set([`All ${facetLabel}`, "Scaffolds", "Simulations"])]);
+        });
+      }
       return new Promise((resolve) => {
         var facets = [`All ${facetLabel}`];
         let facet = facetLabel.toLowerCase()
@@ -157,13 +164,13 @@ export default {
       // If filters have been cleared, send an empty object
       if(event[0] === undefined){
        this.$emit("filterResults", {});
-       this.updateLabels([0,0,0]) // reset label counts
+       this.updateLabels([0,0,0,0]) // reset label counts
        return
       }
       this.filters = []
       // Label counts is used to show user how many are at each nested level.
       //    i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
-      let labelCounts = [0,0,0]
+      let labelCounts = [0,0,0,0]
       // event[0][1] contains the index of the latest addition
       for(let i in this.options){
         for(let j in this.options[i].children){
@@ -197,7 +204,7 @@ export default {
       });
     },
     setCascader: function(tagName){
-      let labelCounts = [0,0,0]
+      let labelCounts = [0,0,0,0]
       for(let i in this.options){
         for(let j in this.options[i].children){
           if(tagName === this.options[i].children[j].label){

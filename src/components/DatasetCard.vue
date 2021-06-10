@@ -8,16 +8,22 @@
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.description}}</div>
-          <div class="details">{{contributors}}</div>
-          <div class="details">{{entry.numberSamples}} sample(s)</div>
+          <div v-if="entry.contributors.length === 1" class="details">{{lastName(entry.contributors[0].name)}}</div>
+          <div v-if="entry.contributors.length === 2" class="details">{{lastName(entry.contributors[0].name)}} &amp; {{lastName(entry.contributors[1].name)}}</div>
+          <div v-if="entry.contributors.length > 2" class="details">{{lastName(entry.contributors[0].name)}} <em>et al.</em></div>
+          <div v-if="entry.numberSamples === 1" class="details">{{entry.numberSamples}} sample</div>
+          <div v-if="entry.numberSamples > 1" class="details">{{entry.numberSamples}} samples</div>
           <div>
-            <el-button @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
+            <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
           </div>
           <div>
             <el-button v-if="entry.scaffold" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
           </div>
           <div>
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
+          </div>
+          <div>
+            <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
           </div>
         </div>
 
@@ -113,6 +119,25 @@ export default {
     openDataset: function(){
       window.open(this.dataLocation,'_blank');
     },
+    openSimulation: function() {
+      let isSedmlResource = false;
+      let resource = undefined;
+      this.entry.additionalLinks.forEach(function(el) {
+        if (el.description == "SED-ML file") {
+          isSedmlResource = true;
+          resource = el.uri;
+        } else if (!isSedmlResource && (el.description == "CellML file")) {
+          resource = el.uri;
+        }
+      });
+      let action = {
+          label: undefined,
+          resource: resource,
+          title: "View simulation",
+          type: "Simulation"
+        }
+        EventBus.$emit("PopoverActionClick", action)
+    },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
       let path = `${this.apiLocation}s3-resource/${id}/${version}/files/${scaffoldPath}/${scaffoldMetaMap[id].meta_file}`
@@ -151,6 +176,9 @@ export default {
           this.thumbnail = require('@/../assets/missing-image.svg')
           this.discoverId = undefined
         });
+    },
+    lastName: function(fullName){
+      return fullName.split(',')[0]
     },
   },
   mounted: function(){
@@ -254,6 +282,11 @@ export default {
   margin-top: 8px;
 }
 
+.button:hover {
+  background-color: #8300bf;
+  color: white;
+}
+
 .banner-img {
   width: 128px;
   height: 128px;
@@ -272,4 +305,3 @@ export default {
   color: #484848;
 }
 </style>
-

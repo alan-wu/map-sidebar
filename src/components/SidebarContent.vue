@@ -260,7 +260,9 @@ components: { SearchFilters, DatasetCard, ContextCard },
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
           organs: (element.organs && element.organs.length > 0)
-            ? [...new Set(element.organs.map((v) => v.name))]
+            ? Array.isArray(element.organs)
+              ? [...new Set(element.organs.map((v) => v.name))]
+              : undefined
             : undefined,
           ages: element.samples
             ? "ageCategory" in element.samples[0]
@@ -274,7 +276,11 @@ components: { SearchFilters, DatasetCard, ContextCard },
           id: id,
           doi: element.doi,
           scaffold: element.scaffolds ? true : false,
-          scaffolds: element.scaffolds ? element.scaffolds : false
+          scaffolds: element.scaffolds ? element.scaffolds : false,
+          additionalLinks: element.additionalLinks,
+          simulation: element.additionalLinks
+            ? element.additionalLinks[0].description == 'Repository'
+            : false
         });
         id++;
       });
