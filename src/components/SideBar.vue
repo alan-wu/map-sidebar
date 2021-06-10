@@ -209,7 +209,7 @@ export default {
 }
 
 .sidebar-content-container {
-   flex: 1 1 auto; 
+   flex: 1 1 auto;
 }
 
 </style>

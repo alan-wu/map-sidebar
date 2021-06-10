@@ -1,5 +1,5 @@
 <template>
-  <el-card :body-style="bodyStyle" class="content-card"> 
+  <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
       <context-card v-if="contextCardEntry" :entry="contextCardEntry"/>
       <el-input
@@ -313,7 +313,7 @@ components: { SearchFilters, DatasetCard, ContextCard },
     } else {
       this.openSearch(this.firstSearch,[])
     }
-    
+
   },
   created: function () {
     //Create non-reactive local variables
