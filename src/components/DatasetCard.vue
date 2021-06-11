@@ -10,6 +10,7 @@
           <div class="title" @click="cardClicked">{{entry.description}}</div>
           <div class="details">{{entry.contributors[0].name}}; {{entry.contributors[1].name}}</div>
           <div class="details">{{entry.numberSamples}} sample(s)</div>
+          <div class="details">id: {{discoverId}}</div>
           <div>
             <el-button @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
           </div>
@@ -87,7 +88,7 @@ export default {
           title: "View 3D scaffold",
           type: "Scaffold",
           discoverId: this.discoverId,
-          contextCard: scaffoldMetaMap[this.discoverId].contextCard 
+          contextCard: scaffoldMetaMap[this.discoverId] ? scaffoldMetaMap[this.discoverId].contextCard : undefined
         }
         EventBus.$emit("PopoverActionClick", action)
     },
@@ -106,7 +107,7 @@ export default {
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
-      let path = `${this.apiLocation}s3-resource/${id}/${version}/files/${scaffoldPath}/${scaffoldMetaMap[id].meta_file}`
+      let path = `${this.apiLocation}s3-resource/${id}/${version}/files/${scaffoldPath}`
       return path
     },
     getFileFromPath: function(discoverId, version, path){

@@ -4,11 +4,12 @@
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
     <el-button @click="openSearch">search 'heart' from refs</el-button>
-    <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility" :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked" ></SideBar>
+    <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility" :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked" @actionClick="action" ></SideBar>
   </div>
 </template>
 
 <script>
+/* eslint-disable no-alert, no-console */
 
 // optionally import default styles
 import SideBar from './components/SideBar'
@@ -65,6 +66,9 @@ export default {
   methods:{
     tabClicked: function(id){
       this.activeId = id
+    },
+    action: function(val){
+      console.log("action fired: ", val)
     },
     openSearch: function(){
       this.$refs.sideBar.openSearch('heart', [{facet: 'All Species', term:'species'}] )
