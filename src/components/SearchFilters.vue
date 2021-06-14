@@ -71,7 +71,7 @@ export default {
       cascadeSelected: [],
       numberShown: 10,
       filters: [],
-      facets: ['Species', 'Gender', 'Genotype'],
+      facets: ['Species', 'Gender', 'Organ'],
       numberDatasetsShown: ["10", "20", "50"],
       props: { multiple: true },
       options: [{
