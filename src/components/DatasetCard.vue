@@ -8,11 +8,8 @@
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.description}}</div>
-          <div v-if="entry.contributors.length === 1" class="details">{{lastName(entry.contributors[0].name)}}</div>
-          <div v-if="entry.contributors.length === 2" class="details">{{lastName(entry.contributors[0].name)}} &amp; {{lastName(entry.contributors[1].name)}}</div>
-          <div v-if="entry.contributors.length > 2" class="details">{{lastName(entry.contributors[0].name)}} <em>et al.</em></div>
-          <div v-if="entry.numberSamples === 1" class="details">{{entry.numberSamples}} sample</div>
-          <div v-if="entry.numberSamples > 1" class="details">{{entry.numberSamples}} samples</div>
+          <div class="details">{{contributors}}</div>
+          <div class="details">{{samples}}</div>
           <div>
             <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
           </div>
@@ -79,13 +76,26 @@ export default {
     },
     contributors: function() {
       let text = "";
-      if (this.entry.contributors && this.entry.contributors.length > 0) {
-        text = this.entry.contributors[0].name;
-        if (this.entry.contributors[1])
-          text = text + `; ${this.entry.contributors[1].name}`;
+      if (this.entry.contributors) {
+        if (this.entry.contributors.length === 1) {
+          text = this.lastName(this.entry.contributors[0].name);
+        } else if (this.entry.contributors.length === 2) {
+          text = this.lastName(this.entry.contributors[0].name) + " & " + this.lastName(this.entry.contributors[1].name);
+        } else if (this.entry.contributors.length > 2) {
+          text = this.lastName(this.entry.contributors[0].name) + " et al.";
+        }
       }
       return text;
-    }
+    },
+    samples: function() {
+      let text = "";
+      if (this.entry.numberSamples === 1) {
+        text = this.entry.numberSamples + " sample";
+      } else if (this.entry.numberSamples > 1) {
+        text = this.entry.numberSamples + " samples";
+      }
+      return text;
+    },
   },
   methods: {
     cardClicked: function(){
