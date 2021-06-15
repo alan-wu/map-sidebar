@@ -273,11 +273,12 @@ components: { SearchFilters, DatasetCard, ContextCard },
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
-          scaffold: element.scaffolds ? true : false,
+          scaffold: element.scaffolds.length > 0 ? true : false,
           scaffolds: element.scaffolds ? element.scaffolds : false
         });
         id++;
       });
+      window.results = this.results
     },
     createfilterParams: function(params){
       var paramsString = ''
