@@ -11,6 +11,7 @@
           @clear="clearSearchClicked"
       ></el-input>
       <el-button class="button" @click="searchEvent">Search</el-button>
+      <el-button class="button" @click="openNeuronSearch('neuron-type-keast-10')">neuron test</el-button>
     </div>
     <SearchFilters class="filters" ref="filtersRef" :entry="filterEntry"
       :apiLocation="apiLocation" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
@@ -160,6 +161,11 @@ components: { SearchFilters, DatasetCard, ContextCard },
         this.$refs.filtersRef.setCascader(filter[0].facet);
       }
     },
+    openNeuronSearch: function (neuron) {
+      this.drawerOpen = true;
+      this.resetPageNavigation()
+      this.searchSciCrunch('', undefined, `scicrunch-organ-query/${neuron}`);
+    },
     clearSearchClicked: function(){
       this.searchInput = ''
       this.resetPageNavigation()
@@ -184,13 +190,14 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.start = (page-1) * this.numberPerPage;
       this.searchSciCrunch(this.searchInput);
     },
-    searchSciCrunch: function (search, filter=undefined) {
+    searchSciCrunch: function (search, filter=undefined, searchEndpoint=undefined) {
       this.lastSearchInput = search;
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
+      if( !searchEndpoint ) searchEndpoint = this.searchEndpoint
       let params = this.createParams(filter, this.start, this.numberPerPage)
-      this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
+      this.callSciCrunch(this.apiLocation, searchEndpoint, search, params).then((result) => {
         //Only process if the search term is the same as the last search term.
         //This avoid old search being displayed.
         if (this.lastSearchInput == search) {
