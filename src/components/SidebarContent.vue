@@ -175,6 +175,7 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.resetPageNavigation()
       this.searchSciCrunch(this.searchInput, filter);
       this.filter = filter
+      this.$emit("search-changed", {value: filter, type: "filter-update"});
     },
     numberPerPageUpdate: function (val) {
       this.numberPerPage = val;
@@ -190,6 +191,7 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.results = [];
       this.disableCards();
       let params = this.createParams(filter, this.start, this.numberPerPage)
+      this.$emit("search-changed", {value: search, type: "query-update"});
       this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
         //Only process if the search term is the same as the last search term.
         //This avoid old search being displayed.
