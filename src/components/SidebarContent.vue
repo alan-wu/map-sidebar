@@ -259,6 +259,9 @@ components: { SearchFilters, DatasetCard, ContextCard },
           updated: element.updated[0].timestamp.split("T")[0],
           url: element.uri[0],
           datasetId: element.identifier,
+          organs: (element.organs && element.organs.length > 0)
+            ? [...new Set(element.organs.map((v) => v.name))]
+            : undefined,
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
