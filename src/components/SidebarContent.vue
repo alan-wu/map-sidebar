@@ -270,7 +270,6 @@ components: { SearchFilters, DatasetCard, ContextCard },
         });
         id++;
       });
-      window.results = this.results
     },
     createfilterParams: function(params){
       if (Array.isArray(params)){ // Use hack if params are array
