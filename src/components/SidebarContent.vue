@@ -151,20 +151,15 @@ components: { SearchFilters, DatasetCard, ContextCard },
     close: function () {
       this.drawerOpen = !this.drawerOpen;
     },
-    openSearch: function (search, filter=undefined) {
+    openSearch: function (search, filter=undefined, endpoint=undefined) {
       this.drawerOpen = true;
       this.searchInput = search;
       this.resetPageNavigation()
-      this.searchSciCrunch(search, filter);
+      this.searchSciCrunch(search, filter, endpoint);
       if (filter && filter[0]) {
         this.filterFacet = filter[0].facet;
         this.$refs.filtersRef.setCascader(filter[0].facet);
       }
-    },
-    openNeuronSearch: function (neuron) {
-      this.drawerOpen = true;
-      this.resetPageNavigation()
-      this.searchSciCrunch('', undefined, `scicrunch-organ-query/${neuron}`);
     },
     clearSearchClicked: function(){
       this.searchInput = ''
@@ -255,6 +250,8 @@ components: { SearchFilters, DatasetCard, ContextCard },
         return
       }
       data.results.forEach((element) => {
+        // this.results.push(element) below should be once backend is ready
+ 
         this.results.push({
           description: element.name,
           contributors: element.contributors,
