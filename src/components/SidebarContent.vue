@@ -150,11 +150,11 @@ components: { SearchFilters, DatasetCard, ContextCard },
     close: function () {
       this.drawerOpen = !this.drawerOpen;
     },
-    openSearch: function (search, filter=undefined) {
+    openSearch: function (search, filter=undefined, endpoint=undefined, params=undefined) {
       this.drawerOpen = true;
       this.searchInput = search;
       this.resetPageNavigation()
-      this.searchSciCrunch(search, filter);
+      this.searchSciCrunch(search, filter, endpoint, params);
       if (filter && filter[0]) {
         this.filterFacet = filter[0].facet;
         this.$refs.filtersRef.setCascader(filter[0].facet);
@@ -184,13 +184,14 @@ components: { SearchFilters, DatasetCard, ContextCard },
       this.start = (page-1) * this.numberPerPage;
       this.searchSciCrunch(this.searchInput);
     },
-    searchSciCrunch: function (search, filter=undefined) {
+    searchSciCrunch: function (search, filter=undefined, searchEndpoint=undefined, params=undefined) {
       this.lastSearchInput = search;
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
-      let params = this.createParams(filter, this.start, this.numberPerPage)
-      this.callSciCrunch(this.apiLocation, this.searchEndpoint, search, params).then((result) => {
+      if( !searchEndpoint ) searchEndpoint = this.searchEndpoint
+      if( !params ) params = this.createParams(filter, this.start, this.numberPerPage)
+      this.callSciCrunch(this.apiLocation, searchEndpoint, search, params).then((result) => {
         //Only process if the search term is the same as the last search term.
         //This avoid old search being displayed.
         if (this.lastSearchInput == search) {
@@ -248,45 +249,37 @@ components: { SearchFilters, DatasetCard, ContextCard },
         return
       }
       data.results.forEach((element) => {
+        // this.results.push(element) below should be once backend is ready
         this.results.push({
           description: element.name,
           contributors: element.contributors,
           numberSamples: Array.isArray(element.samples)
             ? element.samples.length
             : 1,
-          sexes: element.samples
-            ? element.samples[0].sex
-              ? [...new Set(element.samples.map((v) => v.sex.value))]
-              : undefined
-            : undefined, // This processing only includes each gender once into 'sexes'
-          organs: (element.organs && element.organs.length > 0)
-            ? [...new Set(element.organs.map((v) => v.name))]
-            : undefined,
-          ages: element.samples
-            ? "ageCategory" in element.samples[0]
-              ? [...new Set(element.samples.map((v) => v.ageCategory.value))]
-              : undefined
-            : undefined,
           updated: element.updated[0].timestamp.split("T")[0],
           url: element.uri[0],
           datasetId: element.identifier,
+          organs: (element.organs && element.organs.length > 0)
+            ? [...new Set(element.organs.map((v) => v.name))]
+            : undefined,
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
-          scaffold: element.scaffolds ? true : false,
+          scaffold: element.scaffolds.length > 0 ? true : false,
           scaffolds: element.scaffolds ? element.scaffolds : false
         });
         id++;
       });
     },
     createfilterParams: function(params){
-      var paramsString = ''
-      for(let param in params){
-        paramsString += (new URLSearchParams(params[param])).toString()
-        paramsString += '&'
+      if (Array.isArray(params)){ // Use hack if params are array
+        let p = new URLSearchParams()
+        // Line below maps on the array first, then object, appending keys and values as it goes
+        params.map( x=>Object.keys(x).map(key=>p.append(key, x[key])) )
+        return p.toString()
+      } else {
+        return (new URLSearchParams(params)).toString()
       }
-      paramsString = paramsString.slice(0, -1);
-      return paramsString
     },
     callSciCrunch: function (apiLocation, searchEndpoint, search, params={}) {
       return new Promise((resolve, reject) => {
