@@ -80,6 +80,9 @@ export default {
           text = text + `; ${this.entry.contributors[1].name}`;
       }
       return text;
+    },
+    label: function(){
+      return this.entry.organs ? this.entry.organs[0] : this.entry.description
     }
   },
   methods: {
@@ -91,8 +94,9 @@ export default {
       }
     },
     openScaffold: function(){
+      console.log(this.entry)
       let action = {
-          label: capitalise(this.entry.organs[0]),
+          label: capitalise(this.label),
           resource: this.getScaffoldPath(this.discoverId, this.version, this.entry.scaffolds[0].dataset.path),
           title: "View 3D scaffold",
           type: "Scaffold",
@@ -103,7 +107,7 @@ export default {
     },
     openPlot: function(){
       let action = {
-          label: capitalise(this.entry.organs[0]),
+          label: capitalise(this.label),
           resource: this.getFileFromPath(this.discoverId, this.version, this.entry.csvFiles[0].dataset.path),
           title: "View plot",
           type: "Plot",
