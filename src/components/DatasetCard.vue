@@ -8,7 +8,7 @@
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.description}}</div>
-          <div class="details">{{entry.contributors[0].name}}; {{entry.contributors[1].name}}</div>
+          <div class="details">{{contributors}}</div>
           <div class="details">{{entry.numberSamples}} sample(s)</div>
           <div class="details">id: {{discoverId}}</div>
           <div>
@@ -71,6 +71,15 @@ export default {
   computed: {
     hasCSVFile: function(){
       return ( this.entry.csvFiles && this.entry.csvFiles.length !== 0 )
+    },
+    contributors: function() {
+      let text = "";
+      if (this.entry.contributors && this.entry.contributors.length > 0) {
+        text = this.entry.contributors[0].name;
+        if (this.entry.contributors[1])
+          text = text + `; ${this.entry.contributors[1].name}`;
+      }
+      return text;
     }
   },
   methods: {
