@@ -107,6 +107,11 @@ export default {
       // Because refs are in v-for, nextTick is needed here
       Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(term, facets)})
     },
+    openNeuronSearch: function(neuron){
+      this.drawerOpen = true
+      // Because refs are in v-for, nextTick is needed here
+      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch('', undefined, 'scicrunch-query-string/', {'field': '*organ.curie', 'curie':neuron})})
+    },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
