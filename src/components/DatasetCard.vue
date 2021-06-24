@@ -21,6 +21,9 @@
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
           </div>
           <div>
+            <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
+          </div>
+          <div>
             <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
           </div>
         </div>
@@ -132,6 +135,29 @@ export default {
     },
     openDataset: function(){
       window.open(this.dataLocation,'_blank');
+    },
+    openRepository: function() {
+      let apiLocation = this.apiLocation;
+      this.entry.additionalLinks.forEach(function(el) {
+        if (el.description == "Repository") {
+          let xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", apiLocation + "/pmr_latest_exposure", true);
+          xmlhttp.setRequestHeader("Content-type", "application/json");
+          xmlhttp.onreadystatechange = () => {
+            if (xmlhttp.readyState === 4) {
+              let url = "";
+              if (xmlhttp.status === 200) {
+                url = JSON.parse(xmlhttp.responseText)["url"];
+              }
+              if (url === "") {
+                url = el.uri;
+              }
+              window.open(url,'_blank');
+            }
+          };
+          xmlhttp.send(JSON.stringify({workspace_url: el.uri}));
+        }
+      });
     },
     openSimulation: function() {
       let isSedmlResource = false;
