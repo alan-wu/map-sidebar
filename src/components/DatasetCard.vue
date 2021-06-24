@@ -97,6 +97,9 @@ export default {
       }
       return text;
     },
+    label: function(){
+      return this.entry.organs ? this.entry.organs[0] : this.entry.description
+    }
   },
   methods: {
     cardClicked: function(){
@@ -108,7 +111,7 @@ export default {
     },
     openScaffold: function(){
       let action = {
-          label: capitalise(this.entry.organs[0]),
+          label: capitalise(this.label),
           resource: this.getScaffoldPath(this.discoverId, this.version, this.entry.scaffolds[0].dataset.path),
           title: "View 3D scaffold",
           type: "Scaffold",
@@ -119,7 +122,7 @@ export default {
     },
     openPlot: function(){
       let action = {
-          label: capitalise(this.entry.organs[0]),
+          label: capitalise(this.label),
           resource: this.getFileFromPath(this.discoverId, this.version, this.entry.csvFiles[0].dataset.path),
           title: "View plot",
           type: "Plot",
