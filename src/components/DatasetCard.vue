@@ -94,7 +94,6 @@ export default {
       }
     },
     openScaffold: function(){
-      console.log(this.entry)
       let action = {
           label: capitalise(this.label),
           resource: this.getScaffoldPath(this.discoverId, this.version, this.entry.scaffolds[0].dataset.path),
