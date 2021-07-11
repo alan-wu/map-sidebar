@@ -70,7 +70,6 @@ export default {
       showFilters: true,
       cascadeSelected: [],
       numberShown: 10,
-      filters: [],
       facets: ['Species', 'Gender', 'Organ'],
       numberDatasetsShown: ["10", "20", "50"],
       props: { multiple: true },
@@ -143,6 +142,8 @@ export default {
     switchTermToRequest: function(term){
       return term.split(' ')[0].toLowerCase()
     },
+    // updateLabels is used to show user how many are at each nested level.
+    // i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
     updateLabels: function(counts){
       for( let i in counts){
         switch (i) {
@@ -167,30 +168,23 @@ export default {
       }
     },
     cascadeEvent: function(event){
-      // If filters have been cleared, send an empty object
-      if(event[0] === undefined){
-       this.$emit("filterResults", []);
-       this.updateLabels({Species: 0, Gender: 0, Organ: 0}); // reset label counts
-       return
-      }
-      this.filters = [];
-      // Label counts is used to show user how many are at each nested level.
-      //    i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
       let labelCounts = {Species: 0, Gender: 0, Organ: 0};
-      // event[0][1] contains the index of the latest addition
-      for(let i in event){
-        if(event[i] !== undefined){
-          let value = event[i][1];
-          let data = value.split('/');
-          let output = {};
-          output.term = this.switchTermToRequest(data[0]);
-          output.facet = this.switchFacetToRequest(data[1]);
-          this.filters.push(output);
-          labelCounts[data[0]] += 1;
+      let filters = [];
+      if(event) {
+        for(let i in event){
+          if(event[i] !== undefined){
+            let value = event[i][1];
+            let data = value.split('/');
+            let output = {};
+            output.term = this.switchTermToRequest(data[0]);
+            output.facet = this.switchFacetToRequest(data[1]);
+            filters.push(output);
+            labelCounts[data[0]] += 1;
+          }
         }
       }
       this.updateLabels(labelCounts);
-      this.$emit("filterResults", this.filters);
+      this.$emit("filterResults", filters);
     },
     numberShownChanged: function (event){
       this.$emit("numberPerPage", parseInt(event));
