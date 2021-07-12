@@ -89,7 +89,6 @@ var initial_state = {
   searchInput: "",
   lastSearch: "",
   results: [],
-  drawerOpen: false,
   numberOfHits: 0,
   filter: [],
   filterFacets: undefined,
@@ -153,12 +152,8 @@ export default {
     }
   },
   methods: {
-    close: function() {
-      this.drawerOpen = !this.drawerOpen;
-    },
     openSearch: function(search, filter = undefined,
       endpoint = undefined, params = undefined) {
-      this.drawerOpen = true;
       this.searchInput = search;
       this.resetPageNavigation();
       this.searchSciCrunch(search, filter, endpoint, params);
