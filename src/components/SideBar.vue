@@ -19,9 +19,14 @@
           <i class="el-icon-arrow-right"></i>
         </div>
         <div class="sidebar-container">
-          <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId" @titleClicked="tabClicked"/>
+          <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId"
+            @titleClicked="tabClicked"/>
           <template v-for="tab in tabs">
-            <sidebar-content class="sidebar-content-container" v-show="tab.id===activeId" :contextCardEntry="tab.contextCard" :firstSearch="tab.title" :apiLocation="apiLocation" v-bind:key="tab.id" :ref="tab.id"/>
+            <sidebar-content class="sidebar-content-container"
+            v-show="tab.id===activeId" :contextCardEntry="tab.contextCard"
+            :firstSearch="tab.title" :apiLocation="apiLocation"
+            v-bind:key="tab.id" :ref="tab.id"
+            @search-changed="searchChanged(tab.id, $event)"/>
           </template>
         </div>
       </div>
@@ -99,6 +104,9 @@ export default {
     }
   },
   methods: {
+    searchChanged: function (id, data) {
+      this.$emit("search-changed", {...data, id: id});
+    },
     close: function () {
       this.drawerOpen = !this.drawerOpen;
     },

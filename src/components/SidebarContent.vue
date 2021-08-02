@@ -1,37 +1,44 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card v-if="contextCardEntry" :entry="contextCardEntry"/>
+      <context-card v-if="contextCardEntry" :entry="contextCardEntry" />
       <el-input
-          class="search-input"
-          placeholder="Search"
-          v-model="searchInput"
-          @keyup.native="searchEvent"
-          clearable
-          @clear="clearSearchClicked"
+        class="search-input"
+        placeholder="Search"
+        v-model="searchInput"
+        @keyup.native="searchEvent"
+        clearable
+        @clear="clearSearchClicked"
       ></el-input>
       <el-button class="button" @click="searchEvent">Search</el-button>
     </div>
-    <SearchFilters class="filters" ref="filtersRef" :entry="filterEntry"
-      :apiLocation="apiLocation" @filterResults="filterUpdate" @numberPerPage="numberPerPageUpdate"></SearchFilters>
-    <div class="content scrollbar"  v-loading="loadingCards" ref="content">
-      <div class="error-feedback" v-if="results.length === 0 && !loadingCards && !sciCrunchError">
-          No results found - Please change your search / filter criteria.
-      </div>
+    <SearchFilters
+      class="filters"
+      ref="filtersRef"
+      :entry="filterEntry"
+      :apiLocation="apiLocation"
+      @filterResults="filterUpdate"
+      @numberPerPage="numberPerPageUpdate"
+    ></SearchFilters>
+    <div class="content scrollbar" v-loading="loadingCards" ref="content">
+      <div
+        class="error-feedback"
+        v-if="results.length === 0 && !loadingCards && !sciCrunchError"
+      >No results found - Please change your search / filter criteria.</div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
       <div v-for="o in results" :key="o.id" class="step-item">
         <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
       </div>
       <el-pagination
-          class="pagination"
-          :current-page.sync="page"
-          hide-on-single-page
-          large
-          layout="prev, pager, next"
-          :page-size="numberPerPage"
-          :total="numberOfHits"
-          @current-change="pageChange">
-      </el-pagination>
+        class="pagination"
+        :current-page.sync="page"
+        hide-on-single-page
+        large
+        layout="prev, pager, next"
+        :page-size="numberPerPage"
+        :total="numberOfHits"
+        @current-change="pageChange"
+      ></el-pagination>
     </div>
   </el-card>
 </template>
@@ -47,13 +54,13 @@ import {
   Icon,
   Input,
   Loading,
-  Pagination,
+  Pagination
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
-import ContextCard from './ContextCard.vue';
+import ContextCard from "./ContextCard.vue";
 
 locale.use(lang);
 Vue.use(Button);
@@ -67,37 +74,35 @@ Vue.use(Pagination);
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
 var handleErrors = async function(response) {
-    if (!response.ok) {
-      let parse = await response.json()
-      if (parse){
-        throw new Error(parse.message)
-      } else {
-        throw new Error(response)
-      }
+  if (!response.ok) {
+    let parse = await response.json();
+    if (parse) {
+      throw new Error(parse.message);
+    } else {
+      throw new Error(response);
     }
+  }
   return response;
-}
+};
 
 var initial_state = {
-      searchInput: "",
-      lastSearchInput: "",
-      lastSearch: "",
-      results: [],
-      drawerOpen: false,
-      numberOfHits: 0,
-      filter:{},
-      filterFacet: undefined,
-      loadingCards: false,
-      numberPerPage: 10,
-      page: 1,
-      pageModel: 1,
-      start: 0,
-      hasSearched: false,
-      sciCrunchError: false
-}
+  searchInput: "",
+  lastSearch: "",
+  results: [],
+  numberOfHits: 0,
+  filter: [],
+  filterFacets: undefined,
+  loadingCards: false,
+  numberPerPage: 10,
+  page: 1,
+  pageModel: 1,
+  start: 0,
+  hasSearched: false,
+  sciCrunchError: false
+};
 
 export default {
-components: { SearchFilters, DatasetCard, ContextCard },
+  components: { SearchFilters, DatasetCard, ContextCard },
   name: "SideBarContent",
   props: {
     visible: {
@@ -110,7 +115,7 @@ components: { SearchFilters, DatasetCard, ContextCard },
     },
     entry: {
       type: Object,
-      default: () => (initial_state)
+      default: () => initial_state
     },
     contextCardEntry: {
       type: Object,
@@ -125,130 +130,133 @@ components: { SearchFilters, DatasetCard, ContextCard },
       default: ""
     }
   },
-  data: function () {
+  data: function() {
     return {
       ...this.entry,
       bodyStyle: {
         flex: "1 1 auto",
         "flex-flow": "column",
-        display: "flex",
+        display: "flex"
       }
-    }
+    };
   },
   computed: {
     // This computed property populates filter data's entry object with $data from this sidebar
-    filterEntry: function () {
+    filterEntry: function() {
       return {
         results: this.results,
         lastSearch: this.lastSearch,
         numberOfHits: this.numberOfHits,
-        filterFacet: this.filterFacet
+        filterFacets: this.filterFacets
       };
-    },
+    }
   },
   methods: {
-    close: function () {
-      this.drawerOpen = !this.drawerOpen;
-    },
-    openSearch: function (search, filter=undefined, endpoint=undefined, params=undefined) {
-      this.drawerOpen = true;
+    openSearch: function(search, filter = undefined,
+      endpoint = undefined, params = undefined) {
       this.searchInput = search;
-      this.resetPageNavigation()
+      this.resetPageNavigation();
       this.searchSciCrunch(search, filter, endpoint, params);
-      if (filter && filter[0]) {
-        this.filterFacet = filter[0].facet;
-        this.$refs.filtersRef.setCascader(filter[0].facet);
+      if (filter) {
+        this.filterFacets = [...filter];
+        this.$refs.filtersRef.setCascader(this.filterFacets);
       }
     },
-    clearSearchClicked: function(){
-      this.searchInput = ''
-      this.resetPageNavigation()
-      this.searchSciCrunch(this.searchInput)
+    clearSearchClicked: function() {
+      this.searchInput = "";
+      this.resetPageNavigation();
+      this.searchSciCrunch(this.searchInput);
     },
-    searchEvent: function (event = false) {
+    searchEvent: function(event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.resetPageNavigation()
+        this.resetPageNavigation();
         this.searchSciCrunch(this.searchInput);
       }
     },
-    filterUpdate: function(filter){
-      this.resetPageNavigation()
+    filterUpdate: function(filter) {
+      this.resetPageNavigation();
       this.searchSciCrunch(this.searchInput, filter);
-      this.filter = filter
+      this.filter = [...filter];
+      this.$emit("search-changed", {
+        value: this.filter,
+        type: "filter-update"
+      });
     },
-    numberPerPageUpdate: function (val) {
+    numberPerPageUpdate: function(val) {
       this.numberPerPage = val;
       this.pageChange(1);
     },
-    pageChange: function(page){
-      this.start = (page-1) * this.numberPerPage;
+    pageChange: function(page) {
+      this.start = (page - 1) * this.numberPerPage;
       this.searchSciCrunch(this.searchInput);
     },
-    searchSciCrunch: function (search, filter=undefined, searchEndpoint=undefined, params=undefined) {
-      this.lastSearchInput = search;
+    searchSciCrunch: function(search, filter = undefined,
+      searchEndpoint = undefined, params = undefined) {
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
-      if( !searchEndpoint ) searchEndpoint = this.searchEndpoint
-      if( !params ) params = this.createParams(filter, this.start, this.numberPerPage)
-      this.callSciCrunch(this.apiLocation, searchEndpoint, search, params).then((result) => {
-        //Only process if the search term is the same as the last search term.
-        //This avoid old search being displayed.
-        if (this.lastSearchInput == search) {
-          this.sciCrunchError = false
-          this.resultsProcessing(result)
-          this.$refs.content.style['overflow-y'] = 'scroll'
-        }
-      }).catch((result) => {
-        if (this.lastSearchInput == search) {
-          this.sciCrunchError = result.message
-        }
-      }).finally(() => {
-        if (this.lastSearchInput == search) {
-          this.loadingCards = false
-        }
-      })
-    },
-    disableCards: function(){
-      if(this.$refs.content){
-        this.$refs.content.scroll({top:0, behavior:'smooth'})
-        this.$refs.content.style['overflow-y'] = 'hidden'
-      }
-    },
-    resetPageNavigation: function(){
-      this.start = 0
-      this.page = 1
-    },
-    createParams: function(filter, start, size){
-      var params = {}
-      if (filter !== undefined){
-        params = filter
-      } else {
-         params = this.filter;
-      }
-      if(params.length > 0){
-        for(let i in params){
-          if(params[i].start){
-            params[i].start = start
-            params[i].size = size
+      if (!searchEndpoint) searchEndpoint = this.searchEndpoint;
+      if (!params)
+        params = this.createParams(filter, this.start, this.numberPerPage);
+      this.$emit("search-changed", { value: search, type: "query-update" });
+      this.callSciCrunch(this.apiLocation, searchEndpoint, search, params)
+        .then(result => {
+          //Only process if the search term is the same as the last search term.
+          //This avoid old search being displayed.
+          this.sciCrunchError = false;
+          this.resultsProcessing(result);
+          this.$refs.content.style["overflow-y"] = "scroll";
+          this.loadingCards = false;
+        })
+        .catch(result => {
+          if (result.name !== 'AbortError') {
+            this.loadingCards = false;
+            this.sciCrunchError = result.message;
           }
-        }
-      } else {
-        params.start = start
-        params.size = size
-        params = [params]
-      }
-      return params
+        })
     },
-    resultsProcessing: function (data) {
-      this.lastSearch = this.searchInput
+    disableCards: function() {
+      if (this.$refs.content) {
+        this.$refs.content.scroll({ top: 0, behavior: "smooth" });
+        this.$refs.content.style["overflow-y"] = "hidden";
+      }
+    },
+    resetPageNavigation: function() {
+      this.start = 0;
+      this.page = 1;
+    },
+    createParams: function(filter, start, size) {
+      //Deconstruct list of fitlers to list of term
+      //and facet.
+      let params = {};
+      let term = [];
+      let facet = [];
+      let f = undefined;
+      if (filter !== undefined) {
+        f = filter;
+      } else {
+        f = this.filter;
+      }
+      if (f)
+        f.forEach(e => {
+          term.push(e.term);
+          facet.push(e.facet);
+        });
+      params.term = term;
+      params.facet = facet;
+      params.start = start;
+      params.size = size;
+      return params;
+    },
+    resultsProcessing: function(data) {
+      this.lastSearch = this.searchInput;
       this.results = [];
       let id = 0;
       this.numberOfHits = data.numberOfHits;
-      if (data.results.length === 0){
-        return
+      if (data.results.length === 0) {
+        return;
       }
-      data.results.forEach((element) => {
+      data.results.forEach(element => {
         // this.results.push(element) below should be once backend is ready
         this.results.push({
           description: element.name,
@@ -260,8 +268,8 @@ components: { SearchFilters, DatasetCard, ContextCard },
           url: element.uri[0],
           datasetId: element.identifier,
           organs: (element.organs && element.organs.length > 0)
-            ? [...new Set(element.organs.map((v) => v.name))]
-            : undefined,
+              ? [...new Set(element.organs.map(v => v.name))]
+              : undefined,
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
@@ -275,60 +283,66 @@ components: { SearchFilters, DatasetCard, ContextCard },
         id++;
       });
     },
-    createfilterParams: function(params){
-      if (Array.isArray(params)){ // Use hack if params are array
-        let p = new URLSearchParams()
-        // Line below maps on the array first, then object, appending keys and values as it goes
-        params.map( x=>Object.keys(x).map(key=>p.append(key, x[key])) )
-        return p.toString()
-      } else {
-        return (new URLSearchParams(params)).toString()
+    createfilterParams: function(params) {
+      let p = new URLSearchParams();
+      //Check if field is array or value
+      for (const key in params) {
+        if (Array.isArray(params[key])) {
+          params[key].forEach(e => {
+            p.append(key, e);
+          });
+        } else {
+          p.append(key, params[key]);
+        }
       }
+      return p.toString();
     },
-    callSciCrunch: function (apiLocation, searchEndpoint, search, params={}) {
+    callSciCrunch: function(apiLocation, searchEndpoint, search, params = {}) {
       return new Promise((resolve, reject) => {
+        // the following controller will abort current search
+        // if a new one has been started
+        if (this._controller) this._controller.abort();
+        this._controller = new AbortController();
+        let signal = this._controller.signal;
         var endpoint = apiLocation + searchEndpoint;
         // Add parameters if we are sent them
-        if (search !== '' && Object.entries(params).length !== 0){
-          endpoint = endpoint + search + '/?' + this.createfilterParams(params)
+        if (search !== "" && Object.entries(params).length !== 0) {
+          endpoint = endpoint + search + "/?" + this.createfilterParams(params);
         } else {
-          endpoint = endpoint + '?' + this.createfilterParams(params)
+          endpoint = endpoint + "?" + this.createfilterParams(params);
         }
-
-        fetch(endpoint)
+        fetch(endpoint, { signal })
           .then(handleErrors)
-          .then((response) => response.json())
-          .then((data) => resolve(data))
-          .catch((data) => reject(data))
+          .then(response => response.json())
+          .then(data => resolve(data))
+          .catch(data => reject(data));
       });
-    },
-  },
-  mounted: function(){
-    // temporarily disable flatmap search since there are no datasets
-    if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap" ){
-      this.openSearch("",[])
-    } else {
-      this.openSearch(this.firstSearch,[])
     }
-
   },
-  created: function () {
+  mounted: function() {
+    // temporarily disable flatmap search since there are no datasets
+    if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
+      this.openSearch("", []);
+    } else {
+      this.openSearch(this.firstSearch, []);
+    }
+  },
+  created: function() {
     //Create non-reactive local variables
     this.searchEndpoint = "filter-search/";
-  },
+  }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 .content-card {
   height: 100%;
   flex-flow: column;
   display: flex;
 }
 
-.button{
+.button {
   background-color: #8300bf;
   border: #8300bf;
   color: white;
@@ -341,7 +355,7 @@ components: { SearchFilters, DatasetCard, ContextCard },
 }
 
 .search-input {
-  width: 298px!important;
+  width: 298px !important;
   height: 40px;
   padding-right: 14px;
   align-items: left;
@@ -356,20 +370,20 @@ components: { SearchFilters, DatasetCard, ContextCard },
 .pagination {
   padding-bottom: 16px;
   background-color: white;
-  text-align:center;
+  text-align: center;
 }
 
-.pagination>>>button{
+.pagination >>> button {
   background-color: white !important;
 }
-.pagination>>>li{
+.pagination >>> li {
   background-color: white !important;
 }
-.pagination>>>li.active{
+.pagination >>> li.active {
   color: #8300bf;
 }
 
-.error-feedback{
+.error-feedback {
   font-family: Asap;
   font-size: 14px;
   font-style: italic;
@@ -413,13 +427,12 @@ components: { SearchFilters, DatasetCard, ContextCard },
   background-color: #979797;
 }
 
->>> .el-input__suffix{
+>>> .el-input__suffix {
   padding-right: 10px;
 }
 
 >>> .my-drawer {
-  background: rgba(0,0,0,0);
+  background: rgba(0, 0, 0, 0);
   box-shadow: none;
 }
-
 </style>

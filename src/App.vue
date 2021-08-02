@@ -5,13 +5,14 @@
     Click arrow to open sidebar
     <el-button @click="openSearch">search 'heart' from refs</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
-    <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility" :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked" @actionClick="action" ></SideBar>
+    <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility"
+      :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked"
+      @search-changed="searchChanged($event)" @actionClick="action"/>
   </div>
 </template>
 
 <script>
 /* eslint-disable no-alert, no-console */
-
 // optionally import default styles
 import SideBar from './components/SideBar'
 
@@ -65,6 +66,9 @@ export default {
     }
   },
   methods:{
+    searchChanged: function(data){
+      console.log(data);
+    },
     tabClicked: function(id){
       this.activeId = id
     },

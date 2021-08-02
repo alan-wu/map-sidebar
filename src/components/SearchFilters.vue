@@ -75,7 +75,7 @@ export default {
       numberDatasetsShown: ["10", "20", "50"],
       props: { multiple: true },
       options: [{
-        value: 1,
+        value: 'Species',
         label: 'Species',
         children: [{
         }]
@@ -84,38 +84,37 @@ export default {
   },
   computed: {
     numberOfResultsText: function(){
-      return `${this.entry.numberOfHits} results | Showing`
+      return `${this.entry.numberOfHits} results | Showing`;
     }
   },
   methods: {
+    createCascaderItemValue: function(term, facet) {
+      if (facet)
+        return term + "/" + facet;
+      else
+        return term;
+    },
     populateCascader: function () {
       return new Promise( (resolve) => {
-        var value = 1
-        this.options = []
+        this.options = [];
+        let promiseList = []
         for(let i in this.facets){
           this.options.push({
-              value: value,
+              value: this.createCascaderItemValue(this.facets[i], undefined),
               label: this.facets[i],
               children: []
-            })
-            value++;
-        }
-        var promiseList = []
-        for(let i in this.facets){
-          // Create a promise for each facet request
+          });
           promiseList.push(this.getFacet(this.facets[i]).then((labels)=>{
             // Populate children of each facet with scicrunch's facets
             for(let j in labels){
               this.options[i].children.push({
-                value: value,
+                value: this.createCascaderItemValue(this.facets[i], labels[j]),
                 label: capitalise(labels[j]), // Capitalisation is to match design specs
               })
-              value++;
             }
-          })
-          )
+          }))
         }
-        Promise.allSettled(promiseList).then(()=>{resolve()})
+        Promise.allSettled(promiseList).then(()=>{resolve()});
       })
     },
     getFacet: function (facetLabel) {
@@ -127,8 +126,8 @@ export default {
         });
       }
       return new Promise((resolve) => {
-        var facets = [`All ${facetLabel}`];
-        let facet = facetLabel.toLowerCase()
+        let facets = [`All ${facetLabel}`];
+        let facet = facetLabel.toLowerCase();
         this.callSciCrunch(this.apiLocation, this.facetEndpoint, facet).then(
           (facet_terms) => {
             facet_terms.forEach((element) => {
@@ -151,48 +150,57 @@ export default {
     switchTermToRequest: function(term){
       return term.split(' ')[0].toLowerCase()
     },
-    updateLabels: function(counter){
-      for( let i in counter){
-        if( counter[i] > 0){
-          this.options[i].label = this.options[i].label.split(' ')[0] + ` (${counter[i]})`
-        } else {
-          this.options[i].label = this.options[i].label.split(' ')[0]
+    // updateLabels is used to show user how many are at each nested level.
+    // i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
+    updateLabels: function(counts){
+      for( let i in counts){
+        switch (i) {
+          case 'Species':
+            this.options[0].label = this.options[0].label.split(' ')[0];
+            if (counts[i] > 0)
+              this.options[0].label += ` (${counts[i]})`;
+            break;
+          case 'Gender':
+            this.options[1].label = this.options[1].label.split(' ')[0];
+            if (counts[i] > 0)
+              this.options[1].label += ` (${counts[i]})`;
+            break;
+          case 'Organ':
+            this.options[2].label = this.options[2].label.split(' ')[0];
+            if (counts[i] > 0)
+              this.options[2].label += ` (${counts[i]})`;
+            break;
+          case 'Datasets':
+            this.options[3].label = this.options[3].label.split(' ')[0];
+            if (counts[i] > 0)
+              this.options[3].label += ` (${counts[i]})`;
+            break;
+          default:
+            break;
         }
       }
     },
     cascadeEvent: function(event){
-      // If filters have been cleared, send an empty object
-      if(event[0] === undefined){
-       this.$emit("filterResults", {});
-       this.updateLabels([0,0,0,0]) // reset label counts
-       return
-      }
-      this.filters = []
-      // Label counts is used to show user how many are at each nested level.
-      //    i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
-      let labelCounts = [0,0,0,0]
-      // event[0][1] contains the index of the latest addition
-      for(let i in this.options){
-        for(let j in this.options[i].children){
-          for(let k in event){
-            if(event[k] !== undefined){
-              var id = event[k][1]
-              if(this.options[i].children[j].value == id){
-                let output = {}
-                output.facet = this.switchFacetToRequest(this.options[i].children[j].label)
-                output.term = this.switchTermToRequest(this.options[i].label)
-                this.filters.push(output)
-                labelCounts[i] += 1
-              }
-            }
+      let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
+      let filters = [];
+      if(event) {
+        for(let i in event){
+          if(event[i] !== undefined){
+            let value = event[i][1];
+            let data = value.split('/');
+            let output = {};
+            output.term = this.switchTermToRequest(data[0]);
+            output.facet = this.switchFacetToRequest(data[1]);
+            filters.push(output);
+            labelCounts[data[0]] += 1;
           }
         }
       }
-      this.updateLabels(labelCounts)
-      this.$emit("filterResults", this.filters);
+      this.updateLabels(labelCounts);
+      this.$emit("filterResults", filters);
     },
     numberShownChanged: function (event){
-      this.$emit("numberPerPage", event);
+      this.$emit("numberPerPage", parseInt(event));
     },
     callSciCrunch: function (apiLocation, endpoint, term) {
       return new Promise((resolve) => {
@@ -203,17 +211,15 @@ export default {
           });
       });
     },
-    setCascader: function(tagName){
-      let labelCounts = [0,0,0,0]
-      for(let i in this.options){
-        for(let j in this.options[i].children){
-          if(tagName === this.options[i].children[j].label){
-            this.cascadeSelected = [[Number(i)+1,this.options[i].children[j].value]]
-            labelCounts[i] += 1
-          }
-        }
-      }
-      this.updateLabels(labelCounts)
+    setCascader: function(filterFacets){
+      let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
+      this.cascadeSelected = [];
+      filterFacets.forEach(e => {
+        this.cascadeSelected.push([capitalise(e.term), 
+          this.createCascaderItemValue(capitalise(e.term), e.facet)]);
+        labelCounts[capitalise(e.term)] += 1;
+      });
+      this.updateLabels(labelCounts);
     }
   },
   created: function() {
@@ -222,7 +228,7 @@ export default {
   },
   mounted: function () {
     this.populateCascader().then(()=>{
-      this.setCascader(this.entry.filterFacet);
+      this.setCascader(this.entry.filterFacets);
     })
   },
 };
