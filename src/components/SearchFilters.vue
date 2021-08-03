@@ -224,8 +224,8 @@ export default {
     },
     makeCascadeLabelsClickable: function(){
       // setInterval is required. The click added events get lost otherwise
-      setInterval(function() {
-        document.querySelectorAll('.el-cascader-node__label').forEach(el => { // step through each cascade label
+      setInterval(()=>{
+        this.$refs.cascader.$el.querySelectorAll('.el-cascader-node__label').forEach(el => { // step through each cascade label
           el.onclick = function() {
             const checkbox = this.previousElementSibling
             if (checkbox) { 
