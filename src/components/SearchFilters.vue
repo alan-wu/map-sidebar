@@ -200,6 +200,7 @@ export default {
       }
       this.updateLabels(labelCounts);
       this.$emit("filterResults", filters);
+      this.makeCascadeLabelsClickable();
     },
     numberShownChanged: function (event){
       this.$emit("numberPerPage", parseInt(event));
