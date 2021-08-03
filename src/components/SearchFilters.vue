@@ -224,14 +224,14 @@ export default {
       this.updateLabels(labelCounts);
     },
     makeCascadeLabelsClickable: function(){
-      // setInterval is required. The click added events get lost otherwise
+      // Next tick allows the cascader menu to change
       this.$nextTick(()=>{
         this.$refs.cascader.$el.querySelectorAll('.el-cascader-node__label').forEach(el => { // step through each cascade label
           el.onclick = function() {
             const checkbox = this.previousElementSibling
             if (checkbox) { 
               if (!checkbox.parentElement.attributes['aria-owns']){ // check if we are at the lowest level of cascader
-                this.previousElementSibling.click();
+                this.previousElementSibling.click(); // Click the checkbox
               }
             } 
           };
