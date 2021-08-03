@@ -5,6 +5,7 @@
       <span v-show="showFilters" class="search-filters transition-box">
           <el-cascader
           class="cascader"
+          ref="cascader"
           v-model="cascadeSelected"
           placeholder=""
           :collapse-tags="true"
@@ -211,7 +212,7 @@ export default {
           });
       });
     },
-    setCascader: function(filterFacets){
+    setCascader: function(filterFacets) {
       let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
       this.cascadeSelected = [];
       filterFacets.forEach(e => {
@@ -220,6 +221,21 @@ export default {
         labelCounts[capitalise(e.term)] += 1;
       });
       this.updateLabels(labelCounts);
+    },
+    makeCascadeLabelsClickable: function(){
+      // setInterval is required. The click added events get lost otherwise
+      setInterval(()=>{
+        this.$refs.cascader.$el.querySelectorAll('.el-cascader-node__label').forEach(el => { // step through each cascade label
+          el.onclick = function() {
+            const checkbox = this.previousElementSibling
+            if (checkbox) { 
+              if (!checkbox.parentElement.attributes['aria-owns']){ // check if we are at the lowest level of cascader
+                this.previousElementSibling.click();
+              }
+            } 
+          };
+        });
+      }, 1000);
     }
   },
   created: function() {
@@ -228,7 +244,8 @@ export default {
   },
   mounted: function () {
     this.populateCascader().then(()=>{
-      this.setCascader(this.entry.filterFacets);
+      this.setCascader(this.entry.filterFacets)
+      this.makeCascadeLabelsClickable()
     })
   },
 };
