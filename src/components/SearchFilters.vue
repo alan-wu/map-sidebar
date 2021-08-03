@@ -12,6 +12,7 @@
           :options="options"
           :props="props"
           @change="cascadeEvent($event)"
+          @expand-change="makeCascadeLabelsClickable"
           :show-all-levels="false"
           :append-to-body="false">
         </el-cascader>
@@ -224,7 +225,7 @@ export default {
     },
     makeCascadeLabelsClickable: function(){
       // setInterval is required. The click added events get lost otherwise
-      setInterval(()=>{
+      this.$nextTick(()=>{
         this.$refs.cascader.$el.querySelectorAll('.el-cascader-node__label').forEach(el => { // step through each cascade label
           el.onclick = function() {
             const checkbox = this.previousElementSibling
@@ -235,7 +236,7 @@ export default {
             } 
           };
         });
-      }, 1000);
+      })
     }
   },
   created: function() {
