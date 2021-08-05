@@ -103,15 +103,15 @@ export default {
         let promiseList = []
         for(let i in this.facets){
           this.options.push({
-              value: this.createCascaderItemValue(this.facets[i], undefined),
-              label: this.facets[i],
+              value: this.createCascaderItemValue(this.facets[i].toLowerCase(), undefined),
+              label: capitalise(this.facets[i]),
               children: []
           });
           promiseList.push(this.getFacet(this.facets[i]).then((labels)=>{
             // Populate children of each facet with scicrunch's facets
             for(let j in labels){
               this.options[i].children.push({
-                value: this.createCascaderItemValue(this.facets[i], labels[j]),
+                value: this.createCascaderItemValue(this.facets[i].toLowerCase(), labels[j].toLowerCase()),
                 label: capitalise(labels[j]), // Capitalisation is to match design specs
               })
             }
@@ -221,8 +221,8 @@ export default {
         let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
         this.cascadeSelected = [];
         filterFacets.forEach(e => {
-          this.cascadeSelected.push([capitalise(e.term), 
-            this.createCascaderItemValue(capitalise(e.term), e.facet.toLowerCase())]);
+          this.cascadeSelected.push([e.term.toLowerCase(),
+            this.createCascaderItemValue(e.term.toLowerCase(), e.facet.toLowerCase())]);
           labelCounts[capitalise(e.term)] += 1;
         });
         this.updateLabels(labelCounts);
