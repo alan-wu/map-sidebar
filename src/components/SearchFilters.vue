@@ -69,6 +69,7 @@ export default {
   },
   data: function () {
     return {
+      cascaderIsReady: false,
       showFilters: true,
       cascadeSelected: [],
       numberShown: 10,
@@ -215,14 +216,17 @@ export default {
       });
     },
     setCascader: function(filterFacets) {
-      let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
-      this.cascadeSelected = [];
-      filterFacets.forEach(e => {
-        this.cascadeSelected.push([capitalise(e.term), 
-          this.createCascaderItemValue(capitalise(e.term), e.facet)]);
-        labelCounts[capitalise(e.term)] += 1;
-      });
-      this.updateLabels(labelCounts);
+      //Do not set the value unless it is ready
+      if (this.cascaderIsReady) {
+        let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
+        this.cascadeSelected = [];
+        filterFacets.forEach(e => {
+          this.cascadeSelected.push([capitalise(e.term), 
+            this.createCascaderItemValue(capitalise(e.term), e.facet.toLowerCase())]);
+          labelCounts[capitalise(e.term)] += 1;
+        });
+        this.updateLabels(labelCounts);
+      }
     },
     makeCascadeLabelsClickable: function(){
       // Next tick allows the cascader menu to change
@@ -246,8 +250,9 @@ export default {
   },
   mounted: function () {
     this.populateCascader().then(()=>{
-      this.setCascader(this.entry.filterFacets)
-      this.makeCascadeLabelsClickable()
+      this.cascaderIsReady = true;
+      this.setCascader(this.entry.filterFacets);
+      this.makeCascadeLabelsClickable();
     })
   },
 };
