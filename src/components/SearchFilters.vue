@@ -158,22 +158,22 @@ export default {
     updateLabels: function(counts){
       for( let i in counts){
         switch (i) {
-          case 'Species':
+          case 'species':
             this.options[0].label = this.options[0].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[0].label += ` (${counts[i]})`;
             break;
-          case 'Gender':
+          case 'gender':
             this.options[1].label = this.options[1].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[1].label += ` (${counts[i]})`;
             break;
-          case 'Organ':
+          case 'organ':
             this.options[2].label = this.options[2].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[2].label += ` (${counts[i]})`;
             break;
-          case 'Datasets':
+          case 'datasets':
             this.options[3].label = this.options[3].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[3].label += ` (${counts[i]})`;
@@ -184,7 +184,7 @@ export default {
       }
     },
     cascadeEvent: function(event){
-      let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
+      let labelCounts = {species: 0, gender: 0, organ: 0, datasets: 0};
       let filters = [];
       if(event) {
         for(let i in event){
@@ -218,12 +218,12 @@ export default {
     setCascader: function(filterFacets) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady) {
-        let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
+        let labelCounts = {species: 0, gender: 0, organ: 0, datasets: 0};
         this.cascadeSelected = [];
         filterFacets.forEach(e => {
           this.cascadeSelected.push([e.term.toLowerCase(),
             this.createCascaderItemValue(e.term.toLowerCase(), e.facet.toLowerCase())]);
-          labelCounts[capitalise(e.term)] += 1;
+          labelCounts[e.term.toLowerCase()] += 1;
         });
         this.updateLabels(labelCounts);
       }
