@@ -1,6 +1,6 @@
 <template>
   <div ref="container">
-    <div v-if="!drawerOpen" @click="close" class="open-tab">
+    <div v-if="!drawerOpen" @click="toggleDrawer" class="open-tab">
       <i class="el-icon-arrow-left"></i>
     </div>
     <el-drawer
@@ -77,10 +77,6 @@ export default {
       type: Boolean,
       default: false
     },
-    isDrawer: {
-      type: Boolean,
-      default: true
-    },
     entry: {
       type: Object,
       default: () => (initial_state)
@@ -96,6 +92,10 @@ export default {
     activeId: {
       type: Number,
       default: 1
+    },
+    openAtStart: {
+      type: Boolean,
+      default: false
     }
   },
   data: function () {
@@ -108,21 +108,27 @@ export default {
       this.$emit("search-changed", {...data, id: id});
     },
     close: function () {
+      this.drawerOpen = false;
+    },
+    toggleDrawer: function () {
       this.drawerOpen = !this.drawerOpen;
     },
     openSearch: function(term, facets){
-      this.drawerOpen = true
+      this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(term, facets)})
     },
     openNeuronSearch: function(neuron){
-      this.drawerOpen = true
+      this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch('', undefined, 'scicrunch-query-string/', {'field': '*organ.curie', 'curie':neuron})})
     },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
+  },
+  created:function() {
+    this.drawerOpen = this.openAtStart;
   },
   mounted: function(){
     EventBus.$on("PopoverActionClick", (payLoad) => {
