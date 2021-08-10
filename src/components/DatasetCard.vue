@@ -173,6 +173,7 @@ export default {
       let action = {
           label: undefined,
           resource: resource,
+          dataset: this.dataLocation,
           title: "View simulation",
           type: "Simulation"
         }
