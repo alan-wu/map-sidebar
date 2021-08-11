@@ -174,6 +174,7 @@ export default {
           label: undefined,
           resource: resource,
           dataset: this.dataLocation,
+          datasetId: this.discoverId,
           title: "View simulation",
           type: "Simulation"
         }
