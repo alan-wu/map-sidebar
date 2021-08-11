@@ -101,7 +101,7 @@ export default {
       return text;
     },
     label: function(){
-      return this.entry.organs ? this.entry.organs[0] : this.entry.description
+      return this.entry.organs ? this.entry.organs[0] : this.entry.name
     }
   },
   methods: {
@@ -176,6 +176,8 @@ export default {
           dataset: this.dataLocation,
           datasetId: this.discoverId,
           title: "View simulation",
+          name: this.entry.name,
+          description: this.entry.description,
           type: "Simulation"
         }
         EventBus.$emit("PopoverActionClick", action)

@@ -259,7 +259,8 @@ export default {
       data.results.forEach(element => {
         // this.results.push(element) below should be once backend is ready
         this.results.push({
-          description: element.name,
+          name: element.name,
+          description: element.description,
           contributors: element.contributors,
           numberSamples: Array.isArray(element.samples)
             ? element.samples.length
