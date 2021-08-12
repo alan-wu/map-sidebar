@@ -144,8 +144,6 @@ export default {
     // This computed property populates filter data's entry object with $data from this sidebar
     filterEntry: function() {
       return {
-        results: this.results,
-        lastSearch: this.lastSearch,
         numberOfHits: this.numberOfHits,
         filterFacets: this.filterFacets
       };

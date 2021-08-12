@@ -5,12 +5,14 @@
       <span v-show="showFilters" class="search-filters transition-box">
           <el-cascader
           class="cascader"
+          ref="cascader"
           v-model="cascadeSelected"
           placeholder=""
           :collapse-tags="true"
           :options="options"
           :props="props"
           @change="cascadeEvent($event)"
+          @expand-change="makeCascadeLabelsClickable"
           :show-all-levels="false"
           :append-to-body="false">
         </el-cascader>
@@ -67,9 +69,11 @@ export default {
   },
   data: function () {
     return {
+      cascaderIsReady: false,
       showFilters: true,
       cascadeSelected: [],
       numberShown: 10,
+      filters: [],
       facets: ['Species', 'Gender', 'Organ', 'Datasets'],
       numberDatasetsShown: ["10", "20", "50"],
       props: { multiple: true },
@@ -99,15 +103,15 @@ export default {
         let promiseList = []
         for(let i in this.facets){
           this.options.push({
-              value: this.createCascaderItemValue(this.facets[i], undefined),
-              label: this.facets[i],
+              value: this.createCascaderItemValue(this.facets[i].toLowerCase(), undefined),
+              label: capitalise(this.facets[i]),
               children: []
           });
           promiseList.push(this.getFacet(this.facets[i]).then((labels)=>{
             // Populate children of each facet with scicrunch's facets
             for(let j in labels){
               this.options[i].children.push({
-                value: this.createCascaderItemValue(this.facets[i], labels[j]),
+                value: this.createCascaderItemValue(this.facets[i].toLowerCase(), labels[j].toLowerCase()),
                 label: capitalise(labels[j]), // Capitalisation is to match design specs
               })
             }
@@ -154,20 +158,25 @@ export default {
     updateLabels: function(counts){
       for( let i in counts){
         switch (i) {
-          case 'Species':
+          case 'species':
             this.options[0].label = this.options[0].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[0].label += ` (${counts[i]})`;
             break;
-          case 'Gender':
+          case 'gender':
             this.options[1].label = this.options[1].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[1].label += ` (${counts[i]})`;
             break;
-          case 'Organ':
+          case 'organ':
             this.options[2].label = this.options[2].label.split(' ')[0];
             if (counts[i] > 0)
               this.options[2].label += ` (${counts[i]})`;
+            break;
+          case 'datasets':
+            this.options[3].label = this.options[3].label.split(' ')[0];
+            if (counts[i] > 0)
+              this.options[3].label += ` (${counts[i]})`;
             break;
           default:
             break;
@@ -175,7 +184,7 @@ export default {
       }
     },
     cascadeEvent: function(event){
-      let labelCounts = {Species: 0, Gender: 0, Organ: 0, Dataset: 0};
+      let labelCounts = {species: 0, gender: 0, organ: 0, datasets: 0};
       let filters = [];
       if(event) {
         for(let i in event){
@@ -192,6 +201,7 @@ export default {
       }
       this.updateLabels(labelCounts);
       this.$emit("filterResults", filters);
+      this.makeCascadeLabelsClickable();
     },
     numberShownChanged: function (event){
       this.$emit("numberPerPage", parseInt(event));
@@ -205,15 +215,33 @@ export default {
           });
       });
     },
-    setCascader: function(filterFacets){
-      let labelCounts = {Species: 0, Gender: 0, Organ: 0, Datasets: 0};
-      this.cascadeSelected = [];
-      filterFacets.forEach(e => {
-        this.cascadeSelected.push([capitalise(e.term),
-          this.createCascaderItemValue(capitalise(e.term), e.facet)]);
-        labelCounts[capitalise(e.term)] += 1;
-      });
-      this.updateLabels(labelCounts);
+    setCascader: function(filterFacets) {
+      //Do not set the value unless it is ready
+      if (this.cascaderIsReady) {
+        let labelCounts = {species: 0, gender: 0, organ: 0, datasets: 0};
+        this.cascadeSelected = [];
+        filterFacets.forEach(e => {
+          this.cascadeSelected.push([e.term.toLowerCase(),
+            this.createCascaderItemValue(e.term.toLowerCase(), e.facet.toLowerCase())]);
+          labelCounts[e.term.toLowerCase()] += 1;
+        });
+        this.updateLabels(labelCounts);
+      }
+    },
+    makeCascadeLabelsClickable: function(){
+      // Next tick allows the cascader menu to change
+      this.$nextTick(()=>{
+        this.$refs.cascader.$el.querySelectorAll('.el-cascader-node__label').forEach(el => { // step through each cascade label
+          el.onclick = function() {
+            const checkbox = this.previousElementSibling
+            if (checkbox) {
+              if (!checkbox.parentElement.attributes['aria-owns']){ // check if we are at the lowest level of cascader
+                this.previousElementSibling.click(); // Click the checkbox
+              }
+            }
+          };
+        });
+      })
     }
   },
   created: function() {
@@ -222,7 +250,9 @@ export default {
   },
   mounted: function () {
     this.populateCascader().then(()=>{
+      this.cascaderIsReady = true;
       this.setCascader(this.entry.filterFacets);
+      this.makeCascadeLabelsClickable();
     })
   },
 };
