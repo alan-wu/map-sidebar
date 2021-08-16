@@ -273,8 +273,8 @@ export default {
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
-          scaffold: element.scaffolds.length > 0 ? true : false,
-          scaffolds: element.scaffolds ? element.scaffolds : false
+          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
+          s3uri: element.s3uri
         });
         id++;
       });

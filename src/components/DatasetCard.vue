@@ -15,7 +15,7 @@
             <el-button @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
           </div>
           <div>
-            <el-button v-if="entry.scaffold" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
+            <el-button v-if="entry.scaffolds" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
           </div>
           <div>
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
@@ -87,7 +87,7 @@ export default {
   },
   methods: {
     cardClicked: function(){
-      if(this.entry.scaffold){
+      if(this.entry.scaffolds){
         this.openScaffold()
       }else{
         this.openDataset()
