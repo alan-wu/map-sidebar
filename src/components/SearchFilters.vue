@@ -12,7 +12,7 @@
           :options="options"
           :props="props"
           @change="cascadeEvent($event)"
-          @expand-change="makeCascadeLabelsClickable"
+          @expand-change="cascadeExpandChange"
           :show-all-levels="false"
           :append-to-body="false">
         </el-cascader>
@@ -47,8 +47,8 @@ Vue.use(Cascader);
 Vue.use(Option);
 Vue.use(Select);
 
-var capitalise = function(string){
-  return string.replace(/\b\w/g, v => v.toUpperCase())
+var capitalise = function(txt){
+  return txt.charAt(0).toUpperCase() + txt.slice(1) 
 }
 
 export default {
@@ -125,29 +125,21 @@ export default {
         // The datasets facet doesn't exist on SciCrunch yet, so manually set it
         // for now.
         return new Promise((resolve) => {
-          resolve([...new Set([`All ${facetLabel}`, "Scaffolds", "Simulations"])]);
+          resolve([...new Set(["Show all", "Scaffolds", "Simulations"])]);
         });
       }
       return new Promise((resolve) => {
-        let facets = [`All ${facetLabel}`];
+        let facets = ['Show all']; // Set 'Show all' as our first label
         let facet = facetLabel.toLowerCase();
         this.callSciCrunch(this.apiLocation, this.facetEndpoint, facet).then(
           (facet_terms) => {
             facet_terms.forEach((element) => {
-              facets.push(element["key"]);
+              facets.push(element["key"]); // add facets that scicrunch includes
             });
-            resolve([...new Set(facets)]);
+            resolve([...new Set(facets)]); // return no duplicates
           }
         );
       })
-    },
-    // switchFacetToRequest is used to set 'All' to lowercase. Api will not be case sensitive soon and this can be removed
-    switchFacetToRequest: function(facet){
-      if (!facet.includes('All')){
-        return facet.toLowerCase()
-      } else {
-        return facet
-      }
     },
     // switchTermToRequest is used to remove the count for sending a request to scicrunch
     switchTermToRequest: function(term){
@@ -193,7 +185,7 @@ export default {
             let data = value.split('/');
             let output = {};
             output.term = this.switchTermToRequest(data[0]);
-            output.facet = this.switchFacetToRequest(data[1]);
+            output.facet = data[1];
             filters.push(output);
             labelCounts[data[0]] += 1;
           }
@@ -202,6 +194,10 @@ export default {
       this.updateLabels(labelCounts);
       this.$emit("filterResults", filters);
       this.makeCascadeLabelsClickable();
+    },
+    cascadeExpandChange: function (){
+      this.makeCascadeLabelsClickable();
+      this.underlineFirstElement();
     },
     numberShownChanged: function (event){
       this.$emit("numberPerPage", parseInt(event));
@@ -242,6 +238,19 @@ export default {
           };
         });
       })
+    },
+    underlineFirstElement: function(){
+      this.$nextTick(()=>{
+        this.$refs.cascader.$el.querySelectorAll('.el-cascader-node').forEach(el=>{
+          if (!el.attributes['aria-owns']){ // check if we are at the lowest level of cascader  
+            if (el.children.length > 1){
+              if (el.children[1].innerText.toLowerCase() === 'show all') { //Check we are on the 'show all' element
+                el.style['border-bottom'] = '1px solid #e4e7ed' // add a border
+              }
+            }
+          }
+        })
+      })
     }
   },
   created: function() {
@@ -253,6 +262,7 @@ export default {
       this.cascaderIsReady = true;
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
+      // this.underlineFirstElement()
     })
   },
 };
