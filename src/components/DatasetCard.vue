@@ -7,7 +7,7 @@
           <img svg-inline class="banner-img" :src="thumbnail" @click="openDataset"/>
         </span>
         <div class="card-right" >
-          <div class="title" @click="cardClicked">{{entry.description}}</div>
+          <div class="title" @click="cardClicked">{{entry.name}}</div>
           <div class="details">{{contributors}}</div>
           <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
