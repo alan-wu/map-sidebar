@@ -273,7 +273,7 @@ export default {
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
-          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
+          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : element['scaffolds'],
           s3uri: element.s3uri
         });
         id++;
