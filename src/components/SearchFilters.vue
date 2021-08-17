@@ -240,6 +240,7 @@ export default {
       })
     },
     underlineFirstElement: function(){
+      /*
       this.$nextTick(()=>{
         this.$refs.cascader.$el.querySelectorAll('.el-cascader-node').forEach(el=>{
           if (!el.attributes['aria-owns']){ // check if we are at the lowest level of cascader  
@@ -251,6 +252,7 @@ export default {
           }
         })
       })
+      */
     }
   },
   created: function() {
@@ -348,6 +350,10 @@ export default {
 .search-filters >>> .el-checkbox__input.is-checked > .el-checkbox__inner {
   background-color: #8300bf;
   border-color: #8300bf;
+}
+
+.cascader >>> .el-cascader-menu:nth-child(2) .el-cascader-node:first-child {
+  border-bottom: 1px solid #e4e7ed;
 }
 
 </style>
