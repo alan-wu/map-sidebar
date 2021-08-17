@@ -179,6 +179,8 @@ export default {
       let labelCounts = {species: 0, gender: 0, organ: 0, datasets: 0};
       let filters = [];
       if(event) {
+        // Check for show all in selected cascade options
+        event = this.showAllEventModfier(event)
         for(let i in event){
           if(event[i] !== undefined){
             let value = event[i][1];
@@ -193,11 +195,36 @@ export default {
       }
       this.updateLabels(labelCounts);
       this.$emit("filterResults", filters);
+      this.setCascader(filters) //update our cascader v-model if we modified the event
       this.makeCascadeLabelsClickable();
+    },
+    showAllEventModfier: function(event) {
+      // check if show all is in the cascader checked option list
+      let hasShowAll = event.map(ev => ev ? ev[1].split('/')[1].toLowerCase().includes('show all') : false).includes(true)
+      // remove all selected options below the show all if checked
+      if (hasShowAll){
+        console.log('found show all!')
+        for(let i in event){
+          if(event[i] !== undefined){
+            let data = event[i][1].split('/');
+            if (data[1].toLowerCase() === 'show all'){
+              let modifiedEvent = []
+              for(let j in event){
+                let d2 = event[j][1].split('/')
+                // remove all checked boxes that match the checked show all facet
+                if (d2[0] !== data[0] || d2[1].toLowerCase() === 'show all'){
+                  modifiedEvent.push(event[j])
+                }
+              }
+              return modifiedEvent
+            }
+          }
+        }
+      }
+      return event
     },
     cascadeExpandChange: function (){
       this.makeCascadeLabelsClickable();
-      this.underlineFirstElement();
     },
     numberShownChanged: function (event){
       this.$emit("numberPerPage", parseInt(event));
@@ -348,6 +375,10 @@ export default {
 .search-filters >>> .el-checkbox__input.is-checked > .el-checkbox__inner {
   background-color: #8300bf;
   border-color: #8300bf;
+}
+
+.cascader >>> .el-cascader-menu:last-child .el-cascader-node:first-child {
+  border-bottom: 1px solid #e4e7ed;
 }
 
 </style>
