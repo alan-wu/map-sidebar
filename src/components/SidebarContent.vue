@@ -277,12 +277,12 @@ export default {
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
-          scaffold: element.scaffolds.length > 0 ? true : false,
-          scaffolds: element.scaffolds ? element.scaffolds : false,
+          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
           additionalLinks: element.additionalLinks,
           simulation: element.additionalLinks
             ? element.additionalLinks[0].description == 'Repository'
-            : false
+            : false,
+          s3uri: element.s3uri
         });
         id++;
       });
