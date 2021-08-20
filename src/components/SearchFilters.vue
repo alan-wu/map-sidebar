@@ -189,7 +189,6 @@ export default {
       }
     },
     cascadeEvent: function(event) {
-      let labelCounts = { species: 0, gender: 0, organ: 0, datasets: 0 };
       let filters = [];
       if (event) {
         // Check for show all in selected cascade options
@@ -202,18 +201,18 @@ export default {
             output.term = this.switchTermToRequest(data[0]);
             output.facet = data[1];
             filters.push(output);
-            labelCounts[data[0]] += 1;
           }
         }
       }
-      this.updateLabels(labelCounts);
       this.$emit("filterResults", filters);
       this.setCascader(filters); //update our cascader v-model if we modified the event
       this.makeCascadeLabelsClickable();
     },
     showAllEventModifier: function(event) {
       // check if show all is in the cascader checked option list
-      let hasShowAll = event.map(ev =>ev? ev[1].toLowerCase().includes("show all"): false).includes(true);
+      let hasShowAll = event
+        .map(ev => (ev ? ev[1].toLowerCase().includes("show all") : false))
+        .includes(true);
       // remove all selected options below the show all if checked
       if (hasShowAll) {
         let modifiedEvent = [];
@@ -228,7 +227,7 @@ export default {
         for (const facet in facetMaps) {
           let showAll = undefined;
           // Find the show all item if any
-          for (let i = facetMaps[facet].length - 1; i >= 0 ; i--) {
+          for (let i = facetMaps[facet].length - 1; i >= 0; i--) {
             if (facetMaps[facet][i][1].toLowerCase().includes("show all")) {
               //seperate the showAll item and the rest
               showAll = facetMaps[facet].splice(i, 1)[0];
@@ -241,8 +240,7 @@ export default {
               //and there are other items
               if (facetMaps[facet].length > 0)
                 modifiedEvent.push(...facetMaps[facet]);
-              else 
-                modifiedEvent.push(showAll);
+              else modifiedEvent.push(showAll);
             } else {
               //showAll is turned on
               modifiedEvent.push(showAll);
@@ -273,7 +271,7 @@ export default {
     updatePreviousShowAllChecked: function(options) {
       //Reset the states
       for (const facet in this.previousShowAllChecked) {
-          this.previousShowAllChecked[facet] = false;
+        this.previousShowAllChecked[facet] = false;
       }
       options.forEach(element => {
         if (element[1].toLowerCase().includes("show all"))
@@ -421,5 +419,4 @@ export default {
 .cascader >>> .el-cascader-node__label {
   text-align: left;
 }
-
 </style>
