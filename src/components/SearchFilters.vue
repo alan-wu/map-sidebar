@@ -237,11 +237,14 @@ export default {
           }
           if (showAll) {
             if (this.previousShowAllChecked[facet]) {
+              //Unset the show all if it was present previously
+              //and there are other items
               if (facetMaps[facet].length > 0)
                 modifiedEvent.push(...facetMaps[facet]);
               else 
                 modifiedEvent.push(showAll);
             } else {
+              //showAll is turned on
               modifiedEvent.push(showAll);
             }
           } else {
@@ -413,6 +416,10 @@ export default {
 
 .cascader >>> .el-cascader-menu:nth-child(2) .el-cascader-node:first-child {
   border-bottom: 1px solid #e4e7ed;
+}
+
+.cascader >>> .el-cascader-node__label {
+  text-align: left;
 }
 
 </style>
