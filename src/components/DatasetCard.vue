@@ -8,7 +8,7 @@
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.name}}</div>
-          <div class="details">{{contributors}}</div>
+          <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
           <div>
@@ -113,6 +113,9 @@ export default {
     },
     label: function(){
       return this.entry.organs ? this.entry.organs[0] : this.entry.name
+    },
+    publishYear: function() {
+      return this.entry.publishDate.split('-')[0]
     }
   },
   methods: {
