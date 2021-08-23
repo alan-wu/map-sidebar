@@ -305,10 +305,6 @@ export default {
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
         this.updateLabels(labelCounts);
-        this.updateShowFiltersText();
-        this.$nextTick(() => {
-          this.updateShowFiltersText();
-        })
       }
     },
     makeCascadeLabelsClickable: function() {
