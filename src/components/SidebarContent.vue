@@ -277,6 +277,7 @@ export default {
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
+          publishDate: element.publishDate,
           scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
           additionalLinks: element.additionalLinks,
           simulation: element.additionalLinks
