@@ -3,7 +3,7 @@
     <SvgSpriteColor />
     <transition name="el-zoom-in-top">
       <span v-show="showFilters" class="search-filters transition-box">
-        <el-cascader
+        <custom-cascader
           class="cascader"
           ref="cascader"
           v-model="cascadeSelected"
@@ -15,8 +15,8 @@
           @expand-change="cascadeExpandChange"
           :show-all-levels="false"
           :append-to-body="false"
-        ></el-cascader>
-        <div v-if="cascadeSelected.length === 0" class="filter-default-value">
+        ></custom-cascader>
+        <div v-if="showFiltersText" class="filter-default-value">
           <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
         </div>
       </span>
@@ -38,14 +38,14 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
-import { Cascader, Option, Select } from "element-ui";
+import { Option, Select } from "element-ui";
+import CustomCascader from "./Cascader";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 Vue.component("svg-icon", SvgIcon);
 
 locale.use(lang);
-Vue.use(Cascader);
 Vue.use(Option);
 Vue.use(Select);
 
@@ -56,6 +56,7 @@ var capitalise = function(txt) {
 export default {
   name: "SearchFilters",
   components: {
+    CustomCascader,
     SvgSpriteColor
   },
   props: {
@@ -79,6 +80,7 @@ export default {
         datasets: false
       },
       showFilters: true,
+      showFiltersText: true,
       cascadeSelected: [],
       numberShown: 10,
       filters: [],
@@ -188,6 +190,15 @@ export default {
         }
       }
     },
+    updateShowFiltersText: function() {
+      this.$nextTick(() => {
+        if (this.$refs.cascader && this.$refs.cascader.presentTags.length > 0) {
+          this.showFiltersText = false;
+        } else {
+          this.showFiltersText = true;
+        }
+      })
+    },
     cascadeEvent: function(event) {
       let filters = [];
       if (event) {
@@ -295,6 +306,7 @@ export default {
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
         this.updateLabels(labelCounts);
+        this.updateShowFiltersText();
       }
     },
     makeCascadeLabelsClickable: function() {
