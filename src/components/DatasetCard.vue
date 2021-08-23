@@ -43,18 +43,15 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import scaffoldMetaMap from './scaffold-meta-map';
-import speciesMap from "./species-map"
+import speciesMap from "./species-map";
 
 locale.use(lang);
 Vue.use(Button);
 Vue.use(Icon);
 
 const capitalise = function(string){
-  return string.replace(/\b\w/g, v => v.toUpperCase())
+  return string.replace(/\b\w/g, v => v.toUpperCase());
 }
-
-const swapped = (obj)=>Object.fromEntries(Object.entries(obj).map(a => a.reverse()))
-const swappedSpeciesMap = swapped(speciesMap)
 
 export default {
   name: "DatasetCard",
@@ -103,8 +100,8 @@ export default {
         text = this.entry.numberSamples + " samples";
       }
       if (this.entry.species) {
-        if (swappedSpeciesMap[this.entry.species[0].toLowerCase()]){
-          text += ` (${swappedSpeciesMap[this.entry.species[0].toLowerCase()]})`
+        if (speciesMap[this.entry.species[0].toLowerCase()]){
+          text += ` (${speciesMap[this.entry.species[0].toLowerCase()]})`
         } else {
           text += ` (${this.entry.species})`
         }

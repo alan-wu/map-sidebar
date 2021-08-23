@@ -43,16 +43,27 @@ import { Option, Select } from "element-ui";
 import CustomCascader from "./Cascader";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
+import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
+
 Vue.component("svg-icon", SvgIcon);
 
 locale.use(lang);
 Vue.use(Option);
 Vue.use(Select);
 
-var capitalise = function(txt) {
+const capitalise = function(txt) {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 };
+
+const convertReadableLabel = function(original) {
+  const name = original.toLowerCase();
+  if (speciesMap[name]){
+    return capitalise(speciesMap[name]);
+  } else {
+    return capitalise(name);
+  }
+}
 
 export default {
   name: "SearchFilters",
@@ -117,7 +128,7 @@ export default {
               this.facets[i].toLowerCase(),
               undefined
             ),
-            label: capitalise(this.facets[i]),
+            label: convertReadableLabel(this.facets[i]),
             children: []
           });
           promiseList.push(
@@ -129,7 +140,7 @@ export default {
                     this.facets[i].toLowerCase(),
                     labels[j].toLowerCase()
                   ),
-                  label: capitalise(labels[j]) // Capitalisation is to match design specs
+                  label: convertReadableLabel(labels[j]) // Capitalisation is to match design specs
                 });
               }
             })
