@@ -15,6 +15,7 @@
           @expand-change="cascadeExpandChange"
           :show-all-levels="false"
           :append-to-body="false"
+          @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
           <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
@@ -190,14 +191,12 @@ export default {
         }
       }
     },
-    updateShowFiltersText: function() {
-      this.$nextTick(() => {
-        if (this.$refs.cascader && this.$refs.cascader.presentTags.length > 0) {
-          this.showFiltersText = false;
-        } else {
-          this.showFiltersText = true;
-        }
-      })
+    tagsChangedCallback: function(presentTags) {
+      if (presentTags.length > 0) {
+        this.showFiltersText = false;
+      } else {
+        this.showFiltersText = true;
+      }
     },
     cascadeEvent: function(event) {
       let filters = [];
@@ -307,6 +306,9 @@ export default {
         this.updatePreviousShowAllChecked(this.cascadeSelected);
         this.updateLabels(labelCounts);
         this.updateShowFiltersText();
+        this.$nextTick(() => {
+          this.updateShowFiltersText();
+        })
       }
     },
     makeCascadeLabelsClickable: function() {
