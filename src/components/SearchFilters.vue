@@ -176,32 +176,6 @@ export default {
     switchTermToRequest: function(term) {
       return term.split(" ")[0].toLowerCase();
     },
-    // updateLabels is used to show user how many are at each nested level.
-    // i.e.: if 3 species are selected it will show 'Species (3)' in the cascader
-    updateLabels: function(counts) {
-      for (let i in counts) {
-        switch (i) {
-          case "species":
-            this.options[0].label = this.options[0].label.split(" ")[0];
-            if (counts[i] > 0) this.options[0].label += ` (${counts[i]})`;
-            break;
-          case "gender":
-            this.options[1].label = this.options[1].label.split(" ")[0];
-            if (counts[i] > 0) this.options[1].label += ` (${counts[i]})`;
-            break;
-          case "organ":
-            this.options[2].label = this.options[2].label.split(" ")[0];
-            if (counts[i] > 0) this.options[2].label += ` (${counts[i]})`;
-            break;
-          case "datasets":
-            this.options[3].label = this.options[3].label.split(" ")[0];
-            if (counts[i] > 0) this.options[3].label += ` (${counts[i]})`;
-            break;
-          default:
-            break;
-        }
-      }
-    },
     tagsChangedCallback: function(presentTags) {
       if (presentTags.length > 0) {
         this.showFiltersText = false;
@@ -302,7 +276,6 @@ export default {
     setCascader: function(filterFacets) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady) {
-        let labelCounts = { species: 0, gender: 0, organ: 0, datasets: 0 };
         this.cascadeSelected = [];
         filterFacets.forEach(e => {
           this.cascadeSelected.push([
@@ -312,10 +285,8 @@ export default {
               e.facet.toLowerCase()
             )
           ]);
-          labelCounts[e.term.toLowerCase()] += 1;
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
-        this.updateLabels(labelCounts);
       }
     },
     makeCascadeLabelsClickable: function() {
