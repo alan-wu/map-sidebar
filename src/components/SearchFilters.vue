@@ -138,8 +138,7 @@ export default {
                 this.options[i].children.push({
                   value: this.createCascaderItemValue(
                     this.facets[i].toLowerCase(),
-                    labels[j].toLowerCase()
-                  ),
+                    labels[j].toLowerCase()),
                   label: convertReadableLabel(labels[j]) // Capitalisation is to match design specs
                 });
               }
@@ -217,7 +216,6 @@ export default {
           if (facetMaps[event[i][0]] === undefined) facetMaps[event[i][0]] = [];
           facetMaps[event[i][0]].push(event[i]);
         }
-
         // go through each facets
         for (const facet in facetMaps) {
           let showAll = undefined;
@@ -244,11 +242,33 @@ export default {
             modifiedEvent.push(...facetMaps[facet]);
           }
         }
-        return modifiedEvent;
+        //Make sure the expanded item are sorted first.
+        return modifiedEvent.sort((a, b) => {
+          if (this.__expandItem__) {
+            if (a[0] == this.__expandItem__) {
+              if (b[0] == this.__expandItem__) {
+                return 0;
+              } else {
+                return -1;
+              }
+            } else if (b[0] == this.__expandItem__) {
+              if (a[0] == this.__expandItem__) {
+                return 0;
+              } else {
+                return 1;
+              }
+            } else {
+              return 0;
+            }
+          } else
+            return 0;
+        });
       }
       return event;
     },
-    cascadeExpandChange: function() {
+    cascadeExpandChange: function(event) {
+      //work around as the expand item may change on modifying the cascade props
+      this.__expandItem__ = event;
       this.makeCascadeLabelsClickable();
     },
     numberShownChanged: function(event) {

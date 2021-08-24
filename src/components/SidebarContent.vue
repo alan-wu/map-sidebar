@@ -331,15 +331,15 @@ export default {
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
       this.openSearch('', [
-        {facet: "show all", term:'organ'},
         {facet: "show all", term:'species'},
         {facet: "show all", term:'gender'},
+        {facet: "show all", term:'organ'},
         {facet: "show all", term:'datasets'}]);
     } else {
       this.openSearch(this.firstSearch,  [
-        {facet: "show all", term:'organ'},
         {facet: "show all", term:'species'},
         {facet: "show all", term:'gender'},
+        {facet: "show all", term:'organ'},
         {facet: "show all", term:'datasets'}]);
     }
   },

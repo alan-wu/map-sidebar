@@ -77,7 +77,10 @@ export default {
       console.log("action fired: ", val)
     },
     openSearch: function(){
-      this.$refs.sideBar.openSearch('heart', [{facet: 'Show all', term:'species'}] )
+      this.$refs.sideBar.openSearch('heart', [{facet: "show all", term:'organ'},
+        {facet: "show all", term:'species'},
+        {facet: "show all", term:'gender'},
+        {facet: "show all", term:'datasets'}] )
     },
     multiFacets: function(){
       this.$refs.sideBar.openSearch('', [{facet: 'Rat', term:'species'}, {facet: 'Heart', term:'organ'}])
