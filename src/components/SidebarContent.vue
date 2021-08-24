@@ -144,8 +144,6 @@ export default {
     // This computed property populates filter data's entry object with $data from this sidebar
     filterEntry: function() {
       return {
-        results: this.results,
-        lastSearch: this.lastSearch,
         numberOfHits: this.numberOfHits,
         filterFacets: this.filterFacets
       };
@@ -259,7 +257,8 @@ export default {
       data.results.forEach(element => {
         // this.results.push(element) below should be once backend is ready
         this.results.push({
-          description: element.name,
+          name: element.name,
+          description: element.description,
           contributors: element.contributors,
           numberSamples: Array.isArray(element.samples)
             ? element.samples.length
@@ -270,11 +269,21 @@ export default {
           organs: (element.organs && element.organs.length > 0)
               ? [...new Set(element.organs.map(v => v.name))]
               : undefined,
+          species: element.organisms 
+            ? element.organisms[0].species
+              ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
+              : undefined
+            : undefined, // This processing only includes each gender once into 'sexes'
           csvFiles: element.csvFiles,
           id: id,
           doi: element.doi,
-          scaffold: element.scaffolds.length > 0 ? true : false,
-          scaffolds: element.scaffolds ? element.scaffolds : false
+          publishDate: element.publishDate,
+          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
+          additionalLinks: element.additionalLinks,
+          simulation: element.additionalLinks
+            ? element.additionalLinks[0].description == 'Repository'
+            : false,
+          s3uri: element.s3uri
         });
         id++;
       });

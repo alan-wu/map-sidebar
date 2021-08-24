@@ -7,18 +7,24 @@
           <img svg-inline class="banner-img" :src="thumbnail" @click="openDataset"/>
         </span>
         <div class="card-right" >
-          <div class="title" @click="cardClicked">{{entry.description}}</div>
-          <div class="details">{{contributors}}</div>
-          <div class="details">{{entry.numberSamples}} sample(s)</div>
+          <div class="title" @click="cardClicked">{{entry.name}}</div>
+          <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
+          <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
           <div>
-            <el-button @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
+            <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
           </div>
           <div>
-            <el-button v-if="entry.scaffold" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
+            <el-button v-if="entry.scaffolds" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
           </div>
           <div>
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
+          </div>
+          <div>
+            <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
+          </div>
+          <div>
+            <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
           </div>
         </div>
 
@@ -37,13 +43,14 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import scaffoldMetaMap from './scaffold-meta-map';
+import speciesMap from "./species-map";
 
 locale.use(lang);
 Vue.use(Button);
 Vue.use(Icon);
 
-var capitalise = function(string){
-  return string.replace(/\b\w/g, v => v.toUpperCase())
+const capitalise = function(string){
+  return string.replace(/\b\w/g, v => v.toUpperCase());
 }
 
 export default {
@@ -74,20 +81,43 @@ export default {
     },
     contributors: function() {
       let text = "";
-      if (this.entry.contributors && this.entry.contributors.length > 0) {
-        text = this.entry.contributors[0].name;
-        if (this.entry.contributors[1])
-          text = text + `; ${this.entry.contributors[1].name}`;
+      if (this.entry.contributors) {
+        if (this.entry.contributors.length === 1) {
+          text = this.lastName(this.entry.contributors[0].name);
+        } else if (this.entry.contributors.length === 2) {
+          text = this.lastName(this.entry.contributors[0].name) + " & " + this.lastName(this.entry.contributors[1].name);
+        } else if (this.entry.contributors.length > 2) {
+          text = this.lastName(this.entry.contributors[0].name) + " et al.";
+        }
+      }
+      return text;
+    },
+    samples: function() {
+      let text = "";
+      if (this.entry.numberSamples === 1) {
+        text = this.entry.numberSamples + " sample";
+      } else if (this.entry.numberSamples > 1) {
+        text = this.entry.numberSamples + " samples";
+      }
+      if (this.entry.species) {
+        if (speciesMap[this.entry.species[0].toLowerCase()]){
+          text += ` (${speciesMap[this.entry.species[0].toLowerCase()]})`
+        } else {
+          text += ` (${this.entry.species})`
+        }
       }
       return text;
     },
     label: function(){
-      return this.entry.organs ? this.entry.organs[0] : this.entry.description
+      return this.entry.organs ? this.entry.organs[0] : this.entry.name
+    },
+    publishYear: function() {
+      return this.entry.publishDate.split('-')[0]
     }
   },
   methods: {
     cardClicked: function(){
-      if(this.entry.scaffold){
+      if(this.entry.scaffolds){
         this.openScaffold()
       }else{
         this.openDataset()
@@ -116,6 +146,52 @@ export default {
     },
     openDataset: function(){
       window.open(this.dataLocation,'_blank');
+    },
+    openRepository: function() {
+      let apiLocation = this.apiLocation;
+      this.entry.additionalLinks.forEach(function(el) {
+        if (el.description == "Repository") {
+          let xmlhttp = new XMLHttpRequest();
+          xmlhttp.open("POST", apiLocation + "/pmr_latest_exposure", true);
+          xmlhttp.setRequestHeader("Content-type", "application/json");
+          xmlhttp.onreadystatechange = () => {
+            if (xmlhttp.readyState === 4) {
+              let url = "";
+              if (xmlhttp.status === 200) {
+                url = JSON.parse(xmlhttp.responseText)["url"];
+              }
+              if (url === "") {
+                url = el.uri;
+              }
+              window.open(url,'_blank');
+            }
+          };
+          xmlhttp.send(JSON.stringify({workspace_url: el.uri}));
+        }
+      });
+    },
+    openSimulation: function() {
+      let isSedmlResource = false;
+      let resource = undefined;
+      this.entry.additionalLinks.forEach(function(el) {
+        if (el.description == "SED-ML file") {
+          isSedmlResource = true;
+          resource = el.uri;
+        } else if (!isSedmlResource && (el.description == "CellML file")) {
+          resource = el.uri;
+        }
+      });
+      let action = {
+          label: undefined,
+          resource: resource,
+          dataset: this.dataLocation,
+          datasetId: this.discoverId,
+          title: "View simulation",
+          name: this.entry.name,
+          description: this.entry.description,
+          type: "Simulation"
+        }
+        EventBus.$emit("PopoverActionClick", action)
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
@@ -155,6 +231,9 @@ export default {
           this.thumbnail = require('@/../assets/missing-image.svg')
           this.discoverId = undefined
         });
+    },
+    lastName: function(fullName){
+      return fullName.split(',')[0]
     },
   },
   mounted: function(){
@@ -258,6 +337,11 @@ export default {
   margin-top: 8px;
 }
 
+.button:hover {
+  background-color: #8300bf;
+  color: white;
+}
+
 .banner-img {
   width: 128px;
   height: 128px;
@@ -276,4 +360,3 @@ export default {
   color: #484848;
 }
 </style>
-

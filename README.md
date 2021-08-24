@@ -1,4 +1,4 @@
-# map-side-bar 
+# map-side-bar
 
 [![npm version](https://badge.fury.io/js/%40abi-software%2Fmap-side-bar.svg)](https://badge.fury.io/js/%40abi-software%2Fmap-side-bar)
 
@@ -33,7 +33,7 @@ import '@abi-software/map-side-bar/dist/map-side-bar.css'
 The code should looks like this
 
 ```html
-<SideBar :apiLocation="apiLocation" 
+<SideBar :apiLocation="apiLocation"
          :visible="sideBarVisibility"
          @actionClick="actionClick">
 </SideBar>
