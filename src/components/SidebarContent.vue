@@ -237,8 +237,11 @@ export default {
       }
       if (f)
         f.forEach(e => {
-          term.push(e.term);
-          facet.push(e.facet);
+          //Do not ask for any "show all" request
+          if (e.facet !== "show all") {
+            term.push(e.term);
+            facet.push(e.facet);
+          }
         });
       params.term = term;
       params.facet = facet;
@@ -327,9 +330,17 @@ export default {
   mounted: function() {
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
-      this.openSearch("", []);
+      this.openSearch('', [
+        {facet: "show all", term:'organ'},
+        {facet: "show all", term:'species'},
+        {facet: "show all", term:'gender'},
+        {facet: "show all", term:'datasets'}]);
     } else {
-      this.openSearch(this.firstSearch, []);
+      this.openSearch(this.firstSearch,  [
+        {facet: "show all", term:'organ'},
+        {facet: "show all", term:'species'},
+        {facet: "show all", term:'gender'},
+        {facet: "show all", term:'datasets'}]);
     }
   },
   created: function() {
