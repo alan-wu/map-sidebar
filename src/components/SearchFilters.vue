@@ -46,6 +46,13 @@ import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 
+import createAlgoliaClient from '../algolia/algolia.js'
+import { facetPropPathMapping, getAlgoliaFacets } from '../algolia/utils.js'
+
+const algoliaClient = createAlgoliaClient()
+// const algoliaPennseiveIndex = algoliaClient.initIndex('PENNSIEVE_DISCOVER');
+const algoliaIndex = algoliaClient.initIndex('k-core_dev_published_time_desc')
+
 Vue.component("svg-icon", SvgIcon);
 
 locale.use(lang);
@@ -120,34 +127,26 @@ export default {
     },
     populateCascader: function() {
       return new Promise(resolve => {
-        this.options = [];
-        let promiseList = [];
-        for (let i in this.facets) {
-          this.options.push({
-            value: this.createCascaderItemValue(
-              this.facets[i].toLowerCase(),
-              undefined
-            ),
-            label: convertReadableLabel(this.facets[i]),
-            children: []
-          });
-          promiseList.push(
-            this.getFacet(this.facets[i]).then(labels => {
-              // Populate children of each facet with scicrunch's facets
-              for (let j in labels) {
-                this.options[i].children.push({
-                  value: this.createCascaderItemValue(
-                    this.facets[i].toLowerCase(),
-                    labels[j].toLowerCase()),
-                  label: convertReadableLabel(labels[j]) // Capitalisation is to match design specs
-                });
-              }
+        // Algolia facet serach
+            // algolia test
+        window.facetPropPathMapping = facetPropPathMapping
+        getAlgoliaFacets(algoliaIndex, facetPropPathMapping).then(data => {
+          this.facets = data
+          window.algoliafacets = data
+          this.options = data
+          this.options.forEach((facet, i)=>{
+            this.options[i].label = convertReadableLabel(facet.label)
+            this.options[i].value = this.createCascaderItemValue(facet.label, undefined)
+            this.options[i].children.unshift({value: this.createCascaderItemValue('Show all'), label: 'Show all'})
+            window.opts = this.options
+            this.options[i].children.forEach((facetItem, j) =>{
+              this.options[i].children[j].label = convertReadableLabel(facetItem.label)
+              this.options[i].children[j].value = this.createCascaderItemValue(facet.label, facetItem.label)
             })
-          );
-        }
-        Promise.allSettled(promiseList).then(() => {
-          resolve();
-        });
+          })
+        }).finally(() => {
+          resolve()
+        })
       });
     },
     getFacet: function(facetLabel) {
