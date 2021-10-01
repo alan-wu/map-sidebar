@@ -136,7 +136,7 @@ export default {
           this.options = data
           this.options.forEach((facet, i)=>{
             this.options[i].label = convertReadableLabel(facet.label)
-            this.options[i].value = this.createCascaderItemValue(facet.label, undefined)
+            this.options[i].value = this.createCascaderItemValue(facet.key, undefined)
             this.options[i].children.unshift({value: this.createCascaderItemValue('Show all'), label: 'Show all'})
             window.opts = this.options
             this.options[i].children.forEach((facetItem, j) =>{
@@ -186,20 +186,56 @@ export default {
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
+        window.evv = event
+        let selectedFacets = []
         for (let i in event) {
           if (event[i] !== undefined) {
             let value = event[i][1];
-            let data = value.split("/");
-            let output = {};
-            output.term = this.switchTermToRequest(data[0]);
-            output.facet = data[1];
-            filters.push(output);
+            let path = event[i][0]
+            let labels = value.split("/");
+            selectedFacets.push({facetPropPath: path, label: labels[1]})
+            // let output = {};
+            // output.term = this.switchTermToRequest(data[0]);
+            // output.facet = data[1];
+            // filters.push(output);
           }
         }
+        console.log(this.getFilters(selectedFacets))
       }
+      
       this.$emit("filterResults", filters);
       this.setCascader(filters); //update our cascader v-model if we modified the event
       this.makeCascadeLabelsClickable();
+    },
+      /* Returns filter for searching algolia. All facets of the same category are joined with OR,
+     * and each of those results is then joined with an AND.
+     * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
+    getFilters(selectedFacetArray) {
+      if (selectedFacetArray === undefined) {
+        return undefined
+      }
+      window.sfarray = selectedFacetArray
+      var filters = 'NOT item.published.status:embargo'
+    
+      filters = `(${filters}) AND `
+      const facetPropPaths = Object.keys(facetPropPathMapping)
+      window.propPathsStart = facetPropPaths
+      facetPropPaths.map(facetPropPath => {
+        const facetsToOr = selectedFacetArray.filter(
+          facet => facet.facetPropPath == facetPropPath
+        )
+        var filter = ''
+        facetsToOr.map(facet => {
+          filter += `"${facetPropPath}":"${facet.label}" OR `
+        })
+        if (filter == '') {
+          return
+        }
+        filter = `(${filter.substring(0, filter.lastIndexOf(' OR '))})`
+        filters += `${filter} AND `
+      })
+      window.soutput = filters.substring(0, filters.lastIndexOf(' AND '))
+      return filters.substring(0, filters.lastIndexOf(' AND '))
     },
     showAllEventModifier: function(event) {
       // check if show all is in the cascader checked option list
