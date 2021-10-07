@@ -4,6 +4,7 @@
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
     <el-button @click="openSearch">search 'heart' from refs</el-button>
+    <el-button @click="singleFacets">single facets</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility"
@@ -81,6 +82,9 @@ export default {
         {facet: "show all", term:'species'},
         {facet: "show all", term:'gender'},
         {facet: "show all", term:'datasets'}] )
+    },
+    singleFacets: function(){
+      this.$refs.sideBar.openSearch('', [{facet: 'Heart', term:'organ'}])
     },
     multiFacets: function(){
       this.$refs.sideBar.openSearch('', [{facet: 'Rat', term:'species'}, {facet: 'Heart', term:'organ'}])
