@@ -91,7 +91,6 @@ var initial_state = {
   results: [],
   numberOfHits: 0,
   filter: [],
-  filterFacets: undefined,
   loadingCards: false,
   numberPerPage: 10,
   page: 1,
@@ -145,7 +144,7 @@ export default {
     filterEntry: function() {
       return {
         numberOfHits: this.numberOfHits,
-        filterFacets: this.filterFacets
+        filterFacets: this.filter
       };
     }
   },
@@ -156,8 +155,8 @@ export default {
       this.resetPageNavigation();
       this.searchSciCrunch(search, filter, endpoint, params);
       if (filter) {
-        this.filterFacets = [...filter];
-        this.$refs.filtersRef.setCascader(this.filterFacets);
+        this.filter = [...filter];
+        this.$refs.filtersRef.setCascader(this.filter);
       }
     },
     clearSearchClicked: function() {
