@@ -1,7 +1,8 @@
 <template>
   <div class="dataset-card-container"  ref="container">
     <div v-bind:class=" expanded ? 'dataset-card-expanded' : 'dataset-card'"  ref="card">
-      <div v-if="entry.id !== 0" class="seperator-path"></div>
+      <!-- The seperator-path css is set on SidebarContent.vue -->
+      <div class="seperator-path"></div>
       <div class="card" >
         <span class="card-left">
           <img svg-inline class="banner-img" :src="thumbnail" @click="openDataset"/>
@@ -25,6 +26,12 @@
           </div>
           <div>
             <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
+          </div>
+          <div>
+            <el-button v-if="entry.segmentation"  @click="openSegmentation" size="mini" class="button" icon="el-icon-view">View segmentation</el-button>
+          </div>
+          <div>
+            <el-button v-if="biolucidaData"  @click="openImage" size="mini" class="button" icon="el-icon-view">View image</el-button>
           </div>
         </div>
 
@@ -72,7 +79,8 @@ export default {
       dataLocation: this.entry.doi,
       discoverId: undefined,
       cardOverflow: false,
-      expanded: false
+      expanded: false,
+      biolucidaData: undefined
     };
   },
   computed: {
@@ -193,6 +201,53 @@ export default {
         }
         EventBus.$emit("PopoverActionClick", action)
     },
+    openSegmentation: function() {
+      if (this.entry.segmentation && this.entry.segmentation[0]) {
+        const segmentation = this.entry.segmentation[0];
+        const filePath = segmentation.dataset.path;
+        const datasetId = this.discoverId;
+        const datasetVersion = this.version;
+        const prefix = 'https://sparc.biolucida.net:8081';
+        const resource = {
+          share_link: `${prefix}/dataviewer?datasetId=${datasetId}&version=${datasetVersion}&path=${filePath}`
+        };
+        let action = {
+          label: capitalise(this.label),
+          resource: resource,
+          dataset: this.dataLocation,
+          datasetId: this.discoverId,
+          title: "View segmentation",
+          name: this.entry.name,
+          description: this.entry.description,
+          type: "Segmentation"
+        };
+        EventBus.$emit("PopoverActionClick", action);
+      }
+    },
+    openImage: function() {
+      if (this.biolucidaData) {
+        const biolucidaData = this.biolucidaData;
+        if ('dataset_images' in biolucidaData) {
+          const image = biolucidaData['dataset_images'][0];
+          const resource = {
+            share_link: image.share_link,
+            id: image.image_id,
+            itemId: image.sourcepkg_id
+          }
+          let action = {
+            label: capitalise(this.label),
+            resource: resource,
+            dataset: this.dataLocation,
+            datasetId: this.discoverId,
+            title: "View image",
+            name: this.entry.name,
+            description: this.entry.description,
+            type: "Biolucida"
+          };
+          EventBus.$emit("PopoverActionClick", action);
+        }
+      }
+    },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
       let path = `${this.apiLocation}s3-resource/${id}/${version}/files/${scaffoldPath}`
@@ -225,6 +280,7 @@ export default {
           this.discoverId = data.id
           this.version = data.version
           this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
+          this.getBiolucidaInfo(this.discoverId)
         })
         .catch(() => {
           //set defaults if we hit an error
@@ -235,6 +291,16 @@ export default {
     lastName: function(fullName){
       return fullName.split(',')[0]
     },
+    getBiolucidaInfo: function(id) {
+      let endpoint = this.apiLocation + "image_search/" + id;
+      // Add parameters if we are sent them
+      fetch(endpoint)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status == "success")
+            this.biolucidaData = data;
+        });
+    }
   },
   mounted: function(){
     this.getBanner()
@@ -259,12 +325,7 @@ export default {
   padding-left: 16px;
   position: relative;
 }
-.seperator-path {
-  width: 486px;
-  height: 0px;
-  border: solid 1px #e4e7ed;
-  background-color: #e4e7ed;
-}
+
 .title {
   padding-bottom: 5px;
   font-family: Asap;

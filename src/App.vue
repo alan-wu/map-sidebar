@@ -3,7 +3,7 @@
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
-    <el-button @click="openSearch">search 'heart' from refs</el-button>
+    <el-button @click="openSearch">search 'islet' from refs</el-button>
     <el-button @click="singleFacets">single facets</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
@@ -78,7 +78,7 @@ export default {
       console.log("action fired: ", val)
     },
     openSearch: function(){
-      this.$refs.sideBar.openSearch('heart', [{facet: "show all", term:'organ'},
+      this.$refs.sideBar.openSearch('islet', [{facet: "show all", term:'organ'},
         {facet: "show all", term:'species'},
         {facet: "show all", term:'gender'},
         {facet: "show all", term:'datasets'}] )

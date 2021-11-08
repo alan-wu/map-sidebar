@@ -251,14 +251,13 @@ export default {
     resultsProcessing: function(data) {
       this.lastSearch = this.searchInput;
       this.results = [];
-      let id = 0;
       this.numberOfHits = data.numberOfHits;
       if (data.results.length === 0) {
         return;
       }
       data.results.forEach(element => {
         // this.results.push(element) below should be once backend is ready
-        this.results.push({
+        let datasetInfo = {
           name: element.name,
           description: element.description,
           contributors: element.contributors,
@@ -267,7 +266,9 @@ export default {
             : 1,
           updated: element.updated[0].timestamp.split("T")[0],
           url: element.uri[0],
-          datasetId: element.identifier,
+          datasetId: element.dataset_identifier,
+          datasetRevision: element.dataset_revision,
+          datasetVersion: element.dataset_version,
           organs: (element.organs && element.organs.length > 0)
               ? [...new Set(element.organs.map(v => v.name))]
               : undefined,
@@ -277,17 +278,17 @@ export default {
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
           csvFiles: element.csvFiles,
-          id: id,
           doi: element.doi,
           publishDate: element.publishDate,
           scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
           additionalLinks: element.additionalLinks,
+          segmentation: element['mbf-segmentation'],
           simulation: element.additionalLinks
             ? element.additionalLinks[0].description == 'Repository'
             : false,
           s3uri: element.s3uri
-        });
-        id++;
+        };
+        this.results.push(datasetInfo);
       });
     },
     createfilterParams: function(params) {
@@ -324,7 +325,7 @@ export default {
           .then(data => resolve(data))
           .catch(data => reject(data));
       });
-    }
+    },
   },
   mounted: function() {
     // temporarily disable flatmap search since there are no datasets
@@ -423,6 +424,17 @@ export default {
   background-color: #ffffff;
   overflow-y: scroll;
   scrollbar-width: thin;
+}
+
+.content >>> .step-item:first-child .seperator-path{
+   display: none;
+}
+
+.content >>> .step-item:not(:first-child) .seperator-path{
+  width: 486px;
+  height: 0px;
+  border: solid 1px #e4e7ed;
+  background-color: #e4e7ed;
 }
 
 .scrollbar::-webkit-scrollbar-track {
