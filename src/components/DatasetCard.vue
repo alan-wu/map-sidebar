@@ -94,18 +94,28 @@ export default {
     },
     samples: function() {
       let text = "";
-      if (this.entry.numberSamples === 1) {
-        text = this.entry.numberSamples + " sample";
-      } else if (this.entry.numberSamples > 1) {
-        text = this.entry.numberSamples + " samples";
-      }
       if (this.entry.species) {
         if (speciesMap[this.entry.species[0].toLowerCase()]){
-          text += ` (${speciesMap[this.entry.species[0].toLowerCase()]})`
+          text = `${speciesMap[this.entry.species[0].toLowerCase()]}`;
         } else {
-          text += ` (${this.entry.species})`
+          text = `${this.entry.species}`;
         }
       }
+      if (this.entry.numberSamples > 0) {
+        text += " (";
+        if (this.entry.numberSamples === 1) {
+          text += `${this.entry.numberSamples} sample`;
+        } else if (this.entry.numberSamples > 1) {
+          text += `${this.entry.numberSamples} samples`;
+        }
+        if (this.entry.numberSubjects === 1) {
+          text += ` from ${this.entry.numberSubjects} subject`;
+        } else if (this.entry.numberSamples > 1) {
+          text += ` from ${this.entry.numberSubjects} subjects`;
+        }
+        text += ")";
+      }
+
       return text;
     },
     label: function(){
