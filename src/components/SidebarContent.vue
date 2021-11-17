@@ -262,9 +262,12 @@ export default {
           name: element.name,
           description: element.description,
           contributors: element.contributors,
-          numberSamples: Array.isArray(element.samples)
-            ? element.samples.length
-            : 1,
+          numberSamples: element.sampleSize
+            ? parseInt(element.sampleSize)
+            : 0,
+          numberSubjects: element.subjectSize
+            ? parseInt(element.subjectSize)
+            : 0,
           updated: element.updated[0].timestamp.split("T")[0],
           url: element.uri[0],
           datasetId: element.identifier,
