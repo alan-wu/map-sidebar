@@ -128,7 +128,6 @@ export default {
     populateCascader: function() {
       return new Promise(resolve => {
         // Algolia facet serach
-            // algolia test
         window.facetPropPathMapping = facetPropPathMapping
         getAlgoliaFacets(algoliaIndex, facetPropPathMapping).then(data => {
           this.facets = data
@@ -149,7 +148,7 @@ export default {
         })
       });
     },
-    getFacet: function(facetLabel) {
+    getFacet: function(facetLabel) { // UNUSED as of 2021/12/1
       if (facetLabel === "Datasets") {
         // The datasets facet doesn't exist on SciCrunch yet, so manually set it
         // for now.
@@ -186,7 +185,6 @@ export default {
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
-        window.evv = event
         let selectedFacets = []
         for (let i in event) {
           if (event[i] !== undefined) {
@@ -194,13 +192,14 @@ export default {
             let path = event[i][0]
             let labels = value.split("/");
             selectedFacets.push({facetPropPath: path, label: labels[1]})
-            // let output = {};
-            // output.term = this.switchTermToRequest(data[0]);
-            // output.facet = data[1];
-            // filters.push(output);
+            let output = {};
+            output.term = labels[0];
+            output.facet = labels[1];
+            output.facetPropPath = path;
+            filters.push(output);
           }
         }
-        console.log(this.getFilters(selectedFacets))
+        //console.log(this.getFilters(selectedFacets)) use this for algolia terms
       }
       
       this.$emit("filterResults", filters);
@@ -334,10 +333,10 @@ export default {
         this.cascadeSelected = [];
         filterFacets.forEach(e => {
           this.cascadeSelected.push([
-            e.term.toLowerCase(),
+            e.facetPropPath,
             this.createCascaderItemValue(
-              e.term.toLowerCase(),
-              e.facet.toLowerCase()
+              capitalise(e.term),
+              e.facet
             )
           ]);
         });
