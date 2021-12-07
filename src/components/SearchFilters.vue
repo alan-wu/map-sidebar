@@ -219,7 +219,10 @@ export default {
           }
         }
         console.log(this.getFilters(selectedFacets)) // use this for algolia terms
-        this.algoliaTest(this.getFilters(selectedFacets))
+        this.algoliaSearch(this.getFilters(selectedFacets)).then(datasetDois => {
+          console.log(datasetDois)
+          this.$emit('datasetsSelected', datasetDois)
+        })
       }
 
       this.$emit("filterResults", filters);
@@ -260,33 +263,37 @@ export default {
      * Get Search results
      * This is using fetch from the Algolia API
      */
-    algoliaTest: function(filter) {
-      algoliaIndex
-      .search('', {facets:['*'],filters:filter})
-      .then(response => {
-        let searchData = {
-          items: response.hits,
-          total: response.nbHits
-        }
-        console.log(searchData)
-        window.searchData = searchData
-        let discoverIds = []
-        searchData.items.forEach(result=>{
-          discoverIds.push(result.pennsieve.identifier)
+    algoliaSearch: function(filter) {
+      return new Promise(resolve => {
+        algoliaIndex
+        .search('', {facets:['*'],filters:filter})
+        .then(response => {
+          let searchData = {
+            items: response.hits,
+            total: response.nbHits
+          }
+          console.log(searchData)
+          window.searchData = searchData
+          let discoverIds = []
+          searchData.items.forEach(result=>{
+            discoverIds.push(result.pennsieve.identifier)
+          })
+          resolve(this.expandDois(discoverIds).then(datasets=>datasets))
         })
-        this.expandDois(discoverIds)
       })
     },
     // Get all dois given a list of discoverIds
     expandDois: function (discoverIds) {
-      let promiseList = []
-      discoverIds.forEach(discoverId => {
-        promiseList.push(this.discoverAllDois(discoverId))
+      return new Promise(resolve => {
+        let promiseList = []
+        discoverIds.forEach(discoverId => {
+          promiseList.push(this.discoverAllDois(discoverId))
+        })
+        Promise.all(promiseList).then((values) => {
+          console.log(values.flat());
+          resolve(values.flat())
+        });
       })
-      Promise.all(promiseList).then((values) => {
-        console.log(values.flat());
-        window.allIds = values.flat()
-      });
     },
     // Returns all DOIs of all versions for a given discover dataset
     discoverAllDois: function (discoverId) {
@@ -300,60 +307,6 @@ export default {
         })
       })
     },
-    // fetchFromAlgolia: function(query) {
-    //   this.isLoadingSearch = true
-
-    //   const searchType = pathOr('', ['query', 'type'], this.$route)
-    //   const datasetsFilter =
-    //     searchType === 'dataset' ? "item.types.name:Dataset" : '(NOT item.types.name:Dataset)'
-
-    //   /* First we need to find only those facets that are relevant to the search query.
-    //    * If we attempt to do this in the same search as below than the response facets
-    //    * will only contain those specified by the filter */
-    //     this.latestSearchTerm = query     
-    //     algoliaIndex
-    //       .search(query, {
-    //         facets: ['*'],
-    //         filters: `${datasetsFilter}`
-    //       })
-    //       .then(response => {
-    //         this.visibleFacets = response.facets
-    //       }).finally(() => {
-    //         var filters =  this.$refs.datasetFacetMenu?.getFilters()
-    //         filters = filters === undefined ? 
-    //           `${datasetsFilter}` : 
-    //           filters + ` AND ${datasetsFilter}`
-
-    //         algoliaIndex
-    //           .search(query, {
-    //             facets: ['*'],
-    //             hitsPerPage: this.searchData.limit,
-    //             page: this.curSearchPage - 1,
-    //             filters: filters
-    //           })
-    //           .then(response => {
-    //             const searchData = {
-    //               items: response.hits,
-    //               total: response.nbHits
-    //             }
-    //             this.searchData = mergeLeft(searchData, this.searchData)
-    //             this.isLoadingSearch = false
-    //             // update facet result numbers
-    //             for (const [key, value] of Object.entries(this.visibleFacets)) {
-    //               if ( (this.$refs.datasetFacetMenu?.getLatestUpdateKey() === key && !this.$refs.datasetFacetMenu?.hasKeys()) || (this.$refs.datasetFacetMenu?.getLatestUpdateKey() !== key) ){
-    //                 for (const [key2, value2] of Object.entries(value)) {
-    //                   let maybeFacetCount = pathOr(null, [key, key2], response.facets)
-    //                   if (maybeFacetCount) {
-    //                     this.visibleFacets[key][key2] = response.facets[key][key2]
-    //                   } else {
-    //                     this.visibleFacets[key][key2] = 0
-    //                   }
-    //                 }
-    //               }
-    //             }
-    //           })
-    //       })
-    // },
     showAllEventModifier: function (event) {
       // check if show all is in the cascader checked option list
       let hasShowAll = event

@@ -179,9 +179,15 @@ export default {
       }
     },
     filterUpdate: function(filter) {
-      this.resetPageNavigation();
-      this.searchSciCrunch(this.searchInput, filter);
       this.filter = [...filter];
+      this.$emit("search-changed", {
+        value: this.filter,
+        type: "filter-update"
+      });
+    },
+    resultsDisplayUpdate: function(datasets) {
+      this.resetPageNavigation();
+      this.searchSciCrunch(datasets,undefined,'dataset_info/using_multile_dois/',datasets);
       this.$emit("search-changed", {
         value: this.filter,
         type: "filter-update"
