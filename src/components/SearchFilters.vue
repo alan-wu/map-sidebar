@@ -264,11 +264,40 @@ export default {
       algoliaIndex
       .search('', {facets:['*'],filters:filter})
       .then(response => {
-        window.searchData = {
+        let searchData = {
           items: response.hits,
           total: response.nbHits
         }
-        console.log(window.searchData)
+        console.log(searchData)
+        window.searchData = searchData
+        let discoverIds = []
+        searchData.items.forEach(result=>{
+          discoverIds.push(result.pennsieve.identifier)
+        })
+        this.expandDois(discoverIds)
+      })
+    },
+    // Get all dois given a list of discoverIds
+    expandDois: function (discoverIds) {
+      let promiseList = []
+      discoverIds.forEach(discoverId => {
+        promiseList.push(this.discoverAllDois(discoverId))
+      })
+      Promise.all(promiseList).then((values) => {
+        console.log(values.flat());
+        window.allIds = values.flat()
+      });
+    },
+    // Returns all DOIs of all versions for a given discover dataset
+    discoverAllDois: function (discoverId) {
+      return new Promise(resolve => {
+        fetch(`https://api.pennsieve.io/discover/datasets/${discoverId}/versions`).then(r=>r.json()).then(dataset => {
+          let dois = []
+          dataset.forEach(version => {
+            dois.push(version.doi)
+          })
+          resolve(dois)
+        })
       })
     },
     // fetchFromAlgolia: function(query) {
