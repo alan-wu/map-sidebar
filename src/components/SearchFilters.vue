@@ -18,7 +18,8 @@
           @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
-          <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
+          <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply
+          Filters
         </div>
       </span>
     </transition>
@@ -29,9 +30,14 @@
       placeholder="10"
       @change="numberShownChanged($event)"
     >
-      <el-option v-for="item in numberDatasetsShown" :key="item" :label="item" :value="item"></el-option>
+      <el-option
+        v-for="item in numberDatasetsShown"
+        :key="item"
+        :label="item"
+        :value="item"
+      ></el-option>
     </el-select>
-    <span class="dataset-results-feedback">{{this.numberOfResultsText}}</span>
+    <span class="dataset-results-feedback">{{ this.numberOfResultsText }}</span>
   </div>
 </template>
 
@@ -46,12 +52,13 @@ import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 
-import createAlgoliaClient from '../algolia/algolia.js'
-import { facetPropPathMapping, getAlgoliaFacets } from '../algolia/utils.js'
+import createAlgoliaClient from "../algolia/algolia.js";
+import { facetPropPathMapping, getAlgoliaFacets } from "../algolia/utils.js";
 
-const algoliaClient = createAlgoliaClient()
+const algoliaClient = createAlgoliaClient();
 // const algoliaPennseiveIndex = algoliaClient.initIndex('PENNSIEVE_DISCOVER');
-const algoliaIndex = algoliaClient.initIndex('k-core_dev_published_time_desc')
+const algoliaIndex = algoliaClient.initIndex("k-core_dev_published_time_desc");
+window.algoliaIndex = algoliaIndex
 
 Vue.component("svg-icon", SvgIcon);
 
@@ -59,24 +66,24 @@ locale.use(lang);
 Vue.use(Option);
 Vue.use(Select);
 
-const capitalise = function(txt) {
+const capitalise = function (txt) {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 };
 
-const convertReadableLabel = function(original) {
+const convertReadableLabel = function (original) {
   const name = original.toLowerCase();
-  if (speciesMap[name]){
+  if (speciesMap[name]) {
     return capitalise(speciesMap[name]);
   } else {
     return capitalise(name);
   }
-}
+};
 
 export default {
   name: "SearchFilters",
   components: {
     CustomCascader,
-    SvgSpriteColor
+    SvgSpriteColor,
   },
   props: {
     /**
@@ -86,17 +93,17 @@ export default {
     entry: Object,
     apiLocation: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
-  data: function() {
+  data: function () {
     return {
       cascaderIsReady: false,
       previousShowAllChecked: {
         species: false,
         gender: false,
         organ: false,
-        datasets: false
+        datasets: false,
       },
       showFilters: true,
       showFiltersText: true,
@@ -110,58 +117,70 @@ export default {
         {
           value: "Species",
           label: "Species",
-          children: [{}]
-        }
-      ]
+          children: [{}],
+        },
+      ],
     };
   },
   computed: {
-    numberOfResultsText: function() {
+    numberOfResultsText: function () {
       return `${this.entry.numberOfHits} results | Showing`;
-    }
+    },
   },
   methods: {
-    createCascaderItemValue: function(term, facet) {
+    createCascaderItemValue: function (term, facet) {
       if (facet) return term + "/" + facet;
       else return term;
     },
-    populateCascader: function() {
-      return new Promise(resolve => {
+    populateCascader: function () {
+      return new Promise((resolve) => {
         // Algolia facet serach
-        window.facetPropPathMapping = facetPropPathMapping
-        getAlgoliaFacets(algoliaIndex, facetPropPathMapping).then(data => {
-          this.facets = data
-          window.algoliafacets = data
-          this.options = data
-          this.options.forEach((facet, i)=>{
-            this.options[i].label = convertReadableLabel(facet.label)
-            this.options[i].value = this.createCascaderItemValue(facet.key, undefined)
-            this.options[i].children.unshift({value: this.createCascaderItemValue('Show all'), label: 'Show all'})
-            window.opts = this.options
-            this.options[i].children.forEach((facetItem, j) =>{
-              this.options[i].children[j].label = convertReadableLabel(facetItem.label)
-              this.options[i].children[j].value = this.createCascaderItemValue(facet.label, facetItem.label)
-            })
+        window.facetPropPathMapping = facetPropPathMapping;
+        getAlgoliaFacets(algoliaIndex, facetPropPathMapping)
+          .then((data) => {
+            this.facets = data;
+            window.algoliafacets = data;
+            this.options = data;
+            this.options.forEach((facet, i) => {
+              this.options[i].label = convertReadableLabel(facet.label);
+              this.options[i].value = this.createCascaderItemValue(
+                facet.key,
+                undefined
+              );
+              this.options[i].children.unshift({
+                value: this.createCascaderItemValue("Show all"),
+                label: "Show all",
+              });
+              window.opts = this.options;
+              this.options[i].children.forEach((facetItem, j) => {
+                this.options[i].children[j].label = convertReadableLabel(
+                  facetItem.label
+                );
+                this.options[i].children[j].value =
+                  this.createCascaderItemValue(facet.label, facetItem.label);
+              });
+            });
           })
-        }).finally(() => {
-          resolve()
-        })
+          .finally(() => {
+            resolve();
+          });
       });
     },
-    getFacet: function(facetLabel) { // UNUSED as of 2021/12/1
+    getFacet: function (facetLabel) {
+      // UNUSED as of 2021/12/1
       if (facetLabel === "Datasets") {
         // The datasets facet doesn't exist on SciCrunch yet, so manually set it
         // for now.
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           resolve([...new Set(["Show all", "Scaffolds", "Simulations"])]);
         });
       }
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         let facets = ["Show all"]; // Set 'Show all' as our first label
         let facet = facetLabel.toLowerCase();
         this.callSciCrunch(this.apiLocation, this.facetEndpoint, facet).then(
-          facet_terms => {
-            facet_terms.forEach(element => {
+          (facet_terms) => {
+            facet_terms.forEach((element) => {
               facets.push(element["key"]); // add facets that scicrunch includes
             });
             resolve([...new Set(facets)]); // return no duplicates
@@ -170,28 +189,28 @@ export default {
       });
     },
     // switchTermToRequest is used to remove the count for sending a request to scicrunch
-    switchTermToRequest: function(term) {
+    switchTermToRequest: function (term) {
       return term.split(" ")[0].toLowerCase();
     },
-    tagsChangedCallback: function(presentTags) {
+    tagsChangedCallback: function (presentTags) {
       if (presentTags.length > 0) {
         this.showFiltersText = false;
       } else {
         this.showFiltersText = true;
       }
     },
-    cascadeEvent: function(event) {
+    cascadeEvent: function (event) {
       let filters = [];
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
-        let selectedFacets = []
+        let selectedFacets = [];
         for (let i in event) {
           if (event[i] !== undefined) {
             let value = event[i][1];
-            let path = event[i][0]
+            let path = event[i][0];
             let labels = value.split("/");
-            selectedFacets.push({facetPropPath: path, label: labels[1]})
+            selectedFacets.push({ facetPropPath: path, label: labels[1] });
             let output = {};
             output.term = labels[0];
             output.facet = labels[1];
@@ -199,47 +218,117 @@ export default {
             filters.push(output);
           }
         }
-        //console.log(this.getFilters(selectedFacets)) use this for algolia terms
+        console.log(this.getFilters(selectedFacets)) // use this for algolia terms
+        this.algoliaTest(this.getFilters(selectedFacets))
       }
-      
+
       this.$emit("filterResults", filters);
       this.setCascader(filters); //update our cascader v-model if we modified the event
       this.makeCascadeLabelsClickable();
     },
-      /* Returns filter for searching algolia. All facets of the same category are joined with OR,
+    /* Returns filter for searching algolia. All facets of the same category are joined with OR,
      * and each of those results is then joined with an AND.
      * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
     getFilters(selectedFacetArray) {
       if (selectedFacetArray === undefined) {
-        return undefined
+        return undefined;
       }
-      window.sfarray = selectedFacetArray
-      var filters = 'NOT item.published.status:embargo'
-    
-      filters = `(${filters}) AND `
-      const facetPropPaths = Object.keys(facetPropPathMapping)
-      window.propPathsStart = facetPropPaths
-      facetPropPaths.map(facetPropPath => {
+      window.sfarray = selectedFacetArray;
+      var filters = "NOT item.published.status:embargo";
+
+      filters = `(${filters}) AND `;
+      const facetPropPaths = Object.keys(facetPropPathMapping);
+      window.propPathsStart = facetPropPaths;
+      facetPropPaths.map((facetPropPath) => {
         const facetsToOr = selectedFacetArray.filter(
-          facet => facet.facetPropPath == facetPropPath
-        )
-        var filter = ''
-        facetsToOr.map(facet => {
-          filter += `"${facetPropPath}":"${facet.label}" OR `
-        })
-        if (filter == '') {
-          return
+          (facet) => facet.facetPropPath == facetPropPath
+        );
+        var filter = "";
+        facetsToOr.map((facet) => {
+          filter += `"${facetPropPath}":"${facet.label}" OR `;
+        });
+        if (filter == "") {
+          return;
         }
-        filter = `(${filter.substring(0, filter.lastIndexOf(' OR '))})`
-        filters += `${filter} AND `
-      })
-      window.soutput = filters.substring(0, filters.lastIndexOf(' AND '))
-      return filters.substring(0, filters.lastIndexOf(' AND '))
+        filter = `(${filter.substring(0, filter.lastIndexOf(" OR "))})`;
+        filters += `${filter} AND `;
+      });
+      window.soutput = filters.substring(0, filters.lastIndexOf(" AND "));
+      return filters.substring(0, filters.lastIndexOf(" AND "));
     },
-    showAllEventModifier: function(event) {
+     /**
+     * Get Search results
+     * This is using fetch from the Algolia API
+     */
+    algoliaTest: function(filter) {
+      algoliaIndex
+      .search('', {facets:['*'],filters:filter})
+      .then(response => {
+        window.searchData = {
+          items: response.hits,
+          total: response.nbHits
+        }
+        console.log(window.searchData)
+      })
+    },
+    // fetchFromAlgolia: function(query) {
+    //   this.isLoadingSearch = true
+
+    //   const searchType = pathOr('', ['query', 'type'], this.$route)
+    //   const datasetsFilter =
+    //     searchType === 'dataset' ? "item.types.name:Dataset" : '(NOT item.types.name:Dataset)'
+
+    //   /* First we need to find only those facets that are relevant to the search query.
+    //    * If we attempt to do this in the same search as below than the response facets
+    //    * will only contain those specified by the filter */
+    //     this.latestSearchTerm = query     
+    //     algoliaIndex
+    //       .search(query, {
+    //         facets: ['*'],
+    //         filters: `${datasetsFilter}`
+    //       })
+    //       .then(response => {
+    //         this.visibleFacets = response.facets
+    //       }).finally(() => {
+    //         var filters =  this.$refs.datasetFacetMenu?.getFilters()
+    //         filters = filters === undefined ? 
+    //           `${datasetsFilter}` : 
+    //           filters + ` AND ${datasetsFilter}`
+
+    //         algoliaIndex
+    //           .search(query, {
+    //             facets: ['*'],
+    //             hitsPerPage: this.searchData.limit,
+    //             page: this.curSearchPage - 1,
+    //             filters: filters
+    //           })
+    //           .then(response => {
+    //             const searchData = {
+    //               items: response.hits,
+    //               total: response.nbHits
+    //             }
+    //             this.searchData = mergeLeft(searchData, this.searchData)
+    //             this.isLoadingSearch = false
+    //             // update facet result numbers
+    //             for (const [key, value] of Object.entries(this.visibleFacets)) {
+    //               if ( (this.$refs.datasetFacetMenu?.getLatestUpdateKey() === key && !this.$refs.datasetFacetMenu?.hasKeys()) || (this.$refs.datasetFacetMenu?.getLatestUpdateKey() !== key) ){
+    //                 for (const [key2, value2] of Object.entries(value)) {
+    //                   let maybeFacetCount = pathOr(null, [key, key2], response.facets)
+    //                   if (maybeFacetCount) {
+    //                     this.visibleFacets[key][key2] = response.facets[key][key2]
+    //                   } else {
+    //                     this.visibleFacets[key][key2] = 0
+    //                   }
+    //                 }
+    //               }
+    //             }
+    //           })
+    //       })
+    // },
+    showAllEventModifier: function (event) {
       // check if show all is in the cascader checked option list
       let hasShowAll = event
-        .map(ev => (ev ? ev[1].toLowerCase().includes("show all") : false))
+        .map((ev) => (ev ? ev[1].toLowerCase().includes("show all") : false))
         .includes(true);
       // remove all selected options below the show all if checked
       if (hasShowAll) {
@@ -294,63 +383,59 @@ export default {
             } else {
               return 0;
             }
-          } else
-            return 0;
+          } else return 0;
         });
       }
       return event;
     },
-    cascadeExpandChange: function(event) {
+    cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
       this.__expandItem__ = event;
       this.makeCascadeLabelsClickable();
     },
-    numberShownChanged: function(event) {
+    numberShownChanged: function (event) {
       this.$emit("numberPerPage", parseInt(event));
     },
-    callSciCrunch: function(apiLocation, endpoint, term) {
-      return new Promise(resolve => {
+    callSciCrunch: function (apiLocation, endpoint, term) {
+      return new Promise((resolve) => {
         fetch(apiLocation + endpoint + term)
-          .then(response => response.json())
-          .then(data => {
+          .then((response) => response.json())
+          .then((data) => {
             resolve(data);
           });
       });
     },
-    updatePreviousShowAllChecked: function(options) {
+    updatePreviousShowAllChecked: function (options) {
       //Reset the states
       for (const facet in this.previousShowAllChecked) {
         this.previousShowAllChecked[facet] = false;
       }
-      options.forEach(element => {
+      options.forEach((element) => {
         if (element[1].toLowerCase().includes("show all"))
           this.previousShowAllChecked[element[0]] = true;
       });
     },
-    setCascader: function(filterFacets) {
+    setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady) {
         this.cascadeSelected = [];
-        filterFacets.forEach(e => {
+        filterFacets.forEach((e) => {
           this.cascadeSelected.push([
             e.facetPropPath,
-            this.createCascaderItemValue(
-              capitalise(e.term),
-              e.facet
-            )
+            this.createCascaderItemValue(capitalise(e.term), e.facet),
           ]);
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
       }
     },
-    makeCascadeLabelsClickable: function() {
+    makeCascadeLabelsClickable: function () {
       // Next tick allows the cascader menu to change
       this.$nextTick(() => {
         this.$refs.cascader.$el
           .querySelectorAll(".el-cascader-node__label")
-          .forEach(el => {
+          .forEach((el) => {
             // step through each cascade label
-            el.onclick = function() {
+            el.onclick = function () {
               const checkbox = this.previousElementSibling;
               if (checkbox) {
                 if (!checkbox.parentElement.attributes["aria-owns"]) {
@@ -361,19 +446,19 @@ export default {
             };
           });
       });
-    }
+    },
   },
-  created: function() {
+  created: function () {
     //Create non-reactive local variables
     this.facetEndpoint = "get-facets/";
   },
-  mounted: function() {
+  mounted: function () {
     this.populateCascader().then(() => {
       this.cascaderIsReady = true;
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
     });
-  }
+  },
 };
 </script>
 
@@ -407,6 +492,10 @@ export default {
   color: #292b66;
   text-align: center;
   padding-bottom: 6px;
+}
+
+.cascader >>> .el-cascder-panel {
+  max-height: 500px;
 }
 
 .cascader >>> .el-scrollbar__wrap {
