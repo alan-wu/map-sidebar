@@ -18,6 +18,7 @@
       :entry="filterEntry"
       :apiLocation="apiLocation"
       @filterResults="filterUpdate"
+      @datasetsSelected="resultsDisplayUpdate"
       @numberPerPage="numberPerPageUpdate"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
@@ -187,7 +188,7 @@ export default {
     },
     resultsDisplayUpdate: function(datasets) {
       this.resetPageNavigation();
-      this.searchSciCrunch(datasets,undefined,'dataset_info/using_multile_dois/',datasets);
+      this.searchSciCrunch('',undefined,'dataset_info/using_multiple_dois/',datasets);
       this.$emit("search-changed", {
         value: this.filter,
         type: "filter-update"
@@ -332,6 +333,7 @@ export default {
         } else {
           endpoint = endpoint + "?" + this.createfilterParams(params);
         }
+        console.log('calling: ', endpoint)
         fetch(endpoint, { signal })
           .then(handleErrors)
           .then(response => response.json())

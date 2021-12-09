@@ -221,7 +221,7 @@ export default {
         console.log(this.getFilters(selectedFacets)) // use this for algolia terms
         this.algoliaSearch(this.getFilters(selectedFacets)).then(datasetDois => {
           console.log(datasetDois)
-          this.$emit('datasetsSelected', datasetDois)
+          this.$emit('datasetsSelected', {dois: datasetDois})
         })
       }
 
