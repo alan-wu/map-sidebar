@@ -93,7 +93,6 @@ var initial_state = {
   results: [],
   numberOfHits: 0,
   filter: [],
-  filterFacets: undefined,
   loadingCards: false,
   numberPerPage: 10,
   page: 1,
@@ -147,7 +146,7 @@ export default {
     filterEntry: function() {
       return {
         numberOfHits: this.numberOfHits,
-        filterFacets: this.filterFacets
+        filterFacets: this.filter
       };
     }
   },
@@ -158,8 +157,8 @@ export default {
       this.resetPageNavigation();
       this.searchSciCrunch(search, filter, endpoint, params);
       if (filter) {
-        this.filterFacets = [...filter];
-        this.$refs.filtersRef.setCascader(this.filterFacets);
+        this.filter = [...filter];
+        this.$refs.filtersRef.setCascader(this.filter);
       }
     },
     clearSearchClicked: function() {
@@ -274,9 +273,12 @@ export default {
           name: element.name,
           description: element.description,
           contributors: element.contributors,
-          numberSamples: Array.isArray(element.samples)
-            ? element.samples.length
-            : 1,
+          numberSamples: element.sampleSize
+            ? parseInt(element.sampleSize)
+            : 0,
+          numberSubjects: element.subjectSize
+            ? parseInt(element.subjectSize)
+            : 0,
           updated: element.updated[0].timestamp.split("T")[0],
           url: element.uri[0],
           datasetId: element.identifier,
