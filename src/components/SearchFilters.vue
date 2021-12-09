@@ -56,7 +56,6 @@ import createAlgoliaClient from "../algolia/algolia.js";
 import { facetPropPathMapping, getAlgoliaFacets } from "../algolia/utils.js";
 
 const algoliaClient = createAlgoliaClient();
-// const algoliaPennseiveIndex = algoliaClient.initIndex('PENNSIEVE_DISCOVER');
 const algoliaIndex = algoliaClient.initIndex("k-core_dev_published_time_desc");
 window.algoliaIndex = algoliaIndex
 
@@ -135,23 +134,26 @@ export default {
     populateCascader: function () {
       return new Promise((resolve) => {
         // Algolia facet serach
-        window.facetPropPathMapping = facetPropPathMapping;
         getAlgoliaFacets(algoliaIndex, facetPropPathMapping)
           .then((data) => {
             this.facets = data;
-            window.algoliafacets = data;
             this.options = data;
+
+            // create top level of options in cascader
             this.options.forEach((facet, i) => {
               this.options[i].label = convertReadableLabel(facet.label);
               this.options[i].value = this.createCascaderItemValue(
                 facet.key,
                 undefined
               );
+
+              // put "Show all" as first option
               this.options[i].children.unshift({
                 value: this.createCascaderItemValue("Show all"),
                 label: "Show all",
               });
-              window.opts = this.options;
+
+              // populate second level of options 
               this.options[i].children.forEach((facetItem, j) => {
                 this.options[i].children[j].label = convertReadableLabel(
                   facetItem.label
@@ -166,32 +168,6 @@ export default {
           });
       });
     },
-    getFacet: function (facetLabel) {
-      // UNUSED as of 2021/12/1
-      if (facetLabel === "Datasets") {
-        // The datasets facet doesn't exist on SciCrunch yet, so manually set it
-        // for now.
-        return new Promise((resolve) => {
-          resolve([...new Set(["Show all", "Scaffolds", "Simulations"])]);
-        });
-      }
-      return new Promise((resolve) => {
-        let facets = ["Show all"]; // Set 'Show all' as our first label
-        let facet = facetLabel.toLowerCase();
-        this.callSciCrunch(this.apiLocation, this.facetEndpoint, facet).then(
-          (facet_terms) => {
-            facet_terms.forEach((element) => {
-              facets.push(element["key"]); // add facets that scicrunch includes
-            });
-            resolve([...new Set(facets)]); // return no duplicates
-          }
-        );
-      });
-    },
-    // switchTermToRequest is used to remove the count for sending a request to scicrunch
-    switchTermToRequest: function (term) {
-      return term.split(" ")[0].toLowerCase();
-    },
     tagsChangedCallback: function (presentTags) {
       if (presentTags.length > 0) {
         this.showFiltersText = false;
@@ -199,35 +175,40 @@ export default {
         this.showFiltersText = true;
       }
     },
+    // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (event) {
-      let filters = [];
       if (event) {
+        let filters = [];
+        let selectedFacets = [];
+
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
-        let selectedFacets = [];
-        for (let i in event) {
-          if (event[i] !== undefined) {
-            let value = event[i][1];
-            let path = event[i][0];
-            let labels = value.split("/");
+        event.forEach( selection => {
+          if (selection !== undefined) {
+            let value = selection[1];
+            let path = selection[0];
+            let labels = value.split("/");     
+            let output = {
+              term: labels[0],
+              facet: labels[1],
+              facetPropPath: path
+            }
             selectedFacets.push({ facetPropPath: path, label: labels[1] });
-            let output = {};
-            output.term = labels[0];
-            output.facet = labels[1];
-            output.facetPropPath = path;
             filters.push(output);
           }
-        }
-        console.log(this.getFilters(selectedFacets)) // use this for algolia terms
+        })
+
+        this.$emit('loading', true) // let sidebarcontent wait for the requests
+
+        // Algolia search
         this.algoliaSearch(this.getFilters(selectedFacets)).then(datasetDois => {
           console.log(datasetDois)
           this.$emit('datasetsSelected', {dois: datasetDois})
         })
+        this.$emit("filterResults", filters); // emit filters for apps above sidebar
+        this.setCascader(filters); //update our cascader v-model if we modified the event
+        this.makeCascadeLabelsClickable();
       }
-
-      this.$emit("filterResults", filters);
-      this.setCascader(filters); //update our cascader v-model if we modified the event
-      this.makeCascadeLabelsClickable();
     },
     /* Returns filter for searching algolia. All facets of the same category are joined with OR,
      * and each of those results is then joined with an AND.
@@ -236,7 +217,6 @@ export default {
       if (selectedFacetArray === undefined) {
         return undefined;
       }
-      window.sfarray = selectedFacetArray;
       var filters = "NOT item.published.status:embargo";
 
       filters = `(${filters}) AND `;
@@ -256,7 +236,6 @@ export default {
         filter = `(${filter.substring(0, filter.lastIndexOf(" OR "))})`;
         filters += `${filter} AND `;
       });
-      window.soutput = filters.substring(0, filters.lastIndexOf(" AND "));
       return filters.substring(0, filters.lastIndexOf(" AND "));
     },
      /**
@@ -378,15 +357,6 @@ export default {
     numberShownChanged: function (event) {
       this.$emit("numberPerPage", parseInt(event));
     },
-    callSciCrunch: function (apiLocation, endpoint, term) {
-      return new Promise((resolve) => {
-        fetch(apiLocation + endpoint + term)
-          .then((response) => response.json())
-          .then((data) => {
-            resolve(data);
-          });
-      });
-    },
     updatePreviousShowAllChecked: function (options) {
       //Reset the states
       for (const facet in this.previousShowAllChecked) {
@@ -429,10 +399,6 @@ export default {
           });
       });
     },
-  },
-  created: function () {
-    //Create non-reactive local variables
-    this.facetEndpoint = "get-facets/";
   },
   mounted: function () {
     this.populateCascader().then(() => {

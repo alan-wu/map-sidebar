@@ -20,6 +20,7 @@
       @filterResults="filterUpdate"
       @datasetsSelected="resultsDisplayUpdate"
       @numberPerPage="numberPerPageUpdate"
+      @loading="filtersLoading"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div
@@ -62,13 +63,6 @@ import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
 import ContextCard from "./ContextCard.vue";
-
-import createAlgoliaClient from '../algolia/algolia.js'
-import { facetPropPathMapping, getAlgoliaFacets } from '../algolia/utils.js'
-
-const algoliaClient = createAlgoliaClient()
-// const algoliaPennseiveIndex = algoliaClient.initIndex('PENNSIEVE_DISCOVER');
-const algoliaIndex = algoliaClient.initIndex('k-core_dev_published_time_desc')
 
 locale.use(lang);
 Vue.use(Button);
@@ -193,6 +187,9 @@ export default {
         value: this.filter,
         type: "filter-update"
       });
+    },
+    filtersLoading: function (val) {
+      this.loadingCards = val;
     },
     numberPerPageUpdate: function(val) {
       this.numberPerPage = val;
@@ -333,7 +330,6 @@ export default {
         } else {
           endpoint = endpoint + "?" + this.createfilterParams(params);
         }
-        console.log('calling: ', endpoint)
         fetch(endpoint, { signal })
           .then(handleErrors)
           .then(response => response.json())
@@ -343,12 +339,6 @@ export default {
     }
   },
   mounted: function() {
-    // algolia test
-    window.facetPropPathMapping = facetPropPathMapping
-    getAlgoliaFacets(algoliaIndex, facetPropPathMapping).then(data => {this.facets = data; window.algoliafacets = data}).finally(() => {
-      console.log('algolia success')
-    })
-
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
       this.openSearch('', [
