@@ -24,7 +24,7 @@
           <template v-for="tab in tabs">
             <sidebar-content class="sidebar-content-container"
             v-show="tab.id===activeId" :contextCardEntry="tab.contextCard"
-            :firstSearch="tab.title" :apiLocation="apiLocation"
+            :firstSearch="tab.title" :envVars="envVars"
             v-bind:key="tab.id" :ref="tab.id"
             @search-changed="searchChanged(tab.id, $event)"/>
           </template>
@@ -81,9 +81,9 @@ export default {
       type: Object,
       default: () => (initial_state)
     },
-    apiLocation: {
-      type: String,
-      default: ""
+    envVars: {
+      type: Object,
+      default: () => {}
     },
     tabs: {
       type: Array,

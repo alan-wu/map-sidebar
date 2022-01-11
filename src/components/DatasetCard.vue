@@ -61,9 +61,9 @@ export default {
      * the required viewing.
      */
     entry: Object,
-    apiLocation: {
-      type: String,
-      default: ""
+    envVars: {
+      type: Object,
+      default: () => {}
     },
   },
   data: function () {
@@ -158,7 +158,7 @@ export default {
       window.open(this.dataLocation,'_blank');
     },
     openRepository: function() {
-      let apiLocation = this.apiLocation;
+      let apiLocation = this.envVars.API_LOCATION;
       this.entry.additionalLinks.forEach(function(el) {
         if (el.description == "Repository") {
           let xmlhttp = new XMLHttpRequest();
@@ -205,11 +205,11 @@ export default {
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
-      let path = `${this.apiLocation}s3-resource/${id}/${version}/files/${scaffoldPath}`
+      let path = `${this.envVars.API_LOCATION}s3-resource/${id}/${version}/files/${scaffoldPath}`
       return path
     },
     getFileFromPath: function(discoverId, version, path){
-      return  `${this.apiLocation}s3-resource/${discoverId}/${version}/files/${path}`
+      return  `${this.envVars.API_LOCATION}s3-resource/${discoverId}/${version}/files/${path}`
     },
     isOverflown: function(el){
       return el.clientHeight < el.scrollHeight

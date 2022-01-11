@@ -55,10 +55,6 @@ import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 import createAlgoliaClient from "../algolia/algolia.js";
 import { facetPropPathMapping, getAlgoliaFacets } from "../algolia/utils.js";
 
-const algoliaClient = createAlgoliaClient();
-const algoliaIndex = algoliaClient.initIndex("k-core_dev_published_time_desc");
-window.algoliaIndex = algoliaIndex
-
 Vue.component("svg-icon", SvgIcon);
 
 locale.use(lang);
@@ -90,9 +86,9 @@ export default {
      * the required viewing.
      */
     entry: Object,
-    apiLocation: {
-      type: String,
-      default: "",
+    envVars: {
+      type: Object,
+      default: ()=>{}
     },
   },
   data: function () {
@@ -134,7 +130,7 @@ export default {
     populateCascader: function () {
       return new Promise((resolve) => {
         // Algolia facet serach
-        getAlgoliaFacets(algoliaIndex, facetPropPathMapping)
+        getAlgoliaFacets(this.algoliaIndex, facetPropPathMapping)
           .then((data) => {
             this.facets = data;
             this.options = data;
@@ -244,7 +240,7 @@ export default {
      */
     algoliaSearch: function(filter) {
       return new Promise(resolve => {
-        algoliaIndex
+        this.algoliaIndex
         .search('', {facets:['*'],filters:filter})
         .then(response => {
           let searchData = {
@@ -277,7 +273,7 @@ export default {
     // Returns all DOIs of all versions for a given discover dataset
     discoverAllDois: function (discoverId) {
       return new Promise(resolve => {
-        fetch(`https://api.pennsieve.io/discover/datasets/${discoverId}/versions`).then(r=>r.json()).then(dataset => {
+        fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/${discoverId}/versions`).then(r=>r.json()).then(dataset => {
           let dois = []
           dataset.forEach(version => {
             dois.push(version.doi)
@@ -401,6 +397,9 @@ export default {
     },
   },
   mounted: function () {
+    window.envVars = this.envVars
+    this.algoliaClient = createAlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY) ;
+    this.algoliaIndex = this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
     this.populateCascader().then(() => {
       this.cascaderIsReady = true;
       this.setCascader(this.entry.filterFacets);

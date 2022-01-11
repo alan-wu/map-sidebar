@@ -16,7 +16,7 @@
       class="filters"
       ref="filtersRef"
       :entry="filterEntry"
-      :apiLocation="apiLocation"
+      :envVars="envVars"
       @filterResults="filterUpdate"
       @datasetsSelected="resultsDisplayUpdate"
       @numberPerPage="numberPerPageUpdate"
@@ -29,7 +29,7 @@
       >No results found - Please change your search / filter criteria.</div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
       <div v-for="o in results" :key="o.id" class="step-item">
-        <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
+        <DatasetCard :entry="o" :envVars="envVars"></DatasetCard>
       </div>
       <el-pagination
         class="pagination"
@@ -122,9 +122,9 @@ export default {
       type: Object,
       default: undefined
     },
-    apiLocation: {
-      type: String,
-      default: ""
+    envVars: {
+      type: Object,
+      default: () => {}
     },
     firstSearch: {
       type: String,
@@ -207,7 +207,7 @@ export default {
       if (!params)
         params = this.createParams(filter, this.start, this.numberPerPage);
       this.$emit("search-changed", { value: search, type: "query-update" });
-      this.callSciCrunch(this.apiLocation, searchEndpoint, search, params)
+      this.callSciCrunch(this.envVars.API_LOCATION, searchEndpoint, search, params)
         .then(result => {
           //Only process if the search term is the same as the last search term.
           //This avoid old search being displayed.

@@ -7,7 +7,7 @@
     <el-button @click="singleFacets">single facets</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
-    <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility"
+    <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
       :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked"
       @search-changed="searchChanged($event)" @actionClick="action"/>
   </div>
@@ -63,7 +63,13 @@ export default {
         ]
       }],
       sideBarVisibility: true,
-      apiLocation: process.env.VUE_APP_API_LOCATION,
+      envVars: {
+        API_LOCATION: process.env.VUE_APP_API_LOCATION,
+        ALGOLIA_KEY: process.env.VUE_APP_ALGOLIA_KEY,
+        ALGOLIA_ID: process.env.VUE_APP_ALGOLIA_ID,
+        ALGOLIA_INDEX: process.env.VUE_APP_ALGOLIA_INDEX,
+        PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION
+      },
       activeId: 1,
     }
   },
