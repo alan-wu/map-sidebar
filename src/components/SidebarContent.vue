@@ -248,7 +248,7 @@ export default {
       if (f)
         f.forEach(e => {
           //Do not ask for any "show all" request
-          if (e.facet !== "show all") {
+          if (e.facet.toLowerCase() !== "show all") {
             term.push(e.term);
             facet.push(e.facet);
           }
@@ -343,17 +343,9 @@ export default {
   mounted: function() {
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
-      this.openSearch('', [
-        {facet: "show all", term:'species'},
-        {facet: "show all", term:'gender'},
-        {facet: "show all", term:'organ'},
-        {facet: "show all", term:'datasets'}]);
+      this.openSearch('')
     } else {
-      this.openSearch(this.firstSearch,  [
-        {facet: "show all", term:'species'},
-        {facet: "show all", term:'gender'},
-        {facet: "show all", term:'organ'},
-        {facet: "show all", term:'datasets'}]);
+      this.openSearch(this.firstSearch);
     }
   },
   created: function() {

@@ -363,18 +363,36 @@ export default {
           this.previousShowAllChecked[element[0]] = true;
       });
     },
+    // setCascader: Clears previous selections and takes in an array of facets to select: filterFacets
+    // facets are in the form:
+    //    {
+    //      facetPropPath: 'anatomy.organ.name',
+    //      term: 'Sex',
+    //      facet: 'Male'
+    //    }
     setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
-      if (this.cascaderIsReady) {
-        this.cascadeSelected = [];
-        filterFacets.forEach((e) => {
-          this.cascadeSelected.push([
+      if (this.cascaderIsReady && filterFacets && filterFacets.length != 0) {
+        this.cascadeSelected = filterFacets.map(e => {
+          return [
             e.facetPropPath,
             this.createCascaderItemValue(capitalise(e.term), e.facet),
-          ]);
+          ]
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
       }
+    },
+    // checkShowAllBoxes: Checks each 'Show all' cascade option by using the setCascader function
+    checkShowAllBoxes: function(){
+      this.setCascader(
+        this.options.map(option => {
+          return {
+            facetPropPath: option.value,
+            term: option.label,
+            facet: 'Show all'
+          }
+        })
+      )
     },
     makeCascadeLabelsClickable: function () {
       // Next tick allows the cascader menu to change
@@ -397,11 +415,13 @@ export default {
     },
   },
   mounted: function () {
-    window.envVars = this.envVars
     this.algoliaClient = createAlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY) ;
     this.algoliaIndex = this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
     this.populateCascader().then(() => {
       this.cascaderIsReady = true;
+      this.checkShowAllBoxes()
+      window.entry = this.entry.filterFacets
+      window.ops = this.options
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
     });
