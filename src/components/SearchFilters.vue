@@ -53,7 +53,7 @@ import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
-import { facetPropPathMapping } from "../algolia/utils.js";
+import { facetPropPathMapping, getFilters } from "../algolia/utils.js";
 
 Vue.component("svg-icon", SvgIcon);
 
@@ -189,15 +189,17 @@ export default {
               facet: labels[1],
               facetPropPath: path
             }
-            selectedFacets.push({ facetPropPath: path, label: labels[1] });
+            selectedFacets.push({ facetPropPath: path, label: output.facet });
             filters.push(output);
           }
         })
 
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
+        console.log(getFilters(selectedFacets))
+
         // Algolia search
-        this.algoliaClient.search(this.getFilters(selectedFacets), this.algoliaIndex).then(datasetDois => {
+        this.algoliaClient.search(getFilters(selectedFacets), this.algoliaIndex).then(datasetDois => {
           console.log(datasetDois)
           this.$emit('datasetsSelected', {dois: datasetDois})
         })
@@ -206,34 +208,8 @@ export default {
         this.makeCascadeLabelsClickable();
       }
     },
-    /* Returns filter for searching algolia. All facets of the same category are joined with OR,
-     * and each of those results is then joined with an AND.
-     * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
-    getFilters(selectedFacetArray) {
-      if (selectedFacetArray === undefined) {
-        return undefined;
-      }
-      var filters = "NOT item.published.status:embargo";
-
-      filters = `(${filters}) AND `;
-      const facetPropPaths = Object.keys(facetPropPathMapping);
-      window.propPathsStart = facetPropPaths;
-      facetPropPaths.map((facetPropPath) => {
-        const facetsToOr = selectedFacetArray.filter(
-          (facet) => facet.facetPropPath == facetPropPath
-        );
-        var filter = "";
-        facetsToOr.map((facet) => {
-          filter += `"${facetPropPath}":"${facet.label}" OR `;
-        });
-        if (filter == "") {
-          return;
-        }
-        filter = `(${filter.substring(0, filter.lastIndexOf(" OR "))})`;
-        filters += `${filter} AND `;
-      });
-      return filters.substring(0, filters.lastIndexOf(" AND "));
-    },
+    // showAllEventModifier:  Modifies a cascade event to unlick all selections in category if "show all" is clicked. Also unchecks "Show all" if any secection is clicked
+    // *NOTE* Does NOT remove 'Show all' selections from showing in 'cascadeSelected'
     showAllEventModifier: function (event) {
       // check if show all is in the cascader checked option list
       let hasShowAll = event
