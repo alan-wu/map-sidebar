@@ -52,8 +52,8 @@ import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 
-import createAlgoliaClient from "../algolia/algolia.js";
-import { facetPropPathMapping, getAlgoliaFacets } from "../algolia/utils.js";
+import {AlgoliaClient} from "../algolia/algolia.js";
+import { facetPropPathMapping } from "../algolia/utils.js";
 
 Vue.component("svg-icon", SvgIcon);
 
@@ -130,7 +130,7 @@ export default {
     populateCascader: function () {
       return new Promise((resolve) => {
         // Algolia facet serach
-        getAlgoliaFacets(this.algoliaIndex, facetPropPathMapping)
+        this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
           .then((data) => {
             this.facets = data;
             this.options = data;
@@ -197,7 +197,7 @@ export default {
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
         // Algolia search
-        this.algoliaSearch(this.getFilters(selectedFacets)).then(datasetDois => {
+        this.algoliaClient.search(this.getFilters(selectedFacets), this.algoliaIndex).then(datasetDois => {
           console.log(datasetDois)
           this.$emit('datasetsSelected', {dois: datasetDois})
         })
@@ -233,54 +233,6 @@ export default {
         filters += `${filter} AND `;
       });
       return filters.substring(0, filters.lastIndexOf(" AND "));
-    },
-     /**
-     * Get Search results
-     * This is using fetch from the Algolia API
-     */
-    algoliaSearch: function(filter) {
-      return new Promise(resolve => {
-        this.algoliaIndex
-        .search('', {facets:['*'],filters:filter})
-        .then(response => {
-          let searchData = {
-            items: response.hits,
-            total: response.nbHits
-          }
-          console.log(searchData)
-          window.searchData = searchData
-          let discoverIds = []
-          searchData.items.forEach(result=>{
-            discoverIds.push(result.pennsieve.identifier)
-          })
-          resolve(this.expandDois(discoverIds).then(datasets=>datasets))
-        })
-      })
-    },
-    // Get all dois given a list of discoverIds
-    expandDois: function (discoverIds) {
-      return new Promise(resolve => {
-        let promiseList = []
-        discoverIds.forEach(discoverId => {
-          promiseList.push(this.discoverAllDois(discoverId))
-        })
-        Promise.all(promiseList).then((values) => {
-          console.log(values.flat());
-          resolve(values.flat())
-        });
-      })
-    },
-    // Returns all DOIs of all versions for a given discover dataset
-    discoverAllDois: function (discoverId) {
-      return new Promise(resolve => {
-        fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/${discoverId}/versions`).then(r=>r.json()).then(dataset => {
-          let dois = []
-          dataset.forEach(version => {
-            dois.push(version.doi)
-          })
-          resolve(dois)
-        })
-      })
     },
     showAllEventModifier: function (event) {
       // check if show all is in the cascader checked option list
@@ -415,13 +367,11 @@ export default {
     },
   },
   mounted: function () {
-    this.algoliaClient = createAlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY) ;
-    this.algoliaIndex = this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
+    this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
     this.populateCascader().then(() => {
       this.cascaderIsReady = true;
       this.checkShowAllBoxes()
-      window.entry = this.entry.filterFacets
-      window.ops = this.options
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
     });
