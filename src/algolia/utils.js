@@ -1,3 +1,5 @@
+/* eslint-disable no-alert, no-console */
+
 // Mapping between display categories and their Algolia index property path
 // Used for populating the Dataset Search Results facet menu dynamically
 export const facetPropPathMapping = {
@@ -15,6 +17,12 @@ export function getFilters(selectedFacetArray) {
   if (selectedFacetArray === undefined) {
     return undefined;
   }
+
+  // Switch the 'term' attribute to 'label' if 'label' does not exist 
+  if (selectedFacetArray.filter(s=>s.label).length === 0){
+    selectedFacetArray = [...selectedFacetArray.map(s=>s.label=s.facet)]
+  }
+
   let facets = removeShowAllFacets(selectedFacetArray)
 
   let filters = "NOT item.published.status:embargo";

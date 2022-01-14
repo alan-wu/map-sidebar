@@ -174,32 +174,22 @@ export default {
     // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (event) {
       if (event) {
-        let filters = [];
-        let selectedFacets = [];
-
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
-        event.forEach( selection => {
-          if (selection !== undefined) {
-            let value = selection[1];
-            let path = selection[0];
-            let labels = value.split("/");     
-            let output = {
-              term: labels[0],
-              facet: labels[1],
-              facetPropPath: path
-            }
-            selectedFacets.push({ facetPropPath: path, label: output.facet });
-            filters.push(output);
-          }
-        })
+
+        // Move results from arrays to object
+        let filters = event.filter( selection => selection !== undefined).map( fs => ({
+          facetPropPath: fs[0], 
+          facet: fs[1].split("/")[1],
+          term: fs[1].split("/")[0], 
+        }))
 
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
-        console.log(getFilters(selectedFacets))
+        console.log(getFilters(filters))
 
         // Algolia search
-        this.algoliaClient.search(getFilters(selectedFacets), this.algoliaIndex).then(datasetDois => {
+        this.algoliaClient.search(getFilters(filters), this.algoliaIndex).then(datasetDois => {
           console.log(datasetDois)
           this.$emit('datasetsSelected', {dois: datasetDois})
         })
