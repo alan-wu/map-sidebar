@@ -153,11 +153,10 @@ export default {
     }
   },
   methods: {
-    openSearch: function(search, filter = undefined,
-      endpoint = undefined, params = undefined) {
+    openSearch: function(filter, search='') {
       this.searchInput = search;
       this.resetPageNavigation();
-      this.searchSciCrunch(search, filter, endpoint, params);
+      this.searchAlgolia(filter, search);
       if (filter) {
         this.filter = [...filter];
         this.$refs.filtersRef.setCascader(this.filter);
@@ -166,33 +165,31 @@ export default {
     clearSearchClicked: function() {
       this.searchInput = "";
       this.resetPageNavigation();
-      this.searchSciCrunch(this.searchInput);
+      this.searchAlgolia(this.filters, this.searchInput);
     },
     searchEvent: function(event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation();
-        this.searchSciCrunch(this.searchInput);
+        this.searchAlgolia(this.filters, this.searchInput);
       }
     },
     filterUpdate: function(filters) {
-      // this.filter = [...filter];
-      console.log('filters', filters)
-      console.log(getFilters(filters))
-      window.filters = filters
-
-      // Algolia search
-      this.algoliaClient.search(getFilters(filters)).then(discoverIds => {
-        this.discoverIds = discoverIds
-        this.resultsDisplayUpdate({'discoverIds':discoverIds,'size':this.numberPerPage, 'from':this.start})
-      })
-    },
-    resultsDisplayUpdate: function(datasets) {
-      this.resetPageNavigation();
-      this.searchSciCrunch('',undefined,'dataset_info/using_multiple_discoverIds/', datasets);
+      this.filters = filters
+      this.resetPageNavigation()
+      this.searchAlgolia(filters, this.searchInput)
       this.$emit("search-changed", {
         value: this.filter,
         type: "filter-update"
       });
+    },
+    searchAlgolia(filters, query=''){
+      // Algolia search
+      this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
+        this.numberOfHits = searchData.total
+        this.discoverIds = searchData.discoverIds
+        this.results = searchData.items
+        this.searchSciCrunch({'discoverIds':this.discoverIds})
+      })
     },
     filtersLoading: function (val) {
       this.loadingCards = val;
@@ -203,18 +200,15 @@ export default {
     },
     pageChange: function(page) {
       this.start = (page - 1) * this.numberPerPage;
-      this.searchSciCrunch(this.searchInput);
+      this.page = page
+      this.searchAlgolia(this.filters, this.numberPerPage, this.page)
     },
-    searchSciCrunch: function(search, filter = undefined,
-      searchEndpoint = undefined, params = undefined) {
+    searchSciCrunch: function(params) {
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
-      if (!searchEndpoint) searchEndpoint = this.searchEndpoint;
-      if (!params)
-        params = this.createParams(filter, this.start, this.numberPerPage);
-      this.$emit("search-changed", { value: search, type: "query-update" });
-      this.callSciCrunch(this.envVars.API_LOCATION, searchEndpoint, search, params)
+      this.$emit("search-changed", { value: this.searchInput, type: "query-update" });
+      this.callSciCrunch(this.envVars.API_LOCATION, params)
         .then(result => {
           //Only process if the search term is the same as the last search term.
           //This avoid old search being displayed.
@@ -240,37 +234,10 @@ export default {
       this.start = 0;
       this.page = 1;
     },
-    createParams: function(filter, start, size) {
-      //Deconstruct list of fitlers to list of term
-      //and facet.
-      let params = {};
-      let term = [];
-      let facet = [];
-      let f = undefined;
-      if (filter !== undefined) {
-        f = filter;
-      } else {
-        f = this.filter;
-      }
-      if (f)
-        f.forEach(e => {
-          //Do not ask for any "show all" request
-          if (e.facet.toLowerCase() !== "show all") {
-            term.push(e.term);
-            facet.push(e.facet);
-          }
-        });
-      params.term = term;
-      params.facet = facet;
-      params.start = start;
-      params.size = size;
-      return params;
-    },
     resultsProcessing: function(data) {
       this.lastSearch = this.searchInput;
       this.results = [];
       let id = 0;
-      this.numberOfHits = data.numberOfHits;
       if (data.results.length === 0) {
         return;
       }
@@ -325,21 +292,16 @@ export default {
       }
       return p.toString();
     },
-    callSciCrunch: function(apiLocation, searchEndpoint, search, params = {}) {
+    callSciCrunch: function(apiLocation, params = {}) {
       return new Promise((resolve, reject) => {
         // the following controller will abort current search
         // if a new one has been started
         if (this._controller) this._controller.abort();
         this._controller = new AbortController();
         let signal = this._controller.signal;
-        var endpoint = apiLocation + searchEndpoint;
         // Add parameters if we are sent them
-        if (search !== "" && Object.entries(params).length !== 0) {
-          endpoint = endpoint + search + "/?" + this.createfilterParams(params);
-        } else {
-          endpoint = endpoint + "?" + this.createfilterParams(params);
-        }
-        fetch(endpoint, { signal })
+        let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
+        fetch(fullEndpoint, { signal })
           .then(handleErrors)
           .then(response => response.json())
           .then(data => resolve(data))
@@ -355,14 +317,14 @@ export default {
 
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
-      this.openSearch('')
+      this.openSearch()
     } else {
-      this.openSearch(this.firstSearch);
+      this.openSearch(undefined, this.firstSearch);
     }
   },
   created: function() {
     //Create non-reactive local variables
-    this.searchEndpoint = "filter-search/";
+    this.searchEndpoint = "dataset_info/using_multiple_discoverIds/";
   }
 };
 </script>

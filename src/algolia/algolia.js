@@ -76,17 +76,22 @@ export class AlgoliaClient {
    * Get Search results
    * This is using fetch from the Algolia API
    */
-  search (filter) {
+  search (filter, query='', hitsperPage=10, page=1) {
     return new Promise(resolve => {
       this.index
-      .search('', {facets:['*'],filters:filter})
+      .search(query, {
+        facets:['*'],
+        hitsPerPage: hitsperPage,
+        page: page-1,
+        filters: filter
+      })
       .then(response => {
         let searchData = {
           items: response.hits,
-          total: response.nbHits
+          total: response.nbHits,
+          discoverIds: response.hits.map(r=>r.pennsieve.identifier)
         }
-        let discoverIds = searchData.items.map(result=>result.pennsieve.identifier)
-        resolve(discoverIds)
+        resolve(searchData)
       })
     })
   }

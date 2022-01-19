@@ -16,7 +16,7 @@ export const facetPropPathMapping = {
 export function getFilters(selectedFacetArray) {
   console.log('sfA', selectedFacetArray)
   if (selectedFacetArray === undefined) {
-    return undefined;
+    return 'NOT item.published.status:embargo'
   }
 
   // Switch the 'term' attribute to 'label' if 'label' does not exist 
