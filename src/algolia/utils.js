@@ -14,12 +14,14 @@ export const facetPropPathMapping = {
   * and each of those results is then joined with an AND.
   * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
 export function getFilters(selectedFacetArray) {
+  console.log('sfA', selectedFacetArray)
   if (selectedFacetArray === undefined) {
     return undefined;
   }
 
   // Switch the 'term' attribute to 'label' if 'label' does not exist 
   if (selectedFacetArray.filter(s=>s.label).length === 0){
+    console.log('in label check')
     selectedFacetArray = [...selectedFacetArray.map(s=>s.label=s.facet)]
   }
 

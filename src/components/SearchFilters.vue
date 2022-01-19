@@ -53,7 +53,7 @@ import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
-import { facetPropPathMapping, getFilters } from "../algolia/utils.js";
+import { facetPropPathMapping } from "../algolia/utils.js";
 
 Vue.component("svg-icon", SvgIcon);
 
@@ -186,13 +186,6 @@ export default {
 
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
-        console.log(getFilters(filters))
-
-        // Algolia search
-        this.algoliaClient.search(getFilters(filters), this.algoliaIndex).then(datasetDois => {
-          console.log(datasetDois)
-          this.$emit('datasetsSelected', {dois: datasetDois})
-        })
         this.$emit("filterResults", filters); // emit filters for apps above sidebar
         this.setCascader(filters); //update our cascader v-model if we modified the event
         this.makeCascadeLabelsClickable();

@@ -86,7 +86,7 @@ export class AlgoliaClient {
           total: response.nbHits
         }
         let discoverIds = searchData.items.map(result=>result.pennsieve.identifier)
-        resolve(this._expandDois(discoverIds).then(datasets=>datasets))
+        resolve(discoverIds)
       })
     })
   }

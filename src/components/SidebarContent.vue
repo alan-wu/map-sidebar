@@ -18,7 +18,6 @@
       :entry="filterEntry"
       :envVars="envVars"
       @filterResults="filterUpdate"
-      @datasetsSelected="resultsDisplayUpdate"
       @numberPerPage="numberPerPageUpdate"
       @loading="filtersLoading"
     ></SearchFilters>
@@ -63,6 +62,9 @@ import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
 import ContextCard from "./ContextCard.vue";
+
+import {AlgoliaClient} from "../algolia/algolia.js";
+import {getFilters} from "../algolia/utils.js"
 
 locale.use(lang);
 Vue.use(Button);
@@ -172,16 +174,21 @@ export default {
         this.searchSciCrunch(this.searchInput);
       }
     },
-    filterUpdate: function(filter) {
-      this.filter = [...filter];
-      this.$emit("search-changed", {
-        value: this.filter,
-        type: "filter-update"
-      });
+    filterUpdate: function(filters) {
+      // this.filter = [...filter];
+      console.log('filters', filters)
+      console.log(getFilters(filters))
+      window.filters = filters
+
+      // Algolia search
+      this.algoliaClient.search(getFilters(filters)).then(discoverIds => {
+        this.discoverIds = discoverIds
+        this.resultsDisplayUpdate({'discoverIds':discoverIds,'size':this.numberPerPage, 'from':this.start})
+      })
     },
     resultsDisplayUpdate: function(datasets) {
       this.resetPageNavigation();
-      this.searchSciCrunch('',undefined,'dataset_info/using_multiple_dois/',datasets);
+      this.searchSciCrunch('',undefined,'dataset_info/using_multiple_discoverIds/', datasets);
       this.$emit("search-changed", {
         value: this.filter,
         type: "filter-update"
@@ -341,6 +348,11 @@ export default {
     }
   },
   mounted: function() {
+    // initialise algolia
+    this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
+    console.log('Algolia initialised')
+
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
       this.openSearch('')
