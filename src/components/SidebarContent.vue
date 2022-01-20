@@ -174,7 +174,7 @@ export default {
       }
     },
     filterUpdate: function(filters) {
-      this.filters = filters
+      this.filters = [...filters]
       this.resetPageNavigation()
       this.searchAlgolia(filters, this.searchInput)
       this.$emit("search-changed", {
@@ -201,7 +201,7 @@ export default {
     pageChange: function(page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page
-      this.searchAlgolia(this.filters, this.numberPerPage, this.page)
+      this.searchAlgolia(this.filters, this.searchInput, this.numberPerPage, this.page)
     },
     searchSciCrunch: function(params) {
       this.loadingCards = true;
@@ -313,13 +313,13 @@ export default {
     // initialise algolia
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
-    console.log('Algolia initialised')
+    console.log('Algolia initialised in sidebar')
 
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
-      this.openSearch()
+      this.openSearch(undefined, '')
     } else {
-      this.openSearch(undefined, this.firstSearch);
+      this.openSearch(undefined, '');
     }
   },
   created: function() {

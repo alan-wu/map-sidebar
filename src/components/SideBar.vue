@@ -24,7 +24,7 @@
           <template v-for="tab in tabs">
             <sidebar-content class="sidebar-content-container"
             v-show="tab.id===activeId" :contextCardEntry="tab.contextCard"
-            :firstSearch="tab.title" :envVars="envVars"
+            :envVars="envVars"
             v-bind:key="tab.id" :ref="tab.id"
             @search-changed="searchChanged(tab.id, $event)"/>
           </template>

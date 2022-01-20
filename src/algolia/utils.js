@@ -13,17 +13,16 @@ export const facetPropPathMapping = {
 /* Returns filter for searching algolia. All facets of the same category are joined with OR,
   * and each of those results is then joined with an AND.
   * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
-export function getFilters(selectedFacetArray) {
-  console.log('sfA', selectedFacetArray)
+export function getFilters(selectedFacetArray=undefined) {
+  
+  // return all datasets if no filter
   if (selectedFacetArray === undefined) {
     return 'NOT item.published.status:embargo'
   }
 
   // Switch the 'term' attribute to 'label' if 'label' does not exist 
-  if (selectedFacetArray.filter(s=>s.label).length === 0){
-    console.log('in label check')
-    selectedFacetArray = [...selectedFacetArray.map(s=>s.label=s.facet)]
-  }
+  selectedFacetArray.forEach(f=>f.label=f.facet)
+  
 
   let facets = removeShowAllFacets(selectedFacetArray)
 
