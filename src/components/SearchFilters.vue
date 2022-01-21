@@ -293,6 +293,16 @@ export default {
         this.updatePreviousShowAllChecked(this.cascadeSelected);
       }
     },
+    addFilter: function (filter) {
+      //Do not set the value unless it is ready
+      if (this.cascaderIsReady && filter) {
+        this.cascadeSelected.filter(f=>f.term != filter.term)
+        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet)])
+      }
+    },
+    initiateSearch: function() {
+      this.cascadeEvent(this.cascadeSelected)
+    },
     // checkShowAllBoxes: Checks each 'Show all' cascade option by using the setCascader function
     checkShowAllBoxes: function(){
       this.setCascader(

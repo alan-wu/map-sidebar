@@ -113,10 +113,15 @@ export default {
     toggleDrawer: function () {
       this.drawerOpen = !this.drawerOpen;
     },
-    openSearch: function(term, facets){
+    openSearch: function(facets, query){
       this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(term, facets)})
+      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(facets, query)})
+    },
+    addFilter: function(filter){
+      this.drawerOpen = true;
+      // Because refs are in v-for, nextTick is needed here
+      Vue.nextTick(()=>{this.$refs[this.activeId][0].addFilter(filter)})
     },
     openNeuronSearch: function(neuron){
       this.drawerOpen = true;

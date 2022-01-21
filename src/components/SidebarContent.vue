@@ -162,6 +162,13 @@ export default {
         this.$refs.filtersRef.setCascader(this.filter);
       }
     },
+    addFilter: function(filter) {
+      this.resetPageNavigation();
+      if (filter) {
+        this.$refs.filtersRef.addFilter(filter);
+        this.$refs.filtersRef.initiateSearch()
+      }
+    },
     clearSearchClicked: function() {
       this.searchInput = "";
       this.resetPageNavigation();
