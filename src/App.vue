@@ -4,10 +4,10 @@
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
     <el-button @click="openSearch">search 'heart' from refs</el-button>
-    <el-button @click="singleFacets">single facets</el-button>
+    <el-button @click="singleFacets">Add to Filter</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
-    <SideBar class="side-bar" ref="sideBar" :apiLocation="apiLocation" :visible="sideBarVisibility"
+    <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
       :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked"
       @search-changed="searchChanged($event)" @actionClick="action"/>
   </div>
@@ -63,7 +63,13 @@ export default {
         ]
       }],
       sideBarVisibility: true,
-      apiLocation: process.env.VUE_APP_API_LOCATION,
+      envVars: {
+        API_LOCATION: process.env.VUE_APP_API_LOCATION,
+        ALGOLIA_KEY: process.env.VUE_APP_ALGOLIA_KEY,
+        ALGOLIA_ID: process.env.VUE_APP_ALGOLIA_ID,
+        ALGOLIA_INDEX: process.env.VUE_APP_ALGOLIA_INDEX,
+        PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION
+      },
       activeId: 1,
     }
   },
@@ -78,16 +84,13 @@ export default {
       console.log("action fired: ", val)
     },
     openSearch: function(){
-      this.$refs.sideBar.openSearch('heart', [{facet: "show all", term:'organ'},
-        {facet: "show all", term:'species'},
-        {facet: "show all", term:'gender'},
-        {facet: "show all", term:'datasets'}] )
+      this.$refs.sideBar.openSearch('heart', [])
     },
     singleFacets: function(){
-      this.$refs.sideBar.openSearch('', [{facet: 'Heart', term:'organ'}])
+      this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'})
     },
     multiFacets: function(){
-      this.$refs.sideBar.openSearch('', [{facet: 'Rat', term:'species'}, {facet: 'Heart', term:'organ'}])
+      this.$refs.sideBar.openSearch('', [{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}])
     },
     neuronSearch: function(){
       this.$refs.sideBar.openNeuronSearch('neuron-type-keast-10')

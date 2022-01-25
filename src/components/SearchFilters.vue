@@ -18,7 +18,8 @@
           @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
-          <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
+          <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply
+          Filters
         </div>
       </span>
     </transition>
@@ -29,9 +30,14 @@
       placeholder="10"
       @change="numberShownChanged($event)"
     >
-      <el-option v-for="item in numberDatasetsShown" :key="item" :label="item" :value="item"></el-option>
+      <el-option
+        v-for="item in numberDatasetsShown"
+        :key="item"
+        :label="item"
+        :value="item"
+      ></el-option>
     </el-select>
-    <span class="dataset-results-feedback">{{this.numberOfResultsText}}</span>
+    <span class="dataset-results-feedback">{{ this.numberOfResultsText }}</span>
   </div>
 </template>
 
@@ -46,30 +52,33 @@ import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
 import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
 
+import {AlgoliaClient} from "../algolia/algolia.js";
+import { facetPropPathMapping } from "../algolia/utils.js";
+
 Vue.component("svg-icon", SvgIcon);
 
 locale.use(lang);
 Vue.use(Option);
 Vue.use(Select);
 
-const capitalise = function(txt) {
+const capitalise = function (txt) {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 };
 
-const convertReadableLabel = function(original) {
+const convertReadableLabel = function (original) {
   const name = original.toLowerCase();
-  if (speciesMap[name]){
+  if (speciesMap[name]) {
     return capitalise(speciesMap[name]);
   } else {
     return capitalise(name);
   }
-}
+};
 
 export default {
   name: "SearchFilters",
   components: {
     CustomCascader,
-    SvgSpriteColor
+    SvgSpriteColor,
   },
   props: {
     /**
@@ -77,19 +86,19 @@ export default {
      * the required viewing.
      */
     entry: Object,
-    apiLocation: {
-      type: String,
-      default: ""
-    }
+    envVars: {
+      type: Object,
+      default: ()=>{}
+    },
   },
-  data: function() {
+  data: function () {
     return {
       cascaderIsReady: false,
       previousShowAllChecked: {
         species: false,
         gender: false,
         organ: false,
-        datasets: false
+        datasets: false,
       },
       showFilters: true,
       showFiltersText: true,
@@ -103,109 +112,91 @@ export default {
         {
           value: "Species",
           label: "Species",
-          children: [{}]
-        }
-      ]
+          children: [{}],
+        },
+      ],
     };
   },
   computed: {
-    numberOfResultsText: function() {
+    numberOfResultsText: function () {
       return `${this.entry.numberOfHits} results | Showing`;
-    }
+    },
   },
   methods: {
-    createCascaderItemValue: function(term, facet) {
+    createCascaderItemValue: function (term, facet) {
       if (facet) return term + "/" + facet;
       else return term;
     },
-    populateCascader: function() {
-      return new Promise(resolve => {
-        this.options = [];
-        let promiseList = [];
-        for (let i in this.facets) {
-          this.options.push({
-            value: this.createCascaderItemValue(
-              this.facets[i].toLowerCase(),
-              undefined
-            ),
-            label: convertReadableLabel(this.facets[i]),
-            children: []
-          });
-          promiseList.push(
-            this.getFacet(this.facets[i]).then(labels => {
-              // Populate children of each facet with scicrunch's facets
-              for (let j in labels) {
-                this.options[i].children.push({
-                  value: this.createCascaderItemValue(
-                    this.facets[i].toLowerCase(),
-                    labels[j].toLowerCase()),
-                  label: convertReadableLabel(labels[j]) // Capitalisation is to match design specs
-                });
-              }
-            })
-          );
-        }
-        Promise.allSettled(promiseList).then(() => {
-          resolve();
-        });
-      });
-    },
-    getFacet: function(facetLabel) {
-      if (facetLabel === "Datasets") {
-        // The datasets facet doesn't exist on SciCrunch yet, so manually set it
-        // for now.
-        return new Promise(resolve => {
-          resolve([...new Set(["Show all", "Scaffolds", "Simulations"])]);
-        });
-      }
-      return new Promise(resolve => {
-        let facets = ["Show all"]; // Set 'Show all' as our first label
-        let facet = facetLabel.toLowerCase();
-        this.callSciCrunch(this.apiLocation, this.facetEndpoint, facet).then(
-          facet_terms => {
-            facet_terms.forEach(element => {
-              facets.push(element["key"]); // add facets that scicrunch includes
+    populateCascader: function () {
+      return new Promise((resolve) => {
+        // Algolia facet serach
+        this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
+          .then((data) => {
+            this.facets = data;
+            this.options = data;
+
+            // create top level of options in cascader
+            this.options.forEach((facet, i) => {
+              this.options[i].label = convertReadableLabel(facet.label);
+              this.options[i].value = this.createCascaderItemValue(
+                facet.key,
+                undefined
+              );
+
+              // put "Show all" as first option
+              this.options[i].children.unshift({
+                value: this.createCascaderItemValue("Show all"),
+                label: "Show all",
+              });
+
+              // populate second level of options 
+              this.options[i].children.forEach((facetItem, j) => {
+                this.options[i].children[j].label = convertReadableLabel(
+                  facetItem.label
+                );
+                this.options[i].children[j].value =
+                  this.createCascaderItemValue(facet.label, facetItem.label);
+              });
             });
-            resolve([...new Set(facets)]); // return no duplicates
-          }
-        );
+          })
+          .finally(() => {
+            resolve();
+          });
       });
     },
-    // switchTermToRequest is used to remove the count for sending a request to scicrunch
-    switchTermToRequest: function(term) {
-      return term.split(" ")[0].toLowerCase();
-    },
-    tagsChangedCallback: function(presentTags) {
+    tagsChangedCallback: function (presentTags) {
       if (presentTags.length > 0) {
         this.showFiltersText = false;
       } else {
         this.showFiltersText = true;
       }
     },
-    cascadeEvent: function(event) {
-      let filters = [];
+    // cascadeEvent: initiate searches based off cascader changes
+    cascadeEvent: function (event) {
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
-        for (let i in event) {
-          if (event[i] !== undefined) {
-            let value = event[i][1];
-            let data = value.split("/");
-            let output = {};
-            output.term = this.switchTermToRequest(data[0]);
-            output.facet = data[1];
-            filters.push(output);
-          }
-        }
+
+        // Move results from arrays to object
+        let filters = event.filter( selection => selection !== undefined).map( fs => ({
+          facetPropPath: fs[0], 
+          facet: fs[1].split("/")[1],
+          term: fs[1].split("/")[0], 
+        }))
+
+        this.$emit('loading', true) // let sidebarcontent wait for the requests
+
+        this.$emit("filterResults", filters); // emit filters for apps above sidebar
+        this.setCascader(filters); //update our cascader v-model if we modified the event
+        this.makeCascadeLabelsClickable();
       }
-      this.$emit("filterResults", filters);
-      this.setCascader(filters); //update our cascader v-model if we modified the event
-      this.makeCascadeLabelsClickable();
     },
-    showAllEventModifier: function(event) {
+    // showAllEventModifier:  Modifies a cascade event to unlick all selections in category if "show all" is clicked. Also unchecks "Show all" if any secection is clicked
+    // *NOTE* Does NOT remove 'Show all' selections from showing in 'cascadeSelected'
+    showAllEventModifier: function (event) {
       // check if show all is in the cascader checked option list
       let hasShowAll = event
-        .map(ev => (ev ? ev[1].toLowerCase().includes("show all") : false))
+        .map((ev) => (ev ? ev[1].toLowerCase().includes("show all") : false))
         .includes(true);
       // remove all selected options below the show all if checked
       if (hasShowAll) {
@@ -260,63 +251,78 @@ export default {
             } else {
               return 0;
             }
-          } else
-            return 0;
+          } else return 0;
         });
       }
       return event;
     },
-    cascadeExpandChange: function(event) {
+    cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
       this.__expandItem__ = event;
       this.makeCascadeLabelsClickable();
     },
-    numberShownChanged: function(event) {
+    numberShownChanged: function (event) {
       this.$emit("numberPerPage", parseInt(event));
     },
-    callSciCrunch: function(apiLocation, endpoint, term) {
-      return new Promise(resolve => {
-        fetch(apiLocation + endpoint + term)
-          .then(response => response.json())
-          .then(data => {
-            resolve(data);
-          });
-      });
-    },
-    updatePreviousShowAllChecked: function(options) {
+    updatePreviousShowAllChecked: function (options) {
       //Reset the states
       for (const facet in this.previousShowAllChecked) {
         this.previousShowAllChecked[facet] = false;
       }
-      options.forEach(element => {
+      options.forEach((element) => {
         if (element[1].toLowerCase().includes("show all"))
           this.previousShowAllChecked[element[0]] = true;
       });
     },
-    setCascader: function(filterFacets) {
+    // setCascader: Clears previous selections and takes in an array of facets to select: filterFacets
+    // facets are in the form:
+    //    {
+    //      facetPropPath: 'anatomy.organ.name',
+    //      term: 'Sex',
+    //      facet: 'Male'
+    //    }
+    setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
-      if (this.cascaderIsReady) {
-        this.cascadeSelected = [];
-        filterFacets.forEach(e => {
-          this.cascadeSelected.push([
-            e.term.toLowerCase(),
-            this.createCascaderItemValue(
-              e.term.toLowerCase(),
-              e.facet.toLowerCase()
-            )
-          ]);
+      if (this.cascaderIsReady && filterFacets && filterFacets.length != 0) {
+        this.cascadeSelected = filterFacets.map(e => {
+          return [
+            e.facetPropPath,
+            this.createCascaderItemValue(capitalise(e.term), e.facet),
+          ]
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
       }
     },
-    makeCascadeLabelsClickable: function() {
+    addFilter: function (filter) {
+      //Do not set the value unless it is ready
+      if (this.cascaderIsReady && filter) {
+        this.cascadeSelected.filter(f=>f.term != filter.term)
+        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet)])
+      }
+    },
+    initiateSearch: function() {
+      this.cascadeEvent(this.cascadeSelected)
+    },
+    // checkShowAllBoxes: Checks each 'Show all' cascade option by using the setCascader function
+    checkShowAllBoxes: function(){
+      this.setCascader(
+        this.options.map(option => {
+          return {
+            facetPropPath: option.value,
+            term: option.label,
+            facet: 'Show all'
+          }
+        })
+      )
+    },
+    makeCascadeLabelsClickable: function () {
       // Next tick allows the cascader menu to change
       this.$nextTick(() => {
         this.$refs.cascader.$el
           .querySelectorAll(".el-cascader-node__label")
-          .forEach(el => {
+          .forEach((el) => {
             // step through each cascade label
-            el.onclick = function() {
+            el.onclick = function () {
               const checkbox = this.previousElementSibling;
               if (checkbox) {
                 if (!checkbox.parentElement.attributes["aria-owns"]) {
@@ -327,19 +333,18 @@ export default {
             };
           });
       });
-    }
+    },
   },
-  created: function() {
-    //Create non-reactive local variables
-    this.facetEndpoint = "get-facets/";
-  },
-  mounted: function() {
+  mounted: function () {
+    this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
     this.populateCascader().then(() => {
       this.cascaderIsReady = true;
+      this.checkShowAllBoxes()
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
     });
-  }
+  },
 };
 </script>
 
@@ -373,6 +378,10 @@ export default {
   color: #292b66;
   text-align: center;
   padding-bottom: 6px;
+}
+
+.cascader >>> .el-cascder-panel {
+  max-height: 500px;
 }
 
 .cascader >>> .el-scrollbar__wrap {

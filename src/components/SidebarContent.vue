@@ -16,9 +16,10 @@
       class="filters"
       ref="filtersRef"
       :entry="filterEntry"
-      :apiLocation="apiLocation"
+      :envVars="envVars"
       @filterResults="filterUpdate"
       @numberPerPage="numberPerPageUpdate"
+      @loading="filtersLoading"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div
@@ -27,7 +28,7 @@
       >No results found - Please change your search / filter criteria.</div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
       <div v-for="o in results" :key="o.id" class="step-item">
-        <DatasetCard :entry="o" :apiLocation="apiLocation"></DatasetCard>
+        <DatasetCard :entry="o" :envVars="envVars"></DatasetCard>
       </div>
       <el-pagination
         class="pagination"
@@ -61,6 +62,9 @@ import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
 import ContextCard from "./ContextCard.vue";
+
+import {AlgoliaClient} from "../algolia/algolia.js";
+import {getFilters} from "../algolia/utils.js"
 
 locale.use(lang);
 Vue.use(Button);
@@ -120,9 +124,9 @@ export default {
       type: Object,
       default: undefined
     },
-    apiLocation: {
-      type: String,
-      default: ""
+    envVars: {
+      type: Object,
+      default: () => {}
     },
     firstSearch: {
       type: String,
@@ -149,35 +153,53 @@ export default {
     }
   },
   methods: {
-    openSearch: function(search, filter = undefined,
-      endpoint = undefined, params = undefined) {
+    openSearch: function(filter, search='') {
       this.searchInput = search;
       this.resetPageNavigation();
-      this.searchSciCrunch(search, filter, endpoint, params);
+      this.searchAlgolia(filter, search);
       if (filter) {
         this.filter = [...filter];
         this.$refs.filtersRef.setCascader(this.filter);
       }
     },
+    addFilter: function(filter) {
+      this.resetPageNavigation();
+      if (filter) {
+        this.$refs.filtersRef.addFilter(filter);
+        this.$refs.filtersRef.initiateSearch()
+      }
+    },
     clearSearchClicked: function() {
       this.searchInput = "";
       this.resetPageNavigation();
-      this.searchSciCrunch(this.searchInput);
+      this.searchAlgolia(this.filters, this.searchInput);
     },
     searchEvent: function(event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation();
-        this.searchSciCrunch(this.searchInput);
+        this.searchAlgolia(this.filters, this.searchInput);
       }
     },
-    filterUpdate: function(filter) {
-      this.resetPageNavigation();
-      this.searchSciCrunch(this.searchInput, filter);
-      this.filter = [...filter];
+    filterUpdate: function(filters) {
+      this.filters = [...filters]
+      this.resetPageNavigation()
+      this.searchAlgolia(filters, this.searchInput)
       this.$emit("search-changed", {
         value: this.filter,
         type: "filter-update"
       });
+    },
+    searchAlgolia(filters, query=''){
+      // Algolia search
+      this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
+        this.numberOfHits = searchData.total
+        this.discoverIds = searchData.discoverIds
+        this.results = searchData.items
+        this.searchSciCrunch({'discoverIds':this.discoverIds})
+      })
+    },
+    filtersLoading: function (val) {
+      this.loadingCards = val;
     },
     numberPerPageUpdate: function(val) {
       this.numberPerPage = val;
@@ -185,18 +207,15 @@ export default {
     },
     pageChange: function(page) {
       this.start = (page - 1) * this.numberPerPage;
-      this.searchSciCrunch(this.searchInput);
+      this.page = page
+      this.searchAlgolia(this.filters, this.searchInput, this.numberPerPage, this.page)
     },
-    searchSciCrunch: function(search, filter = undefined,
-      searchEndpoint = undefined, params = undefined) {
+    searchSciCrunch: function(params) {
       this.loadingCards = true;
       this.results = [];
       this.disableCards();
-      if (!searchEndpoint) searchEndpoint = this.searchEndpoint;
-      if (!params)
-        params = this.createParams(filter, this.start, this.numberPerPage);
-      this.$emit("search-changed", { value: search, type: "query-update" });
-      this.callSciCrunch(this.apiLocation, searchEndpoint, search, params)
+      this.$emit("search-changed", { value: this.searchInput, type: "query-update" });
+      this.callSciCrunch(this.envVars.API_LOCATION, params)
         .then(result => {
           //Only process if the search term is the same as the last search term.
           //This avoid old search being displayed.
@@ -222,37 +241,10 @@ export default {
       this.start = 0;
       this.page = 1;
     },
-    createParams: function(filter, start, size) {
-      //Deconstruct list of fitlers to list of term
-      //and facet.
-      let params = {};
-      let term = [];
-      let facet = [];
-      let f = undefined;
-      if (filter !== undefined) {
-        f = filter;
-      } else {
-        f = this.filter;
-      }
-      if (f)
-        f.forEach(e => {
-          //Do not ask for any "show all" request
-          if (e.facet !== "show all") {
-            term.push(e.term);
-            facet.push(e.facet);
-          }
-        });
-      params.term = term;
-      params.facet = facet;
-      params.start = start;
-      params.size = size;
-      return params;
-    },
     resultsProcessing: function(data) {
       this.lastSearch = this.searchInput;
       this.results = [];
       let id = 0;
-      this.numberOfHits = data.numberOfHits;
       if (data.results.length === 0) {
         return;
       }
@@ -307,21 +299,16 @@ export default {
       }
       return p.toString();
     },
-    callSciCrunch: function(apiLocation, searchEndpoint, search, params = {}) {
+    callSciCrunch: function(apiLocation, params = {}) {
       return new Promise((resolve, reject) => {
         // the following controller will abort current search
         // if a new one has been started
         if (this._controller) this._controller.abort();
         this._controller = new AbortController();
         let signal = this._controller.signal;
-        var endpoint = apiLocation + searchEndpoint;
         // Add parameters if we are sent them
-        if (search !== "" && Object.entries(params).length !== 0) {
-          endpoint = endpoint + search + "/?" + this.createfilterParams(params);
-        } else {
-          endpoint = endpoint + "?" + this.createfilterParams(params);
-        }
-        fetch(endpoint, { signal })
+        let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
+        fetch(fullEndpoint, { signal })
           .then(handleErrors)
           .then(response => response.json())
           .then(data => resolve(data))
@@ -330,24 +317,21 @@ export default {
     }
   },
   mounted: function() {
+    // initialise algolia
+    this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
+    console.log('Algolia initialised in sidebar')
+
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
-      this.openSearch('', [
-        {facet: "show all", term:'species'},
-        {facet: "show all", term:'gender'},
-        {facet: "show all", term:'organ'},
-        {facet: "show all", term:'datasets'}]);
+      this.openSearch(undefined, '')
     } else {
-      this.openSearch(this.firstSearch,  [
-        {facet: "show all", term:'species'},
-        {facet: "show all", term:'gender'},
-        {facet: "show all", term:'organ'},
-        {facet: "show all", term:'datasets'}]);
+      this.openSearch(undefined, '');
     }
   },
   created: function() {
     //Create non-reactive local variables
-    this.searchEndpoint = "filter-search/";
+    this.searchEndpoint = "dataset_info/using_multiple_discoverIds/";
   }
 };
 </script>

@@ -33,12 +33,21 @@ import '@abi-software/map-side-bar/dist/map-side-bar.css'
 The code should looks like this
 
 ```html
-<SideBar :apiLocation="apiLocation"
+<SideBar :envVars="envVars"
          :visible="sideBarVisibility"
          @actionClick="actionClick">
 </SideBar>
 ```
 
-apiLocation is the api endpoint.
+envVars contains environment varibables like so:
+
+```yaml
+{
+  API_LOCATION: 'http://localhost:5000/',
+  ALGOLIA_KEY: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
+  ALGOLIA_ID: 'xxxxx',
+  ALGOLIA_INDEX: 'k-core_dev_published_time_desc',
+}
+```
 
 actionClick event is called when an action button has benn clicked on.

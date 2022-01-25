@@ -1,6 +1,6 @@
 {
   "name": "@abi-software/map-side-bar",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "main": "./dist/map-side-bar.common.js",
   "files": [
     "dist/*",
@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@abi-software/svg-sprite": "^0.1.12",
+    "algoliasearch": "^4.10.5",
     "element-ui": "^2.13.0",
     "vue": "^2.6.10"
   },
@@ -32,6 +33,7 @@
     "file-loader": "^5.0.2",
     "raw-loader": "^0.5.1",
     "transform-loader": "^0.2.4",
+    "typescript": "^4.4.3",
     "vue-custom-element": "^3.3.0",
     "vue-template-compiler": "^2.6.10",
     "webpack-node-externals": "^2.5.2"
