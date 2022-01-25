@@ -68,9 +68,9 @@ export default {
      * the required viewing.
      */
     entry: Object,
-    apiLocation: {
-      type: String,
-      default: ""
+    envVars: {
+      type: Object,
+      default: () => {}
     },
   },
   data: function () {
@@ -102,18 +102,28 @@ export default {
     },
     samples: function() {
       let text = "";
-      if (this.entry.numberSamples === 1) {
-        text = this.entry.numberSamples + " sample";
-      } else if (this.entry.numberSamples > 1) {
-        text = this.entry.numberSamples + " samples";
-      }
       if (this.entry.species) {
         if (speciesMap[this.entry.species[0].toLowerCase()]){
-          text += ` (${speciesMap[this.entry.species[0].toLowerCase()]})`
+          text = `${speciesMap[this.entry.species[0].toLowerCase()]}`;
         } else {
-          text += ` (${this.entry.species})`
+          text = `${this.entry.species}`;
         }
       }
+      if (this.entry.numberSamples > 0) {
+        text += " (";
+        if (this.entry.numberSamples === 1) {
+          text += `${this.entry.numberSamples} sample`;
+        } else if (this.entry.numberSamples > 1) {
+          text += `${this.entry.numberSamples} samples`;
+        }
+        if (this.entry.numberSubjects === 1) {
+          text += ` from ${this.entry.numberSubjects} subject`;
+        } else if (this.entry.numberSamples > 1) {
+          text += ` from ${this.entry.numberSubjects} subjects`;
+        }
+        text += ")";
+      }
+
       return text;
     },
     label: function(){
@@ -156,7 +166,7 @@ export default {
       window.open(this.dataLocation,'_blank');
     },
     openRepository: function() {
-      let apiLocation = this.apiLocation;
+      let apiLocation = this.envVars.API_LOCATION;
       this.entry.additionalLinks.forEach(function(el) {
         if (el.description == "Repository") {
           let xmlhttp = new XMLHttpRequest();
@@ -250,11 +260,11 @@ export default {
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
-      let path = `${this.apiLocation}s3-resource/${id}/${version}/files/${scaffoldPath}`
+      let path = `${this.envVars.API_LOCATION}s3-resource/${id}/${version}/files/${scaffoldPath}`
       return path
     },
     getFileFromPath: function(discoverId, version, path){
-      return  `${this.apiLocation}s3-resource/${discoverId}/${version}/files/${path}`
+      return  `${this.envVars.API_LOCATION}s3-resource/${discoverId}/${version}/files/${path}`
     },
     isOverflown: function(el){
       return el.clientHeight < el.scrollHeight
@@ -292,7 +302,8 @@ export default {
       return fullName.split(',')[0]
     },
     getBiolucidaInfo: function(id) {
-      let endpoint = this.apiLocation + "image_search/" + id;
+      let apiLocation = this.envVars.API_LOCATION;
+      let endpoint = apiLocation + "image_search/" + id;
       // Add parameters if we are sent them
       fetch(endpoint)
         .then(response => response.json())
