@@ -302,7 +302,8 @@ export default {
       return fullName.split(',')[0]
     },
     getBiolucidaInfo: function(id) {
-      let endpoint = this.apiLocation + "image_search/" + id;
+      let apiLocation = this.envVars.API_LOCATION;
+      let endpoint = apiLocation + "image_search/" + id;
       // Add parameters if we are sent them
       fetch(endpoint)
         .then(response => response.json())
