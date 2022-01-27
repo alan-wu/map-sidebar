@@ -1,6 +1,6 @@
 <template>
   <div class="filters">
-    <SvgSpriteColor />
+    <map-svg-sprite-color />
     <transition name="el-zoom-in-top">
       <span v-show="showFilters" class="search-filters transition-box">
         <custom-cascader
@@ -18,7 +18,7 @@
           @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
-          <svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
+          <map-svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
         </div>
       </span>
     </transition>
@@ -44,9 +44,7 @@ import CustomCascader from "./Cascader";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
-import { SvgIcon, SvgSpriteColor } from "@abi-software/svg-sprite";
-
-Vue.component("svg-icon", SvgIcon);
+import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 locale.use(lang);
 Vue.use(Option);
@@ -69,7 +67,8 @@ export default {
   name: "SearchFilters",
   components: {
     CustomCascader,
-    SvgSpriteColor
+    MapSvgIcon,
+    MapSvgSpriteColor
   },
   props: {
     /**
