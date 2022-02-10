@@ -194,8 +194,7 @@ export default {
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds
-        this.results = searchData.items
-        this.searchSciCrunch({'discoverIds':this.discoverIds})
+        this.searchSciCrunch({'dois':this.dois})
       })
     },
     filtersLoading: function (val) {
@@ -331,7 +330,7 @@ export default {
   },
   created: function() {
     //Create non-reactive local variables
-    this.searchEndpoint = "dataset_info/using_multiple_discoverIds/";
+    this.searchEndpoint = "dataset_info/using_multiple_dois/";
   }
 };
 </script>
