@@ -194,7 +194,9 @@ export default {
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds
-        this.searchSciCrunch({'dois':this.dois})
+        this.dois = searchData.dois
+        this.results = searchData.items
+        this.searchSciCrunch({'dois': this.dois})
       })
     },
     filtersLoading: function (val) {
