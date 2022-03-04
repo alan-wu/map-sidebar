@@ -185,7 +185,7 @@ export default {
       this.resetPageNavigation()
       this.searchAlgolia(filters, this.searchInput)
       this.$emit("search-changed", {
-        value: this.filter,
+        value: filters,
         type: "filter-update"
       });
     },
