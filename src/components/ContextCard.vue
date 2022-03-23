@@ -9,7 +9,7 @@
         <div>{{contextData.description}}</div>
         <template v-for="(key, i) in contextData.views">
           <br v-bind:key="i"/>
-          <span v-bind:key="i+'_1'"><img :src="getFileFromPath(key.thumbnail) " style="height: 25px;"> {{key.id}}</span>
+          <span v-bind:key="i+'_1'"><img :src="getFileFromPath(key.thumbnail) " style="height: 25px;"> {{key.description}}</span>
         </template>
       </div>
     </el-card>
