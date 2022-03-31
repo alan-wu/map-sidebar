@@ -90,7 +90,7 @@ export default {
       this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'})
     },
     multiFacets: function(){
-      this.$refs.sideBar.openSearch('', [{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}])
+      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
     },
     neuronSearch: function(){
       this.$refs.sideBar.openNeuronSearch('neuron-type-keast-10')
