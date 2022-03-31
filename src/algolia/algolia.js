@@ -89,7 +89,8 @@ export class AlgoliaClient {
         let searchData = {
           items: response.hits,
           total: response.nbHits,
-          discoverIds: response.hits.map(r=>r.pennsieve.identifier)
+          discoverIds: response.hits.map(r=>r.pennsieve.identifier),
+          dois: response.hits.map(r=>r.item.curie.split(':')[1])
         }
         resolve(searchData)
       })

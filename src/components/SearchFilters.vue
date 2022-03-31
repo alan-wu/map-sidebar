@@ -18,7 +18,8 @@
           @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
-          <map-svg-icon icon="noun-filter" class="filter-icon-inside" />Apply Filters
+          <map-svg-icon icon="noun-filter" class="filter-icon-inside" />Apply
+          Filters
         </div>
       </span>
     </transition>
@@ -49,11 +50,10 @@ import CustomCascader from "./Cascader";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
+import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
 import { facetPropPathMapping } from "../algolia/utils.js";
-
-import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 locale.use(lang);
 Vue.use(Option);
@@ -77,7 +77,7 @@ export default {
   components: {
     CustomCascader,
     MapSvgIcon,
-    MapSvgSpriteColor
+    MapSvgSpriteColor,
   },
   props: {
     /**
