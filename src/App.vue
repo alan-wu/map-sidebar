@@ -8,7 +8,7 @@
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
-      :tabs="tabArray" :activeId="activeId" @tabClicked="tabClicked"
+      :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked"
       @search-changed="searchChanged($event)" @actionClick="action"/>
   </div>
 </template>
@@ -17,6 +17,36 @@
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
 import SideBar from './components/SideBar'
+
+let testContext = {
+    "version": "0.1.0",
+    "heading": "Generic mouse colon scaffold",
+    "description": "Annotated mouse colon scaffold available for registration of segmented neural anatomical-functional mapping of enteric neural circuits.",
+    "samples": [],
+    "views": [
+        {
+            "annotation": "UBERON:0008971",
+            "id": "View 1",
+            "path": "derivative/distalColon_view.json",
+            "sample": "--",
+            "thumbnail": "derivative/distalColon_thumbnail.jpeg"
+        },
+        {
+            "annotation": "UBERON:0008972",
+            "id": "View 2",
+            "path": "derivative/proximalColon_view.json",
+            "sample": "--",
+            "thumbnail": "derivative/proximalColon_thumbnail.jpeg"
+        },
+        {
+            "annotation": "UBERON:0001157",
+            "id": "View 3",
+            "path": "derivative/transverseColon_view.json",
+            "sample": "--",
+            "thumbnail": "derivative/transverseColon_thumbnail.jpeg"
+        }
+    ]
+}
 
 export default {
   name: 'app',
@@ -35,7 +65,7 @@ export default {
   data: function(){
     return {
       tabArray: [{title: 'Flatmap', id:1},{title: 'Heart Scaffold', id:2},{title: 'Stomach Scaffold', id:3}],
-      contextArray: [null,{
+      contextArray: [testContext,{
         title: "Neural paths mapped to a heart scaffold",
         description: "Points are mapped to their positions on a 3d heart that is mapped to the data.",
         bannerImage: 'https://image.prntscr.com/image/aNIksBFARaKwlKhpnDCKbA.png',
