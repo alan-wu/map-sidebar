@@ -18,9 +18,28 @@
           @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
-          <map-svg-icon icon="noun-filter" class="filter-icon-inside" />Apply
           Filters
         </div>
+        <el-popover
+          title="How do filters work?"
+          width="250"
+          trigger="click"
+          :append-to-body=false
+          popper-class="popover"
+          >
+          <map-svg-icon slot="reference" icon="help" class="help"/>
+          <div >
+            <strong>Within categories:</strong> OR 
+            <br/>
+            example: 'heart' OR 'colon'
+            <br/>
+            <br/>
+            <strong>Between categories:</strong> AND
+            <br/>
+            example: 'rat' AND 'lung'
+          </div>
+        </el-popover>
+        
       </span>
     </transition>
 
@@ -45,7 +64,7 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
-import { Option, Select } from "element-ui";
+import { Option, Select, Popover } from "element-ui";
 import CustomCascader from "./Cascader";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
@@ -58,6 +77,7 @@ import { facetPropPathMapping } from "../algolia/utils.js";
 locale.use(lang);
 Vue.use(Option);
 Vue.use(Select);
+Vue.use(Popover)
 
 const capitalise = function (txt) {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
@@ -157,6 +177,18 @@ export default {
                   this.createCascaderItemValue(facet.label, facetItem.label);
               });
             });
+            let dataFacet = {...this.facets[2]}
+            let newChildren = dataFacet.children.filter( el=> {
+              if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
+                return el
+              }
+            })
+            newChildren.push({label:'Image'})
+            dataFacet.children = newChildren
+            window.newChildren = newChildren
+            window.ff = dataFacet
+            dataFacet.label = 'Data type'
+            this.facets.push(dataFacet)
           })
           .finally(() => {
             resolve();
@@ -356,6 +388,20 @@ export default {
   left: 0;
   padding-top: 10px;
   padding-left: 16px;
+}
+
+.help {
+  width: 24px !important;
+  height: 24px;
+  transform: scale(1.1);
+  color: #8300bf;
+  cursor: pointer;
+}
+
+.popover {
+  color: rgb(48, 49, 51);
+  font-family: Asap;
+  margin: 12px;
 }
 
 .filter-icon-inside {
