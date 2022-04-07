@@ -485,4 +485,51 @@ export default {
 .cascader >>> .el-cascader-node__label {
   text-align: left;
 }
+
+.filters >>> .el-popover {
+    background: #f3ecf6 !important;
+    border: 1px solid #8300BF;
+    border-radius: 4px;
+    color: #303133 !important;
+    font-size: 12px;
+    line-height: 18px;
+  
+  
+}
+
+.filters >>> .el-popover[x-placement^="top"] .popper__arrow {
+  border-top-color: #8300BF;
+  border-bottom-width: 0;
+}
+.filters >>> .el-popover[x-placement^="top"] .popper__arrow::after {
+  border-top-color: #f3ecf6;
+  border-bottom-width: 0;
+}
+
+.filters >>> .el-popover[x-placement^="bottom"] .popper__arrow {
+  border-top-width: 0;
+  border-bottom-color: #8300BF;
+}
+.filters >>> .el-popover[x-placement^="bottom"] .popper__arrow::after {
+  border-top-width: 0;
+  border-bottom-color: #f3ecf6;
+}
+
+.filters >>> .el-popover[x-placement^="right"] .popper__arrow {
+  border-right-color: #8300BF;
+  border-left-width: 0;
+}
+.filters >>> .el-popover[x-placement^="right"] .popper__arrow::after {
+  border-right-color: #f3ecf6;
+  border-left-width: 0;
+}
+
+.filters >>> .el-popover[x-placement^="left"] .popper__arrow {
+  border-right-width: 0;
+  border-left-color: #8300BF;
+}
+.filters >>> .el-popover[x-placement^="left"] .popper__arrow::after {
+  border-right-width: 0;
+  border-left-color: #f3ecf6;
+}
 </style>

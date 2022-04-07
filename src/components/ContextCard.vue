@@ -7,9 +7,9 @@
       <div class="card-right">
         <div class="title">{{contextData.heading}}</div>
         <div>{{contextData.description}}</div>
-        <template v-for="(key, i) in contextData.views">
+        <template v-for="(view, i) in contextData.views">
           <br v-bind:key="i"/>
-          <span v-bind:key="i+'_1'"><img :src="getFileFromPath(key.thumbnail) " style="height: 25px;"> {{key.description}}</span>
+          <span v-bind:key="i+'_1'" @click="openViewFile(view)" style="cursor:pointer;"><img :src="getFileFromPath(view.thumbnail)" style="height: 25px;"> {{view.description}}</span>
         </template>
       </div>
     </el-card>
@@ -23,6 +23,7 @@ import Vue from "vue";
 import { Link, Icon, Card, Button, Select, Input } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
+import EventBus from "./EventBus"
 
 locale.use(lang);
 Vue.use(Link);
@@ -49,8 +50,10 @@ export default {
       showDetails: true
     };
   },
-  computed: {
-
+  watch: {
+    'entry.contextCardUrl'(val){
+      this.getContextFile(val)
+    }
   },
   methods: {
     getContextFile: function (contextFileUrl) {
@@ -75,6 +78,13 @@ export default {
     getFileFromPath: function(path){
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
+    openViewFile: function(view){
+
+      // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
+      this.entry.viewUrl = view.path.split('/')[view.path.split('/').length-1]
+      EventBus.$emit("PopoverActionClick", this.entry)
+    }
+    
   },
   mounted: function(){
     this.getContextFile(this.entry.contextCardUrl)
