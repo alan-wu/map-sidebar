@@ -177,18 +177,7 @@ export default {
                   this.createCascaderItemValue(facet.label, facetItem.label);
               });
             });
-            let dataFacet = {...this.facets[2]}
-            let newChildren = dataFacet.children.filter( el=> {
-              if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
-                return el
-              }
-            })
-            newChildren.push({label:'Image'})
-            dataFacet.children = newChildren
-            window.newChildren = newChildren
-            window.ff = dataFacet
-            dataFacet.label = 'Data type'
-            this.facets.push(dataFacet)
+            this.createDataTypeFacet()
           })
           .finally(() => {
             resolve();
@@ -208,17 +197,28 @@ export default {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
 
-        // Move results from arrays to object
-        let filters = event.filter( selection => selection !== undefined).map( fs => ({
+        // Create results for the filter update 
+        let filterKeys = event.filter( selection => selection !== undefined).map( fs => ({
           facetPropPath: fs[0], 
           facet: fs[1].split("/")[1],
           term: fs[1].split("/")[0], 
         }))
 
+        // Move results from arrays to object for use on scicrunch (note that we remove 'duplicate' as that is only needed for filter keys)
+        let filters = event.filter( selection => selection !== undefined).map( fs => {
+          let propPath = fs[0].includes('duplicate') ? fs[0].split('duplicate')[0] : fs[0]
+          return {
+            facetPropPath: propPath, 
+            facet: fs[1].split("/")[1],
+            term: fs[1].split("/")[0], 
+          }
+        })
+
+
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
         this.$emit("filterResults", filters); // emit filters for apps above sidebar
-        this.setCascader(filters); //update our cascader v-model if we modified the event
+        this.setCascader(filterKeys); //update our cascader v-model if we modified the event
         this.makeCascadeLabelsClickable();
       }
     },
@@ -286,6 +286,28 @@ export default {
         });
       }
       return event;
+    },
+    createDataTypeFacet: function(){
+      let dataFacet = {...this.facets[2]} // copy the 'Experiemental approach' facet
+      let count = this.facets.at(-1).id // get the last id count
+
+      // Step through the children that are valid data types, switch thier values 
+      let newChildren = dataFacet.children.filter( el=> {
+        if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
+          el.key = el.label
+          el.id = count
+          el.value = el.value.replace('Experimental approach', 'Data type')
+          count++
+          return el
+        }
+      })
+      dataFacet.id = count
+      dataFacet.key = 'Data type'
+      // Add 'duplicate' so that the key is unique. This is removed in the cascade event for filtering
+      dataFacet.value += 'duplicate' 
+      dataFacet.children = newChildren
+      dataFacet.label = 'Data type'
+      this.facets.push(dataFacet)
     },
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props

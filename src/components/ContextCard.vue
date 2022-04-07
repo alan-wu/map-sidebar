@@ -82,6 +82,7 @@ export default {
 
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
       this.entry.viewUrl = view.path.split('/')[view.path.split('/').length-1]
+      this.entry.type = 'Scaffold View'
       EventBus.$emit("PopoverActionClick", this.entry)
     }
     
