@@ -85,7 +85,15 @@ export default {
           this.discoverId = undefined
         });
     },
+    removeDoubleFilesPath: function(path){
+      if (path.includes('files/files/')){
+        return path.replace('files/files/', 'files/')
+      } else {
+        return path
+      }
+    },
     getFileFromPath: function(path){
+      path = this.removeDoubleFilesPath(path)
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
     openViewFile: function(view){

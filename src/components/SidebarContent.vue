@@ -1,7 +1,7 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card v-if="contextCardEntry" :entry="contextCardEntry" />
+      <context-card v-if="contextCardEntry && contextCardEnabled" :entry="contextCardEntry" />
       <el-input
         class="search-input"
         placeholder="Search"
@@ -102,7 +102,8 @@ var initial_state = {
   start: 0,
   hasSearched: false,
   sciCrunchError: false,
-  contextCardEntry: undefined
+  contextCardEntry: undefined,
+  contextCardEnabled: false
 };
 
 export default {
