@@ -23,7 +23,7 @@
         <el-popover
           title="How do filters work?"
           width="250"
-          trigger="click"
+          trigger="hover"
           :append-to-body=false
           popper-class="popover"
           >

@@ -1,18 +1,20 @@
 <template>
   <div class="context-card-container"  ref="container">
-    <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
-    <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
-    <el-card v-if="showDetails && Object.keys(contextData).length !== 0" class="context-card card" :body-style="{ padding: '0px', 'background-color': 'white', display: 'flex', width: '516px'}">
-      <img :src="entry.banner" class="context-image card-left">
-      <div class="card-right">
-        <div class="title">{{contextData.heading}}</div>
-        <div>{{contextData.description}}</div>
-        <template v-for="(view, i) in contextData.views">
-          <br v-bind:key="i"/>
-          <span v-bind:key="i+'_1'" @click="openViewFile(view)" style="cursor:pointer;"><img :src="getFileFromPath(view.thumbnail)" style="height: 25px;"> {{view.description}}</span>
-        </template>
-      </div>
-    </el-card>
+    <div v-show="showContextCard">
+      <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
+      <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
+      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" class="context-card card" >
+        <img :src="entry.banner" class="context-image card-left">
+        <div class="card-right">
+          <div class="title">{{contextData.heading}}</div>
+          <div>{{contextData.description}}</div>
+          <template v-for="(view, i) in contextData.views">
+            <br v-bind:key="i"/>
+            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="scaffold-view"><img :src="getFileFromPath(view.thumbnail)"> {{view.description}}</span>
+          </template>
+        </div>
+      </el-card>
+    </div>
   </div>
 </template>
 
@@ -47,12 +49,21 @@ export default {
   data: function () {
     return {
       contextData: {},
-      showDetails: true
+      showDetails: true,
+      showContextCard: true
     };
   },
   watch: {
-    'entry.contextCardUrl'(val){
-      this.getContextFile(val)
+    'entry.contextCardUrl': {
+      handler(val){
+        if (val) {
+          this.getContextFile(val)
+          this.showContextCard = true
+        } else {
+          this.showContextCard = false
+        }
+      },
+      immediate: true
     }
   },
   methods: {
@@ -67,7 +78,6 @@ export default {
         })
         .then((data) => {
           this.contextData = data
-          console.log(this.contextData)
         })
         .catch(() => {
           //set defaults if we hit an error
@@ -75,7 +85,15 @@ export default {
           this.discoverId = undefined
         });
     },
+    removeDoubleFilesPath: function(path){
+      if (path.includes('files/files/')){
+        return path.replace('files/files/', 'files/')
+      } else {
+        return path
+      }
+    },
     getFileFromPath: function(path){
+      path = this.removeDoubleFilesPath(path)
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
     openViewFile: function(view){
@@ -85,10 +103,6 @@ export default {
       this.entry.type = 'Scaffold View'
       EventBus.$emit("PopoverActionClick", this.entry)
     }
-    
-  },
-  mounted: function(){
-    this.getContextFile(this.entry.contextCardUrl)
   }
 };
 </script>
@@ -103,6 +117,12 @@ export default {
 
 .context-card{
   background-color: white;
+}
+
+.context-card >>> .el-card__body {
+  padding: 0px;
+  display: flex;
+  width: 516px;   
 }
 
 .context-image{
@@ -124,6 +144,11 @@ export default {
 .card-right {
   flex: 1.3;
   padding-left: 6px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+  height: 25px;
 }
 
 .title{

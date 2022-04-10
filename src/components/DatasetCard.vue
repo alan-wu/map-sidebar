@@ -18,9 +18,6 @@
             <el-button v-if="entry.scaffolds" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
           </div>
           <div>
-            <el-button v-if="entry.contextualInformation" @click="openContext" size="mini" class="button" icon="el-icon-view">View context data</el-button>
-          </div>
-          <div>
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
           </div>
           <div>
@@ -139,20 +136,6 @@ export default {
       let action = {
           label: capitalise(this.label),
           resource: this.getScaffoldPath(this.discoverId, this.version, this.entry.scaffolds[0].dataset.path),
-          title: "View 3D scaffold",
-          type: "Scaffold",
-          discoverId: this.discoverId,
-          apiLocation: this.envVars.API_LOCATION,
-          version: this.version,
-          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
-          banner: this.thumbnail
-        }
-        this.propogateCardAction(action)
-    },
-    openContext: function(){
-      let action = {
-          label: capitalise(this.label),
-          resource: 'not used',
           title: "View 3D scaffold",
           type: "Scaffold",
           discoverId: this.discoverId,
