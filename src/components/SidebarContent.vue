@@ -1,7 +1,7 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card v-if="contextCardEntry" :entry="contextCardEntry" />
+      <context-card v-if="contextCardEntry && contextCardEnabled" :entry="contextCardEntry" />
       <el-input
         class="search-input"
         placeholder="Search"
@@ -28,7 +28,7 @@
       >No results found - Please change your search / filter criteria.</div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
       <div v-for="o in results" :key="o.id" class="step-item">
-        <DatasetCard :entry="o" :envVars="envVars"></DatasetCard>
+        <DatasetCard :entry="o" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
       </div>
       <el-pagination
         class="pagination"
@@ -101,7 +101,9 @@ var initial_state = {
   pageModel: 1,
   start: 0,
   hasSearched: false,
-  sciCrunchError: false
+  sciCrunchError: false,
+  contextCardEntry: undefined,
+  contextCardEnabled: false
 };
 
 export default {
@@ -119,10 +121,6 @@ export default {
     entry: {
       type: Object,
       default: () => initial_state
-    },
-    contextCardEntry: {
-      type: Object,
-      default: undefined
     },
     envVars: {
       type: Object,
@@ -153,6 +151,9 @@ export default {
     }
   },
   methods: {
+    contextCardUpdate: function(val){
+      this.contextCardEntry = val
+    },
     openSearch: function(filter, search='') {
       this.searchInput = search;
       this.resetPageNavigation();
@@ -277,6 +278,7 @@ export default {
           doi: element.doi,
           publishDate: element.publishDate,
           scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
+          contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           additionalLinks: element.additionalLinks,
           segmentation: element['mbf-segmentation'],
           simulation: element.additionalLinks

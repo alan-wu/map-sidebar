@@ -1,18 +1,20 @@
 <template>
   <div class="context-card-container"  ref="container">
-    <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
-    <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
-    <el-card v-show="showDetails" class="context-card card" :body-style="{ padding: '0px', 'background-color': 'white', display: 'flex', width: '516px'}">
-      <img :src="entry.bannerImage" class="context-image card-left">
-      <div class="card-right">
-        <div class="title">{{entry.title}}</div>
-        <div>{{entry.description}}</div>
-        <template v-for="key in entry.keys">
-          <br v-bind:key="key.text"/>
-          <span v-bind:key="key.text + 1"><img :src="key.image" style="height: 20px;"> {{key.text}}</span>
-        </template>
-      </div>
-    </el-card>
+    <div v-show="showContextCard">
+      <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
+      <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
+      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" class="context-card card" >
+        <img :src="entry.banner" class="context-image card-left">
+        <div class="card-right">
+          <div class="title">{{contextData.heading}}</div>
+          <div>{{contextData.description}}</div>
+          <template v-for="(view, i) in contextData.views">
+            <br v-bind:key="i"/>
+            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="scaffold-view"><img :src="getFileFromPath(view.thumbnail)"> {{view.description}}</span>
+          </template>
+        </div>
+      </el-card>
+    </div>
   </div>
 </template>
 
@@ -23,6 +25,7 @@ import Vue from "vue";
 import { Link, Icon, Card, Button, Select, Input } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
+import EventBus from "./EventBus"
 
 locale.use(lang);
 Vue.use(Link);
@@ -45,14 +48,62 @@ export default {
   },
   data: function () {
     return {
-      showDetails: true
+      contextData: {},
+      showDetails: true,
+      showContextCard: true
     };
   },
-  computed: {
-
+  watch: {
+    'entry.contextCardUrl': {
+      handler(val){
+        if (val) {
+          this.getContextFile(val)
+          this.showContextCard = true
+        } else {
+          this.showContextCard = false
+        }
+      },
+      immediate: true
+    }
   },
   methods: {
-  },
+    getContextFile: function (contextFileUrl) {
+      fetch(contextFileUrl)
+        .then((response) =>{
+          if (!response.ok){
+            throw Error(response.statusText)
+          } else {
+             return response.json()
+          }
+        })
+        .then((data) => {
+          this.contextData = data
+        })
+        .catch(() => {
+          //set defaults if we hit an error
+          this.thumbnail = require('@/../assets/missing-image.svg')
+          this.discoverId = undefined
+        });
+    },
+    removeDoubleFilesPath: function(path){
+      if (path.includes('files/files/')){
+        return path.replace('files/files/', 'files/')
+      } else {
+        return path
+      }
+    },
+    getFileFromPath: function(path){
+      path = this.removeDoubleFilesPath(path)
+      return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
+    },
+    openViewFile: function(view){
+
+      // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
+      this.entry.viewUrl = view.path.split('/')[view.path.split('/').length-1]
+      this.entry.type = 'Scaffold View'
+      EventBus.$emit("PopoverActionClick", this.entry)
+    }
+  }
 };
 </script>
 
@@ -66,6 +117,12 @@ export default {
 
 .context-card{
   background-color: white;
+}
+
+.context-card >>> .el-card__body {
+  padding: 0px;
+  display: flex;
+  width: 516px;   
 }
 
 .context-image{
@@ -87,6 +144,11 @@ export default {
 .card-right {
   flex: 1.3;
   padding-left: 6px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+  height: 25px;
 }
 
 .title{

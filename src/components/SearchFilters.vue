@@ -18,9 +18,28 @@
           @tags-changed="tagsChangedCallback"
         ></custom-cascader>
         <div v-if="showFiltersText" class="filter-default-value">
-          <map-svg-icon icon="noun-filter" class="filter-icon-inside" />Apply
           Filters
         </div>
+        <el-popover
+          title="How do filters work?"
+          width="250"
+          trigger="hover"
+          :append-to-body=false
+          popper-class="popover"
+          >
+          <map-svg-icon slot="reference" icon="help" class="help"/>
+          <div >
+            <strong>Within categories:</strong> OR 
+            <br/>
+            example: 'heart' OR 'colon'
+            <br/>
+            <br/>
+            <strong>Between categories:</strong> AND
+            <br/>
+            example: 'rat' AND 'lung'
+          </div>
+        </el-popover>
+        
       </span>
     </transition>
 
@@ -45,7 +64,7 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
-import { Option, Select } from "element-ui";
+import { Option, Select, Popover } from "element-ui";
 import CustomCascader from "./Cascader";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
@@ -58,6 +77,7 @@ import { facetPropPathMapping } from "../algolia/utils.js";
 locale.use(lang);
 Vue.use(Option);
 Vue.use(Select);
+Vue.use(Popover)
 
 const capitalise = function (txt) {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
@@ -157,6 +177,7 @@ export default {
                   this.createCascaderItemValue(facet.label, facetItem.label);
               });
             });
+            this.createDataTypeFacet()
           })
           .finally(() => {
             resolve();
@@ -176,17 +197,28 @@ export default {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
 
-        // Move results from arrays to object
-        let filters = event.filter( selection => selection !== undefined).map( fs => ({
+        // Create results for the filter update 
+        let filterKeys = event.filter( selection => selection !== undefined).map( fs => ({
           facetPropPath: fs[0], 
           facet: fs[1].split("/")[1],
           term: fs[1].split("/")[0], 
         }))
 
+        // Move results from arrays to object for use on scicrunch (note that we remove 'duplicate' as that is only needed for filter keys)
+        let filters = event.filter( selection => selection !== undefined).map( fs => {
+          let propPath = fs[0].includes('duplicate') ? fs[0].split('duplicate')[0] : fs[0]
+          return {
+            facetPropPath: propPath, 
+            facet: fs[1].split("/")[1],
+            term: fs[1].split("/")[0], 
+          }
+        })
+
+
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
         this.$emit("filterResults", filters); // emit filters for apps above sidebar
-        this.setCascader(filters); //update our cascader v-model if we modified the event
+        this.setCascader(filterKeys); //update our cascader v-model if we modified the event
         this.makeCascadeLabelsClickable();
       }
     },
@@ -254,6 +286,28 @@ export default {
         });
       }
       return event;
+    },
+    createDataTypeFacet: function(){
+      let dataFacet = {...this.facets[2]} // copy the 'Experiemental approach' facet
+      let count = this.facets.at(-1).id // get the last id count
+
+      // Step through the children that are valid data types, switch thier values 
+      let newChildren = dataFacet.children.filter( el=> {
+        if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
+          el.key = el.label
+          el.id = count
+          el.value = el.value.replace('Experimental approach', 'Data type')
+          count++
+          return el
+        }
+      })
+      dataFacet.id = count
+      dataFacet.key = 'Data type'
+      // Add 'duplicate' so that the key is unique. This is removed in the cascade event for filtering
+      dataFacet.value += 'duplicate' 
+      dataFacet.children = newChildren
+      dataFacet.label = 'Data type'
+      this.facets.push(dataFacet)
     },
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
@@ -358,6 +412,20 @@ export default {
   padding-left: 16px;
 }
 
+.help {
+  width: 24px !important;
+  height: 24px;
+  transform: scale(1.1);
+  color: #8300bf;
+  cursor: pointer;
+}
+
+.popover {
+  color: rgb(48, 49, 51);
+  font-family: Asap;
+  margin: 12px;
+}
+
 .filter-icon-inside {
   width: 12px !important;
   height: 12px !important;
@@ -438,5 +506,52 @@ export default {
 
 .cascader >>> .el-cascader-node__label {
   text-align: left;
+}
+
+.filters >>> .el-popover {
+    background: #f3ecf6 !important;
+    border: 1px solid #8300BF;
+    border-radius: 4px;
+    color: #303133 !important;
+    font-size: 12px;
+    line-height: 18px;
+  
+  
+}
+
+.filters >>> .el-popover[x-placement^="top"] .popper__arrow {
+  border-top-color: #8300BF;
+  border-bottom-width: 0;
+}
+.filters >>> .el-popover[x-placement^="top"] .popper__arrow::after {
+  border-top-color: #f3ecf6;
+  border-bottom-width: 0;
+}
+
+.filters >>> .el-popover[x-placement^="bottom"] .popper__arrow {
+  border-top-width: 0;
+  border-bottom-color: #8300BF;
+}
+.filters >>> .el-popover[x-placement^="bottom"] .popper__arrow::after {
+  border-top-width: 0;
+  border-bottom-color: #f3ecf6;
+}
+
+.filters >>> .el-popover[x-placement^="right"] .popper__arrow {
+  border-right-color: #8300BF;
+  border-left-width: 0;
+}
+.filters >>> .el-popover[x-placement^="right"] .popper__arrow::after {
+  border-right-color: #f3ecf6;
+  border-left-width: 0;
+}
+
+.filters >>> .el-popover[x-placement^="left"] .popper__arrow {
+  border-right-width: 0;
+  border-left-color: #8300BF;
+}
+.filters >>> .el-popover[x-placement^="left"] .popper__arrow::after {
+  border-right-width: 0;
+  border-left-color: #f3ecf6;
 }
 </style>

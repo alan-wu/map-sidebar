@@ -49,7 +49,6 @@ import { Button, Icon } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
-import scaffoldMetaMap from './scaffold-meta-map';
 import speciesMap from "./species-map";
 
 locale.use(lang);
@@ -148,9 +147,12 @@ export default {
           title: "View 3D scaffold",
           type: "Scaffold",
           discoverId: this.discoverId,
-          contextCard: scaffoldMetaMap[this.discoverId] ? scaffoldMetaMap[this.discoverId].contextCard : undefined
+          apiLocation: this.envVars.API_LOCATION,
+          version: this.version,
+          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
+          banner: this.thumbnail
         }
-        EventBus.$emit("PopoverActionClick", action)
+        this.propogateCardAction(action)
     },
     openPlot: function(){
       let action = {
@@ -159,8 +161,12 @@ export default {
           title: "View plot",
           type: "Plot",
           discoverId: this.discoverId,
+          apiLocation: this.envVars.API_LOCATION,
+          version: this.version,
+          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
+          banner: this.thumbnail
         }
-        EventBus.$emit("PopoverActionClick", action)
+        this.propogateCardAction(action)
     },
     openDataset: function(){
       window.open(this.dataLocation,'_blank');
@@ -203,7 +209,10 @@ export default {
           label: undefined,
           resource: resource,
           dataset: this.dataLocation,
-          datasetId: this.discoverId,
+          apiLocation: this.envVars.API_LOCATION,
+          version: this.version,
+          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
+          banner: this.thumbnail,
           title: "View simulation",
           name: this.entry.name,
           description: this.entry.description,
@@ -256,6 +265,12 @@ export default {
           };
           EventBus.$emit("PopoverActionClick", action);
         }
+      }
+    },
+    propogateCardAction: function(action){
+      EventBus.$emit("PopoverActionClick", action)
+      if (action.contextCardUrl) {
+        this.$emit('contextUpdate', action)
       }
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
