@@ -226,7 +226,7 @@ export default {
         const filePath = segmentation.dataset.path;
         const datasetId = this.discoverId;
         const datasetVersion = this.version;
-        const prefix = 'https://sparc.biolucida.net:8081';
+        const prefix = this.envVars.NL_LINK_PREFIX;
         const resource = {
           share_link: `${prefix}/dataviewer?datasetId=${datasetId}&version=${datasetVersion}&path=${filePath}`
         };

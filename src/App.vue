@@ -86,7 +86,9 @@ export default {
         ALGOLIA_KEY: process.env.VUE_APP_ALGOLIA_KEY,
         ALGOLIA_ID: process.env.VUE_APP_ALGOLIA_ID,
         ALGOLIA_INDEX: process.env.VUE_APP_ALGOLIA_INDEX,
-        PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION
+        PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION,
+        BL_SERVER_URL: process.env.VUE_APP_BL_SERVER_URL,
+        NL_LINK_PREFIX: process.env.VUE_APP_NL_LINK_PREFIX,
       },
       activeId: 1,
     }
