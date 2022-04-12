@@ -3,14 +3,32 @@
     <div v-show="showContextCard">
       <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
       <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
-      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" class="context-card card" >
-        <img :src="entry.banner" class="context-image card-left">
+      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" v-loading="loading" class="context-card card" >
+        <div class="card-left">
+          <img :src="entry.banner" class="context-image">
+        </div>
         <div class="card-right">
           <div class="title">{{contextData.heading}}</div>
           <div>{{contextData.description}}</div>
+          <br/>
+          <div v-if="contextData.views" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
             <br v-bind:key="i"/>
-            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="scaffold-view"><img :src="getFileFromPath(view.thumbnail)"> {{view.description}}</span>
+            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-item">
+              <img class="key-image" :src="getFileFromPath(view.thumbnail)"> 
+              {{view.description}}
+            </span>
+          </template>
+          <div v-if="contextData.samples" class="subtitle">Samples on Scaffold</div>
+          <template v-for="(sample, i) in contextData.samples">
+            <br v-bind:key="i+'_2'"/>
+            <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
+              <img class="key-image" v-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
+              {{sample.heading}}
+            </span>
+            <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
+              {{sample.description}}
+            </div>
           </template>
         </div>
       </el-card>
@@ -26,6 +44,7 @@ import { Link, Icon, Card, Button, Select, Input } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
+import hardcoded_info from './hardcoded-context-info'
 
 locale.use(lang);
 Vue.use(Link);
@@ -34,7 +53,6 @@ Vue.use(Card);
 Vue.use(Button);
 Vue.use(Select);
 Vue.use(Input);
-
 
 
 export default {
@@ -50,15 +68,22 @@ export default {
     return {
       contextData: {},
       showDetails: true,
-      showContextCard: true
+      showContextCard: true,
+      sampleDetails: {},
+      loading: false
     };
   },
   watch: {
     'entry.contextCardUrl': {
       handler(val){
         if (val) {
-          this.getContextFile(val)
-          this.showContextCard = true
+          // used for hardcoding data
+          if (val === true){
+            this.contextData = hardcoded_info[this.entry.discoverId]
+          } else {
+            this.getContextFile(val)
+            this.showContextCard = true
+          }
         } else {
           this.showContextCard = false
         }
@@ -68,6 +93,7 @@ export default {
   },
   methods: {
     getContextFile: function (contextFileUrl) {
+      this.loading = true
       fetch(contextFileUrl)
         .then((response) =>{
           if (!response.ok){
@@ -78,21 +104,34 @@ export default {
         })
         .then((data) => {
           this.contextData = data
+          this.loading = false
         })
         .catch(() => {
           //set defaults if we hit an error
           this.thumbnail = require('@/../assets/missing-image.svg')
           this.discoverId = undefined
+          this.loading = false
         });
     },
     removeDoubleFilesPath: function(path){
-      if (path.includes('files/files/')){
-        return path.replace('files/files/', 'files/')
+      if (path.includes('files/')){
+        return path.replace('files/', '')
       } else {
         return path
       }
     },
+    toggleSampleDetails: function(i){
+      if (this.sampleDetails[i] === undefined){
+        Vue.set(this.sampleDetails, i, true)
+      } else {
+        Vue.set(this.sampleDetails, i, !this.sampleDetails[i])
+      }
+    },
     getFileFromPath: function(path){
+      // for hardcoded data
+      if(this.entry.contextCardUrl === true){
+        return path
+      }
       path = this.removeDoubleFilesPath(path)
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
@@ -117,6 +156,17 @@ export default {
 
 .context-card{
   background-color: white;
+  max-height: 10  50px;
+}
+
+.context-card-item{
+  cursor: pointer;
+  padding-bottom: 8px;
+}
+
+.key-image {
+  width: 25px;
+  height: auto;
 }
 
 .context-card >>> .el-card__body {
@@ -126,7 +176,8 @@ export default {
 }
 
 .context-image{
-  width: 250px
+  width: 250px;
+  height: auto;
 }
 
 .card {
@@ -152,6 +203,10 @@ export default {
 }
 
 .title{
+  font-weight: bold;
+}
+
+.subtitle{
   font-weight: bold;
 }
 </style>

@@ -103,7 +103,7 @@ var initial_state = {
   hasSearched: false,
   sciCrunchError: false,
   contextCardEntry: undefined,
-  contextCardEnabled: false
+  contextCardEnabled: true
 };
 
 export default {
