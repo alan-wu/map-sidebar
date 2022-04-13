@@ -1,14 +1,14 @@
 export default {
   77: {
-    "description": "The locations where samples were taken can be seen on the 3d scaffold of the heart",
+    "description": "This dataset contains single cell scale anatomical map of the rat intrinsic cardiac nervous system (ICNS) across four male and three female hearts. These cell clusters can be seen by the yellow data points on the image as well as spherical markers on the 3D heart scaffold. The dataset provides an integrative framework to visualise the spatial distribution of ICNS across different hearts.",
     "heading": "Mapped ICN samples",
     "id": "sparc.science.context_data",
     "samples": [
       {
         "annotation": "",
-        "description": "This sample is the orange sample",
+        "description": "Spatial location of isolated ICNS mapped onto a generic heart scaffold",
         "doi": "",
-        "heading": "Sample 1",
+        "heading": "ICNS from subject M54-8",
         "id": "Sample 1",
         "path": "",
         "view": "View 1",
@@ -16,9 +16,9 @@ export default {
       },
       {
         "annotation": "",
-        "description": "This sample is the teal sample",
+        "description": "Spatial location of isolated ICNS mapped onto a generic heart scaffold",
         "doi": "",
-        "heading": "Sample 2",
+        "heading": "ICNS from subject M54-5",
         "id": "Sample 2",
         "path": "",
         "view": "View 2",

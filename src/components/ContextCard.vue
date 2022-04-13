@@ -13,22 +13,25 @@
           <br/>
           <div v-if="contextData.views" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
-            <br v-bind:key="i"/>
             <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-item">
               <img class="key-image" :src="getFileFromPath(view.thumbnail)"> 
               {{view.description}}
             </span>
+            <br v-bind:key="i"/>
           </template>
+          <div style="margin-bottom: 16px;"/>
           <div v-if="contextData.samples" class="subtitle">Samples on Scaffold</div>
           <template v-for="(sample, i) in contextData.samples">
-            <br v-bind:key="i+'_2'"/>
             <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
               <img class="key-image" v-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
               {{sample.heading}}
+              
             </span>
             <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
               {{sample.description}}
+              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
             </div>
+            <br v-bind:key="i+'_2'"/>
           </template>
         </div>
       </el-card>
@@ -135,6 +138,10 @@ export default {
       path = this.removeDoubleFilesPath(path)
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
+    generateFileLink(path){
+      return `https://sparc.science/file/${this.entry.discoverId}/${this.entry.version}?path=${encodeURI(path)}`
+
+    },
     openViewFile: function(view){
 
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
@@ -157,6 +164,7 @@ export default {
 .context-card{
   background-color: white;
   max-height: 10  50px;
+  padding: 8px;
 }
 
 .context-card-item{
@@ -181,7 +189,6 @@ export default {
 }
 
 .card {
-  padding-top: 18px;
   margin-bottom: 18px;
   position: relative;
   border: solid 1px #e4e7ed;
