@@ -20,6 +20,7 @@
     "@abi-software/gallery": "^0.2.1",
     "@abi-software/svg-sprite": "^0.1.14",
     "algoliasearch": "^4.10.5",
+    "axios": "^0.26.1",
     "element-ui": "^2.13.0",
     "vue": "^2.6.10"
   },

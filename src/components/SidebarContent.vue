@@ -274,10 +274,14 @@ export default {
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          csvFiles: element.csvFiles,
           doi: element.doi,
           publishDate: element.publishDate,
-          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
+          scaffolds: element['abi-scaffold-metadata-file'],
+          thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
+          scaffoldViews: element['abi-scaffold-view-file'],
+          videos: element.video,
+          plots: element.plot,
+          images: element['common-images'],
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           additionalLinks: element.additionalLinks,
           segmentation: element['mbf-segmentation'],

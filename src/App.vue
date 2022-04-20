@@ -89,6 +89,7 @@ export default {
         PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION,
         BL_SERVER_URL: process.env.VUE_APP_BL_SERVER_URL,
         NL_LINK_PREFIX: process.env.VUE_APP_NL_LINK_PREFIX,
+        ROOT_URL: process.env.ROOT_URL,
       },
       activeId: 1,
     }
@@ -104,7 +105,7 @@ export default {
       console.log("action fired: ", val)
     },
     openSearch: function(){
-      this.$refs.sideBar.openSearch('heart', [])
+      this.$refs.sideBar.openSearch([], 'heart')
     },
     singleFacets: function(){
       this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'})

@@ -6,6 +6,18 @@
       <div class="card" >
         <span class="card-left">
           <img svg-inline class="banner-img" :src="thumbnail" @click="openDataset"/>
+          <gallery v-if="dataIsReady" 
+            :datasetId="discoverId"
+            :datasetVersion="version"
+            :envVars="envVars"
+            :images="entry.images"
+            :scaffolds="entry.scaffolds"
+            :scaffoldViews="entry.scaffoldViews"
+            :segmentations="entry.segmentation"
+            :videos="entry.videos"
+            :thumbnails="entry.thumbnails"
+            :label="label"
+            :datasetThumbnail="thumbnail"/>
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.name}}</div>
@@ -18,9 +30,11 @@
           <div>
             <el-button v-if="entry.scaffolds" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
           </div>
+          <!--
           <div>
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
           </div>
+          -->
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
@@ -50,6 +64,7 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import speciesMap from "./species-map";
+import Gallery from "./Gallery.vue";
 
 locale.use(lang);
 Vue.use(Button);
@@ -61,6 +76,7 @@ const capitalise = function(string){
 
 export default {
   name: "DatasetCard",
+  components: { Gallery },
   props: {
     /**
      * Object containing information for
@@ -74,6 +90,7 @@ export default {
   },
   data: function () {
     return {
+      dataIsReady: false,
       thumbnail: require('@/../assets/missing-image.svg'),
       dataLocation: this.entry.doi,
       discoverId: undefined,
@@ -83,9 +100,6 @@ export default {
     };
   },
   computed: {
-    hasCSVFile: function(){
-      return ( this.entry.csvFiles && this.entry.csvFiles.length !== 0 )
-    },
     contributors: function() {
       let text = "";
       if (this.entry.contributors) {
@@ -292,7 +306,7 @@ export default {
     },
     getBanner: function () {
       let doi = this.splitDOI(this.entry.doi)
-      fetch(`https://api.pennsieve.io/discover/datasets/doi/${doi[0]}/${doi[1]}`)
+      fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`)
         .then((response) =>{
           if (!response.ok){
             throw Error(response.statusText)
@@ -306,6 +320,7 @@ export default {
           this.version = data.version
           this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
           this.getBiolucidaInfo(this.discoverId)
+          this.dataIsReady = true
         })
         .catch(() => {
           //set defaults if we hit an error
@@ -328,19 +343,11 @@ export default {
         });
     }
   },
-  mounted: function(){
+  created: function() {
     this.getBanner()
+  },
+  mounted: function(){
     this.cardOverflow = this.isOverflown(this.$refs.card)
-  },
-  updated: function () {
-  },
-  watch: {
-    'entry.description': function() { // watch it
-      this.cardOverflow = false
-      this.expanded = false
-      this.cardOverflow = this.isOverflown(this.$refs.card)
-      this.getBanner()
-    }
   },
 };
 </script>
