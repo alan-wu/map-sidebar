@@ -12,6 +12,7 @@ export default {
         "id": "Sample 1",
         "path": "",
         "view": "View 1",
+        "color": "#FFFF00",
         "thumbnail": "https://raw.githubusercontent.com/ABI-Software/map-sidebar/main/assets/temp-pics/orange.png"
       },
       {
@@ -22,6 +23,7 @@ export default {
         "id": "Sample 2",
         "path": "",
         "view": "View 2",
+        "color": "#FFA500",
         "thumbnail": "https://raw.githubusercontent.com/ABI-Software/map-sidebar/main/assets/temp-pics/teal.png"
       }
     ],

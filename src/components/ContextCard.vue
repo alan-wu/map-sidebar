@@ -22,16 +22,19 @@
           <div style="margin-bottom: 16px;"/>
           <div v-if="contextData.samples" class="subtitle">Samples on Scaffold</div>
           <template v-for="(sample, i) in contextData.samples">
-            <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
-              <img class="key-image" v-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
-              {{sample.heading}}
-              
-            </span>
-            <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
-              {{sample.description}}
-              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
-            </div>
-            <br v-bind:key="i+'_2'"/>
+              <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
+                <div v-bind:key="i+'_6'" style="display: flex">
+                  <div v-if="sample.color" class="color-box" :style="'background-color:'+ sample.color"></div>
+                  <img class="key-image" v-else-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
+                  {{sample.heading}}
+                  <i class="el-icon-warning-outline info"></i>
+                </div>
+              </span>
+              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
+                {{sample.description}}
+                <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
+              </div>
+              <br v-bind:key="i+'_2'"/>
           </template>
         </div>
       </el-card>
@@ -188,6 +191,14 @@ export default {
   height: auto;
 }
 
+.color-box {
+  width: 16px;
+  height: 16px;
+  border: solid 1px #8300bf;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
 .card {
   margin-bottom: 18px;
   position: relative;
@@ -207,6 +218,12 @@ export default {
 .cursor-pointer {
   cursor: pointer;
   height: 25px;
+}
+
+.info{
+  transform: rotate(180deg);
+  color: #8300bf;
+  margin-left: 8px;
 }
 
 .title{
