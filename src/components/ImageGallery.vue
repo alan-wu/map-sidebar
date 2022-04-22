@@ -165,7 +165,6 @@ export default {
             id,
             title: baseName(filePath),
             type: "Image",
-            thumbnail: this.defaultImg,
             link: linkUrl,
           });
         });
@@ -411,8 +410,8 @@ export default {
 
 <style scoped>
 .full-size {
-  width: 100%;
   height: 100%;
+  width: 244px;
 }
 
 .key-image-span.active {
