@@ -89,7 +89,7 @@ export default {
         PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION,
         BL_SERVER_URL: process.env.VUE_APP_BL_SERVER_URL,
         NL_LINK_PREFIX: process.env.VUE_APP_NL_LINK_PREFIX,
-        ROOT_URL: process.env.ROOT_URL,
+        ROOT_URL: process.env.VUE_APP_ROOT_URL,
       },
       activeId: 1,
     }

@@ -1,16 +1,18 @@
 <template>
   <div class="full-size">
-    <div class="gallery-container">
-      <!--
-      <gallery
-        :items="galleryItems"
-        :max-width="maxWidth"
-        :show-indicator-bar="true"
-        :show-card-details="true"
-        :highlight-active="true"
-      />
-      -->
-    </div>
+    <gallery
+      :bottomSpacer="bottomSpacer"
+      :cardWidth="10"
+      :items="galleryItems"
+      :max-width="maxWidth"
+      :show-indicator-bar="true"
+      :show-card-details="true"
+      :highlight-active="false"
+      :image-style="imageStyle"
+      :body-style="bodyStyle"
+      :shadow="shadow"
+      @card-clicked="cardClicked"
+    />
   </div>
 </template>
 
@@ -25,11 +27,11 @@ const capitalise = function (string) {
 };
 
 import GalleryHelper from "@abi-software/gallery/src/mixins/GalleryHelpers";
-import gallery from "@abi-software/gallery";
+import Gallery from "@abi-software/gallery";
 
 export default {
-  name: "Images",
-  component: { gallery },
+  name: "ImageGallery",
+  components: { Gallery },
   mixins: [GalleryHelper],
   props: {
     datasetScicrunch: {
@@ -82,6 +84,12 @@ export default {
         return [];
       },
     },
+    additionalLinks: {
+      type: Array,
+      default: () => {
+        return [];
+      },
+    },
     thumbnails: {
       type: Array,
       default: () => {
@@ -114,25 +122,34 @@ export default {
       maxWidth: 3,
       scicrunchItems: [],
       biolucidaItems: [],
+      bodyStyle: { padding: '0px', background: '#ffffff' },
+      imageStyle: { maxWidth: '160px', maxHeight: '160px', width: '160px', height: '160px'},
+      shadow: "never",
+      bottomSpacer: { minHeight: '1.5rem' },
     };
   },
   methods: {
+    cardClicked: function(payload) {
+      this.$emit('card-clicked', payload);
+    },
     createSciCurnchItems: function () {
       this.createDatasetItem();
       this.createScaffoldItems();
+      this.createSimulationItems();
       this.createPlotItems();
       this.createSegmentationItems();
       this.createImageItems();
       this.createVideoItems();
     },
     createDatasetItem: function () {
+      const link = `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
       if (this.datasetThumbnail) {
         this.scicrunchItems.push({
           id: -1,
-          title: "Dataset",
-          type: "Dataset",
+          title: link,
+          type: `Dataset ${this.datasetId}`,
           thumbnail: this.datasetThumbnail,
-          link: `${this.envVars.ROOT_URL}datasets/${this.datasetId}?type=dataset`,
+          link,
         });
       }
     },
@@ -141,7 +158,7 @@ export default {
         this.images.forEach((image) => {
           const filePath = image.dataset.path;
           const id = image.identifier;
-          const linkUrl = `${this.envVars.ROOT_URL}datasets/imageviewer?dataset_id=${this.datasetId}&dataset_version=${this.datasetVersion}&file_path=${filePath}&mimetype=${image.mimetype.name}`;
+          const linkUrl = `${this.envVars.ROOT_URL}/datasets/imageviewer?dataset_id=${this.datasetId}&dataset_version=${this.datasetVersion}&file_path=${filePath}&mimetype=${image.mimetype.name}`;
           this.scicrunchItems.push({
             id,
             title: baseName(filePath),
@@ -158,15 +175,16 @@ export default {
           const filePath = plot.dataset.path;
           const id = plot.identifier;
           const thumbnail = this.getThumbnailForPlot(plot, this.thumbnails);
+          let thumbnailURL = undefined;
+          let mimetype = '';
           if (thumbnail) {
-            this.getImageFromS3(this.envVars.API_LOCATION, this.scicrunchItems, {
+            thumbnailURL = this.getImageURLFromS3(this.envVars.API_LOCATION, {
               id,
-              fetchAttempts: 0,
               datasetId: this.datasetId,
               datasetVersion: this.datasetVersion,
-              mimetype: thumbnail.mimetype.name,
               file_path: thumbnail.dataset.path,
             });
+            mimetype = thumbnail.mimetype.name;
           }
           let action = {
             label: capitalise(this.label),
@@ -180,8 +198,9 @@ export default {
             id,
             title: baseName(filePath),
             type: "Plot",
-            thumbnail: this.defaultPlotImg,
-            action: action,
+            thumbnail: thumbnailURL,
+            userData: action,
+            mimetype
           });
         });
       }
@@ -192,22 +211,22 @@ export default {
         this.scaffolds.forEach((scaffold) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
-          console.log(this.thumbnails)
           const thumbnail = this.getThumbnailForScaffold(
             scaffold,
             this.scaffoldViews,
             this.thumbnails,
             index
           );
+          let mimetype = '';
+          let thumbnailURL = undefined;
           if (thumbnail) {
-            this.getImageFromS3(this.envVars.API_LOCATION, this.scicrunchItems, {
+            thumbnailURL = this.getImageURLFromS3(this.envVars.API_LOCATION, {
               id,
-              fetchAttempts: 0,
               datasetId: this.datasetId,
               datasetVersion: this.datasetVersion,
-              mimetype: thumbnail.mimetype.name,
               file_path: thumbnail.dataset.path,
             });
+            mimetype = thumbnail.mimetype.name;
           }
           let action = {
             label: capitalise(this.label),
@@ -222,8 +241,9 @@ export default {
             id,
             title: baseName(filePath),
             type: "Scaffold",
-            thumbnail: this.defaultScaffoldImg,
-            action: action,
+            thumbnail: thumbnailURL,
+            userData: action,
+            mimetype
           });
         });
       }
@@ -246,12 +266,10 @@ export default {
             title: "View segmentation",
             type: "Segmentation",
           };
-          this.getSegmentationThumbnail(
+          const thumbnailURL = this.getSegmentationThumbnailURL(
             this.envVars.API_LOCATION,
-            this.scicrunchItems,
             {
               id,
-              fetchAttempts: 0,
               datasetId: this.datasetId,
               datasetVersion: this.datasetVersion,
               segmentationFilePath: filePath,
@@ -261,10 +279,41 @@ export default {
             id,
             title: baseName(filePath),
             type: "Segmentation",
-            thumbnail: this.defaultScaffoldImg,
-            action: action,
+            thumbnail: thumbnailURL,
+            userData: action,
+            mimetype: 'image/png',
           });
         });
+      }
+    },
+    createSimulationItems: function () {
+      let isSedmlResource = false;
+      let resource = undefined;
+      if (this.additionalLinks) {
+        this.additionalLinks.forEach(function(el) {
+          if (el.description == "SED-ML file") {
+            isSedmlResource = true;
+            resource = el.uri;
+          } else if (!isSedmlResource && (el.description == "CellML file")) {
+            resource = el.uri;
+          }
+        });
+        if (resource) {
+          let action = {
+            label: undefined,
+            resource: resource,
+            apiLocation: this.envVars.API_LOCATION,
+            version: this.datasetVersion,
+            title: "View simulation",
+            type: "Simulation"
+          };
+          this.scicrunchItems.push({
+            id: "simulation",
+            title: resource,
+            type: "Simulation",
+            userData: action,
+          });
+        }
       }
     },
     createVideoItems: function () {
@@ -275,7 +324,7 @@ export default {
             this.datasetVersion,
             video.dataset.path
           );
-          const linkUrl = `${this.envVars.ROOT_URL}datasets/videoviewer?dataset_version=${this.datasetVersion}&dataset_id=${this.datasetId}&file_path=${filePath}&mimetype=${video.mimetype.name}`;
+          const linkUrl = `${this.envVars.ROOT_URL}/datasets/videoviewer?dataset_version=${this.datasetVersion}&dataset_id=${this.datasetId}&file_path=${filePath}&mimetype=${video.mimetype.name}`;
           this.scicrunchItems.push({
             title: video.name,
             type: "Video",
@@ -296,7 +345,6 @@ export default {
     },
   },
   created: function () {
-    console.log("seriously", this.scaffolds);
     this.createSciCurnchItems();
   },
   watch: {
@@ -308,12 +356,10 @@ export default {
         if ("dataset_images" in biolucidaData) {
           items.push(
             ...Array.from(biolucidaData.dataset_images, (dataset_image) => {
-              this.getThumbnailFromBiolucida(
+              const thumbnailURL = this.getThumbnailURLFromBiolucida(
                 this.envVars.API_LOCATION,
-                items,
                 {
                   id: dataset_image.image_id,
-                  fetchAttempts: 0,
                 }
               );
               this.getImageInfoFromBiolucida(
@@ -341,8 +387,9 @@ export default {
                 id: dataset_image.image_id,
                 title: null,
                 type: "Image",
-                thumbnail: null,
-                action: action,
+                thumbnail: thumbnailURL,
+                userData: action,
+                mimetype: 'image/png'
               };
             })
           );
@@ -433,5 +480,9 @@ a.next {
   width: 2em;
   border-radius: 3px;
   background-color: #555;
+}
+
+.full-size >>> .el-card {
+  border: 0px;
 }
 </style>

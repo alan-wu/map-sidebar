@@ -5,8 +5,10 @@
       <div class="seperator-path"></div>
       <div class="card" >
         <span class="card-left">
+          <!--
           <img svg-inline class="banner-img" :src="thumbnail" @click="openDataset"/>
-          <gallery v-if="dataIsReady" 
+          -->
+          <image-gallery v-if="dataIsReady" 
             :datasetId="discoverId"
             :datasetVersion="version"
             :envVars="envVars"
@@ -14,22 +16,26 @@
             :scaffolds="entry.scaffolds"
             :scaffoldViews="entry.scaffoldViews"
             :segmentations="entry.segmentation"
+            :additionalLinks="simulationLinks"
             :videos="entry.videos"
             :thumbnails="entry.thumbnails"
             :label="label"
-            :datasetThumbnail="thumbnail"/>
+            :datasetThumbnail="thumbnail"
+            @card-clicked="galleryClicked"/>
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.name}}</div>
           <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
+          <!--
           <div>
             <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
           </div>
           <div>
             <el-button v-if="entry.scaffolds" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
           </div>
+          -->
           <!--
           <div>
             <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
@@ -38,15 +44,19 @@
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
+          <!--
           <div>
             <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
           </div>
+          -->
+          <!--
           <div>
             <el-button v-if="entry.segmentation"  @click="openSegmentation" size="mini" class="button" icon="el-icon-view">View segmentation</el-button>
           </div>
           <div>
             <el-button v-if="biolucidaData"  @click="openImage" size="mini" class="button" icon="el-icon-view">View image</el-button>
           </div>
+          -->
         </div>
 
       </div>
@@ -64,7 +74,7 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import speciesMap from "./species-map";
-import Gallery from "./Gallery.vue";
+import ImageGallery from "./ImageGallery.vue";
 
 locale.use(lang);
 Vue.use(Button);
@@ -76,7 +86,7 @@ const capitalise = function(string){
 
 export default {
   name: "DatasetCard",
-  components: { Gallery },
+  components: { ImageGallery },
   props: {
     /**
      * Object containing information for
@@ -139,6 +149,13 @@ export default {
 
       return text;
     },
+    simulationLinks: function() {
+      if (this.entry.additionalLinks) {
+        if (typeof this.entry.additionalLinks != "boolean")
+          return this.entry.additionalLinks;
+      }
+      return [];
+    },
     label: function(){
       return this.entry.organs ? this.entry.organs[0] : this.entry.name
     },
@@ -153,6 +170,9 @@ export default {
       }else{
         this.openDataset()
       }
+    },
+    galleryClicked: function(payload) {
+      this.propogateCardAction(payload)
     },
     openScaffold: function(){
       let action = {
