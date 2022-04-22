@@ -9,6 +9,7 @@
       :show-card-details="true"
       :highlight-active="false"
       :image-style="imageStyle"
+      :image-container-style="imageContainerStyle"
       :body-style="bodyStyle"
       :shadow="shadow"
       @card-clicked="cardClicked"
@@ -123,7 +124,8 @@ export default {
       scicrunchItems: [],
       biolucidaItems: [],
       bodyStyle: { padding: '0px', background: '#ffffff' },
-      imageStyle: { maxWidth: '160px', maxHeight: '160px', width: '160px', height: '160px'},
+      imageContainerStyle: { width: '160px', height: '160px'},
+      imageStyle: { maxWidth: '160px', maxHeight: '160px'},
       shadow: "never",
       bottomSpacer: { minHeight: '1.5rem' },
     };
