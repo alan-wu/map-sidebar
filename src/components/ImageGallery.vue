@@ -197,7 +197,7 @@ export default {
           }
           let action = {
             label: capitalise(this.label),
-            resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}`,
+            resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/${filePath}`,
             title: "View plot",
             type: "Plot",
             discoverId: this.discoverId,
@@ -266,7 +266,7 @@ export default {
           filePath = filePath.replaceAll(",", "_");
           const prefix = this.envVars.NL_LINK_PREFIX;
           const resource = {
-            share_link: `${prefix}/dataviewer?datasetId=${this.datasetId}&version=${this.datasetVersion}&path=${filePath}`,
+            share_link: `${prefix}/dataviewer?datasetId=${this.datasetId}&version=${this.datasetVersion}&path=files/${filePath}`,
           };
           let action = {
             label: capitalise(this.label),
@@ -376,14 +376,6 @@ export default {
                   id: dataset_image.image_id,
                 }
               );
-              this.getImageInfoFromBiolucida(
-                this.envVars.API_LOCATION,
-                items,
-                {
-                  id: dataset_image.image_id,
-                  fetchAttempts: 0,
-                }
-              );
               const resource = {
                 share_link: dataset_image.share_link,
                 id: dataset_image.image_id,
@@ -399,7 +391,7 @@ export default {
               };
               return {
                 id: dataset_image.image_id,
-                title: null,
+                title: `Biolucida Image`,
                 type: "Image",
                 thumbnail: thumbnailURL,
                 userData: action,

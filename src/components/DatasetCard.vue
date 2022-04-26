@@ -23,6 +23,7 @@
             :thumbnails="entry.thumbnails"
             :label="label"
             :datasetThumbnail="thumbnail"
+            :dataset-biolucida="biolucidaData"
             @card-clicked="galleryClicked"/>
         </span>
         <div class="card-right" >
@@ -46,11 +47,11 @@
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
-          
+          <!--
           <div>
             <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
           </div>
-          
+          -->
           <!--
           <div>
             <el-button v-if="entry.segmentation"  @click="openSegmentation" size="mini" class="button" icon="el-icon-view">View segmentation</el-button>
@@ -167,11 +168,7 @@ export default {
   },
   methods: {
     cardClicked: function(){
-      if(this.entry.scaffolds){
-        this.openScaffold()
-      }else{
-        this.openDataset()
-      }
+      this.openDataset()
     },
     galleryClicked: function(payload) {
       this.propogateCardAction(payload)
@@ -264,7 +261,7 @@ export default {
         const datasetVersion = this.version;
         const prefix = this.envVars.NL_LINK_PREFIX;
         const resource = {
-          share_link: `${prefix}/dataviewer?datasetId=${datasetId}&version=${datasetVersion}&path=${filePath}`
+          share_link: `${prefix}/dataviewer?datasetId=${datasetId}&version=${datasetVersion}&path=files/${filePath}`
         };
         let action = {
           label: capitalise(this.label),
