@@ -115,6 +115,14 @@ export default {
       type: String,
       default: "",
     },
+    name: {
+      type: String,
+      default: "",
+    },
+    description: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -306,13 +314,18 @@ export default {
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
             title: "View simulation",
-            type: "Simulation"
+            type: "Simulation",
+            name: this.name,
+            description: this.description,
+            discoverId: this.datasetId,
+            dataset: `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
           };
           this.scicrunchItems.push({
             id: "simulation",
             title: resource,
             type: "Simulation",
             userData: action,
+
           });
         }
       }

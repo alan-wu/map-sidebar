@@ -11,6 +11,8 @@
           <image-gallery v-if="dataIsReady" 
             :datasetId="discoverId"
             :datasetVersion="version"
+            :name="entry.name"
+            :description="entry.description"
             :envVars="envVars"
             :images="entry.images"
             :scaffolds="entry.scaffolds"
@@ -44,11 +46,11 @@
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
-          <!--
+          
           <div>
             <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
           </div>
-          -->
+          
           <!--
           <div>
             <el-button v-if="entry.segmentation"  @click="openSegmentation" size="mini" class="button" icon="el-icon-view">View segmentation</el-button>
@@ -242,7 +244,7 @@ export default {
       let action = {
           label: undefined,
           resource: resource,
-          dataset: this.dataLocation,
+          discoverId: this.dataLocation,
           apiLocation: this.envVars.API_LOCATION,
           version: this.version,
           contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
