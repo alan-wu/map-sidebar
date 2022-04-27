@@ -208,6 +208,7 @@ export default {
           dataset: this.dataLocation,
           apiLocation: this.envVars.API_LOCATION,
           version: this.version,
+          discoverId: this.discoverId,
           contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
           banner: this.thumbnail,
           title: "View simulation",
