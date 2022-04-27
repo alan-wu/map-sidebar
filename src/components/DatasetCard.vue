@@ -43,10 +43,12 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import speciesMap from "./species-map";
+import hardcoded_info from './hardcoded-context-info'
 
 locale.use(lang);
 Vue.use(Button);
 Vue.use(Icon);
+
 
 const capitalise = function(string){
   return string.replace(/\b\w/g, v => v.toUpperCase());
@@ -143,6 +145,9 @@ export default {
           version: this.version,
           contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
           banner: this.thumbnail
+        }
+        if (hardcoded_info[this.discoverId]){
+          action.contextCardUrl = true
         }
         this.propogateCardAction(action)
     },
