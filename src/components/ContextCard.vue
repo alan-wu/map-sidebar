@@ -20,7 +20,7 @@
             <br v-bind:key="i"/>
           </template>
           <div style="margin-bottom: 16px;"/>
-          <div v-if="contextData.samples" class="subtitle">Samples on Scaffold</div>
+          <div v-if="contextData.samples && contextData.samples.length > 0" class="subtitle">Samples on Scaffold</div>
           <template v-for="(sample, i) in contextData.samples">
               <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
                 <div v-bind:key="i+'_6'" style="display: flex">
@@ -110,6 +110,7 @@ export default {
         })
         .then((data) => {
           this.contextData = data
+          console.log(data)
           this.loading = false
         })
         .catch(() => {
