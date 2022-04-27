@@ -169,6 +169,7 @@ export default {
   background-color: white;
   max-height: 10  50px;
   padding: 8px;
+  font-size: 14px;
 }
 
 .context-card-item{
@@ -205,6 +206,8 @@ export default {
   position: relative;
   border: solid 1px #e4e7ed;
   display: flex;
+  width: 500px;
+  max-height: 480px;
 }
 
 .card-left{

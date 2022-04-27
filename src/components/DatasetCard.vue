@@ -216,14 +216,11 @@ export default {
           description: this.entry.description,
           type: "Simulation"
         }
-        EventBus.$emit("PopoverActionClick", action)
+        this.propogateCardAction(action)
     },
     propogateCardAction: function(action){
       EventBus.$emit("PopoverActionClick", action)
-      if (action.contextCardUrl) {
-        this.$emit('contextUpdate', action)
-      }
-
+      this.$emit('contextUpdate', action)
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
