@@ -103,7 +103,7 @@ var initial_state = {
   hasSearched: false,
   sciCrunchError: false,
   contextCardEntry: undefined,
-  contextCardEnabled: false
+  contextCardEnabled: true,
 };
 
 export default {
@@ -152,7 +152,7 @@ export default {
   },
   methods: {
     contextCardUpdate: function(val){
-      this.contextCardEntry = val
+        this.contextCardEntry = val
     },
     openSearch: function(filter, search='') {
       this.searchInput = search;

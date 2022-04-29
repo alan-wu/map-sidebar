@@ -3,14 +3,38 @@
     <div v-show="showContextCard">
       <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
       <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
-      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" class="context-card card" >
-        <img :src="entry.banner" class="context-image card-left">
+      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" v-loading="loading" class="context-card card" >
+        <div class="card-left">
+          <img :src="entry.banner" class="context-image">
+        </div>
         <div class="card-right">
           <div class="title">{{contextData.heading}}</div>
           <div>{{contextData.description}}</div>
+          <br/>
+          <div v-if="contextData.views" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
+            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-item">
+              <img class="key-image" :src="getFileFromPath(view.thumbnail)"> 
+              {{view.description}}
+            </span>
             <br v-bind:key="i"/>
-            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="scaffold-view"><img :src="getFileFromPath(view.thumbnail)"> {{view.description}}</span>
+          </template>
+          <div style="margin-bottom: 16px;"/>
+          <div v-if="contextData.samples && contextData.samples.length > 0" class="subtitle">Samples on Scaffold</div>
+          <template v-for="(sample, i) in contextData.samples">
+              <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
+                <div v-bind:key="i+'_6'" style="display: flex">
+                  <div v-if="sample.color" class="color-box" :style="'background-color:'+ sample.color"></div>
+                  <img class="key-image" v-else-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
+                  {{sample.heading}}
+                  <i class="el-icon-warning-outline info"></i>
+                </div>
+              </span>
+              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
+                {{sample.description}}
+                <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
+              </div>
+              <br v-bind:key="i+'_2'"/>
           </template>
         </div>
       </el-card>
@@ -26,6 +50,7 @@ import { Link, Icon, Card, Button, Select, Input } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
+import hardcoded_info from './hardcoded-context-info'
 
 locale.use(lang);
 Vue.use(Link);
@@ -34,7 +59,6 @@ Vue.use(Card);
 Vue.use(Button);
 Vue.use(Select);
 Vue.use(Input);
-
 
 
 export default {
@@ -50,15 +74,22 @@ export default {
     return {
       contextData: {},
       showDetails: true,
-      showContextCard: true
+      showContextCard: true,
+      sampleDetails: {},
+      loading: false
     };
   },
   watch: {
     'entry.contextCardUrl': {
       handler(val){
         if (val) {
-          this.getContextFile(val)
-          this.showContextCard = true
+          // used for hardcoding data
+          if (val === true){
+            this.contextData = hardcoded_info[this.entry.discoverId]
+          } else {
+            this.getContextFile(val)
+            this.showContextCard = true
+          }
         } else {
           this.showContextCard = false
         }
@@ -68,6 +99,7 @@ export default {
   },
   methods: {
     getContextFile: function (contextFileUrl) {
+      this.loading = true
       fetch(contextFileUrl)
         .then((response) =>{
           if (!response.ok){
@@ -78,23 +110,41 @@ export default {
         })
         .then((data) => {
           this.contextData = data
+          console.log(data)
+          this.loading = false
         })
         .catch(() => {
           //set defaults if we hit an error
           this.thumbnail = require('@/../assets/missing-image.svg')
           this.discoverId = undefined
+          this.loading = false
         });
     },
     removeDoubleFilesPath: function(path){
-      if (path.includes('files/files/')){
-        return path.replace('files/files/', 'files/')
+      if (path.includes('files/')){
+        return path.replace('files/', '')
       } else {
         return path
       }
     },
+    toggleSampleDetails: function(i){
+      if (this.sampleDetails[i] === undefined){
+        Vue.set(this.sampleDetails, i, true)
+      } else {
+        Vue.set(this.sampleDetails, i, !this.sampleDetails[i])
+      }
+    },
     getFileFromPath: function(path){
+      // for hardcoded data
+      if(this.entry.contextCardUrl === true){
+        return path
+      }
       path = this.removeDoubleFilesPath(path)
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
+    },
+    generateFileLink(path){
+      return `https://sparc.science/file/${this.entry.discoverId}/${this.entry.version}?path=${encodeURI(path)}`
+
     },
     openViewFile: function(view){
 
@@ -117,6 +167,19 @@ export default {
 
 .context-card{
   background-color: white;
+  max-height: 10  50px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.context-card-item{
+  cursor: pointer;
+  padding-bottom: 8px;
+}
+
+.key-image {
+  width: 25px;
+  height: auto;
 }
 
 .context-card >>> .el-card__body {
@@ -126,15 +189,25 @@ export default {
 }
 
 .context-image{
-  width: 250px
+  width: 250px;
+  height: auto;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border: solid 1px #8300bf;
+  border-radius: 2px;
+  margin-right: 8px;
 }
 
 .card {
-  padding-top: 18px;
   margin-bottom: 18px;
   position: relative;
   border: solid 1px #e4e7ed;
   display: flex;
+  width: 500px;
+  max-height: 480px;
 }
 
 .card-left{
@@ -151,7 +224,17 @@ export default {
   height: 25px;
 }
 
+.info{
+  transform: rotate(180deg);
+  color: #8300bf;
+  margin-left: 8px;
+}
+
 .title{
+  font-weight: bold;
+}
+
+.subtitle{
   font-weight: bold;
 }
 </style>

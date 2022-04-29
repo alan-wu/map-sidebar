@@ -31,6 +31,9 @@
           <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
+          <div>
+            <badges-group :entry="entry" />
+          </div>
           <!--
           <div>
             <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
@@ -72,16 +75,19 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
+import BadgesGroup from "./BadgesGroup.vue";
 import { Button, Icon } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import speciesMap from "./species-map";
 import ImageGallery from "./ImageGallery.vue";
+import hardcoded_info from './hardcoded-context-info'
 
 locale.use(lang);
 Vue.use(Button);
 Vue.use(Icon);
+
 
 const capitalise = function(string){
   return string.replace(/\b\w/g, v => v.toUpperCase());
@@ -89,7 +95,7 @@ const capitalise = function(string){
 
 export default {
   name: "DatasetCard",
-  components: { ImageGallery },
+  components: { BadgesGroup, ImageGallery },
   props: {
     /**
      * Object containing information for
@@ -185,6 +191,9 @@ export default {
           contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
           banner: this.thumbnail
         }
+        if (hardcoded_info[this.discoverId]){
+          action.contextCardUrl = true
+        }
         this.propogateCardAction(action)
     },
     openPlot: function(){
@@ -244,6 +253,7 @@ export default {
           discoverId: this.dataLocation,
           apiLocation: this.envVars.API_LOCATION,
           version: this.version,
+          discoverId: this.discoverId,
           contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
           banner: this.thumbnail,
           title: "View simulation",
@@ -251,7 +261,7 @@ export default {
           description: this.entry.description,
           type: "Simulation"
         }
-        EventBus.$emit("PopoverActionClick", action)
+        this.propogateCardAction(action)
     },
     openSegmentation: function() {
       if (this.entry.segmentation && this.entry.segmentation[0]) {
@@ -302,9 +312,7 @@ export default {
     },
     propogateCardAction: function(action){
       EventBus.$emit("PopoverActionClick", action)
-      if (action.contextCardUrl) {
-        this.$emit('contextUpdate', action)
-      }
+      this.$emit('contextUpdate', action)
     },
     getScaffoldPath: function(discoverId, version, scaffoldPath){
       let id = discoverId
