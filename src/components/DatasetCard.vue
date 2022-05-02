@@ -5,9 +5,6 @@
       <div class="seperator-path"></div>
       <div class="card" >
         <span class="card-left">
-          <!--
-          <img svg-inline class="banner-img" :src="thumbnail" @click="openDataset"/>
-          -->
           <image-gallery v-if="dataIsReady" 
             :datasetId="discoverId"
             :datasetVersion="version"
@@ -33,36 +30,10 @@
           <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
-          <!--
-          <div>
-            <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
-          </div>
-          <div>
-            <el-button v-if="entry.scaffolds" @click="openScaffold" size="mini" class="button" icon="el-icon-view">View scaffold</el-button>
-          </div>
-          -->
-          <!--
-          <div>
-            <el-button v-if="hasCSVFile"  @click="openPlot" size="mini" class="button" icon="el-icon-view">View plot</el-button>
-          </div>
-          -->
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
-          <!--
-          <div>
-            <el-button v-if="entry.simulation"  @click="openSimulation" size="mini" class="button" icon="el-icon-view">View simulation</el-button>
-          </div>
-          -->
-          <!--
-          <div>
-            <el-button v-if="entry.segmentation"  @click="openSegmentation" size="mini" class="button" icon="el-icon-view">View segmentation</el-button>
-          </div>
-          <div>
-            <el-button v-if="biolucidaData"  @click="openImage" size="mini" class="button" icon="el-icon-view">View image</el-button>
-          </div>
-          -->
-          <div>
+          <div class="badges-container">
             <badges-group
               :entry="entry"
               :dataset-biolucida="biolucidaData"
@@ -89,16 +60,10 @@ import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import speciesMap from "./species-map";
 import ImageGallery from "./ImageGallery.vue";
-import hardcoded_info from './hardcoded-context-info'
 
 locale.use(lang);
 Vue.use(Button);
 Vue.use(Icon);
-
-
-const capitalise = function(string){
-  return string.replace(/\b\w/g, v => v.toUpperCase());
-}
 
 export default {
   name: "DatasetCard",
@@ -121,6 +86,7 @@ export default {
       dataLocation: this.entry.doi,
       discoverId: undefined,
       cardOverflow: false,
+
       expanded: false,
       biolucidaData: undefined,
       currentCategory: "All"
@@ -190,37 +156,6 @@ export default {
     galleryClicked: function(payload) {
       this.propogateCardAction(payload)
     },
-    openScaffold: function(){
-      let action = {
-          label: capitalise(this.label),
-          resource: this.getScaffoldPath(this.discoverId, this.version, this.entry.scaffolds[0].dataset.path),
-          title: "View 3D scaffold",
-          type: "Scaffold",
-          discoverId: this.discoverId,
-          apiLocation: this.envVars.API_LOCATION,
-          version: this.version,
-          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
-          banner: this.thumbnail
-        }
-        if (hardcoded_info[this.discoverId]){
-          action.contextCardUrl = true
-        }
-        this.propogateCardAction(action)
-    },
-    openPlot: function(){
-      let action = {
-          label: capitalise(this.label),
-          resource: this.getFileFromPath(this.discoverId, this.version, this.entry.csvFiles[0].dataset.path),
-          title: "View plot",
-          type: "Plot",
-          discoverId: this.discoverId,
-          apiLocation: this.envVars.API_LOCATION,
-          version: this.version,
-          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
-          banner: this.thumbnail
-        }
-        this.propogateCardAction(action)
-    },
     openDataset: function(){
       window.open(this.dataLocation,'_blank');
     },
@@ -247,90 +182,9 @@ export default {
         }
       });
     },
-    openSimulation: function() {
-      let isSedmlResource = false;
-      let resource = undefined;
-      this.entry.additionalLinks.forEach(function(el) {
-        if (el.description == "SED-ML file") {
-          isSedmlResource = true;
-          resource = el.uri;
-        } else if (!isSedmlResource && (el.description == "CellML file")) {
-          resource = el.uri;
-        }
-      });
-      let action = {
-          label: undefined,
-          resource: resource,
-          apiLocation: this.envVars.API_LOCATION,
-          version: this.version,
-          discoverId: this.discoverId,
-          contextCardUrl: this.entry.contextualInformation ? this.getFileFromPath(this.discoverId, this.version,this.entry.contextualInformation) : undefined,
-          banner: this.thumbnail,
-          title: "View simulation",
-          name: this.entry.name,
-          description: this.entry.description,
-          type: "Simulation"
-        }
-        this.propogateCardAction(action)
-    },
-    openSegmentation: function() {
-      if (this.entry.segmentation && this.entry.segmentation[0]) {
-        const segmentation = this.entry.segmentation[0];
-        const filePath = segmentation.dataset.path;
-        const datasetId = this.discoverId;
-        const datasetVersion = this.version;
-        const prefix = this.envVars.NL_LINK_PREFIX;
-        const resource = {
-          share_link: `${prefix}/dataviewer?datasetId=${datasetId}&version=${datasetVersion}&path=files/${filePath}`
-        };
-        let action = {
-          label: capitalise(this.label),
-          resource: resource,
-          dataset: this.dataLocation,
-          datasetId: this.discoverId,
-          title: "View segmentation",
-          name: this.entry.name,
-          description: this.entry.description,
-          type: "Segmentation"
-        };
-        EventBus.$emit("PopoverActionClick", action);
-      }
-    },
-    openImage: function() {
-      if (this.biolucidaData) {
-        const biolucidaData = this.biolucidaData;
-        if ('dataset_images' in biolucidaData) {
-          const image = biolucidaData['dataset_images'][0];
-          const resource = {
-            share_link: image.share_link,
-            id: image.image_id,
-            itemId: image.sourcepkg_id
-          }
-          let action = {
-            label: capitalise(this.label),
-            resource: resource,
-            dataset: this.dataLocation,
-            datasetId: this.discoverId,
-            title: "View image",
-            name: this.entry.name,
-            description: this.entry.description,
-            type: "Biolucida"
-          };
-          EventBus.$emit("PopoverActionClick", action);
-        }
-      }
-    },
     propogateCardAction: function(action){
       EventBus.$emit("PopoverActionClick", action)
       this.$emit('contextUpdate', action)
-    },
-    getScaffoldPath: function(discoverId, version, scaffoldPath){
-      let id = discoverId
-      let path = `${this.envVars.API_LOCATION}s3-resource/${id}/${version}/files/${scaffoldPath}`
-      return path
-    },
-    getFileFromPath: function(discoverId, version, path){
-      return  `${this.envVars.API_LOCATION}s3-resource/${discoverId}/${version}/files/${path}`
     },
     isOverflown: function(el){
       return el.clientHeight < el.scrollHeight
@@ -489,5 +343,9 @@ export default {
   line-height: 1.5;
   letter-spacing: 1.05px;
   color: #484848;
+}
+
+.badges-container {
+  margin-top:0.5rem;
 }
 </style>
