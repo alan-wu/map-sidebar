@@ -13,6 +13,7 @@
       :body-style="bodyStyle"
       :shadow="shadow"
       @card-clicked="cardClicked"
+      ref="gallery"
     />
   </div>
 </template>
@@ -123,19 +124,32 @@ export default {
       type: String,
       default: "",
     },
+    category: {
+      type: String,
+      default: "All",
+    },
   },
   data() {
     return {
       currentIndex: 0,
       ro: null,
       maxWidth: 3,
-      scicrunchItems: [],
-      biolucidaItems: [],
+      items: {
+        "Biolucida Images": [],
+        'Dataset': [],
+        'Images': [],
+        'Scaffolds': [],
+        'Segmentations': [],
+        'Simulations': [],
+        'Videos': [],
+        'Plots': [],
+      },
       bodyStyle: { padding: '0px', background: '#ffffff' },
       imageContainerStyle: { width: '160px', height: '160px'},
       imageStyle: { maxWidth: '160px', maxHeight: '160px'},
       shadow: "never",
       bottomSpacer: { minHeight: '1.5rem' },
+      resetIndex: false
     };
   },
   methods: {
@@ -154,7 +168,7 @@ export default {
     createDatasetItem: function () {
       const link = `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
       if (this.datasetThumbnail) {
-        this.scicrunchItems.push({
+        this.items['Dataset'].push({
           id: -1,
           title: link,
           type: `Dataset ${this.datasetId}`,
@@ -169,7 +183,7 @@ export default {
           const filePath = image.dataset.path;
           const id = image.identifier;
           const linkUrl = `${this.envVars.ROOT_URL}/datasets/imageviewer?dataset_id=${this.datasetId}&dataset_version=${this.datasetVersion}&file_path=${filePath}&mimetype=${image.mimetype.name}`;
-          this.scicrunchItems.push({
+          this.items['Images'].push({
             id,
             title: baseName(filePath),
             type: "Image",
@@ -203,7 +217,7 @@ export default {
             discoverId: this.discoverId,
             version: this.datasetVersion,
           };
-          this.scicrunchItems.push({
+          this.items['Plots'].push({
             id,
             title: baseName(filePath),
             type: "Plot",
@@ -246,7 +260,7 @@ export default {
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
           };
-          this.scicrunchItems.push({
+          this.items['Scaffolds'].push({
             id,
             title: baseName(filePath),
             type: "Scaffold",
@@ -284,7 +298,7 @@ export default {
               segmentationFilePath: filePath,
             }
           );
-          this.scicrunchItems.push({
+          this.items['Segmentations'].push({
             id,
             title: baseName(filePath),
             type: "Segmentation",
@@ -296,14 +310,10 @@ export default {
       }
     },
     createSimulationItems: function () {
-      let isSedmlResource = false;
       let resource = undefined;
       if (this.additionalLinks) {
-        this.additionalLinks.forEach(function(el) {
-          if (el.description == "SED-ML file") {
-            isSedmlResource = true;
-            resource = el.uri;
-          } else if (!isSedmlResource && (el.description == "CellML file")) {
+        this.additionalLinks.forEach(el => {
+          if (el.description == "SED-ML file" || el.description == "CellML file") {
             resource = el.uri;
           }
         });
@@ -320,7 +330,7 @@ export default {
             discoverId: this.datasetId,
             dataset: `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
           };
-          this.scicrunchItems.push({
+          this.items['Simulations'].push({
             id: "simulation",
             title: resource,
             type: "Simulation",
@@ -339,7 +349,7 @@ export default {
             video.dataset.path
           );
           const linkUrl = `${this.envVars.ROOT_URL}/datasets/videoviewer?dataset_version=${this.datasetVersion}&dataset_id=${this.datasetId}&file_path=${filePath}&mimetype=${video.mimetype.name}`;
-          this.scicrunchItems.push({
+          this.items['Videos'].push({
             title: video.name,
             type: "Video",
             thumbnail: this.defaultVideoImg,
@@ -355,13 +365,31 @@ export default {
   },
   computed: {
     galleryItems() {
-      return this.scicrunchItems.concat(this.biolucidaItems);
+      if (this.resetIndex) {
+        this.$refs.gallery.indicatorClicked(0);
+      }
+      let items = [...this.items["Dataset"]];
+      if (this.category === "All") {
+        for (const [key, value] of Object.entries(this.items)) {
+          if (key !== "Dataset")
+            items = items.concat(value);
+        }
+        return items;
+      }
+      else
+        return this.items[this.category];
     },
   },
   created: function () {
     this.createSciCurnchItems();
   },
   watch: {
+    category: function() {
+      this.resetIndex = true;
+    },
+    galleryItems: function() {
+      this.resetIndex = false;
+    },
     datasetBiolucida: {
       deep: true,
       immediate: true,
@@ -400,7 +428,7 @@ export default {
             })
           );
         }
-        this.biolucidaItems = items;
+        this.items['Biolucida Images'] = items;
       },
     },
   },

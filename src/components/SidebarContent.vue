@@ -328,7 +328,6 @@ export default {
     // initialise algolia
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
-    console.log('Algolia initialised in sidebar')
 
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {

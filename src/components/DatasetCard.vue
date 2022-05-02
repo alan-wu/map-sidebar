@@ -24,16 +24,15 @@
             :label="label"
             :datasetThumbnail="thumbnail"
             :dataset-biolucida="biolucidaData"
-            @card-clicked="galleryClicked"/>
+            :category="currentCategory"
+            @card-clicked="galleryClicked"
+          />
         </span>
         <div class="card-right" >
           <div class="title" @click="cardClicked">{{entry.name}}</div>
           <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
           <div class="details">id: {{discoverId}}</div>
-          <div>
-            <badges-group :entry="entry" />
-          </div>
           <!--
           <div>
             <el-button v-if="!entry.simulation" @click="openDataset" size="mini" class="button" icon="el-icon-coin">View dataset</el-button>
@@ -63,6 +62,14 @@
             <el-button v-if="biolucidaData"  @click="openImage" size="mini" class="button" icon="el-icon-view">View image</el-button>
           </div>
           -->
+          <div>
+            <badges-group
+              :entry="entry"
+              :dataset-biolucida="biolucidaData"
+              :additionalLinks="simulationLinks"
+              @categoryChanged="categoryChanged"
+            />
+          </div>
         </div>
 
       </div>
@@ -115,7 +122,8 @@ export default {
       discoverId: undefined,
       cardOverflow: false,
       expanded: false,
-      biolucidaData: undefined
+      biolucidaData: undefined,
+      currentCategory: "All"
     };
   },
   computed: {
@@ -175,6 +183,9 @@ export default {
   methods: {
     cardClicked: function(){
       this.openDataset()
+    },
+    categoryChanged: function(name) {
+      this.currentCategory = name;
     },
     galleryClicked: function(payload) {
       this.propogateCardAction(payload)
@@ -250,7 +261,6 @@ export default {
       let action = {
           label: undefined,
           resource: resource,
-          discoverId: this.dataLocation,
           apiLocation: this.envVars.API_LOCATION,
           version: this.version,
           discoverId: this.discoverId,
