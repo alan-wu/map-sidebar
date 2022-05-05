@@ -196,7 +196,6 @@ export default {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds
         this.dois = searchData.dois
-        this.results = searchData.items
         this.searchSciCrunch({'dois': this.dois})
       })
     },
