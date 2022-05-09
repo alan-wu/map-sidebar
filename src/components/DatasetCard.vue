@@ -290,9 +290,6 @@ export default {
       this.cardOverflow = false
       this.expanded = false
       this.cardOverflow = this.isOverflown(this.$refs.card)
-    },
-    'entry.contributors': function(){
-      console.log('watch on contributors caught')
     }
   },
 };
