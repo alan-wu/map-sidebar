@@ -284,9 +284,7 @@ export default {
           id: id,
           scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
-          simulation: element.additionalLinks
-            ? element.additionalLinks[0].description == 'Repository'
-            : false,
+          simulation: element['abi-simulation-file'],
         });
         id++;
 
