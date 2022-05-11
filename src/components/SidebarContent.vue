@@ -276,7 +276,7 @@ export default {
           organs: (element.organs && element.organs.length > 0)
               ? [...new Set(element.organs.map(v => v.name))]
               : undefined,
-          species: element.organisms 
+          species: element.organisms
             ? element.organisms[0].species
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
