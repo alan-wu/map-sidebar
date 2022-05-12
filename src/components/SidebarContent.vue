@@ -22,12 +22,12 @@
       @loading="filtersLoading"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
-      <div v-if="loadingScicrunch" class="loading-icon" v-loading="loadingScicrunch"></div>
       <div
         class="error-feedback"
         v-if="results.length === 0 && !loadingCards && !sciCrunchError"
       >No results found - Please change your search / filter criteria.</div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
+      <div v-if="loadingScicrunch" class="loading-icon" v-loading="loadingScicrunch"></div>
       <div v-for="result in results" :key="result.id" class="step-item">
         <DatasetCard :entry="result" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
       </div>
@@ -249,7 +249,6 @@ export default {
     resultsProcessing: function(data) {
       this.lastSearch = this.searchInput;
 
-      let id = 0;
       if (data.results.length === 0) {
         return;
       }
@@ -281,12 +280,10 @@ export default {
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          id: id,
           scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           simulation: element['abi-simulation-file'],
         });
-        id++;
 
         Vue.set(this.results, i, this.results[i])
       });
@@ -382,13 +379,17 @@ export default {
 }
 
 .loading-icon {
-  position: relative;
+  position: absolute;
   display: flex;
   float: right;
-  top: 0;
+  right: 40px;
   z-index: 20;
   width: 40px;
   height: 40px;
+}
+
+.loading-icon >>> .el-loading-mask {
+  background-color: rgba(117, 190, 218, 0.0) !important;
 }
 
 .pagination >>> button {

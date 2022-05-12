@@ -75,6 +75,7 @@ export class AlgoliaClient {
   _processResultsForCards(results) {
     let newResults = []
     let newResult = {}
+    let id = 0
     for (let res of results) {
       newResult = {...res}
       newResult = {
@@ -83,7 +84,9 @@ export class AlgoliaClient {
         description: res.item.description,
         updated: res.pennsieve.updatedAt,
         publishDate: res.pennsieve.publishDate,
-      } 
+        id: id
+      }
+      id++
       newResults.push(newResult)
     }
     return newResults
