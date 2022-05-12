@@ -22,7 +22,6 @@
           <div class="title" @click="cardClicked">{{entry.name}}</div>
           <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
-          <div class="details">id: {{discoverId}}</div>
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
@@ -244,7 +243,7 @@ export default {
 }
 
 .title {
-  padding-bottom: 5px;
+  padding-bottom: 0.75rem;
   font-family: Asap;
   font-size: 14px;
   font-weight: bold;
@@ -339,6 +338,6 @@ export default {
 }
 
 .badges-container {
-  margin-top:0.5rem;
+  margin-top:0.75rem;
 }
 </style>

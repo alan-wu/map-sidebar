@@ -5,7 +5,7 @@
       :cardWidth="10"
       :items="galleryItems"
       :max-width="maxWidth"
-      :show-indicator-bar="true"
+      :show-indicator-bar="false"
       :show-card-details="true"
       :highlight-active="false"
       :image-style="imageStyle"
@@ -311,7 +311,7 @@ export default {
       }
     },
     createVideoItems: function () {
-      if (this.enetry.videos) {
+      if (this.entry.videos) {
         this.entry.videos.forEach((video) => {
           const filePath = this.getS3FilePath(
             this.datasetId,

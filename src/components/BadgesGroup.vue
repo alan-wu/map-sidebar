@@ -1,13 +1,15 @@
 <template>
   <div v-if="categories['All'].size > 1" class="container"  ref="container">
+    <div>
+      View data types:
+    </div>
     <template v-for="(item, key) in categories" >
-        <el-badge v-if="item.size > 0" :value="item.size" class="badge-item" :key="key">
-          <el-button
-            :class="[{ 'active': key == active},'badges-button']"
-            @click="categoryClicked(key)"
-            size="small">{{ key }}
-          </el-button>
-        </el-badge>
+      <el-button
+        v-if="item.size > 0"
+        :class="[{ 'active': key == active},'tag-button']"
+        @click="categoryClicked(key)"
+        size="small" :key="key">{{ key + " (" + item.size + ")" }}
+      </el-button>
     </template>
   </div>
 </template>
@@ -16,12 +18,11 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
-import { Badge, Button } from "element-ui";
+import { Button } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 
 locale.use(lang);
-Vue.use(Badge);
 Vue.use(Button);
 
 export default {
@@ -112,32 +113,36 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.badges-button,
-.badges-button:hover,
-.badges-button:focus
+.tag-button,
+.tag-button:hover,
+.tag-button:focus,
+.tag-button.active
 {
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 0.75rem;
   padding: 0.2rem 0.2rem;
+  margin: 0.5rem 0 0 0;
+  margin-right: 0.75rem!important;
+}
+
+.tag-button,
+.tag-button:hover,
+.tag-button:focus
+{
   background: #f9f2fc;
   border: 1px solid #8300BF;
   color: #8300BF;
 }
 
-.badges-button.active
+.tag-button.active
 {
   background: #8300BF;
   border: 1px solid #8300BF;
   color: #fff;
 }
 
-.badge-item {
-  margin-top: 0.5rem;
-  margin-right: 1rem;
+.tag-button+.tag-button
+{
+  margin-left:0;
 }
-
-.badge-item >>> .el-badge__content {
-  background: #8300BF;
-}
-
 </style>
