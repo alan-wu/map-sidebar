@@ -97,11 +97,13 @@ export default {
       deep: true,
       immediate: true,
       handler: function () {
-        this.addToCategories(this.entry.images, 'Images');
         this.addToCategories(this.entry.scaffolds, 'Scaffolds');
         this.addToCategories(this.entry.segmentation, 'Segmentations');
         this.addSimulationsToCategories(this.additionalLinks);
+        /** disable the following
+        this.addToCategories(this.entry.images, 'Images');
         this.addToCategories(this.entry.videos, 'Videos');
+        **/
       }
     }
   },

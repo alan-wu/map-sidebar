@@ -56,49 +56,13 @@ export default {
       type: String,
       default: "",
     },
-    images: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
     plots: {
       type: Array,
       default: () => {
         return [];
       },
     },
-    scaffolds: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
-    scaffoldViews: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
-    segmentations: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
     additionalLinks: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
-    thumbnails: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
-    videos: {
       type: Array,
       default: () => {
         return [];
@@ -116,17 +80,15 @@ export default {
       type: String,
       default: "",
     },
-    name: {
-      type: String,
-      default: "",
-    },
-    description: {
-      type: String,
-      default: "",
-    },
     category: {
       type: String,
       default: "All",
+    },
+    entry:  {
+      type: Object,
+      default: () => {
+        return {};
+      },
     },
   },
   data() {
@@ -168,8 +130,10 @@ export default {
       this.createSimulationItems();
       this.createPlotItems();
       this.createSegmentationItems();
+      /* Disable these two
       this.createImageItems();
       this.createVideoItems();
+      */
     },
     createDatasetItem: function () {
       const link = `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
@@ -184,8 +148,8 @@ export default {
       }
     },
     createImageItems: function () {
-      if (this.images) {
-        this.images.forEach((image) => {
+      if (this.entry.images) {
+        this.entry.images.forEach((image) => {
           const filePath = image.dataset.path;
           const id = image.identifier;
           const linkUrl = `${this.envVars.ROOT_URL}/datasets/imageviewer?dataset_id=${this.datasetId}&dataset_version=${this.datasetVersion}&file_path=${filePath}&mimetype=${image.mimetype.name}`;
@@ -203,7 +167,7 @@ export default {
         this.plots.forEach((plot) => {
           const filePath = plot.dataset.path;
           const id = plot.identifier;
-          const thumbnail = this.getThumbnailForPlot(plot, this.thumbnails);
+          const thumbnail = this.getThumbnailForPlot(plot, this.entry.thumbnails);
           let thumbnailURL = undefined;
           let mimetype = '';
           if (thumbnail) {
@@ -235,15 +199,15 @@ export default {
       }
     },
     createScaffoldItems: function () {
-      if (this.scaffolds) {
+      if (this.entry.scaffolds) {
         let index = 0;
-        this.scaffolds.forEach((scaffold) => {
+        this.entry.scaffolds.forEach((scaffold) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
           const thumbnail = this.getThumbnailForScaffold(
             scaffold,
-            this.scaffoldViews,
-            this.thumbnails,
+            this.entry.scaffoldViews,
+            this.entry.thumbnails,
             index
           );
           let mimetype = '';
@@ -278,8 +242,8 @@ export default {
       }
     },
     createSegmentationItems: function () {
-      if (this.segmentations) {
-        this.segmentations.forEach((segmentation) => {
+      if (this.entry.segmentation) {
+        this.entry.segmentation.forEach((segmentation) => {
           const id = segmentation.id;
           let filePath = segmentation.dataset.path;
           filePath = filePath.replaceAll(" ", "_");
@@ -331,8 +295,8 @@ export default {
             version: this.datasetVersion,
             title: "View simulation",
             type: "Simulation",
-            name: this.name,
-            description: this.description,
+            name: this.entry.name,
+            description: this.entry.description,
             discoverId: this.datasetId,
             dataset: `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
           };
@@ -347,8 +311,8 @@ export default {
       }
     },
     createVideoItems: function () {
-      if (this.videos) {
-        this.videos.forEach((video) => {
+      if (this.enetry.videos) {
+        this.entry.videos.forEach((video) => {
           const filePath = this.getS3FilePath(
             this.datasetId,
             this.datasetVersion,
