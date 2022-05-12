@@ -276,7 +276,7 @@ export default {
           organs: (element.organs && element.organs.length > 0)
               ? [...new Set(element.organs.map(v => v.name))]
               : undefined,
-          species: element.organisms 
+          species: element.organisms
             ? element.organisms[0].species
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
@@ -284,9 +284,7 @@ export default {
           id: id,
           scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
-          simulation: element.additionalLinks
-            ? element.additionalLinks[0].description == 'Repository'
-            : false,
+          simulation: element['abi-simulation-file'],
         });
         id++;
 
