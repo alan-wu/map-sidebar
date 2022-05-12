@@ -290,6 +290,7 @@ export default {
       this.cardOverflow = false
       this.expanded = false
       this.cardOverflow = this.isOverflown(this.$refs.card)
+      this.getBanner()
     }
   },
 };
