@@ -27,8 +27,9 @@
         v-if="results.length === 0 && !loadingCards && !sciCrunchError"
       >No results found - Please change your search / filter criteria.</div>
       <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
-      <div v-for="o in results" :key="o.id" class="step-item">
-        <DatasetCard :entry="o" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
+      <div v-if="loadingScicrunch" class="loading-icon" v-loading="loadingScicrunch"></div>
+      <div v-for="result in results" :key="result.id" class="step-item">
+        <DatasetCard :entry="result" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
       </div>
       <el-pagination
         class="pagination"
@@ -104,6 +105,7 @@ var initial_state = {
   sciCrunchError: false,
   contextCardEntry: undefined,
   contextCardEnabled: true,
+  loadingScicrunch: false,
 };
 
 export default {
@@ -196,6 +198,8 @@ export default {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds
         this.dois = searchData.dois
+        this.results = searchData.items
+        this.loadingCards = false
         this.searchSciCrunch({'dois': this.dois})
       })
     },
@@ -212,9 +216,8 @@ export default {
       this.searchAlgolia(this.filters, this.searchInput, this.numberPerPage, this.page)
     },
     searchSciCrunch: function(params) {
-      this.loadingCards = true;
-      this.results = [];
-      this.disableCards();
+      this.loadingScicrunch = true
+      this.scrollToTop();
       this.$emit("search-changed", { value: this.searchInput, type: "query-update" });
       this.callSciCrunch(this.envVars.API_LOCATION, params)
         .then(result => {
@@ -224,18 +227,19 @@ export default {
           this.resultsProcessing(result);
           this.$refs.content.style["overflow-y"] = "scroll";
           this.loadingCards = false;
+          this.loadingScicrunch = false
         })
         .catch(result => {
           if (result.name !== 'AbortError') {
             this.loadingCards = false;
+            this.loadingScicrunch = false
             this.sciCrunchError = result.message;
           }
         })
     },
-    disableCards: function() {
+    scrollToTop: function() {
       if (this.$refs.content) {
         this.$refs.content.scroll({ top: 0, behavior: "smooth" });
-        this.$refs.content.style["overflow-y"] = "hidden";
       }
     },
     resetPageNavigation: function() {
@@ -244,16 +248,18 @@ export default {
     },
     resultsProcessing: function(data) {
       this.lastSearch = this.searchInput;
-      this.results = [];
+
+      let id = 0;
       if (data.results.length === 0) {
         return;
       }
       data.results.forEach(element => {
-        // this.results.push(element) below should be once backend is ready
-        let datasetInfo = {
-          name: element.name,
-          description: element.description,
-          contributors: element.contributors,
+        // match the scicrunch result with algolia result
+        let i = this.results.findIndex(res=> res.name === element.name);
+        // Assign scicrunch results to the object
+        Object.assign(this.results[i], element);
+        // Assign the attributes that need some processing
+        Object.assign(this.results[i],{
           numberSamples: element.sampleSize
             ? parseInt(element.sampleSize)
             : 0,
@@ -268,13 +274,12 @@ export default {
           organs: (element.organs && element.organs.length > 0)
               ? [...new Set(element.organs.map(v => v.name))]
               : undefined,
-          species: element.organisms 
+          species: element.organisms
             ? element.organisms[0].species
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          doi: element.doi,
-          publishDate: element.publishDate,
+          id: id,
           scaffolds: element['abi-scaffold-metadata-file'],
           thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
           scaffoldViews: element['abi-scaffold-view-file'],
@@ -282,14 +287,11 @@ export default {
           plots: element.plot,
           images: element['common-images'],
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
-          additionalLinks: element.additionalLinks,
           segmentation: element['mbf-segmentation'],
-          simulation: element.additionalLinks
-            ? element.additionalLinks[0].description == 'Repository'
-            : false,
-          s3uri: element.s3uri
-        };
-        this.results.push(datasetInfo);
+          simulation: element['abi-simulation-file'],
+        });
+        id++;
+        Vue.set(this.results, i, this.results[i])
       });
     },
     createfilterParams: function(params) {
@@ -379,6 +381,20 @@ export default {
   padding-bottom: 16px;
   background-color: white;
   text-align: center;
+}
+
+.loading-icon {
+  position: absolute;
+  display: flex;
+  float: right;
+  right: 40px;
+  z-index: 20;
+  width: 40px;
+  height: 40px;
+}
+
+.loading-icon >>> .el-loading-mask {
+  background-color: rgba(117, 190, 218, 0.0) !important;
 }
 
 .pagination >>> button {

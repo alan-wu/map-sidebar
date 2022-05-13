@@ -71,6 +71,26 @@ export class AlgoliaClient {
       });
     })
   }
+
+  _processResultsForCards(results) {
+    let newResults = []
+    let newResult = {}
+    let id = 0
+    for (let res of results) {
+      newResult = {...res}
+      newResult = {
+        doi: res.item.curie.split(':')[1],
+        name: res.item.name,
+        description: res.item.description,
+        updated: res.pennsieve.updatedAt,
+        publishDate: res.pennsieve.publishDate,
+        id: id
+      }
+      id++
+      newResults.push(newResult)
+    }
+    return newResults
+  }
   
   /**
    * Get Search results
@@ -92,7 +112,7 @@ export class AlgoliaClient {
       })
       .then(response => {
         let searchData = {
-          items: response.hits,
+          items: this._processResultsForCards(response.hits),
           total: response.nbHits,
           discoverIds: response.hits.map(r=>r.pennsieve.identifier),
           dois: response.hits.map(r=>r.item.curie.split(':')[1])

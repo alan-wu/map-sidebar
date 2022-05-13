@@ -1,11 +1,10 @@
 <template>
   <div class="dataset-card-container"  ref="container">
     <div v-bind:class=" expanded ? 'dataset-card-expanded' : 'dataset-card'"  ref="card">
-      <!-- The seperator-path css is set on SidebarContent.vue -->
-      <div class="seperator-path"></div>
-      <div class="card" >
+      <div v-if="entry.id !== 0" class="seperator-path"></div>
+      <div v-loading="loading" class="card" >
         <span class="card-left">
-          <image-gallery v-if="dataIsReady" 
+          <image-gallery v-if="!loading" 
             :datasetId="discoverId"
             :datasetVersion="version"
             :entry="entry"
@@ -65,7 +64,10 @@ export default {
      * Object containing information for
      * the required viewing.
      */
-    entry: Object,
+    entry: {
+      type: Object,
+      default: () => {}
+    },
     envVars: {
       type: Object,
       default: () => {}
@@ -73,13 +75,14 @@ export default {
   },
   data: function () {
     return {
-      dataIsReady: false,
       thumbnail: require('@/../assets/missing-image.svg'),
       dataLocation: this.entry.doi,
       discoverId: undefined,
       cardOverflow: false,
-
       expanded: false,
+      loading: false,
+      version: 1,
+      lastDoi: undefined,
       biolucidaData: undefined,
       currentCategory: "All"
     };
@@ -188,28 +191,36 @@ export default {
       return [doi.split('/')[doi.split('/').length-2], doi.split('/')[doi.split('/').length-1]]
     },
     getBanner: function () {
-      let doi = this.splitDOI(this.entry.doi)
-      fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`)
-        .then((response) =>{
-          if (!response.ok){
-            throw Error(response.statusText)
-          } else {
-             return response.json()
-          }
-        })
-        .then((data) => {
-          this.thumbnail = data.banner
-          this.discoverId = data.id
-          this.version = data.version
-          this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
-          this.getBiolucidaInfo(this.discoverId)
-          this.dataIsReady = true
-        })
-        .catch(() => {
-          //set defaults if we hit an error
-          this.thumbnail = require('@/../assets/missing-image.svg')
-          this.discoverId = undefined
-        });
+      // Only load banner if card has changed
+      if (this.lastDoi !== this.entry.doi) {
+        this.lastDoi = this.entry.doi
+        this.loading = true
+        let doi = this.splitDOI(this.entry.doi)
+        fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`)
+          .then((response) =>{
+            if (!response.ok){
+              throw Error(response.statusText)
+            } else {
+              return response.json()
+            }
+          })
+          .then((data) => {
+            console.log(data)
+            this.thumbnail = data.banner
+            this.discoverId = data.id
+            this.version = data.version
+            this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
+            this.getBiolucidaInfo(this.discoverId)
+            this.loading = false
+          })
+          .catch(() => {
+            //set defaults if we hit an error
+            this.thumbnail = require('@/../assets/missing-image.svg')
+            this.discoverId = undefined
+            this.loading = false
+          });
+      }
+
     },
     lastName: function(fullName){
       return fullName.split(',')[0]
@@ -231,6 +242,15 @@ export default {
   },
   mounted: function(){
     this.cardOverflow = this.isOverflown(this.$refs.card)
+  },
+  watch: {
+    // currently not using card overflow
+    'entry.description': function() { // watch it
+      this.cardOverflow = false
+      this.expanded = false
+      this.cardOverflow = this.isOverflown(this.$refs.card)
+      this.getBanner()
+    }
   },
 };
 </script>
