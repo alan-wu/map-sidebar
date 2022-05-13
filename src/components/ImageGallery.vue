@@ -36,12 +36,6 @@ export default {
   components: { Gallery },
   mixins: [GalleryHelper],
   props: {
-    datasetScicrunch: {
-      type: Object,
-      default: () => {
-        return {};
-      },
-    },
     datasetBiolucida: {
       type: Object,
       default: () => {

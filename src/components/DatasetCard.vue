@@ -80,7 +80,7 @@ export default {
       discoverId: undefined,
       cardOverflow: false,
       expanded: false,
-      loading: false,
+      loading: true,
       version: 1,
       lastDoi: undefined,
       biolucidaData: undefined,

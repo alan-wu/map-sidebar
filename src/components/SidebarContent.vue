@@ -255,9 +255,9 @@ export default {
       }
       data.results.forEach(element => {
         // match the scicrunch result with algolia result
-        let i = this.results.findIndex(res=> res.name === element.name);
+        let i = this.results.findIndex(res=> res.name === element.name)
         // Assign scicrunch results to the object
-        Object.assign(this.results[i], element);
+        Object.assign(this.results[i], element)
         // Assign the attributes that need some processing
         Object.assign(this.results[i],{
           numberSamples: element.sampleSize
@@ -289,8 +289,8 @@ export default {
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           segmentation: element['mbf-segmentation'],
           simulation: element['abi-simulation-file'],
-        });
-        id++;
+        })
+        id++
         Vue.set(this.results, i, this.results[i])
       });
     },
