@@ -284,7 +284,7 @@ export default {
           thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
           scaffoldViews: element['abi-scaffold-view-file'],
           videos: element.video,
-          plots: element.plot,
+          plots: element['abi-plot'],
           images: element['common-images'],
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           segmentation: element['mbf-segmentation'],

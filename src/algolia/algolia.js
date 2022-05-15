@@ -103,7 +103,15 @@ export class AlgoliaClient {
         facets:['*'],
         hitsPerPage: hitsperPage,
         page: page-1,
-        filters: filter
+        filters: filter,
+        attributesToHighlight: [],
+        attributesToRetrieve: [
+          'pennsieve.publishDate',
+          'pennsieve.updatedAt',
+          'item.curie',
+          'item.name',
+          'item.description',
+        ],
       })
       .then(response => {
         let searchData = {

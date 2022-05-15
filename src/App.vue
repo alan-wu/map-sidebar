@@ -78,7 +78,7 @@ export default {
   },
   data: function(){
     return {
-      tabArray: [{title: 'Flatmap', id:1},{title: 'Heart Scaffold', id:2},{title: 'Stomach Scaffold', id:3}],
+      tabArray: [{title: 'Flatmap', id:1}],
       contextArray: [null,null,null],
       sideBarVisibility: true,
       envVars: {

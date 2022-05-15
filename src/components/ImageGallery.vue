@@ -134,10 +134,12 @@ export default {
       if (this.datasetThumbnail) {
         this.items['Dataset'].push({
           id: -1,
-          title: link,
+          //Work around gallery requires a truthy string
+          title: " ",
           type: `Dataset ${this.datasetId}`,
           thumbnail: this.datasetThumbnail,
           link,
+          hideType: true,
         });
       }
     },
@@ -152,13 +154,14 @@ export default {
             title: baseName(filePath),
             type: "Image",
             link: linkUrl,
+            hideType: true,
           });
         });
       }
     },
     createPlotItems: function () {
-      if (this.plots) {
-        this.plots.forEach((plot) => {
+      if (this.entry.plots) {
+        this.entry.plots.forEach((plot) => {
           const filePath = plot.dataset.path;
           const id = plot.identifier;
           const thumbnail = this.getThumbnailForPlot(plot, this.entry.thumbnails);
@@ -173,9 +176,30 @@ export default {
             });
             mimetype = thumbnail.mimetype.name;
           }
+          const plotAnnotation = plot.datacite;
+          const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
+          const sourceUrl = filePathPrefix + plot.dataset.path;
+
+          const metadata = JSON.parse(
+            plotAnnotation.supplemental_json_metadata.description
+          );
+
+          let supplementalData = [];
+          if (plotAnnotation.isDescribedBy) {
+            supplementalData.push({
+              url: filePathPrefix + plotAnnotation.isDescribedBy.path
+            });
+          }
+
+          const resource = {
+            dataSource: {url: sourceUrl},
+            metadata,
+            supplementalData
+          }
+
           let action = {
             label: capitalise(this.label),
-            resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/${filePath}`,
+            resource: resource,
             title: "View plot",
             type: "Plot",
             discoverId: this.discoverId,
@@ -187,6 +211,7 @@ export default {
             type: "Plot",
             thumbnail: thumbnailURL,
             userData: action,
+            hideType: true,
             mimetype
           });
         });
@@ -230,6 +255,7 @@ export default {
             type: "Scaffold",
             thumbnail: thumbnailURL,
             userData: action,
+            hideType: true,
             mimetype
           });
         });
@@ -268,6 +294,7 @@ export default {
             type: "Segmentation",
             thumbnail: thumbnailURL,
             userData: action,
+            hideType: true,
             mimetype: 'image/png',
           });
         });
@@ -298,6 +325,7 @@ export default {
             id: "simulation",
             title: resource,
             type: "Simulation",
+            hideType: true,
             userData: action,
 
           });
@@ -317,6 +345,7 @@ export default {
             title: video.name,
             type: "Video",
             thumbnail: this.defaultVideoImg,
+            hideType: true,
             link: linkUrl,
           });
         });
@@ -387,7 +416,8 @@ export default {
                 type: "Image",
                 thumbnail: thumbnailURL,
                 userData: action,
-                mimetype: 'image/png'
+                mimetype: 'image/png',
+                hideType: true,
               };
             })
           );
