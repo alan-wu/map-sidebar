@@ -421,6 +421,10 @@ export default {
   scrollbar-width: thin;
 }
 
+.content >>> .el-loading-spinner .path {
+  stroke: #8300bf;
+}
+
 .content >>> .step-item:first-child .seperator-path{
    display: none;
 }

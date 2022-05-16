@@ -326,4 +326,8 @@ export default {
 .loading-icon >>> .el-loading-mask {
   background-color: rgba(117, 190, 218, 0.0) !important;
 }
+
+.loading-icon >>> .el-loading-spinner .path {
+  stroke: #8300bf;
+}
 </style>
