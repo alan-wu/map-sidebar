@@ -206,7 +206,7 @@ export default {
           .catch(() => {
             //set defaults if we hit an error
             this.thumbnail = require('@/../assets/missing-image.svg')
-            this.discoverId = undefined
+            this.discoverId = this.entry.datasetId
             this.loading = false
           });
       }

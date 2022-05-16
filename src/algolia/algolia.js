@@ -83,6 +83,7 @@ export class AlgoliaClient {
         description: res.item.description,
         updated: res.pennsieve.updatedAt,
         publishDate: res.pennsieve.publishDate,
+        datasetId: res.objectID,
         detailsReady: false
       }
       newResults.push(newResult)
@@ -109,6 +110,7 @@ export class AlgoliaClient {
           'item.curie',
           'item.name',
           'item.description',
+          'objectID',
         ],
       })
       .then(response => {
