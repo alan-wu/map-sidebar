@@ -24,11 +24,9 @@
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div
         class="error-feedback"
-        v-if="results.length === 0 && !loadingCards && !sciCrunchError"
+        v-if="results.length === 0 && !loadingCards"
       >No results found - Please change your search / filter criteria.</div>
-      <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
-      <div v-if="loadingScicrunch" class="loading-icon" v-loading="loadingScicrunch"></div>
-      <div v-for="result in results" :key="result.id" class="step-item">
+      <div v-for="result in results" :key="result.doi" class="step-item">
         <DatasetCard :entry="result" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
       </div>
       <el-pagination
@@ -102,7 +100,6 @@ var initial_state = {
   pageModel: 1,
   start: 0,
   hasSearched: false,
-  sciCrunchError: false,
   contextCardEntry: undefined,
   contextCardEnabled: true,
   loadingScicrunch: false,
@@ -194,13 +191,19 @@ export default {
     },
     searchAlgolia(filters, query=''){
       // Algolia search
+      this.loadingCards = true
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds
-        this.dois = searchData.dois
+        this._dois = searchData.dois
         this.results = searchData.items
         this.loadingCards = false
-        this.searchSciCrunch({'dois': this.dois})
+        this.scrollToTop()
+        this.$emit("search-changed", { value: this.searchInput, type: "query-update" })
+        //Search ongoing, let the current flow progress
+        if (!this.loadingScicrunch) {
+          this.perItemSearch()
+        }
       })
     },
     filtersLoading: function (val) {
@@ -215,27 +218,32 @@ export default {
       this.page = page
       this.searchAlgolia(this.filters, this.searchInput, this.numberPerPage, this.page)
     },
-    searchSciCrunch: function(params) {
-      this.loadingScicrunch = true
-      this.scrollToTop();
-      this.$emit("search-changed", { value: this.searchInput, type: "query-update" });
-      this.callSciCrunch(this.envVars.API_LOCATION, params)
-        .then(result => {
-          //Only process if the search term is the same as the last search term.
-          //This avoid old search being displayed.
-          this.sciCrunchError = false;
-          this.resultsProcessing(result);
-          this.$refs.content.style["overflow-y"] = "scroll";
-          this.loadingCards = false;
-          this.loadingScicrunch = false
-        })
-        .catch(result => {
-          if (result.name !== 'AbortError') {
-            this.loadingCards = false;
-            this.loadingScicrunch = false
-            this.sciCrunchError = result.message;
-          }
-        })
+    handleMissingData: function(doi) {
+      let i = this.results.findIndex(res=> res.doi === doi)
+      if (this.results[i])
+        this.results[i].detailsReady = true;
+    },
+    perItemSearch: function() {
+      const doi = this._dois.shift();
+      if (doi) {
+        this.loadingScicrunch = true;
+        this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]})
+          .then(result => {
+            if (result.numberOfHits === 0)
+              this.handleMissingData(doi)
+            else
+              this.resultsProcessing(result);
+            this.$refs.content.style["overflow-y"] = "scroll";
+          })
+          .catch(result => {
+            if (result.name !== 'AbortError') {
+              this.handleMissingData(doi);
+            }
+          })
+          .finally(() => this.perItemSearch());
+      } else {
+        this.loadingScicrunch = false;
+      }
     },
     scrollToTop: function() {
       if (this.$refs.content) {
@@ -249,7 +257,6 @@ export default {
     resultsProcessing: function(data) {
       this.lastSearch = this.searchInput;
 
-      let id = 0;
       if (data.results.length === 0) {
         return;
       }
@@ -279,7 +286,6 @@ export default {
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          id: id,
           scaffolds: element['abi-scaffold-metadata-file'],
           thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
           scaffoldViews: element['abi-scaffold-view-file'],
@@ -289,8 +295,8 @@ export default {
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           segmentation: element['mbf-segmentation'],
           simulation: element['abi-simulation-file'],
+          detailsReady: true,
         })
-        id++
         Vue.set(this.results, i, this.results[i])
       });
     },
@@ -310,14 +316,9 @@ export default {
     },
     callSciCrunch: function(apiLocation, params = {}) {
       return new Promise((resolve, reject) => {
-        // the following controller will abort current search
-        // if a new one has been started
-        if (this._controller) this._controller.abort();
-        this._controller = new AbortController();
-        let signal = this._controller.signal;
         // Add parameters if we are sent them
         let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
-        fetch(fullEndpoint, { signal })
+        fetch(fullEndpoint)
           .then(handleErrors)
           .then(response => response.json())
           .then(data => resolve(data))
@@ -381,20 +382,6 @@ export default {
   padding-bottom: 16px;
   background-color: white;
   text-align: center;
-}
-
-.loading-icon {
-  position: absolute;
-  display: flex;
-  float: right;
-  right: 40px;
-  z-index: 20;
-  width: 40px;
-  height: 40px;
-}
-
-.loading-icon >>> .el-loading-mask {
-  background-color: rgba(117, 190, 218, 0.0) !important;
 }
 
 .pagination >>> button {

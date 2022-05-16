@@ -1,10 +1,10 @@
 <template>
   <div class="dataset-card-container"  ref="container">
-    <div v-bind:class=" expanded ? 'dataset-card-expanded' : 'dataset-card'"  ref="card">
-      <div v-if="entry.id !== 0" class="seperator-path"></div>
+    <div class="dataset-card"  ref="card">
+      <div class="seperator-path"></div>
       <div v-loading="loading" class="card" >
         <span class="card-left">
-          <image-gallery v-if="!loading" 
+          <image-gallery v-if="!loading && discoverId" 
             :datasetId="discoverId"
             :datasetVersion="version"
             :entry="entry"
@@ -21,6 +21,7 @@
           <div class="title" @click="cardClicked">{{entry.name}}</div>
           <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
           <div class="details">{{samples}}</div>
+          <div v-if="!entry.detailsReady" class="details loading-icon" v-loading="!entry.detailsReady"></div>
           <div>
             <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
           </div>
@@ -33,9 +34,7 @@
             />
           </div>
         </div>
-
       </div>
-        <p v-if="(cardOverflow && !expanded)" class="read-more"><el-button @click="expand" class="read-more-button">Read more...</el-button></p>
     </div>
   </div>
 </template>
@@ -78,8 +77,6 @@ export default {
       thumbnail: require('@/../assets/missing-image.svg'),
       dataLocation: this.entry.doi,
       discoverId: undefined,
-      cardOverflow: false,
-      expanded: false,
       loading: true,
       version: 1,
       lastDoi: undefined,
@@ -181,12 +178,6 @@ export default {
       EventBus.$emit("PopoverActionClick", action)
       this.$emit('contextUpdate', action)
     },
-    isOverflown: function(el){
-      return el.clientHeight < el.scrollHeight
-    },
-    expand: function() {
-      this.expanded = true
-    },
     splitDOI: function(doi){
       return [doi.split('/')[doi.split('/').length-2], doi.split('/')[doi.split('/').length-1]]
     },
@@ -205,7 +196,6 @@ export default {
             }
           })
           .then((data) => {
-            console.log(data)
             this.thumbnail = data.banner
             this.discoverId = data.id
             this.version = data.version
@@ -240,15 +230,9 @@ export default {
   created: function() {
     this.getBanner()
   },
-  mounted: function(){
-    this.cardOverflow = this.isOverflown(this.$refs.card)
-  },
   watch: {
     // currently not using card overflow
     'entry.description': function() { // watch it
-      this.cardOverflow = false
-      this.expanded = false
-      this.cardOverflow = this.isOverflown(this.$refs.card)
       this.getBanner()
     }
   },
@@ -287,35 +271,6 @@ export default {
 .card-right {
   flex: 1.3;
   padding-left: 6px;
-}
-
-.dataset-card .read-more {
-  position: absolute;
-  z-index: 9;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 20px;
-  margin: 0; padding: 20px 66px;
-  /* "transparent" only works here because == rgba(0,0,0,0) */
-  background-image: linear-gradient(to bottom, transparent, white);
-  pointer-events: none;
-}
-
-.read-more-button{
-  width: 85px;
-  height: 20px;
-  font-family: Asap;
-  font-size: 14px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  color: #8300bf;
-  padding: 0px;
-  pointer-events: all;
-  cursor: pointer;
 }
 
 .button{
@@ -359,5 +314,16 @@ export default {
 
 .badges-container {
   margin-top:0.75rem;
+}
+
+.loading-icon {
+  z-index: 20;
+  width: 40px;
+  height: 40px;
+  left: 80px;
+}
+
+.loading-icon >>> .el-loading-mask {
+  background-color: rgba(117, 190, 218, 0.0) !important;
 }
 </style>
