@@ -9,7 +9,6 @@
             :datasetVersion="version"
             :entry="entry"
             :envVars="envVars"
-            :additionalLinks="simulationLinks"
             :label="label"
             :datasetThumbnail="thumbnail"
             :dataset-biolucida="biolucidaData"
@@ -29,7 +28,6 @@
             <badges-group
               :entry="entry"
               :dataset-biolucida="biolucidaData"
-              :additionalLinks="simulationLinks"
               @categoryChanged="categoryChanged"
             />
           </div>
@@ -124,13 +122,6 @@ export default {
 
       return text;
     },
-    simulationLinks: function() {
-      if (this.entry.additionalLinks) {
-        if (typeof this.entry.additionalLinks != "boolean")
-          return this.entry.additionalLinks;
-      }
-      return [];
-    },
     label: function(){
       return this.entry.organs ? this.entry.organs[0] : this.entry.name
     },
@@ -206,7 +197,7 @@ export default {
           .catch(() => {
             //set defaults if we hit an error
             this.thumbnail = require('@/../assets/missing-image.svg')
-            this.discoverId = this.entry.datasetId
+            this.discoverId = Number(this.entry.datasetId)
             this.loading = false
           });
       }

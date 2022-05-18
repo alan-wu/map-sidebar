@@ -65,18 +65,10 @@ export default {
       }
     },
     addSimulationsToCategories: function (array) {
-      if (array) {
-        let size = 0;
-
-        array.forEach(item => {
-          if (item.description == "SED-ML file" || item.description == "CellML file") {
-            size = 1;
-          }
-        });
-        if (size > 0) {
-          this.categories["Simulations"] = { size };
-          this.categories["All"].size += size;
-        }
+      if (array && array.length > 0) {
+        const size = 1;
+        this.categories["Simulations"] = { size };
+        this.categories["All"].size += size;
       }
     },
     categoryClicked: function(name) {
@@ -101,7 +93,7 @@ export default {
         this.addToCategories(this.entry.scaffolds, 'Scaffolds');
         this.addToCategories(this.entry.segmentation, 'Segmentations');
         this.addToCategories(this.entry.plots, 'Plots');
-        this.addSimulationsToCategories(this.additionalLinks);
+        this.addSimulationsToCategories(this.entry.simulation);
         /** disable the following
         this.addToCategories(this.entry.images, 'Images');
         this.addToCategories(this.entry.videos, 'Videos');

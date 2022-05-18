@@ -56,12 +56,6 @@ export default {
         return [];
       },
     },
-    additionalLinks: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
     datasetId: {
       type: Number,
       default: -1,
@@ -301,35 +295,25 @@ export default {
       }
     },
     createSimulationItems: function () {
-      let resource = undefined;
-      if (this.additionalLinks) {
-        this.additionalLinks.forEach(el => {
-          if (el.description == "SED-ML file" || el.description == "CellML file") {
-            resource = el.uri;
-          }
+      if (this.entry.simulation && this.entry.simulation.length > 0) {
+        let action = {
+          label: undefined,
+          apiLocation: this.envVars.API_LOCATION,
+          version: this.datasetVersion,
+          title: "View simulation",
+          type: "Simulation",
+          name: this.entry.name,
+          description: this.entry.description,
+          discoverId: this.datasetId,
+          dataset: `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
+        };
+        this.items['Simulations'].push({
+          id: "simulation",
+          title: " ",
+          type: "Simulation",
+          hideType: true,
+          userData: action,
         });
-        if (resource) {
-          let action = {
-            label: undefined,
-            resource: resource,
-            apiLocation: this.envVars.API_LOCATION,
-            version: this.datasetVersion,
-            title: "View simulation",
-            type: "Simulation",
-            name: this.entry.name,
-            description: this.entry.description,
-            discoverId: this.datasetId,
-            dataset: `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
-          };
-          this.items['Simulations'].push({
-            id: "simulation",
-            title: resource,
-            type: "Simulation",
-            hideType: true,
-            userData: action,
-
-          });
-        }
       }
     },
     createVideoItems: function () {

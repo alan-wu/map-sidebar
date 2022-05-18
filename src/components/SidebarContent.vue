@@ -295,6 +295,7 @@ export default {
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
           segmentation: element['mbf-segmentation'],
           simulation: element['abi-simulation-file'],
+          additionalLinks: element.additionalLinks,
           detailsReady: true,
         })
         Vue.set(this.results, i, this.results[i])
