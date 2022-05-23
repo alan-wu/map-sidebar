@@ -30,6 +30,7 @@ const capitalise = function (string) {
 
 import GalleryHelper from "@abi-software/gallery/src/mixins/GalleryHelpers";
 import Gallery from "@abi-software/gallery";
+import "@abi-software/gallery/dist/gallery.css";
 
 export default {
   name: "ImageGallery",
