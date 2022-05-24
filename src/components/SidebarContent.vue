@@ -102,7 +102,6 @@ var initial_state = {
   hasSearched: false,
   contextCardEntry: undefined,
   contextCardEnabled: true,
-  loadingScicrunch: false,
 };
 
 export default {
@@ -205,9 +204,7 @@ export default {
         this._abortController = new AbortController()
         const signal = this._abortController.signal
         //Search ongoing, let the current flow progress
-        if (!this.loadingScicrunch) {
-          this.perItemSearch(signal)
-        }
+        this.perItemSearch(signal, { count: 0 })
       })
     },
     filtersLoading: function (val) {
@@ -227,26 +224,34 @@ export default {
       if (this.results[i])
         this.results[i].detailsReady = true;
     },
-    perItemSearch: function(signal) {
-      const doi = this._dois.shift();
-      if (doi) {
-        this.loadingScicrunch = true;
-        this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]}, signal)
-          .then(result => {
-            if (result.numberOfHits === 0)
-              this.handleMissingData(doi)
-            else
-              this.resultsProcessing(result);
-            this.$refs.content.style["overflow-y"] = "scroll";
-          })
-          .catch(result => {
-            if (result.name !== 'AbortError') {
-              this.handleMissingData(doi);
-            }
-          });
-          this.perItemSearch(signal);
-      } else {
-        this.loadingScicrunch = false;
+    perItemSearch: function(signal, data) {
+      //Maximum 10 downloads at once to prevent long waiting time
+      //between unfinished search and new search
+      const maxDownloads = 10;
+      if (maxDownloads > data.count) {
+        const doi = this._dois.shift();
+        console.log(doi)
+        if (doi) {
+          data.count++;
+          this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]}, signal)
+            .then(result => {
+              if (result.numberOfHits === 0)
+                this.handleMissingData(doi);
+              else
+                this.resultsProcessing(result);
+              this.$refs.content.style["overflow-y"] = "scroll";
+              data.count--;
+              this.perItemSearch(signal, data);
+            })
+            .catch(result => {
+              if (result.name !== 'AbortError') {
+                this.handleMissingData(doi);
+                data.count--;
+                this.perItemSearch(signal, data);
+              }
+            });
+            this.perItemSearch(signal, data);
+        }
       }
     },
     scrollToTop: function() {
