@@ -200,9 +200,13 @@ export default {
         this.loadingCards = false
         this.scrollToTop()
         this.$emit("search-changed", { value: this.searchInput, type: "query-update" })
+        if (this._abortController)
+          this._abortController.abort()
+        this._abortController = new AbortController()
+        const signal = this._abortController.signal
         //Search ongoing, let the current flow progress
         if (!this.loadingScicrunch) {
-          this.perItemSearch()
+          this.perItemSearch(signal)
         }
       })
     },
@@ -223,11 +227,11 @@ export default {
       if (this.results[i])
         this.results[i].detailsReady = true;
     },
-    perItemSearch: function() {
+    perItemSearch: function(signal) {
       const doi = this._dois.shift();
       if (doi) {
         this.loadingScicrunch = true;
-        this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]})
+        this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]}, signal)
           .then(result => {
             if (result.numberOfHits === 0)
               this.handleMissingData(doi)
@@ -239,8 +243,8 @@ export default {
             if (result.name !== 'AbortError') {
               this.handleMissingData(doi);
             }
-          })
-          .finally(() => this.perItemSearch());
+          });
+          this.perItemSearch(signal);
       } else {
         this.loadingScicrunch = false;
       }
@@ -315,11 +319,11 @@ export default {
       }
       return p.toString();
     },
-    callSciCrunch: function(apiLocation, params = {}) {
+    callSciCrunch: function(apiLocation, params = {}, signal) {
       return new Promise((resolve, reject) => {
         // Add parameters if we are sent them
         let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
-        fetch(fullEndpoint)
+        fetch(fullEndpoint, {signal})
           .then(handleErrors)
           .then(response => response.json())
           .then(data => resolve(data))
