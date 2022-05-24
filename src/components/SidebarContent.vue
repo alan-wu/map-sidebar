@@ -230,7 +230,6 @@ export default {
       const maxDownloads = 10;
       if (maxDownloads > data.count) {
         const doi = this._dois.shift();
-        console.log(doi)
         if (doi) {
           data.count++;
           this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]}, signal)
@@ -241,15 +240,18 @@ export default {
                 this.resultsProcessing(result);
               this.$refs.content.style["overflow-y"] = "scroll";
               data.count--;
+              //Async::Download finished, get the next one
               this.perItemSearch(signal, data);
             })
             .catch(result => {
               if (result.name !== 'AbortError') {
                 this.handleMissingData(doi);
                 data.count--;
+                //Async::Download not aborted, get the next one
                 this.perItemSearch(signal, data);
               }
             });
+            //Check and make another request until it gets to max downloads
             this.perItemSearch(signal, data);
         }
       }
