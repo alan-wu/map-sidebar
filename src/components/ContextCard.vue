@@ -11,7 +11,7 @@
           <div class="title">{{contextData.heading}}</div>
           <div>{{contextData.description}}</div>
           <br/>
-          <div v-if="contextData.views" class="subtitle">Scaffold Views</div>
+          <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
             <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-item">
               <img class="key-image" :src="getFileFromPath(view.thumbnail)"> 
