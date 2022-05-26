@@ -75,7 +75,6 @@ export class AlgoliaClient {
   _processResultsForCards(results) {
     let newResults = []
     let newResult = {}
-    let id = 0
     for (let res of results) {
       newResult = {...res}
       newResult = {
@@ -84,9 +83,9 @@ export class AlgoliaClient {
         description: res.item.description,
         updated: res.pennsieve.updatedAt,
         publishDate: res.pennsieve.publishDate,
-        id: id
+        datasetId: res.objectID,
+        detailsReady: false
       }
-      id++
       newResults.push(newResult)
     }
     return newResults
@@ -103,7 +102,16 @@ export class AlgoliaClient {
         facets:['*'],
         hitsPerPage: hitsperPage,
         page: page-1,
-        filters: filter
+        filters: filter,
+        attributesToHighlight: [],
+        attributesToRetrieve: [
+          'pennsieve.publishDate',
+          'pennsieve.updatedAt',
+          'item.curie',
+          'item.name',
+          'item.description',
+          'objectID',
+        ],
       })
       .then(response => {
         let searchData = {

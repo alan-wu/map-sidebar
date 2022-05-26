@@ -24,11 +24,9 @@
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div
         class="error-feedback"
-        v-if="results.length === 0 && !loadingCards && !sciCrunchError"
+        v-if="results.length === 0 && !loadingCards"
       >No results found - Please change your search / filter criteria.</div>
-      <div class="error-feedback" v-if="sciCrunchError">{{sciCrunchError}}</div>
-      <div v-if="loadingScicrunch" class="loading-icon" v-loading="loadingScicrunch"></div>
-      <div v-for="result in results" :key="result.id" class="step-item">
+      <div v-for="result in results" :key="result.doi" class="step-item">
         <DatasetCard :entry="result" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
       </div>
       <el-pagination
@@ -102,10 +100,8 @@ var initial_state = {
   pageModel: 1,
   start: 0,
   hasSearched: false,
-  sciCrunchError: false,
   contextCardEntry: undefined,
   contextCardEnabled: true,
-  loadingScicrunch: false,
 };
 
 export default {
@@ -194,13 +190,21 @@ export default {
     },
     searchAlgolia(filters, query=''){
       // Algolia search
+      this.loadingCards = true
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds
-        this.dois = searchData.dois
+        this._dois = searchData.dois
         this.results = searchData.items
         this.loadingCards = false
-        this.searchSciCrunch({'dois': this.dois})
+        this.scrollToTop()
+        this.$emit("search-changed", { value: this.searchInput, type: "query-update" })
+        if (this._abortController)
+          this._abortController.abort()
+        this._abortController = new AbortController()
+        const signal = this._abortController.signal
+        //Search ongoing, let the current flow progress
+        this.perItemSearch(signal, { count: 0 })
       })
     },
     filtersLoading: function (val) {
@@ -215,27 +219,42 @@ export default {
       this.page = page
       this.searchAlgolia(this.filters, this.searchInput, this.numberPerPage, this.page)
     },
-    searchSciCrunch: function(params) {
-      this.loadingScicrunch = true
-      this.scrollToTop();
-      this.$emit("search-changed", { value: this.searchInput, type: "query-update" });
-      this.callSciCrunch(this.envVars.API_LOCATION, params)
-        .then(result => {
-          //Only process if the search term is the same as the last search term.
-          //This avoid old search being displayed.
-          this.sciCrunchError = false;
-          this.resultsProcessing(result);
-          this.$refs.content.style["overflow-y"] = "scroll";
-          this.loadingCards = false;
-          this.loadingScicrunch = false
-        })
-        .catch(result => {
-          if (result.name !== 'AbortError') {
-            this.loadingCards = false;
-            this.loadingScicrunch = false
-            this.sciCrunchError = result.message;
-          }
-        })
+    handleMissingData: function(doi) {
+      let i = this.results.findIndex(res=> res.doi === doi)
+      if (this.results[i])
+        this.results[i].detailsReady = true;
+    },
+    perItemSearch: function(signal, data) {
+      //Maximum 10 downloads at once to prevent long waiting time
+      //between unfinished search and new search
+      const maxDownloads = 10;
+      if (maxDownloads > data.count) {
+        const doi = this._dois.shift();
+        if (doi) {
+          data.count++;
+          this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]}, signal)
+            .then(result => {
+              if (result.numberOfHits === 0)
+                this.handleMissingData(doi);
+              else
+                this.resultsProcessing(result);
+              this.$refs.content.style["overflow-y"] = "scroll";
+              data.count--;
+              //Async::Download finished, get the next one
+              this.perItemSearch(signal, data);
+            })
+            .catch(result => {
+              if (result.name !== 'AbortError') {
+                this.handleMissingData(doi);
+                data.count--;
+                //Async::Download not aborted, get the next one
+                this.perItemSearch(signal, data);
+              }
+            });
+            //Check and make another request until it gets to max downloads
+            this.perItemSearch(signal, data);
+        }
+      }
     },
     scrollToTop: function() {
       if (this.$refs.content) {
@@ -253,14 +272,10 @@ export default {
         return;
       }
       data.results.forEach(element => {
-
         // match the scicrunch result with algolia result
         let i = this.results.findIndex(res=> res.name === element.name)
-
-
         // Assign scicrunch results to the object
         Object.assign(this.results[i], element)
-
         // Assign the attributes that need some processing
         Object.assign(this.results[i],{
           numberSamples: element.sampleSize
@@ -271,7 +286,9 @@ export default {
             : 0,
           updated: element.updated[0].timestamp.split("T")[0],
           url: element.uri[0],
-          datasetId: element.identifier,
+          datasetId: element.dataset_identifier,
+          datasetRevision: element.dataset_revision,
+          datasetVersion: element.dataset_version,
           organs: (element.organs && element.organs.length > 0)
               ? [...new Set(element.organs.map(v => v.name))]
               : undefined,
@@ -280,11 +297,18 @@ export default {
               ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          scaffolds: element['abi-scaffold-metadata-file'] ? element['abi-scaffold-metadata-file'] : undefined,
+          scaffolds: element['abi-scaffold-metadata-file'],
+          thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
+          scaffoldViews: element['abi-scaffold-view-file'],
+          videos: element.video,
+          plots: element['abi-plot'],
+          images: element['common-images'],
           contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
+          segmentation: element['mbf-segmentation'],
           simulation: element['abi-simulation-file'],
-        });
-
+          additionalLinks: element.additionalLinks,
+          detailsReady: true,
+        })
         Vue.set(this.results, i, this.results[i])
       });
     },
@@ -302,28 +326,22 @@ export default {
       }
       return p.toString();
     },
-    callSciCrunch: function(apiLocation, params = {}) {
+    callSciCrunch: function(apiLocation, params = {}, signal) {
       return new Promise((resolve, reject) => {
-        // the following controller will abort current search
-        // if a new one has been started
-        if (this._controller) this._controller.abort();
-        this._controller = new AbortController();
-        let signal = this._controller.signal;
         // Add parameters if we are sent them
         let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
-        fetch(fullEndpoint, { signal })
+        fetch(fullEndpoint, {signal})
           .then(handleErrors)
           .then(response => response.json())
           .then(data => resolve(data))
           .catch(data => reject(data));
       });
-    }
+    },
   },
   mounted: function() {
     // initialise algolia
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
-    console.log('Algolia initialised in sidebar')
 
     // temporarily disable flatmap search since there are no datasets
     if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
@@ -378,20 +396,6 @@ export default {
   text-align: center;
 }
 
-.loading-icon {
-  position: absolute;
-  display: flex;
-  float: right;
-  right: 40px;
-  z-index: 20;
-  width: 40px;
-  height: 40px;
-}
-
-.loading-icon >>> .el-loading-mask {
-  background-color: rgba(117, 190, 218, 0.0) !important;
-}
-
 .pagination >>> button {
   background-color: white !important;
 }
@@ -427,6 +431,21 @@ export default {
   background-color: #ffffff;
   overflow-y: scroll;
   scrollbar-width: thin;
+}
+
+.content >>> .el-loading-spinner .path {
+  stroke: #8300bf;
+}
+
+.content >>> .step-item:first-child .seperator-path{
+   display: none;
+}
+
+.content >>> .step-item:not(:first-child) .seperator-path{
+  width: 486px;
+  height: 0px;
+  border: solid 1px #e4e7ed;
+  background-color: #e4e7ed;
 }
 
 .scrollbar::-webkit-scrollbar-track {
