@@ -188,7 +188,6 @@ export default {
           })
           .then((data) => {
             this.thumbnail = data.banner
-            this.entry.banner = data.banner
             this.discoverId = data.id
             this.version = data.version
             this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
