@@ -135,6 +135,7 @@ export default {
           thumbnail: this.datasetThumbnail,
           link,
           hideType: true,
+          hideTitle: true,
         });
       }
     },
@@ -314,6 +315,7 @@ export default {
           title: " ",
           type: "Simulation",
           hideType: true,
+          hideTitle: true,
           userData: action,
         });
       }
