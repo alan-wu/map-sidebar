@@ -244,6 +244,7 @@ export default {
             discoverId: this.datasetId,
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
+            banner: this.datasetThumbnail,
             contextCardUrl: this.entry.contextualInformation ? `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation}` : undefined,
           };
           this.items['Scaffolds'].push({
