@@ -105,7 +105,7 @@ export default {
       },
       imageStyle: { maxWidth: '160px', maxHeight: '160px'},
       shadow: "never",
-      bottomSpacer: { minHeight: '1.5rem' },
+      bottomSpacer: { minHeight: '0rem' },
       resetIndex: false
     };
   },
@@ -135,6 +135,7 @@ export default {
           thumbnail: this.datasetThumbnail,
           link,
           hideType: true,
+          hideTitle: true,
         });
       }
     },
@@ -315,6 +316,7 @@ export default {
           title: " ",
           type: "Simulation",
           hideType: true,
+          hideTitle: true,
           userData: action,
         });
       }

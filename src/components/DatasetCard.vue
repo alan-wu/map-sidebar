@@ -235,6 +235,7 @@ export default {
 .dataset-card {
   padding-left: 16px;
   position: relative;
+  min-height:17rem;
 }
 
 .title {

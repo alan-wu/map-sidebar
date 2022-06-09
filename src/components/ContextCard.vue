@@ -123,6 +123,8 @@ export default {
     removeDoubleFilesPath: function(path){
       if (path.includes('files/')){
         return path.replace('files/', '')
+      } else if (path.includes('files\\')) {
+        return path.replace('files\\', '')
       } else {
         return path
       }
@@ -147,9 +149,8 @@ export default {
 
     },
     openViewFile: function(view){
-
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
-      this.entry.viewUrl = view.path.split('/')[view.path.split('/').length-1]
+      this.entry.viewUrl = `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/${view.path}`
       this.entry.type = 'Scaffold View'
       EventBus.$emit("PopoverActionClick", this.entry)
     }
