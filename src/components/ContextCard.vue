@@ -3,11 +3,11 @@
     <div v-show="showContextCard">
       <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
       <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
-      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" v-loading="loading" class="context-card card" >
+      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" v-loading="loading" class="context-card" >
         <div class="card-left">
           <img :src="entry.banner" class="context-image">
         </div>
-        <div class="card-right">
+        <div class="card-right scrollbar">
           <div class="title">{{contextData.heading}}</div>
           <div>{{contextData.description}}</div>
           <br/>
@@ -171,6 +171,12 @@ export default {
   max-height: 10  50px;
   padding: 8px;
   font-size: 14px;
+  margin-bottom: 18px;
+  position: relative;
+  border: solid 1px #e4e7ed;
+  display: flex;
+  width: 500px;
+  max-height: 258px;
 }
 
 .context-card-item{
@@ -186,7 +192,7 @@ export default {
 .context-card >>> .el-card__body {
   padding: 0px;
   display: flex;
-  width: 516px;   
+  width: 516px;
 }
 
 .context-image{
@@ -202,15 +208,6 @@ export default {
   margin-right: 8px;
 }
 
-.card {
-  margin-bottom: 18px;
-  position: relative;
-  border: solid 1px #e4e7ed;
-  display: flex;
-  width: 500px;
-  max-height: 480px;
-}
-
 .card-left{
   flex: 1
 }
@@ -218,6 +215,8 @@ export default {
 .card-right {
   flex: 1.3;
   padding-left: 6px;
+  overflow-y: scroll;
+  scrollbar-width: thin;
 }
 
 .cursor-pointer {
@@ -238,4 +237,22 @@ export default {
 .subtitle{
   font-weight: bold;
 }
+
+.scrollbar::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: #f5f5f5;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 12px;
+  right: -12px;
+  background-color: #f5f5f5;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  background-color: #979797;
+}
+
 </style>
