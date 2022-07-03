@@ -9,7 +9,7 @@
         </div>
         <div class="card-right scrollbar">
           <div class="title">{{contextData.heading}}</div>
-          <div>{{contextData.description}}</div>
+          <div v-html="contextData.description"/>
           <br/>
           <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
@@ -30,8 +30,7 @@
                   <i class="el-icon-warning-outline info"></i>
                 </div>
               </span>
-              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
-                {{sample.description}}
+              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]" v-html="sample.description">
                 <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
               </div>
               <br v-bind:key="i+'_2'"/>
