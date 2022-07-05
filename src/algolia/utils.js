@@ -8,13 +8,22 @@ export const facetPropPathMapping = {
   'item.modalities.keyword' : 'Experimental Approach',
   'attributes.subject.sex.value' : 'Sex',
   'attributes.subject.ageCategory.value' : 'Age Categories',
+  'item.keywords.keyword' : 'Keywords'
+}
+
+export const shownFilters = {
+  'anatomy.organ.name' : 'Anatomical Structure',
+  'organisms.primary.species.name' : 'Species',
+  'item.modalities.keyword' : 'Experimental Approach',
+  'attributes.subject.sex.value' : 'Sex',
+  'attributes.subject.ageCategory.value' : 'Age Categories',
 }
 
 /* Returns filter for searching algolia. All facets of the same category are joined with OR,
   * and each of those results is then joined with an AND.
   * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
 export function getFilters(selectedFacetArray=undefined) {
-  
+  console.log('calling getFilters!')
   // return all datasets if no filter
   if (selectedFacetArray === undefined) {
     return 'NOT item.published.status:embargo'
