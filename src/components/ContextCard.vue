@@ -108,7 +108,6 @@ export default {
         })
         .then((data) => {
           this.contextData = data
-          console.log(data)
           this.loading = false
         })
         .catch(() => {

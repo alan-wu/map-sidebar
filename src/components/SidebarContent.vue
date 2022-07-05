@@ -193,9 +193,7 @@ export default {
       // Algolia search
       this.loadingCards = true
       this.algoliaClient.keywordsInSearch(getFilters(filters), query).then(keywords => {
-        console.log('key search complete!')
-        console.log(keywords)
-        EventBus.$emit("kewordsFound", keywords) 
+        EventBus.$emit("keywordsFound", keywords) 
       })
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total

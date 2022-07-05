@@ -165,7 +165,6 @@ export class AlgoliaClient {
         })
         .then(response => {
           let keywords = this._processKeywords(response.hits)
-          console.log(response.hits)
           resolve(keywords)
         })
       })
