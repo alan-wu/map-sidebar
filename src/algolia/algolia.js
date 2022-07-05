@@ -90,6 +90,25 @@ export class AlgoliaClient {
     }
     return newResults
   }
+
+  _processKeywords(hits){
+    let foundKeyWords = []
+    hits.forEach(hit=>{
+      if ( hit.item && hit.item.keywords) {
+        hit.item.keywords.forEach(keywordObj=>{
+          let keyword = keywordObj.keyword
+          if (keyword.includes('UBERON') || keyword.includes('ILX') || keyword.includes('keast')) {
+            foundKeyWords.push(this._splitUberonURL(keyword))
+          }
+        })
+      }
+    })
+    return foundKeyWords
+  }
+
+  _splitUberonURL(url){
+    return url.split('/').pop()
+  }
   
   /**
    * Get Search results
@@ -124,4 +143,29 @@ export class AlgoliaClient {
       })
     })
   }
+
+    /**
+   * Get key words
+   * This is used to return all keywords for a given search. Note that you often want the hits per page to be maxed out
+   */
+    keywordsInSearch (filter, query='', hitsperPage=999999, page=1) {
+      return new Promise(resolve => {
+        this.index
+        .search(query, {
+          facets:['*'],
+          hitsPerPage: hitsperPage,
+          page: page-1,
+          filters: filter,
+          attributesToHighlight: [],
+          attributesToRetrieve: [
+            'item.keywords.keyword',
+          ],
+        })
+        .then(response => {
+          let keywords = this._processKeywords(response.hits)
+          console.log(response.hits)
+          resolve(keywords)
+        })
+      })
+    }
 }
