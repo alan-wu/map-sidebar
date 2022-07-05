@@ -110,7 +110,7 @@ export class AlgoliaClient {
 
   _processUberonURL(url){
     let ub = url.split('/').pop()
-    ub.replace('_',':')
+    return ub.replace('_',':')
   }
   
   /**
