@@ -23,7 +23,6 @@ export const shownFilters = {
   * and each of those results is then joined with an AND.
   * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
 export function getFilters(selectedFacetArray=undefined) {
-  console.log('calling getFilters!')
   // return all datasets if no filter
   if (selectedFacetArray === undefined) {
     return 'NOT item.published.status:embargo'

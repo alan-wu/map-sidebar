@@ -139,8 +139,8 @@ export default {
     EventBus.$on("PopoverActionClick", (payLoad) => {
       this.$emit("actionClick", payLoad);
     })
-    EventBus.$on('kewordsFound', (payLoad)=> {
-      this.$emit('searchChanged', {
+    EventBus.$on('keywordsFound', (payLoad)=> {
+      this.$emit('search-changed', {
         type: 'keyword-update',
         value: payLoad
       })
