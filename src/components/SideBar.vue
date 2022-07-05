@@ -139,6 +139,12 @@ export default {
     EventBus.$on("PopoverActionClick", (payLoad) => {
       this.$emit("actionClick", payLoad);
     })
+    EventBus.$on('kewordsFound', (payLoad)=> {
+      this.$emit('searchChanged', {
+        type: 'keyword-update',
+        value: payLoad
+      })
+    })
   }
 };
 </script>

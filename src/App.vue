@@ -118,7 +118,7 @@ export default {
       this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
     },
     neuronSearch: function(){
-      this.$refs.sideBar.openNeuronSearch('neuron-type-keast-10')
+      this.$refs.sideBar.openNeuronSearch('ilxtr:neuron-type-keast-10')
     }
   }
 }

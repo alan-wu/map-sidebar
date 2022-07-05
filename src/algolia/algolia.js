@@ -93,17 +93,19 @@ export class AlgoliaClient {
 
   _processKeywords(hits){
     let foundKeyWords = []
+    let uniqueKeywords = []
     hits.forEach(hit=>{
       if ( hit.item && hit.item.keywords) {
         hit.item.keywords.forEach(keywordObj=>{
           let keyword = keywordObj.keyword
-          if (keyword.includes('UBERON') || keyword.includes('ILX') || keyword.includes('keast')) {
+          if (keyword.includes('UBERON') || keyword.includes('ilxtr') || keyword.includes('ILX')) {
             foundKeyWords.push(this._splitUberonURL(keyword))
+            uniqueKeywords = [...new Set(foundKeyWords)]
           }
         })
       }
     })
-    return foundKeyWords
+    return uniqueKeywords
   }
 
   _splitUberonURL(url){
