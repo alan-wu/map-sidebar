@@ -7,6 +7,7 @@
     <el-button @click="singleFacets">Add to Filter</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
+    <el-button @click="keywordSearch">keyword search</el-button>
     <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
       :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked"
       @search-changed="searchChanged($event)" @actionClick="action"/>
@@ -113,8 +114,11 @@ export default {
     multiFacets: function(){
       this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
     },
+    keywordSearch: function(){
+      this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
+    },
     neuronSearch: function(){
-      this.$refs.sideBar.openNeuronSearch('neuron-type-keast-10')
+      this.$refs.sideBar.openNeuronSearch('ilxtr:neuron-type-keast-10')
     }
   }
 }

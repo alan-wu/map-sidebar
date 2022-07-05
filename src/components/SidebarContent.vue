@@ -61,6 +61,7 @@ import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
 import ContextCard from "./ContextCard.vue";
+import EventBus from "./EventBus"
 
 import {AlgoliaClient} from "../algolia/algolia.js";
 import {getFilters} from "../algolia/utils.js"
@@ -191,6 +192,11 @@ export default {
     searchAlgolia(filters, query=''){
       // Algolia search
       this.loadingCards = true
+      this.algoliaClient.keywordsInSearch(getFilters(filters), query).then(keywords => {
+        console.log('key search complete!')
+        console.log(keywords)
+        EventBus.$emit("kewordsFound", keywords) 
+      })
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total
         this.discoverIds = searchData.discoverIds

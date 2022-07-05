@@ -9,20 +9,20 @@
         </div>
         <div class="card-right scrollbar">
           <div class="title">{{contextData.heading}}</div>
-          <div>{{contextData.description}}</div>
+          <div v-html="contextData.description"/>
           <br/>
           <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
-            <span v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-item">
-              <img class="key-image" :src="getFileFromPath(view.thumbnail)"> 
-              {{view.description}}
-            </span>
-            <br v-bind:key="i"/>
+            <div v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-view">
+              <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
+              <div class="view-description">{{view.description}}</div>
+            </div>
+            <div v-bind:key="i" class="padding"/>
           </template>
           <div style="margin-bottom: 16px;"/>
           <div v-if="contextData.samples && contextData.samples.length > 0" class="subtitle">Samples on Scaffold</div>
           <template v-for="(sample, i) in contextData.samples">
-              <span v-bind:key="i+'_3'" class="context-card-item" @click="toggleSampleDetails(i)">
+              <span v-bind:key="i+'_3'" class="context-card-item cursor-pointer" @click="toggleSampleDetails(i)">
                 <div v-bind:key="i+'_6'" style="display: flex">
                   <div v-if="sample.color" class="color-box" :style="'background-color:'+ sample.color"></div>
                   <img class="key-image" v-else-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
@@ -30,11 +30,9 @@
                   <i class="el-icon-warning-outline info"></i>
                 </div>
               </span>
-              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]">
-                {{sample.description}}
-                <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
-              </div>
-              <br v-bind:key="i+'_2'"/>
+              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]" v-html="sample.description"/>
+              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
+              <div v-bind:key="i+'_2'" class="padding"/>
           </template>
         </div>
       </el-card>
@@ -179,14 +177,20 @@ export default {
   max-height: 258px;
 }
 
-.context-card-item{
+.context-card-view{
   cursor: pointer;
   padding-bottom: 8px;
+  display: flex;
 }
 
-.key-image {
+.view-image {
   width: 25px;
   height: auto;
+  flex: 1;
+}
+
+.view-descriptions {
+  flex: 8;
 }
 
 .context-card >>> .el-card__body {
@@ -221,13 +225,16 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
-  height: 25px;
 }
 
 .info{
   transform: rotate(180deg);
   color: #8300bf;
   margin-left: 8px;
+}
+
+.padding {
+  padding-bottom: 8px;
 }
 
 .title{

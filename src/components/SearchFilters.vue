@@ -72,7 +72,7 @@ import speciesMap from "./species-map";
 import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
-import { facetPropPathMapping } from "../algolia/utils.js";
+import { shownFilters } from "../algolia/utils.js";
 
 locale.use(lang);
 Vue.use(Option);
@@ -149,7 +149,7 @@ export default {
     populateCascader: function () {
       return new Promise((resolve) => {
         // Algolia facet serach
-        this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
+        this.algoliaClient.getAlgoliaFacets(shownFilters)
           .then((data) => {
             this.facets = data;
             this.options = data;
