@@ -99,7 +99,7 @@ export class AlgoliaClient {
         hit.item.keywords.forEach(keywordObj=>{
           let keyword = keywordObj.keyword
           if (keyword.includes('UBERON') || keyword.includes('ilxtr') || keyword.includes('ILX')) {
-            foundKeyWords.push(this._splitUberonURL(keyword))
+            foundKeyWords.push(this._processUberonURL(keyword))
             uniqueKeywords = [...new Set(foundKeyWords)]
           }
         })
@@ -108,8 +108,9 @@ export class AlgoliaClient {
     return uniqueKeywords
   }
 
-  _splitUberonURL(url){
-    return url.split('/').pop()
+  _processUberonURL(url){
+    let ub = url.split('/').pop()
+    ub.replace('_',':')
   }
   
   /**
