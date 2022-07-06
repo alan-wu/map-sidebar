@@ -120,6 +120,8 @@ export default {
     },
     addFilter: function(filter){
       this.drawerOpen = true;
+      filter.AND = true // When we add a filter external, it is currently only with an AND boolean
+
       // Because refs are in v-for, nextTick is needed here
       Vue.nextTick(()=>{this.$refs[this.activeId][0].addFilter(filter)})
     },
