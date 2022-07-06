@@ -92,7 +92,7 @@ export class AlgoliaClient {
     return newResults
   }
 
-  _processKeywords(hits) {
+  _processAnatomy(hits) {
     let foundKeyWords = []
     let uniqueKeywords = []
     hits.forEach(hit => {
@@ -161,7 +161,7 @@ export class AlgoliaClient {
  * Get key words
  * This is used to return all keywords for a given search. Note that you often want the hits per page to be maxed out
  */
-  keywordsInSearch(filter, query = '', hitsperPage = 999999, page = 1) {
+  anatomyInSearch(filter, query = '', hitsperPage = 999999, page = 1) {
     return new Promise(resolve => {
       this.index
         .search(query, {
@@ -176,8 +176,8 @@ export class AlgoliaClient {
           ],
         })
         .then(response => {
-          let keywords = this._processKeywords(response.hits)
-          resolve(keywords)
+          let anatomyAsUberons = this._processAnatomy(response.hits)
+          resolve(anatomyAsUberons)
         })
     })
   }
