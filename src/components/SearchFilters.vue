@@ -122,6 +122,7 @@ export default {
       showFilters: true,
       showFiltersText: true,
       cascadeSelected: [],
+      cascadeSelectedWithBoolean: [], 
       numberShown: 10,
       filters: [],
       facets: ["Species", "Gender", "Organ", "Datasets"],
@@ -344,6 +345,15 @@ export default {
           return [
             e.facetPropPath,
             this.createCascaderItemValue(capitalise(e.term), e.facet),
+          ]
+        });
+
+        // Unforttunately the cascader is very particular about it's v-model
+        //   to get around this we create a clone of it and use this clone for adding our boolean information
+        this.cascadeSelectedWithBoolean= filterFacets.map(e => {
+          return [
+            e.facetPropPath,
+            this.createCascaderItemValue(capitalise(e.term), e.facet),
             e.AND
           ]
         });
@@ -355,11 +365,15 @@ export default {
       if (this.cascaderIsReady && filter) {
         this.cascadeSelected.filter(f=>f.term != filter.term)
         this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+
+        this.cascadeSelectedWithBoolean.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
         // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+
+
       }
     },
     initiateSearch: function() {
-      this.cascadeEvent(this.cascadeSelected)
+      this.cascadeEvent(this.cascadeSelectedWithBoolean)
     },
     // checkShowAllBoxes: Checks each 'Show all' cascade option by using the setCascader function
     checkShowAllBoxes: function(){
