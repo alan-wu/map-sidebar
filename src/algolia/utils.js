@@ -11,6 +11,7 @@ export const facetPropPathMapping = {
   'item.keywords.keyword' : 'Keywords'
 }
 
+// Same as above, but these show on the sidebar filters
 export const shownFilters = {
   'anatomy.organ.name' : 'Anatomical Structure',
   'organisms.primary.species.name' : 'Species',
@@ -39,18 +40,24 @@ export function getFilters(selectedFacetArray=undefined) {
 
   const facetPropPaths = Object.keys(facetPropPathMapping);
   facetPropPaths.map((facetPropPath) => {
-    const facetsToOr = facets.filter(
+    const facetsToBool = facets.filter(
       (facet) => facet.facetPropPath == facetPropPath
     );
-    var filter = "";
-    facetsToOr.map((facet) => {
-      filter += `"${facetPropPath}":"${facet.label}" OR `;
+    let orFilters = "";
+    let andFilters = "";
+    facetsToBool.map((facet) => {
+      if (facet.AND){
+        andFilters += `AND "${facetPropPath}":"${facet.label}"`;
+      } else {
+        orFilters += `"${facetPropPath}":"${facet.label}" OR `;
+      }
     });
-    if (filter == "") {
+    if (orFilters == "" && andFilters =="") {
       return;
     }
-    filter = `(${filter.substring(0, filter.lastIndexOf(" OR "))})`;
-    filters += `${filter} AND `;
+    orFilters = `(${orFilters.substring(0, orFilters.lastIndexOf(" OR "))})` // remove last OR
+    filters += `${orFilters + andFilters} AND `; // Put them together 
+    // (Note that we add an extra AND in case there are facets at a higher level)
   });
   return filters.substring(0, filters.lastIndexOf(" AND "));
 }

@@ -202,6 +202,7 @@ export default {
           facetPropPath: fs[0], 
           facet: fs[1].split("/")[1],
           term: fs[1].split("/")[0], 
+          AND: fs[2] // for setting the boolean
         }))
 
         // Move results from arrays to object for use on scicrunch (note that we remove 'duplicate' as that is only needed for filter keys)
@@ -211,6 +212,7 @@ export default {
             facetPropPath: propPath, 
             facet: fs[1].split("/")[1],
             term: fs[1].split("/")[0], 
+            AND: fs[2] // for setting the boolean
           }
         })
 
@@ -333,6 +335,7 @@ export default {
     //      facetPropPath: 'anatomy.organ.name',
     //      term: 'Sex',
     //      facet: 'Male'
+    //      AND: true  // Optional value for setting the boolean within a facet
     //    }
     setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
@@ -341,6 +344,7 @@ export default {
           return [
             e.facetPropPath,
             this.createCascaderItemValue(capitalise(e.term), e.facet),
+            e.AND
           ]
         });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
@@ -350,7 +354,8 @@ export default {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filter) {
         this.cascadeSelected.filter(f=>f.term != filter.term)
-        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet)])
+        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+        // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
       }
     },
     initiateSearch: function() {
