@@ -56,9 +56,13 @@ export function getFilters(selectedFacetArray=undefined) {
       return;
     }
     orFilters = `(${orFilters.substring(0, orFilters.lastIndexOf(" OR "))})` // remove last OR
-    filters += `${orFilters + andFilters} AND `; // Put them together 
+
+    filters += `${orFilters + andFilters} AND `; // Put them together
     // (Note that we add an extra AND in case there are facets at a higher level)
+
+    filters = filters.split('()AND ').join(''); // Handle case where there where no OR facets
   });
+  console.log('filter string: ', filters.substring(0, filters.lastIndexOf(" AND ")))
   return filters.substring(0, filters.lastIndexOf(" AND "));
 }
 
