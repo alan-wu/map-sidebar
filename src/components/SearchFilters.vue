@@ -72,7 +72,7 @@ import speciesMap from "./species-map";
 import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
-import { shownFilters } from "../algolia/utils.js";
+import {facetPropPathMapping} from "../algolia/utils.js";
 
 locale.use(lang);
 Vue.use(Option);
@@ -144,13 +144,13 @@ export default {
   },
   methods: {
     createCascaderItemValue: function (term, facet) {
-      if (facet) return term + "/" + facet;
+      if (facet) return term + ">" + facet;
       else return term;
     },
     populateCascader: function () {
       return new Promise((resolve) => {
         // Algolia facet serach
-        this.algoliaClient.getAlgoliaFacets(shownFilters)
+        this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
           .then((data) => {
             this.facets = data;
             this.options = data;
@@ -201,8 +201,8 @@ export default {
         // Create results for the filter update 
         let filterKeys = event.filter( selection => selection !== undefined).map( fs => ({
           facetPropPath: fs[0], 
-          facet: fs[1].split("/")[1],
-          term: fs[1].split("/")[0], 
+          facet: fs[1].split(">")[1],
+          term: fs[1].split(">")[0], 
           AND: fs[2] // for setting the boolean
         }))
 
@@ -211,8 +211,8 @@ export default {
           let propPath = fs[0].includes('duplicate') ? fs[0].split('duplicate')[0] : fs[0]
           return {
             facetPropPath: propPath, 
-            facet: fs[1].split("/")[1],
-            term: fs[1].split("/")[0], 
+            facet: fs[1].split(">")[1],
+            term: fs[1].split(">")[0], 
             AND: fs[2] // for setting the boolean
           }
         })

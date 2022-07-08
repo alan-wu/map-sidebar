@@ -119,7 +119,7 @@ export default {
       this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
     },
     keywordSearch: function(){
-      this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
+      this.$refs.sideBar.addFilter({type: 'Facet', label: undefined, facet: '3d model', facetPropPath: 'item.keywords.keyword', term: 'Keywords', AND: true})
     },
     markerFromFlatmap: function(){
       this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
