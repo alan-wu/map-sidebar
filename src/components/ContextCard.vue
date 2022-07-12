@@ -11,6 +11,7 @@
           <div class="title">{{contextData.heading}}</div>
           <div v-html="contextData.description"/>
           <br/>
+          sample under views: {{samplesUnderViews}}
           <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
           <template v-for="(view, i) in contextData.views">
             <div v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-view">
@@ -93,6 +94,23 @@ export default {
         }
       },
       immediate: true
+    }
+  },
+  computed: {
+    samplesUnderViews: function(){
+      if (this.contextData){
+        let viewDescriptions = this.contextData.views.map(v=>v.description)
+        let samplesHeadings = this.contextData.samples.map(s=>s.heading)
+
+        // get matching values
+        let matching = viewDescriptions.filter(v=>samplesHeadings.includes(v))
+
+        // check all arrays have the same length (which means all values are in all three)
+        if ( viewDescriptions.length === matching.length && matching.length === samplesHeadings.length){
+          return true
+        }
+      }
+      return false
     }
   },
   methods: {
