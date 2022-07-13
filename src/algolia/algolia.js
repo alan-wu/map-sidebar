@@ -98,8 +98,8 @@ export class AlgoliaClient {
     hits.forEach(hit => {
       if (hit.item && hit.item.keywords) {
         hit.item.keywords.forEach(keywordObj => {
-          let keyword = keywordObj.keyword
-          if (keyword.includes('UBERON') || keyword.includes('ilxtr') || keyword.includes('ILX')) {
+          let keyword = keywordObj.keyword.toUpperCase()
+          if (keyword.includes('UBERON') || keyword.includes('ILX')) {
             foundKeyWords.push(this._processUberonURL(keyword))
           }
         })

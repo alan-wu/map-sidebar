@@ -107,7 +107,7 @@ export default {
       console.log("action fired: ", val)
     },
     openSearch: function(){
-      this.$refs.sideBar.openSearch([], 'heart')
+      this.$refs.sideBar.openSearch([], 'http://purl.obolibrary.org/obo/UBERON_0001103')
     },
     singleFacets: function(){
       this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
