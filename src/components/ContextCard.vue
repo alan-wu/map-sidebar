@@ -11,29 +11,47 @@
           <div class="title">{{contextData.heading}}</div>
           <div v-html="contextData.description"/>
           <br/>
-          sample under views: {{samplesUnderViews}}
-          <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
-          <template v-for="(view, i) in contextData.views">
-            <div v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-view">
+          <template v-if="!samplesUnderViews">
+            <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
+            <template v-for="(view, i) in contextData.views">
+              <div v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-view">
+                <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
               <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
-              <div class="view-description">{{view.description}}</div>
-            </div>
-            <div v-bind:key="i" class="padding"/>
+                <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
+              <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
+                <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
+                <div class="view-description">{{view.description}}</div>
+              </div>
+              <div v-bind:key="i" class="padding"/>
+            </template>
+            <div style="margin-bottom: 16px;"/>
+            <div v-if="contextData.samples && contextData.samples.length > 0" class="subtitle">Samples on Scaffold</div>
+            <template v-for="(sample, i) in contextData.samples">
+                <span v-bind:key="i+'_3'" class="context-card-item cursor-pointer" @click="toggleSampleDetails(i)">
+                  <div v-bind:key="i+'_6'" style="display: flex">
+                    <div v-if="sample.color" class="color-box" :style="'background-color:'+ sample.color"></div>
+                    <img class="key-image" v-else-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
+                    {{sample.heading}}
+                    <i class="el-icon-warning-outline info"></i>
+                  </div>
+                </span>
+                <div v-bind:key="i+'_4'" v-if="sampleDetails[i]" v-html="sample.description"/>
+                <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
+                <div v-bind:key="i+'_2'" class="padding"/>
+            </template>
           </template>
-          <div style="margin-bottom: 16px;"/>
-          <div v-if="contextData.samples && contextData.samples.length > 0" class="subtitle">Samples on Scaffold</div>
-          <template v-for="(sample, i) in contextData.samples">
-              <span v-bind:key="i+'_3'" class="context-card-item cursor-pointer" @click="toggleSampleDetails(i)">
-                <div v-bind:key="i+'_6'" style="display: flex">
-                  <div v-if="sample.color" class="color-box" :style="'background-color:'+ sample.color"></div>
-                  <img class="key-image" v-else-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
-                  {{sample.heading}}
-                  <i class="el-icon-warning-outline info"></i>
-                </div>
+          <template v-else>
+            <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
+            <template v-for="(view, i) in contextData.views">
+              <span :key="i+'_1'" @click="viewClicked(view, i)" class="context-card-view">
+                <img class="view-image" :src="getFileFromPath(view.thumbnail)"/> 
+                <div class="view-description">{{view.description}}<i class="el-icon-warning-outline info"></i> </div>
               </span>
-              <div v-bind:key="i+'_4'" v-if="sampleDetails[i]" v-html="sample.description"/>
-              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
-              <div v-bind:key="i+'_2'" class="padding"/>
+              <div v-if="sampleDetails[i]" v-html="samplesMatching(view.id).description" :key="i+'_2'"/>
+              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(samplesMatching(view.id).path)" target="_blank">View Source</a>
+              <div :key="i" class="padding"/>
+            </template>
+            
           </template>
         </div>
       </el-card>
@@ -99,21 +117,36 @@ export default {
   computed: {
     samplesUnderViews: function(){
       if (this.contextData){
-        let viewDescriptions = this.contextData.views.map(v=>v.description)
-        let samplesHeadings = this.contextData.samples.map(s=>s.heading)
-
-        // get matching values
-        let matching = viewDescriptions.filter(v=>samplesHeadings.includes(v))
-
-        // check all arrays have the same length (which means all values are in all three)
-        if ( viewDescriptions.length === matching.length && matching.length === samplesHeadings.length){
+        if (this.contextData.samplesUnderViews){
           return true
+        } else {
+          let viewId = this.contextData.views.map(v=>v.id)
+          let samplesView = this.contextData.samples.map(s=>s.view)
+
+          // get matching values
+          let matching = viewId.filter(v=>samplesView.includes(v))
+
+          // check all arrays have the same length (which means all values are in all three)
+          if ( viewId.length === matching.length && matching.length === samplesView.length){
+            return true
+          }
+          return false
         }
       }
-      return false
-    }
+      else return false
+    },
   },
   methods: {
+    samplesMatching: function(viewId){
+      if (this.contextData && this.contextData.samples){
+        return this.contextData.samples.filter(s=>s.view == viewId)[0]
+      }
+      else return []
+    },
+    viewClicked: function(view, i){
+      this.openViewFile(view) 
+      this.toggleSampleDetails(i)
+    },
     getContextFile: function (contextFileUrl) {
       this.loading = true
       fetch(contextFileUrl)
