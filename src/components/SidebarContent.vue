@@ -192,8 +192,8 @@ export default {
     searchAlgolia(filters, query=''){
       // Algolia search
       this.loadingCards = true
-      this.algoliaClient.keywordsInSearch(getFilters(filters), query).then(keywords => {
-        EventBus.$emit("keywordsFound", keywords) 
+      this.algoliaClient.anatomyInSearch(getFilters(filters), query).then(anatomy => {
+        EventBus.$emit("anatomyFound", anatomy) 
       })
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
         this.numberOfHits = searchData.total

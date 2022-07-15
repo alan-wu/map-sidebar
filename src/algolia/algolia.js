@@ -1,9 +1,10 @@
 /* eslint-disable no-alert, no-console */
 import algoliasearch from 'algoliasearch'
+import markerZoomLevels from './markerZoomLevels';
 
 // export `createAlgoliaClient` to use it in page components
 export class AlgoliaClient {
-  constructor(algoliaId, algoliaKey, PENNSIEVE_API_LOCATION='https://api.pennsieve.io') {
+  constructor(algoliaId, algoliaKey, PENNSIEVE_API_LOCATION = 'https://api.pennsieve.io') {
     this.client = algoliasearch(
       algoliaId,
       algoliaKey
@@ -14,9 +15,9 @@ export class AlgoliaClient {
     this.index = this.client.initIndex(ALGOLIA_INDEX);
   }
 
-  getAlgoliaFacets (propPathMapping) {
+  getAlgoliaFacets(propPathMapping) {
     const map = new Map(Object.entries(propPathMapping));
-    const facetPropPaths = Array.from(map.keys() );
+    const facetPropPaths = Array.from(map.keys());
     let facetData = []
     let facetId = 0
     return this.index
@@ -28,7 +29,7 @@ export class AlgoliaClient {
         facetPropPaths.map((facetPropPath) => {
           var children = []
           const responseFacets = response.facets
-          if (responseFacets === undefined) {return}
+          if (responseFacets === undefined) { return }
           const responseFacetChildren =
             responseFacets[facetPropPath] == undefined
               ? {}
@@ -52,18 +53,18 @@ export class AlgoliaClient {
         return facetData
       })
   }
-  
+
   // Returns all DOIs of all versions for a given discover dataset
-  _discoverAllDois (discoverId, PENNSIEVE_API_LOCATION='https://api.pennsieve.io') {
+  _discoverAllDois(discoverId, PENNSIEVE_API_LOCATION = 'https://api.pennsieve.io') {
     return new Promise(resolve => {
-      fetch(`${PENNSIEVE_API_LOCATION}/discover/datasets/${discoverId}/versions`).then(r=>r.json()).then(dataset => {
+      fetch(`${PENNSIEVE_API_LOCATION}/discover/datasets/${discoverId}/versions`).then(r => r.json()).then(dataset => {
         resolve(dataset.map(version => version.doi))
       })
     })
   }
-  
+
   // Get all dois given a list of discoverIds
-  _expandDois (discoverIds, PENNSIEVE_API_LOCATION='https://api.pennsieve.io') {
+  _expandDois(discoverIds, PENNSIEVE_API_LOCATION = 'https://api.pennsieve.io') {
     return new Promise(resolve => {
       let promiseList = discoverIds.map(discoverId => this._discoverAllDois(discoverId, PENNSIEVE_API_LOCATION))
       Promise.all(promiseList).then((values) => {
@@ -76,7 +77,7 @@ export class AlgoliaClient {
     let newResults = []
     let newResult = {}
     for (let res of results) {
-      newResult = {...res}
+      newResult = { ...res }
       newResult = {
         doi: res.item.curie.split(':')[1],
         name: res.item.name,
@@ -91,82 +92,93 @@ export class AlgoliaClient {
     return newResults
   }
 
-  _processKeywords(hits){
+  _processAnatomy(hits) {
     let foundKeyWords = []
     let uniqueKeywords = []
-    hits.forEach(hit=>{
-      if ( hit.item && hit.item.keywords) {
-        hit.item.keywords.forEach(keywordObj=>{
-          let keyword = keywordObj.keyword
-          if (keyword.includes('UBERON') || keyword.includes('ilxtr') || keyword.includes('ILX')) {
-            foundKeyWords.push(this._splitUberonURL(keyword))
-            uniqueKeywords = [...new Set(foundKeyWords)]
+    hits.forEach(hit => {
+      if (hit.item && hit.item.keywords) {
+        hit.item.keywords.forEach(keywordObj => {
+          let keyword = keywordObj.keyword.toUpperCase()
+          if (keyword.includes('UBERON') || keyword.includes('ILX')) {
+            foundKeyWords.push(this._processUberonURL(keyword))
           }
         })
       }
+      if (hit.anatomy && hit.anatomy.organ) {
+        hit.anatomy.organ.forEach(anatomy => {
+          markerZoomLevels.forEach(marker => {
+            if (anatomy.name.toLowerCase() === marker.name.toLowerCase()) {
+              foundKeyWords.push(marker.id)
+            }
+          })
+        })
+      }
     })
+    uniqueKeywords = [...new Set(foundKeyWords)]
     return uniqueKeywords
   }
 
-  _splitUberonURL(url){
-    return url.split('/').pop()
+  _processUberonURL(url) {
+    let ub = url.split('/').pop()
+    return ub.replace('_', ':')
   }
-  
+
   /**
    * Get Search results
    * This is using fetch from the Algolia API
    */
-  search (filter, query='', hitsperPage=10, page=1) {
+  search(filter, query = '', hitsperPage = 10, page = 1) {
     return new Promise(resolve => {
       this.index
-      .search(query, {
-        facets:['*'],
-        hitsPerPage: hitsperPage,
-        page: page-1,
-        filters: filter,
-        attributesToHighlight: [],
-        attributesToRetrieve: [
-          'pennsieve.publishDate',
-          'pennsieve.updatedAt',
-          'item.curie',
-          'item.name',
-          'item.description',
-          'objectID',
-        ],
-      })
-      .then(response => {
-        let searchData = {
-          items: this._processResultsForCards(response.hits),
-          total: response.nbHits,
-          discoverIds: response.hits.map(r=>r.pennsieve.identifier),
-          dois: response.hits.map(r=>r.item.curie.split(':')[1])
-        }
-        resolve(searchData)
-      })
+        .search(query, {
+          facets: ['*'],
+          hitsPerPage: hitsperPage,
+          page: page - 1,
+          filters: filter,
+          attributesToHighlight: [],
+          attributesToRetrieve: [
+            'pennsieve.publishDate',
+            'pennsieve.updatedAt',
+            'item.curie',
+            'item.name',
+            'item.description',
+            'objectID',
+          ],
+        })
+        .then(response => {
+          let searchData = {
+            items: this._processResultsForCards(response.hits),
+            total: response.nbHits,
+            discoverIds: response.hits.map(r => r.pennsieve.identifier),
+            dois: response.hits.map(r => r.item.curie.split(':')[1])
+          }
+          resolve(searchData)
+        })
     })
   }
 
-    /**
-   * Get key words
-   * This is used to return all keywords for a given search. Note that you often want the hits per page to be maxed out
-   */
-    keywordsInSearch (filter, query='', hitsperPage=999999, page=1) {
-      return new Promise(resolve => {
-        this.index
+  /**
+ * Get key words
+ * This is used to return all keywords for a given search. Note that you often want the hits per page to be maxed out
+ */
+  anatomyInSearch(filter, query = '', hitsperPage = 999999, page = 1) {
+    return new Promise(resolve => {
+      this.index
         .search(query, {
-          facets:['*'],
+          facets: ['*'],
           hitsPerPage: hitsperPage,
-          page: page-1,
+          page: page - 1,
           filters: filter,
           attributesToHighlight: [],
           attributesToRetrieve: [
             'item.keywords.keyword',
+            'anatomy.organ.name',
           ],
         })
         .then(response => {
-          let keywords = this._processKeywords(response.hits)
-          resolve(keywords)
+          let anatomyAsUberons = this._processAnatomy(response.hits)
+          resolve(anatomyAsUberons)
         })
-      })
-    }
+    })
+  }
 }

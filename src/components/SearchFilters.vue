@@ -72,7 +72,7 @@ import speciesMap from "./species-map";
 import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
-import { shownFilters } from "../algolia/utils.js";
+import {facetPropPathMapping} from "../algolia/utils.js";
 
 locale.use(lang);
 Vue.use(Option);
@@ -122,6 +122,7 @@ export default {
       showFilters: true,
       showFiltersText: true,
       cascadeSelected: [],
+      cascadeSelectedWithBoolean: [], 
       numberShown: 10,
       filters: [],
       facets: ["Species", "Gender", "Organ", "Datasets"],
@@ -143,13 +144,13 @@ export default {
   },
   methods: {
     createCascaderItemValue: function (term, facet) {
-      if (facet) return term + "/" + facet;
+      if (facet) return term + ">" + facet;
       else return term;
     },
     populateCascader: function () {
       return new Promise((resolve) => {
         // Algolia facet serach
-        this.algoliaClient.getAlgoliaFacets(shownFilters)
+        this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
           .then((data) => {
             this.facets = data;
             this.options = data;
@@ -200,8 +201,9 @@ export default {
         // Create results for the filter update 
         let filterKeys = event.filter( selection => selection !== undefined).map( fs => ({
           facetPropPath: fs[0], 
-          facet: fs[1].split("/")[1],
-          term: fs[1].split("/")[0], 
+          facet: fs[1].split(">")[1],
+          term: fs[1].split(">")[0], 
+          AND: fs[2] // for setting the boolean
         }))
 
         // Move results from arrays to object for use on scicrunch (note that we remove 'duplicate' as that is only needed for filter keys)
@@ -209,8 +211,9 @@ export default {
           let propPath = fs[0].includes('duplicate') ? fs[0].split('duplicate')[0] : fs[0]
           return {
             facetPropPath: propPath, 
-            facet: fs[1].split("/")[1],
-            term: fs[1].split("/")[0], 
+            facet: fs[1].split(">")[1],
+            term: fs[1].split(">")[0], 
+            AND: fs[2] // for setting the boolean
           }
         })
 
@@ -333,6 +336,7 @@ export default {
     //      facetPropPath: 'anatomy.organ.name',
     //      term: 'Sex',
     //      facet: 'Male'
+    //      AND: true  // Optional value for setting the boolean within a facet
     //    }
     setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
@@ -343,6 +347,16 @@ export default {
             this.createCascaderItemValue(capitalise(e.term), e.facet),
           ]
         });
+
+        // Unforttunately the cascader is very particular about it's v-model
+        //   to get around this we create a clone of it and use this clone for adding our boolean information
+        this.cascadeSelectedWithBoolean= filterFacets.map(e => {
+          return [
+            e.facetPropPath,
+            this.createCascaderItemValue(capitalise(e.term), e.facet),
+            e.AND
+          ]
+        });
         this.updatePreviousShowAllChecked(this.cascadeSelected);
       }
     },
@@ -350,11 +364,16 @@ export default {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filter) {
         this.cascadeSelected.filter(f=>f.term != filter.term)
-        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet)])
+        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+
+        this.cascadeSelectedWithBoolean.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+        // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+
+
       }
     },
     initiateSearch: function() {
-      this.cascadeEvent(this.cascadeSelected)
+      this.cascadeEvent(this.cascadeSelectedWithBoolean)
     },
     // checkShowAllBoxes: Checks each 'Show all' cascade option by using the setCascader function
     checkShowAllBoxes: function(){

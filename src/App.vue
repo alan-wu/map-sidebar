@@ -4,7 +4,8 @@
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
     <el-button @click="openSearch">search 'heart' from refs</el-button>
-    <el-button @click="singleFacets">Add to Filter</el-button>
+    <el-button @click="singleFacets">Add heart to Filter</el-button>
+     <el-button @click="addStomach">Add stomach to Filter</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <el-button @click="keywordSearch">keyword search</el-button>
@@ -106,15 +107,21 @@ export default {
       console.log("action fired: ", val)
     },
     openSearch: function(){
-      this.$refs.sideBar.openSearch([], 'heart')
+      this.$refs.sideBar.openSearch([], 'http://purl.obolibrary.org/obo/UBERON_0001103')
     },
     singleFacets: function(){
-      this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'})
+      this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
+    },
+    addStomach: function(){
+      this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
     },
     multiFacets: function(){
       this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
     },
     keywordSearch: function(){
+      this.$refs.sideBar.addFilter({type: 'Facet', label: undefined, facet: '3d model', facetPropPath: 'item.keywords.keyword', term: 'Keywords', AND: true})
+    },
+    markerFromFlatmap: function(){
       this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
     },
     neuronSearch: function(){
