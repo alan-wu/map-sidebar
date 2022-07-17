@@ -11,14 +11,12 @@
           <div class="title">{{contextData.heading}}</div>
           <div v-html="contextData.description"/>
           <br/>
+
+          <!-- Show sampeles and views seperately if they do not match -->
           <template v-if="!samplesUnderViews">
             <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
             <template v-for="(view, i) in contextData.views">
               <div v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-view">
-                <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
-              <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
-                <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
-              <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
                 <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
                 <div class="view-description">{{view.description}}</div>
               </div>
@@ -40,6 +38,8 @@
                 <div v-bind:key="i+'_2'" class="padding"/>
             </template>
           </template>
+
+          <!-- Show samples under views if the ids match -->
           <template v-else>
             <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
             <template v-for="(view, i) in contextData.views">
@@ -50,8 +50,10 @@
               <div v-if="sampleDetails[i]" v-html="samplesMatching(view.id).description" :key="i+'_2'"/>
               <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(samplesMatching(view.id).path)" target="_blank">View Source</a>
               <div :key="i" class="padding"/>
+
+              <!-- Extra padding if sample details is open -->
+              <div :key="i+'_6'" v-if="sampleDetails[i]" class="padding"/>
             </template>
-            
           </template>
         </div>
       </el-card>
@@ -234,9 +236,10 @@ export default {
 }
 
 .view-image {
-  width: 25px;
+  width: 34px;
   height: auto;
   flex: 1;
+  margin-right: 4px;
 }
 
 .view-descriptions {
