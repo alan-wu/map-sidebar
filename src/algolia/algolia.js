@@ -1,6 +1,5 @@
 /* eslint-disable no-alert, no-console */
 import algoliasearch from 'algoliasearch'
-import markerZoomLevels from './markerZoomLevels';
 
 // export `createAlgoliaClient` to use it in page components
 export class AlgoliaClient {
@@ -104,13 +103,11 @@ export class AlgoliaClient {
           }
         })
       }
-      if (hit.anatomy && hit.anatomy.organ) {
+      if (hit.anatomy && hit.anatomy.organ ) {
         hit.anatomy.organ.forEach(anatomy => {
-          markerZoomLevels.forEach(marker => {
-            if (anatomy.name.toLowerCase() === marker.name.toLowerCase()) {
-              foundKeyWords.push(marker.id)
-            }
-          })
+          if (anatomy.curie) {
+            foundKeyWords.push(anatomy.curie)
+          }
         })
       }
     })
@@ -173,6 +170,7 @@ export class AlgoliaClient {
           attributesToRetrieve: [
             'item.keywords.keyword',
             'anatomy.organ.name',
+            'anatomy.organ.curie'
           ],
         })
         .then(response => {
