@@ -330,6 +330,14 @@ export default {
           this.previousShowAllChecked[element[0]] = true;
       });
     },
+    // setCascader: Clears previous selections and takes in an array of facets to select: filterFacets
+    // facets are in the form:
+    //    {
+    //      facetPropPath: 'anatomy.organ.name',
+    //      term: 'Sex',
+    //      facet: 'Male'
+    //      AND: true  // Optional value for setting the boolean within a facet
+    //    }
     setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filterFacets && filterFacets.length != 0) {
