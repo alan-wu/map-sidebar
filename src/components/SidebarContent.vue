@@ -156,17 +156,17 @@ export default {
     openSearch: function(filter, search='') {
       this.searchInput = search;
       this.resetPageNavigation();
-      this.searchAlgolia(filter, search);
-      if (filter) {
-        this.filter = [...filter];
+      this.filter = this.$refs.filtersRef.getValidatedFilters(filter);
+      if (this.filter) {
+        this.searchAlgolia(this.filter, search);
         this.$refs.filtersRef.setCascader(this.filter);
       }
     },
     addFilter: function(filter) {
       this.resetPageNavigation();
       if (filter) {
-        this.$refs.filtersRef.addFilter(filter);
-        this.$refs.filtersRef.initiateSearch()
+        if (this.$refs.filtersRef.addFilter(filter))
+          this.$refs.filtersRef.initiateSearch();
       }
     },
     clearSearchClicked: function() {
