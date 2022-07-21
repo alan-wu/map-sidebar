@@ -153,20 +153,34 @@ export default {
     contextCardUpdate: function(val){
         this.contextCardEntry = val
     },
+    resetSearch: function() {
+      this.numberOfHits = 0
+      this.discoverIds = []
+      this._dois = []
+      this.results = []
+      this.loadingCards = false
+    },
     openSearch: function(filter, search='') {
       this.searchInput = search;
       this.resetPageNavigation();
-      this.searchAlgolia(filter, search);
-      if (filter) {
-        this.filter = [...filter];
+      this.filter = this.$refs.filtersRef.getValidatedFilters(filter);
+      //Facets provided but cannot find at least one valid
+      //facet. Tell the users the search is invalid and reset
+      //facets check boxes.
+      if ((filter && filter.length > 0) && 
+        (this.filter && this.filter.length === 0)) {
+        this.$refs.filtersRef.checkShowAllBoxes();
+        this.resetSearch();
+      } else if (this.filter) {
+        this.searchAlgolia(this.filter, search);
         this.$refs.filtersRef.setCascader(this.filter);
       }
     },
     addFilter: function(filter) {
       this.resetPageNavigation();
       if (filter) {
-        this.$refs.filtersRef.addFilter(filter);
-        this.$refs.filtersRef.initiateSearch()
+        if (this.$refs.filtersRef.addFilter(filter))
+          this.$refs.filtersRef.initiateSearch();
       }
     },
     clearSearchClicked: function() {

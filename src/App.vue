@@ -3,9 +3,10 @@
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
     Click arrow to open sidebar
-    <el-button @click="openSearch">search 'heart' from refs</el-button>
+    <el-button @click="openSearch">search Uberon from refs</el-button>
     <el-button @click="singleFacets">Add heart to Filter</el-button>
-     <el-button @click="addStomach">Add stomach to Filter</el-button>
+    <el-button @click="addStomach">Add stomach to Filter</el-button>
+    <el-button @click="AddInvalidTerm">Add invalid term to Filter</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <el-button @click="keywordSearch">keyword search</el-button>
@@ -115,8 +116,12 @@ export default {
     addStomach: function(){
       this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
     },
+    addInvalidTerm: function(){
+      this.$refs.sideBar.addFilter({facet: 'Invalid', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
+    },
     multiFacets: function(){
-      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
+      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'},
+        {facet: 'Not correct', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
     },
     keywordSearch: function(){
       this.$refs.sideBar.addFilter({type: 'Facet', label: undefined, facet: '3d model', facetPropPath: 'item.keywords.keyword', term: 'Keywords', AND: true})

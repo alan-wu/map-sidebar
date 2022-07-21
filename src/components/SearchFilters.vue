@@ -178,7 +178,7 @@ export default {
                   this.createCascaderItemValue(facet.label, facetItem.label);
               });
             });
-            this.createDataTypeFacet()
+            this.createDataTypeFacet();
           })
           .finally(() => {
             resolve();
@@ -225,7 +225,7 @@ export default {
         this.makeCascadeLabelsClickable();
       }
     },
-    // showAllEventModifier:  Modifies a cascade event to unlick all selections in category if "show all" is clicked. Also unchecks "Show all" if any secection is clicked
+    // showAllEventModifier:  Modifies a cascade event to unclick all selections in category if "show all" is clicked. Also unchecks "Show all" if any secection is clicked
     // *NOTE* Does NOT remove 'Show all' selections from showing in 'cascadeSelected'
     showAllEventModifier: function (event) {
       // check if show all is in the cascader checked option list
@@ -363,13 +363,13 @@ export default {
     addFilter: function (filter) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filter) {
-        this.cascadeSelected.filter(f=>f.term != filter.term)
-        this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
-
-        this.cascadeSelectedWithBoolean.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
-        // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
-
-
+        if (this.validateFilter(filter)) {
+          this.cascadeSelected.filter(f=>f.term != filter.term)
+          this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+          this.cascadeSelectedWithBoolean.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+          // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+          return true;
+        }
       }
     },
     initiateSearch: function() {
@@ -406,13 +406,45 @@ export default {
           });
       });
     },
+    /**
+     * Validate ther filter term to make sure the term is correct
+     */
+    validateFilter: function(filter) {
+      if (filter && filter.facet && filter.term) {
+        const item = this.createCascaderItemValue(filter.term, filter.facet);
+        const facet = this.options.find(element => element.value === filter.facetPropPath);
+        if (facet) {
+          const filter = facet.children.find(element => element.value === item);
+          if (filter)
+            return true;
+        }
+      }
+      return false;
+    },
+    /**
+     * Return a list of valid filers given a list of filters, 
+     */
+    getValidatedFilters: function (filters) {
+      if (filters) {
+        if (this.cascaderIsReady) {
+          const result = [];
+          filters.forEach(filter => {
+            if (this.validateFilter(filter)) {
+              result.push(filter);
+            }
+          });
+          return result;
+        } else return filters;
+      }
+      return [];
+    },
   },
   mounted: function () {
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
     this.populateCascader().then(() => {
       this.cascaderIsReady = true;
-      this.checkShowAllBoxes()
+      this.checkShowAllBoxes();
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
     });
