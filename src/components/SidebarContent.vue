@@ -20,6 +20,7 @@
       @filterResults="filterUpdate"
       @numberPerPage="numberPerPageUpdate"
       @loading="filtersLoading"
+      @cascaderReady="cascaderReady"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div
@@ -125,10 +126,6 @@ export default {
       type: Object,
       default: () => {}
     },
-    firstSearch: {
-      type: String,
-      default: ""
-    }
   },
   data: function() {
     return {
@@ -137,7 +134,8 @@ export default {
         flex: "1 1 auto",
         "flex-flow": "column",
         display: "flex"
-      }
+      },
+      cascaderIsReady: false,
     };
   },
   computed: {
@@ -163,25 +161,47 @@ export default {
     openSearch: function(filter, search='') {
       this.searchInput = search;
       this.resetPageNavigation();
-      this.filter = this.$refs.filtersRef.getValidatedFilters(filter);
-      //Facets provided but cannot find at least one valid
-      //facet. Tell the users the search is invalid and reset
-      //facets check boxes.
-      if ((filter && filter.length > 0) && 
-        (this.filter && this.filter.length === 0)) {
-        this.$refs.filtersRef.checkShowAllBoxes();
-        this.resetSearch();
-      } else if (this.filter) {
-        this.searchAlgolia(this.filter, search);
-        this.$refs.filtersRef.setCascader(this.filter);
+      //Proceed normally if cascader is ready
+      if (this.cascaderIsReady) {
+        this.filter = this.$refs.filtersRef.getValidatedFilters(filter);
+        //Facets provided but cannot find at least one valid
+        //facet. Tell the users the search is invalid and reset
+        //facets check boxes.
+        if ((filter && filter.length > 0) && 
+          (this.filter && this.filter.length === 0)) {
+          this.$refs.filtersRef.checkShowAllBoxes();
+          this.resetSearch();
+        } else if (this.filter) {
+          this.searchAlgolia(this.filter, search);
+          this.$refs.filtersRef.setCascader(this.filter);
+        }
+      } else {
+        //cascader is not ready, perform search if no filter is set,
+        //otherwise waith for cascader to be ready
+        this.filter = filter;
+        if (!filter || filter.length == 0) {
+          this.searchAlgolia(this.filter, search);
+        }
       }
     },
     addFilter: function(filter) {
-      this.resetPageNavigation();
-      if (filter) {
-        if (this.$refs.filtersRef.addFilter(filter))
-          this.$refs.filtersRef.initiateSearch();
+      if (this.cascaderIsReady) {
+        this.resetPageNavigation();
+        if (filter) {
+          if (this.$refs.filtersRef.addFilter(filter))
+            this.$refs.filtersRef.initiateSearch();
+        }
+      } else {
+        if (Array.isArray(this.filter)) {
+          this.filter.push(filter);
+        } else {
+          this.filter = [filter];
+        }
       }
+    },
+    cascaderReady: function() {
+      this.cascaderIsReady = true;
+      this.openSearch(this.filter, this.searchInput);
     },
     clearSearchClicked: function() {
       this.searchInput = "";
@@ -360,13 +380,7 @@ export default {
     // initialise algolia
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
-
-    // temporarily disable flatmap search since there are no datasets
-    if (this.firstSearch === "Flatmap" || this.firstSearch === "flatmap") {
-      this.openSearch(undefined, '')
-    } else {
-      this.openSearch(undefined, '');
-    }
+    this.openSearch(undefined, '');
   },
   created: function() {
     //Create non-reactive local variables
