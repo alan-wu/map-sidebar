@@ -48,7 +48,7 @@
                 <div class="view-description">{{view.description}}<i class="el-icon-warning-outline info"></i> </div>
               </span>
               <div v-if="sampleDetails[i]" v-html="samplesMatching(view.id).description" :key="i+'_2'"/>
-              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(samplesMatching(view.id).path)" target="_blank">View Source</a>
+              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(samplesMatching(view.id))" target="_blank">View Source</a>
               <div :key="i" class="padding"/>
 
               <!-- Extra padding if sample details is open -->
@@ -162,6 +162,7 @@ export default {
         .then((data) => {
           this.contextData = data
           this.loading = false
+          this.addDiscoverIdsToContextData() 
         })
         .catch(() => {
           //set defaults if we hit an error
@@ -194,8 +195,29 @@ export default {
       path = this.removeDoubleFilesPath(path)
       return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
-    generateFileLink(path){
-      return `https://sparc.science/file/${this.entry.discoverId}/${this.entry.version}?path=${encodeURI(path)}`
+    // addDiscoverIdsToContextData() asynchronously updates context data to have discover ids and version in each sample.
+    //  This is used later when generateing links to the resource on sparc.science (see generateFileLink)
+    addDiscoverIdsToContextData(){
+      this.contextData.samples.forEach((sample, i)=>{
+        if (sample && sample.doi !== ""){
+          fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${this.splitDoiFromUrl(sample.doi)}`)
+          .then((response) => response.json())
+          .then((data) => {
+            this.contextData.samples[i].discoverId = data.id
+            this.contextData.samples[i].version = data.version
+          })
+        } else {
+            this.contextData.samples[i].discoverId = this.entry.discoverId
+            this.contextData.samples[i].version = this.entry.version
+        }
+      })
+    },
+    splitDoiFromUrl(url){
+      return url.split('https://doi.org/').pop()
+    },
+    generateFileLink(sample){
+      console.log(sample)
+      return `https://sparc.science/file/${sample.discoverId}/${sample.version}?path=${encodeURI(sample.path)}`
 
     },
     openViewFile: function(view){
