@@ -447,6 +447,7 @@ export default {
       this.checkShowAllBoxes();
       this.setCascader(this.entry.filterFacets);
       this.makeCascadeLabelsClickable();
+      this.$emit("cascaderReady");
     });
   },
 };
