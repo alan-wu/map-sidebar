@@ -79,9 +79,9 @@ Vue.use(Button);
 Vue.use(Select);
 Vue.use(Input);
 
-const addFilesToPath = function(path){
-  return 'files/' + path
-}
+// const addFilesToPath = function(path){
+//   return 'files/' + path
+// }
 
 const convertBackslashToForwardSlash = function(path){
   path = path.replaceAll('\\','/')
@@ -234,7 +234,6 @@ export default {
       window.path = path
       path = convertBackslashToForwardSlash(path)
       path = switchPathToDirectory(path)
-      path = addFilesToPath(path)
       return encodeURI(path)
     },
     splitDoiFromUrl(url){
