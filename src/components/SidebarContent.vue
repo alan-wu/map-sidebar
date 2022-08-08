@@ -1,7 +1,7 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card v-if="contextCardEntry && contextCardEnabled" :entry="contextCardEntry" />
+      <context-card v-if="contextCardEntry && contextCardEnabled" :entry="contextCardEntry" :envVars="envVars"/>
       <el-input
         class="search-input"
         placeholder="Search"

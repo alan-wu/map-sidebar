@@ -79,6 +79,22 @@ Vue.use(Button);
 Vue.use(Select);
 Vue.use(Input);
 
+const addFilesToPath = function(path){
+  return 'files/' + path
+}
+
+const convertBackslashToForwardSlash = function(path){
+  path = path.replaceAll('\\','/')
+  path = path.replaceAll('\\\\', '/')
+  return path
+}
+
+const switchPathToDirectory = function(path){
+  let newPath = path.split('/')
+  newPath.pop()
+  return newPath.join('/')
+}
+
 
 export default {
   name: "contextCard",
@@ -88,6 +104,7 @@ export default {
      * the required viewing.
      */
     entry: Object,
+    envVars: Object,
   },
   data: function () {
     return {
@@ -164,8 +181,9 @@ export default {
           this.loading = false
           this.addDiscoverIdsToContextData() 
         })
-        .catch(() => {
+        .catch((err) => {
           //set defaults if we hit an error
+          console.error('caught error!', err)
           this.thumbnail = require('@/../assets/missing-image.svg')
           this.discoverId = undefined
           this.loading = false
@@ -193,13 +211,12 @@ export default {
         return path
       }
       path = this.removeDoubleFilesPath(path)
-      return  `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
+      return  `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
     },
-    // addDiscoverIdsToContextData() asynchronously updates context data to have discover ids and version in each sample.
     //  This is used later when generateing links to the resource on sparc.science (see generateFileLink)
     addDiscoverIdsToContextData(){
       this.contextData.samples.forEach((sample, i)=>{
-        if (sample && sample.doi !== ""){
+        if (sample && sample.doi && sample.doi !== ""){
           fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${this.splitDoiFromUrl(sample.doi)}`)
           .then((response) => response.json())
           .then((data) => {
@@ -212,17 +229,24 @@ export default {
         }
       })
     },
+    processPathForUrl(path){
+      console.log(path)
+      window.path = path
+      path = convertBackslashToForwardSlash(path)
+      path = switchPathToDirectory(path)
+      path = addFilesToPath(path)
+      return encodeURI(path)
+    },
     splitDoiFromUrl(url){
       return url.split('https://doi.org/').pop()
     },
     generateFileLink(sample){
-      console.log(sample)
-      return `https://sparc.science/file/${sample.discoverId}/${sample.version}?path=${encodeURI(sample.path)}`
+      return `https://sparc.science/datasets/${sample.discoverId}?datasetDetailsTab=files&path=${this.processPathForUrl(sample.path)}`
 
     },
     openViewFile: function(view){
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
-      this.entry.viewUrl = `${this.entry.apiLocation}s3-resource/${this.entry.discoverId}/${this.entry.version}/${view.path}`
+      this.entry.viewUrl = `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/${view.path}`
       this.entry.type = 'Scaffold View'
       EventBus.$emit("PopoverActionClick", this.entry)
     }
