@@ -284,7 +284,7 @@ export default {
 
 .view-image {
   width: 34px;
-  height: auto;
+  height: 34px;
   flex: 1;
   margin-right: 4px;
 }
