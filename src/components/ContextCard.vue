@@ -79,9 +79,13 @@ Vue.use(Button);
 Vue.use(Select);
 Vue.use(Input);
 
-// const addFilesToPath = function(path){
-//   return 'files/' + path
-// }
+const addFilesToPathIfMissing = function(path){
+  if (!path.includes('files')){
+    return 'files/' + path
+  } else {
+    return path
+  }
+}
 
 const convertBackslashToForwardSlash = function(path){
   path = path.replaceAll('\\','/')
@@ -89,11 +93,11 @@ const convertBackslashToForwardSlash = function(path){
   return path
 }
 
-const switchPathToDirectory = function(path){
-  let newPath = path.split('/')
-  newPath.pop()
-  return newPath.join('/')
-}
+// const switchPathToDirectory = function(path){
+//   let newPath = path.split('/')
+//   newPath.pop()
+//   return newPath.join('/')
+// }
 
 
 export default {
@@ -230,17 +234,15 @@ export default {
       })
     },
     processPathForUrl(path){
-      console.log(path)
-      window.path = path
       path = convertBackslashToForwardSlash(path)
-      path = switchPathToDirectory(path)
+      path = addFilesToPathIfMissing(path)
       return encodeURI(path)
     },
     splitDoiFromUrl(url){
       return url.split('https://doi.org/').pop()
     },
     generateFileLink(sample){
-      return `https://sparc.science/datasets/${sample.discoverId}?datasetDetailsTab=files&path=${this.processPathForUrl(sample.path)}`
+      return `https://sparc.science/file/${sample.discoverId}/${sample.version}?path=${this.processPathForUrl(sample.path)}`
 
     },
     openViewFile: function(view){
