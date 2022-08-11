@@ -242,7 +242,7 @@ export default {
       return url.split('https://doi.org/').pop()
     },
     generateFileLink(sample){
-      return `https://sparc.science/file/${sample.discoverId}/${sample.version}?path=${this.processPathForUrl(sample.path)}`
+      return `${this.envVars.ROOT_URL}/file/${sample.discoverId}/${sample.version}?path=${this.processPathForUrl(sample.path)}`
 
     },
     openViewFile: function(view){
