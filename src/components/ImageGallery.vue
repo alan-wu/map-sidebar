@@ -215,8 +215,9 @@ export default {
     },
     createScaffoldItems: function () {
       if (this.entry.scaffolds) {
+        window.entry = this.entry
         let index = 0;
-        this.entry.scaffolds.forEach((scaffold) => {
+        this.entry.scaffolds.forEach((scaffold, i) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
           const thumbnail = this.getThumbnailForScaffold(
@@ -236,6 +237,7 @@ export default {
             });
             mimetype = thumbnail.mimetype.name;
           }
+          let contextIndex = this.entry.contextualInformation.length > 0 ? i : 0
           let action = {
             label: capitalise(this.label),
             resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}`,
@@ -245,7 +247,7 @@ export default {
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
             banner: this.datasetThumbnail,
-            contextCardUrl: this.entry.contextualInformation ? `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation}` : undefined,
+            contextCardUrl: this.entry.contextualInformation[contextIndex] ? `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}` : undefined,
           };
           this.items['Scaffolds'].push({
             id,
