@@ -236,7 +236,8 @@ export default {
             });
             mimetype = thumbnail.mimetype.name;
           }
-          let contextIndex = this.entry.contextualInformation.length > 0 ? i : 0
+          // The line below checks if there is a context file for each scaffold. If there is not, we use the first context card for each scaffold.
+          let contextIndex = this.entry.contextualInformation.length == this.entry.scaffolds.length ? i : 0
           let action = {
             label: capitalise(this.label),
             resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}`,
