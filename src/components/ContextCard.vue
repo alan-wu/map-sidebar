@@ -34,7 +34,7 @@
                   </div>
                 </span>
                 <div v-bind:key="i+'_4'" v-if="sampleDetails[i]" v-html="sample.description"/>
-                <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(sample.path)" target="_blank">View Source</a>
+                <a v-bind:key="i+'_5'" v-if="sampleDetails[i] && sample.path" :href="generateFileLink(sample)" target="_blank">View Source</a>
                 <div v-bind:key="i+'_2'" class="padding"/>
             </template>
           </template>
@@ -48,7 +48,7 @@
                 <div class="view-description">{{view.description}}<i class="el-icon-warning-outline info"></i> </div>
               </span>
               <div v-if="sampleDetails[i]" v-html="samplesMatching(view.id).description" :key="i+'_2'"/>
-              <a v-bind:key="i+'_5'" v-if="sampleDetails[i]" :href="generateFileLink(samplesMatching(view.id))" target="_blank">View Source</a>
+              <a v-bind:key="i+'_5'" v-if="sampleDetails[i] && samplesMatching(view.id).path" :href="generateFileLink(samplesMatching(view.id))" target="_blank">View Source</a>
               <div :key="i" class="padding"/>
 
               <!-- Extra padding if sample details is open -->
