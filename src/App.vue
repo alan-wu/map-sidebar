@@ -6,7 +6,7 @@
     <el-button @click="openSearch">search Uberon from refs</el-button>
     <el-button @click="singleFacets">Add heart to Filter</el-button>
     <el-button @click="addStomach">Add stomach to Filter</el-button>
-    <el-button @click="AddInvalidTerm">Add invalid term to Filter</el-button>
+    <el-button @click="addInvalidTerm">Add invalid term to Filter</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <el-button @click="keywordSearch">keyword search</el-button>

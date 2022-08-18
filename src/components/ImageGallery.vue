@@ -215,6 +215,7 @@ export default {
     },
     createScaffoldItems: function () {
       if (this.entry.scaffolds) {
+        window.entry = this.entry
         let index = 0;
         this.entry.scaffolds.forEach((scaffold, i) => {
           const filePath = scaffold.dataset.path;
@@ -236,8 +237,6 @@ export default {
             });
             mimetype = thumbnail.mimetype.name;
           }
-          // The line below checks if there is a context file for each scaffold. If there is not, we use the first context card for each scaffold.
-          let contextIndex = this.entry.contextualInformation.length == this.entry.scaffolds.length ? i : 0
           let action = {
             label: capitalise(this.label),
             resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}`,
@@ -247,7 +246,7 @@ export default {
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
             banner: this.datasetThumbnail,
-            contextCardUrl: this.entry.contextualInformation[contextIndex] ? `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}` : undefined,
+            contextCardUrl: this.getContextCardUrl(i)
           };
           this.items['Scaffolds'].push({
             id,
@@ -346,6 +345,15 @@ export default {
       this.maxWidth = this.$el.clientWidth;
       // this.$emit('resize', this.$el.clientWidth)
     },
+    getContextCardUrl(scaffoldIndex){
+      if(!this.entry.contextualInformation || this.entry.contextualInformation.length == 0){
+        return undefined
+      } else {
+        // The line below checks if there is a context file for each scaffold. If there is not, we use the first context card for each scaffold.
+        let contextIndex = this.entry['abi-contextual-information'].length == this.entry.scaffolds.length ? scaffoldIndex : 0
+        return `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}`
+      }
+    }
   },
   computed: {
     galleryItems() {
