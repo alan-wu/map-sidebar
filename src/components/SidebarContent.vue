@@ -311,7 +311,7 @@ export default {
       }
       data.results.forEach(element => {
         // match the scicrunch result with algolia result
-        let i = this.results.findIndex(res=> res.name === element.name)
+        let i = this.results.findIndex(res => element.doi ? element.doi.includes(res.doi) : false )
         // Assign scicrunch results to the object
         Object.assign(this.results[i], element)
         // Assign the attributes that need some processing
@@ -322,7 +322,7 @@ export default {
           numberSubjects: element.subjectSize
             ? parseInt(element.subjectSize)
             : 0,
-          updated: element.updated[0].timestamp.split("T")[0],
+          updated: (element.updated && element.updated.length) > 0 ? element.updated[0].timestamp.split("T")[0] : "",
           url: element.uri[0],
           datasetId: element.dataset_identifier,
           datasetRevision: element.dataset_revision,
