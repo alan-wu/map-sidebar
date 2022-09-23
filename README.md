@@ -53,7 +53,7 @@ envVars contains environment varibables like so:
 actionClick event is called when an action button has benn clicked on.
 
 
-# Sidebar Data formats
+## Sidebar Data formats
 ### Algolia
 
 Data retrieved from Algolia can be found here:
