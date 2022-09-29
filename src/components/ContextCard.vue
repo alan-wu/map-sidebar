@@ -5,7 +5,7 @@
       <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
       <el-card v-if="showDetails && Object.keys(contextData).length !== 0" v-loading="loading" class="context-card" >
         <div class="card-left">
-          <img :src="entry.banner" class="context-image">
+          <img :src="banner" class="context-image">
         </div>
         <div class="card-right scrollbar">
           <div class="title">{{contextData.heading}}</div>
@@ -158,6 +158,16 @@ export default {
       }
       else return false
     },
+    banner: function(){
+      if (this.contextData.banner){
+        this.getFileFromPath(this.contextData.banner) 
+      } else if (this.contextData && this.contextData.views) {
+        if(this.contextData.views[0].thumbnail){
+          return this.getFileFromPath(this.contextData.views[0].thumbnail)
+        }
+      } 
+      return this.entry.banner
+    }
   },
   methods: {
     samplesMatching: function(viewId){
