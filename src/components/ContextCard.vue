@@ -9,7 +9,7 @@
         </div>
         <div class="card-right scrollbar">
           <div class="title">{{contextData.heading}}</div>
-          <div v-html="contextData.description"/>
+          <div v-html="parseMarkdown('Distribution of somatostatin (SOM) is mapped as a distribution field over the gastric antrum and corpus regions of the stomach scaffold.\n\nThe field is a color map scaled across all 6 cell densities (5-HT, HDC, PYY, SOM, Gastrin and Ghrelin) recorded in this dataset, with a minimum cell density of 0 cell/mm<sup>2</sup> (white) to maximum cell density of 300 cell/mm^2 (red). \n\nThe data is derived from 14 juvenile male Sprague-Dawley rats (n=14) stomach samples and characterized the hormone content of endocrine cells within the mucosal lining of the stomach.')"/>
           <br/>
 
           <!-- Show sampeles and views seperately if they do not match -->
@@ -70,6 +70,9 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import hardcoded_info from './hardcoded-context-info'
+
+import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify';
 
 locale.use(lang);
 Vue.use(Link);
@@ -161,7 +164,7 @@ export default {
     banner: function(){
       if (this.contextData.banner){
         this.getFileFromPath(this.contextData.banner) 
-      } else if (this.contextData && this.contextData.views) {
+      } else if (this.contextData && this.contextData.views && this.contextData.views.length > 0) {
         if(this.contextData.views[0].thumbnail){
           return this.getFileFromPath(this.contextData.views[0].thumbnail)
         }
@@ -254,6 +257,9 @@ export default {
     generateFileLink(sample){
       return `${this.envVars.ROOT_URL}/file/${sample.discoverId}/${sample.version}?path=${this.processPathForUrl(sample.path)}`
 
+    },
+    parseMarkdown(markdown){
+      return DOMPurify.sanitize(marked.parse(markdown))
     },
     openViewFile: function(view){
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
