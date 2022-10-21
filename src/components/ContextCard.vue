@@ -9,7 +9,7 @@
         </div>
         <div class="card-right scrollbar">
           <div class="title">{{contextData.heading}}</div>
-          <div v-html="parseMarkdown('Distribution of somatostatin (SOM) is mapped as a distribution field over the gastric antrum and corpus regions of the stomach scaffold.\n\nThe field is a color map scaled across all 6 cell densities (5-HT, HDC, PYY, SOM, Gastrin and Ghrelin) recorded in this dataset, with a minimum cell density of 0 cell/mm<sup>2</sup> (white) to maximum cell density of 300 cell/mm^2 (red). \n\nThe data is derived from 14 juvenile male Sprague-Dawley rats (n=14) stomach samples and characterized the hormone content of endocrine cells within the mucosal lining of the stomach.')"/>
+          <div v-html="parseMarkdown(contextData.description)"/>
           <br/>
 
           <!-- Show sampeles and views seperately if they do not match -->
