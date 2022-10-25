@@ -72,7 +72,7 @@ import EventBus from "./EventBus"
 import hardcoded_info from './hardcoded-context-info'
 
 import { marked } from 'marked'
-import DOMPurify from 'isomorphic-dompurify';
+import xss from 'xss'
 
 locale.use(lang);
 Vue.use(Link);
@@ -259,7 +259,7 @@ export default {
 
     },
     parseMarkdown(markdown){
-      return DOMPurify.sanitize(marked.parse(markdown))
+      return xss(marked.parse(markdown))
     },
     openViewFile: function(view){
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
