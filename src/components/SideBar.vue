@@ -185,26 +185,25 @@ export default {
   top: calc(50vh - 80px);
   right: 0px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #e4e7ed;
-  background-color: #F7FAFF;
+  border: solid 1px #8300BF;
+  background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
   pointer-events: auto;
 }
 
-.el-icon-arrow-left{
-  font-size: 20px;
-  padding-top: 8px;
-  color: #292b66;
-}
-
-.el-icon-arrow-right{
-  font-size: 20px;
-  padding-top: 8px;
-  color: #292b66;
+.el-icon-arrow-left,
+.el-icon-arrow-right
+{
+  font-weight: 600;
+  margin-top: 12px;
+  color: #8300BF;
   cursor: pointer;
   pointer-events: auto;
+  transform: scaleY(2.0);
+  text-align: center;
+  vertical-align: middle;
 }
 
 .close-tab{
@@ -215,9 +214,8 @@ export default {
   z-index: 8;
   margin-top: calc(50vh - 80px);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #e4e7ed;
-  border-right: 0;
-  background-color: #F7FAFF;
+  border: solid 1px #8300BF; 
+  background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
