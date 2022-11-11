@@ -186,7 +186,7 @@ export default {
   right: 0px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px #8300BF;
-  background-color: #F9F2FC;
+  background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
@@ -215,7 +215,7 @@ export default {
   margin-top: calc(50vh - 80px);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px #8300BF; 
-  background-color: #F9F2FC;
+  background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
