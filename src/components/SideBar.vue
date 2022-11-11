@@ -178,7 +178,7 @@ export default {
 }
 
 .open-tab{
-  width: 16px;
+  width: 20px;
   height: 40px;
   z-index: 8;
   position: absolute;
@@ -197,18 +197,19 @@ export default {
 .el-icon-arrow-right
 {
   font-weight: 600;
-  float: left;
-  padding-top: 7px;
+  margin-top: 12px;
   color: #8300BF;
   cursor: pointer;
   pointer-events: auto;
   transform: scaleY(2.0);
+  text-align: center;
+  vertical-align: middle;
 }
 
 .close-tab{
   float: left;
   flex: 1;
-  width: 16px;
+  width: 20px;
   height: 40px;
   z-index: 8;
   margin-top: calc(50vh - 80px);
