@@ -53,7 +53,8 @@ export default {
   },
   data: function () {
     return {
-      categories: { "All": {size: 1} },
+      //Always start with 1 image - the dataset thumbnail itself
+      categories: { "All": {size: 1}, "Dataset": {size: 1} },
       active: "All"
     };
   },
@@ -82,7 +83,7 @@ export default {
       immediate: true,
       handler: function (biolucidaData) {
         if ("dataset_images" in biolucidaData) {
-          this.addToCategories(biolucidaData["dataset_images"], "Biolucida Images");
+          this.addToCategories(biolucidaData["dataset_images"], "Images");
         }
       }
     },
