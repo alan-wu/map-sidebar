@@ -86,7 +86,8 @@ export default {
       ro: null,
       maxWidth: 3,
       items: {
-        "Biolucida Images": [],
+        //Use the Images instead for Biolucida Images
+        //"Biolucida Images": [],
         'Dataset': [],
         'Images': [],
         'Scaffolds': [],
@@ -215,7 +216,6 @@ export default {
     },
     createScaffoldItems: function () {
       if (this.entry.scaffolds) {
-        window.entry = this.entry
         let index = 0;
         this.entry.scaffolds.forEach((scaffold, i) => {
           const filePath = scaffold.dataset.path;
@@ -411,7 +411,7 @@ export default {
               };
               return {
                 id: dataset_image.image_id,
-                title: `Biolucida Image`,
+                title: `Image`,
                 type: "Image",
                 thumbnail: thumbnailURL,
                 userData: action,
@@ -421,7 +421,7 @@ export default {
             })
           );
         }
-        this.items['Biolucida Images'] = items;
+        this.items['Images'] = items;
       },
     },
   },
