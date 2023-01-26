@@ -380,7 +380,7 @@ export default {
     // initialise algolia
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
-    this.openSearch(undefined, '');
+    this.openSearch(this.filter, this.searchInput);
   },
   created: function() {
     //Create non-reactive local variables

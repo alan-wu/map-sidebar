@@ -52,23 +52,6 @@ locale.use(lang);
 Vue.use(Drawer);
 Vue.use(Icon);
 
-var initial_state = {
-      searchInput: "",
-      lastSearch: "",
-      results: [],
-      drawerOpen: false,
-      numberOfHits: 0,
-      filter:{},
-      filterFacet: undefined,
-      loadingCards: false,
-      numberPerPage: 10,
-      page: 1,
-      pageModel: 1,
-      start: 0,
-      hasSearched: false,
-      sciCrunchError: false
-}
-
 export default {
   components: {SidebarContent, Tabs },
   name: "SideBar",
@@ -76,10 +59,6 @@ export default {
     visible: {
       type: Boolean,
       default: false
-    },
-    entry: {
-      type: Object,
-      default: () => (initial_state)
     },
     envVars: {
       type: Object,
@@ -100,7 +79,7 @@ export default {
   },
   data: function () {
     return {
-      ...this.entry,
+      drawerOpen: false,
     }
   },
   methods: {

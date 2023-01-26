@@ -132,7 +132,10 @@ export default {
     neuronSearch: function(){
       this.$refs.sideBar.openNeuronSearch('ilxtr:neuron-type-keast-10')
     }
-  }
+  },
+  mounted: function() {
+    console.log("mounted app")
+  },
 }
 </script>
 
