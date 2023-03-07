@@ -90,7 +90,7 @@ var handleErrors = async function(response) {
   return response;
 };
 
-var initial_state = {
+const initial_state = {
   searchInput: "",
   lastSearch: "",
   results: [],
@@ -127,6 +127,11 @@ export default {
       default: () => {}
     },
   },
+  inject: {
+    'alternateSearch' : {
+      default: undefined,
+    },
+  },
   data: function() {
     return {
       ...this.entry,
@@ -153,7 +158,6 @@ export default {
     },
     resetSearch: function() {
       this.numberOfHits = 0
-      this.discoverIds = []
       this._dois = []
       this.results = []
       this.loadingCards = false
@@ -172,7 +176,7 @@ export default {
           this.$refs.filtersRef.checkShowAllBoxes();
           this.resetSearch();
         } else if (this.filter) {
-          this.searchAlgolia(this.filter, search);
+          this.performSearch(this.filter, search);
           this.$refs.filtersRef.setCascader(this.filter);
         }
       } else {
@@ -180,7 +184,7 @@ export default {
         //otherwise waith for cascader to be ready
         this.filter = filter;
         if (!filter || filter.length == 0) {
-          this.searchAlgolia(this.filter, search);
+          this.performSearch(this.filter, search);
         }
       }
     },
@@ -206,22 +210,50 @@ export default {
     clearSearchClicked: function() {
       this.searchInput = "";
       this.resetPageNavigation();
-      this.searchAlgolia(this.filters, this.searchInput);
+      this.performSearch(this.filters, this.searchInput);
     },
     searchEvent: function(event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation();
-        this.searchAlgolia(this.filters, this.searchInput);
+        this.performSearch(this.filters, this.searchInput);
       }
     },
     filterUpdate: function(filters) {
       this.filters = [...filters]
       this.resetPageNavigation()
-      this.searchAlgolia(filters, this.searchInput)
+      this.performSearch(filters, this.searchInput)
       this.$emit("search-changed", {
         value: filters,
         type: "filter-update"
       });
+    },
+    processSearchData: function(searchData) {
+      this.numberOfHits = searchData.total
+      this._dois = searchData.dois
+      this.results = searchData.items
+      this.loadingCards = false
+      this.scrollToTop()
+      this.$emit("search-changed", { value: this.searchInput, type: "query-update" })
+    },
+    alternateSearchCB: function(payload) {
+      this.loadingCards = false;
+      this.processSearchData(payload)
+      //console.log(payload)
+    },
+    performSearch(filters, query='') {
+      if (this.alternateSearch) {
+        const payload = {
+          requestType: 'Search',
+          filters,
+          query,
+          numberPerPage: this.numberPerPage,
+          page: this.page
+        };
+        this.alternateSearch(payload, this.alternateSearchCB);
+      }
+      else {
+        this.searchAlgolia(filters, query);
+      }
     },
     searchAlgolia(filters, query=''){
       // Algolia search
@@ -230,13 +262,7 @@ export default {
         EventBus.$emit("anatomyFound", anatomy) 
       })
       this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
-        this.numberOfHits = searchData.total
-        this.discoverIds = searchData.discoverIds
-        this._dois = searchData.dois
-        this.results = searchData.items
-        this.loadingCards = false
-        this.scrollToTop()
-        this.$emit("search-changed", { value: this.searchInput, type: "query-update" })
+        this.processSearchData(searchData)
         if (this._abortController)
           this._abortController.abort()
         this._abortController = new AbortController()
@@ -254,8 +280,8 @@ export default {
     },
     pageChange: function(page) {
       this.start = (page - 1) * this.numberPerPage;
-      this.page = page
-      this.searchAlgolia(this.filters, this.searchInput, this.numberPerPage, this.page)
+      this.page = page;
+      this.searchAlgolia(this.filters, this.searchInput);
     },
     handleMissingData: function(doi) {
       let i = this.results.findIndex(res=> res.doi === doi)
@@ -275,7 +301,7 @@ export default {
               if (result.numberOfHits === 0)
                 this.handleMissingData(doi);
               else
-                this.resultsProcessing(result);
+                this.perItemProcessing(result);
               this.$refs.content.style["overflow-y"] = "scroll";
               data.count--;
               //Async::Download finished, get the next one
@@ -303,9 +329,8 @@ export default {
       this.start = 0;
       this.page = 1;
     },
-    resultsProcessing: function(data) {
+    perItemProcessing: function(data) {
       this.lastSearch = this.searchInput;
-
       if (data.results.length === 0) {
         return;
       }
@@ -377,9 +402,11 @@ export default {
     },
   },
   mounted: function() {
-    // initialise algolia
-    this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
-    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
+    if (!this.alternateSearch) {
+      // initialise algolia
+      this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+      this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
+    }
     this.openSearch(this.filter, this.searchInput);
   },
   created: function() {

@@ -75,11 +75,20 @@ export default {
     openAtStart: {
       type: Boolean,
       default: false
+    },
+    alternateSearch: {
+      type: Function,
+      default: undefined
     }
   },
   data: function () {
     return {
       drawerOpen: false,
+    }
+  },
+  provide: function() {
+    return {
+      alternateSearch: this.alternateSearch
     }
   },
   methods: {

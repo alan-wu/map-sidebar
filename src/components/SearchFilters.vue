@@ -92,6 +92,8 @@ const convertReadableLabel = function (original) {
   }
 };
 
+
+
 export default {
   name: "SearchFilters",
   components: {
@@ -110,6 +112,11 @@ export default {
       default: ()=>{}
     },
   },
+  inject: {
+    'alternateSearch' : {
+      default: undefined,
+    },
+  },
   data: function () {
     return {
       cascaderIsReady: false,
@@ -125,7 +132,6 @@ export default {
       cascadeSelectedWithBoolean: [], 
       numberShown: 10,
       filters: [],
-      facets: ["Species", "Gender", "Organ", "Datasets"],
       numberDatasetsShown: ["10", "20", "50"],
       props: { multiple: true },
       options: [
@@ -147,43 +153,64 @@ export default {
       if (facet) return term + ">" + facet;
       else return term;
     },
-    populateCascader: function () {
+    populateCascaderOptions: function(data) {
+      this.options = data;
+      // create top level of options in cascader
+      this.options.forEach((facet, i) => {
+        this.options[i].label = convertReadableLabel(facet.label);
+        this.options[i].value = this.createCascaderItemValue(
+          facet.key,
+          undefined
+        );
+
+        // put "Show all" as first option
+        this.options[i].children.unshift({
+          value: this.createCascaderItemValue("Show all"),
+          label: "Show all",
+        });
+
+        // populate second level of options 
+        this.options[i].children.forEach((facetItem, j) => {
+          this.options[i].children[j].label = convertReadableLabel(
+            facetItem.label
+          );
+          this.options[i].children[j].value =
+            this.createCascaderItemValue(facet.label, facetItem.label);
+        });
+      });
+    },
+    populateDefaultCascader: function() {
       return new Promise((resolve) => {
         // Algolia facet serach
         this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
           .then((data) => {
-            this.facets = data;
-            this.options = data;
-
-            // create top level of options in cascader
-            this.options.forEach((facet, i) => {
-              this.options[i].label = convertReadableLabel(facet.label);
-              this.options[i].value = this.createCascaderItemValue(
-                facet.key,
-                undefined
-              );
-
-              // put "Show all" as first option
-              this.options[i].children.unshift({
-                value: this.createCascaderItemValue("Show all"),
-                label: "Show all",
-              });
-
-              // populate second level of options 
-              this.options[i].children.forEach((facetItem, j) => {
-                this.options[i].children[j].label = convertReadableLabel(
-                  facetItem.label
-                );
-                this.options[i].children[j].value =
-                  this.createCascaderItemValue(facet.label, facetItem.label);
-              });
-            });
+            this.populateCascaderOptions(data)
             this.createDataTypeFacet();
           })
           .finally(() => {
             resolve();
           });
       });
+    },
+    setCascaderReady:function() {
+      this.cascaderIsReady = true;
+      this.checkShowAllBoxes();
+      this.setCascader(this.entry.filterFacets);
+      this.makeCascadeLabelsClickable();
+      this.$emit("cascaderReady");
+    },
+    alternateSearchCB: function(payload) {
+      this.populateCascaderOptions(payload.data);
+      this.setCascaderReady();
+    },
+    populateCascader: function () {
+      if (this.alternateSearch) {
+        this.alternateSearch({requestType: 'getFacets'}, this.alternateSearchCB);
+      } else {
+        this.populateDefaultCascader().then(() => {
+          this.setCascaderReady();
+        });
+      }
     },
     tagsChangedCallback: function (presentTags) {
       if (presentTags.length > 0) {
@@ -216,7 +243,6 @@ export default {
             AND: fs[2] // for setting the boolean
           }
         })
-
 
         this.$emit('loading', true) // let sidebarcontent wait for the requests
 
@@ -291,26 +317,31 @@ export default {
       return event;
     },
     createDataTypeFacet: function(){
-      let dataFacet = {...this.facets[2]} // copy the 'Experiemental approach' facet
-      let count = this.facets.at(-1).id // get the last id count
+      const experimentalApproach = this.options.find(option => option.label === "Experimental approach")
+      const dataFacet = {}
+      let count = this.options.at(-1).id // get the last id count
 
       // Step through the children that are valid data types, switch thier values 
-      let newChildren = dataFacet.children.filter( el=> {
+      let newChildren = []
+      experimentalApproach.children.forEach( el=> {
         if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
-          el.key = el.label
-          el.id = count
-          el.value = el.value.replace('Experimental approach', 'Data type')
+          const newEl = {}
+          newEl.facetPropPath = el.facetPropPath
+          newEl.key = el.label
+          newEl.id = count
+          newEl.label = el.label
+          newEl.value = el.value.replace('Experimental approach', 'Data type')
           count++
-          return el
+          newChildren.push(newEl)
         }
       })
       dataFacet.id = count
       dataFacet.key = 'Data type'
       // Add 'duplicate' so that the key is unique. This is removed in the cascade event for filtering
-      dataFacet.value += 'duplicate' 
+      dataFacet.value = experimentalApproach.value + 'duplicate' 
       dataFacet.children = newChildren
       dataFacet.label = 'Data type'
-      this.facets.push(dataFacet)
+      this.options.push(dataFacet)
     },
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
@@ -440,15 +471,11 @@ export default {
     },
   },
   mounted: function () {
-    this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
-    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
-    this.populateCascader().then(() => {
-      this.cascaderIsReady = true;
-      this.checkShowAllBoxes();
-      this.setCascader(this.entry.filterFacets);
-      this.makeCascadeLabelsClickable();
-      this.$emit("cascaderReady");
-    });
+    if (!this.alternateSearch) {
+      this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+      this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
+    }
+    this.populateCascader();
   },
 };
 </script>
