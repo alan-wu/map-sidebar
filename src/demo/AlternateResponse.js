@@ -1,3 +1,4 @@
+/* eslint-disable no-alert, no-console */
 const searchDataset = (payload, callback) => {
   const element = {
 
@@ -42,6 +43,11 @@ const getFacets = (payload, callback) => {
           facetPropPath: "anatomy.organ.name", //Should be the same as the parent's key
           label: "Lung",
           value: "Anatomical Structure>Lung",
+        },
+        {
+          facetPropPath: "anatomy.organ.name", //Should be the same as the parent's key
+          label: "Heart",
+          value: "Anatomical Structure>Heart",
         }
       ]
     }
@@ -56,6 +62,7 @@ const getFacets = (payload, callback) => {
 exports.mySearch = (payload, callback) => {
   if (payload && callback) {
     if (payload.requestType == 'Search') {
+      console.log(payload)
       searchDataset(payload, callback);
       return;
     } else if ((payload.requestType == 'getFacets')) {
