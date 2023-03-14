@@ -146,26 +146,8 @@ export default {
   methods: {
     generateImage(item) {
       if (item.scaffoldViews.length > 0) {
-        let data = item.scaffoldViews;
-        console.log("item.scaffoldViews");
-        console.log(data);
         let url = `http://localhost:8000/data/preview/`;
-        let img_list = [];
-        img_list = data.filter((item) => {
-          if (item.is_source_of) {
-            if (item.is_source_of.includes("Layout1")) return item;
-          }
-        });
-        if (img_list.length === 0) {
-          img_list = data.filter((item) => {
-            if (item.is_source_of) {
-              if (item.is_source_of.includes("thumbnail1")) return item;
-            }
-          });
-        }
-        if (img_list.length === 0) {
-          img_list.push(data[0]);
-        }
+        let img_list = item.scaffoldViews;
         if (img_list[0].filename.includes(item.datasetId))
           url += `${img_list[0].filename.substring(
             0,
