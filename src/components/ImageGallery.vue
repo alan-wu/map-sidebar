@@ -107,14 +107,23 @@ export default {
       imageStyle: { maxWidth: '160px', maxHeight: '160px'},
       shadow: "never",
       bottomSpacer: { minHeight: '0rem' },
-      resetIndex: false
+      resetIndex: false,
+      s3Bucket: undefined
     };
   },
   methods: {
     cardClicked: function(payload) {
       this.$emit('card-clicked', payload);
     },
+    getS3BucketName: function() {
+      if (this.entry.s3uri) {
+        const substring = this.entry.s3uri.split("//")[1];
+        if (substring)
+          return substring.split("/")[0];
+      }
+    },
     createSciCurnchItems: function () {
+      this.s3Bucket = this.getS3BucketName();
       this.createDatasetItem();
       this.createScaffoldItems();
       this.createSimulationItems();
