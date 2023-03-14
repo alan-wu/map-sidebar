@@ -1,5 +1,6 @@
 /* eslint-disable no-alert, no-console */
 import data from "./data.json";
+import facet from "./facet.json";
 const searchDataset = (payload, callback) => {
   console.log(data);
   // const element = {};
@@ -35,25 +36,26 @@ const searchDataset = (payload, callback) => {
 };
 
 const getFacets = (payload, callback) => {
-  const facets = [
-    {
-      key: "anatomy.organ.name",
-      label: "Anatomical Structure",
-      value: "anatomy.organ.name",
-      children: [
-        {
-          facetPropPath: "anatomy.organ.name", //Should be the same as the parent's key
-          label: "Lung",
-          value: "Anatomical Structure>Lung",
-        },
-        {
-          facetPropPath: "anatomy.organ.name", //Should be the same as the parent's key
-          label: "Heart",
-          value: "Anatomical Structure>Heart",
-        },
-      ],
-    },
-  ];
+  // const facets = [
+  //   {
+  //     key: "anatomy.organ.name",
+  //     label: "Anatomical Structure",
+  //     value: "anatomy.organ.name",
+  //     children: [
+  //       {
+  //         facetPropPath: "anatomy.organ.name", //Should be the same as the parent's key
+  //         label: "Lung",
+  //         value: "Anatomical Structure>Lung",
+  //       },
+  //       {
+  //         facetPropPath: "anatomy.organ.name", //Should be the same as the parent's key
+  //         label: "Heart",
+  //         value: "Anatomical Structure>Heart",
+  //       },
+  //     ],
+  //   }
+  // ];
+  const facets = facet;
   const returnedPayload = {
     data: facets,
   };
@@ -61,9 +63,9 @@ const getFacets = (payload, callback) => {
 };
 
 export const mySearch = (payload, callback) => {
+  console.log(payload);
   if (payload && callback) {
     if (payload.requestType == "Search") {
-      console.log(payload);
       searchDataset(payload, callback);
       return;
     } else if (payload.requestType == "getFacets") {
