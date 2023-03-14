@@ -1,28 +1,44 @@
 <template>
-  <div class="dataset-card-container"  ref="container">
-    <div class="dataset-card"  ref="card">
+  <div class="dataset-card-container" ref="container">
+    <div class="dataset-card" ref="card">
       <div class="seperator-path"></div>
-      <div v-loading="loading" class="card" >
+      <!-- <div v-loading="loading" class="card"> -->
+      <div class="card">
         <span class="card-left">
-          <image-gallery v-if="!loading && discoverId" 
-            :datasetId="discoverId"
-            :datasetVersion="version"
-            :entry="entry"
-            :envVars="envVars"
-            :label="label"
-            :datasetThumbnail="thumbnail"
-            :dataset-biolucida="biolucidaData"
-            :category="currentCategory"
-            @card-clicked="galleryClicked"
+          <img
+            v-if="generateImage(entry)"
+            :src="generateImage(entry)"
+            alt="image"
           />
+          <!-- <image-gallery
+            :datasetId="entry.datasetId"
+            :scaffolds="entry.scaffolds"
+            :scaffoldViews="entry.scaffoldViews"
+            :plots="entry.plots"
+            :thumbnails="entry.thumbnails"
+          /> -->
         </span>
-        <div class="card-right" >
-          <div class="title" @click="cardClicked">{{entry.name}}</div>
-          <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
-          <div class="details">{{samples}}</div>
-          <div v-if="!entry.detailsReady" class="details loading-icon" v-loading="!entry.detailsReady"></div>
+        <div class="card-right">
+          <div class="title" @click="cardClicked">{{ entry.title }}</div>
+          <div class="details">
+            {{ contributors }}
+            {{ entry.publishDate ? `(${publishYear})` : "" }}
+          </div>
+          <div class="details">{{ samples }}</div>
+          <!-- <div
+            v-if="!entry.detailsReady"
+            class="details loading-icon"
+            v-loading="!entry.detailsReady"
+          ></div> -->
           <div>
-            <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
+            <el-button
+              v-if="entry.simulation"
+              @click="openRepository"
+              size="mini"
+              class="button"
+              icon="el-icon-view"
+              >View repository</el-button
+            >
           </div>
           <div class="badges-container">
             <badges-group
@@ -37,7 +53,6 @@
   </div>
 </template>
 
-
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
@@ -45,9 +60,9 @@ import BadgesGroup from "./BadgesGroup.vue";
 import { Button, Icon } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
-import EventBus from "./EventBus"
-import speciesMap from "./species-map";
-import ImageGallery from "./ImageGallery.vue";
+import EventBus from "./EventBus";
+// import speciesMap from "./species-map";
+// import ImageGallery from "./ImageGallery.vue";
 
 locale.use(lang);
 Vue.use(Button);
@@ -55,7 +70,7 @@ Vue.use(Icon);
 
 export default {
   name: "DatasetCard",
-  components: { BadgesGroup, ImageGallery },
+  components: { BadgesGroup },
   props: {
     /**
      * Object containing information for
@@ -63,23 +78,23 @@ export default {
      */
     entry: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     envVars: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
   },
-  data: function () {
+  data: function() {
     return {
-      thumbnail: require('@/../assets/missing-image.svg'),
-      dataLocation: this.entry.doi,
+      thumbnail: require("@/../assets/missing-image.svg"),
+      dataLocation: "",
       discoverId: undefined,
       loading: true,
       version: 1,
       lastDoi: undefined,
       biolucidaData: undefined,
-      currentCategory: "All"
+      currentCategory: "All",
     };
   },
   computed: {
@@ -87,11 +102,14 @@ export default {
       let text = "";
       if (this.entry.contributors) {
         if (this.entry.contributors.length === 1) {
-          text = this.lastName(this.entry.contributors[0].name);
+          text = this.lastName(this.entry.contributors[0]);
         } else if (this.entry.contributors.length === 2) {
-          text = this.lastName(this.entry.contributors[0].name) + " & " + this.lastName(this.entry.contributors[1].name);
+          text =
+            this.lastName(this.entry.contributors[0]) +
+            " & " +
+            this.lastName(this.entry.contributors[1]);
         } else if (this.entry.contributors.length > 2) {
-          text = this.lastName(this.entry.contributors[0].name) + " et al.";
+          text = this.lastName(this.entry.contributors[0]) + " et al.";
         }
       }
       return text;
@@ -99,11 +117,7 @@ export default {
     samples: function() {
       let text = "";
       if (this.entry.species) {
-        if (speciesMap[this.entry.species[0].toLowerCase()]){
-          text = `${speciesMap[this.entry.species[0].toLowerCase()]}`;
-        } else {
-          text = `${this.entry.species}`;
-        }
+        text = `${this.entry.species}`;
       }
       if (this.entry.numberSamples > 0) {
         text += " (";
@@ -122,120 +136,167 @@ export default {
 
       return text;
     },
-    label: function(){
-      return this.entry.organs ? this.entry.organs[0] : this.entry.name
+    label: function() {
+      return this.entry.organs ? this.entry.organs[0] : this.entry.name;
     },
     publishYear: function() {
-      return this.entry.publishDate.split('-')[0]
-    }
+      return this.entry.publishDate.split("-")[0];
+    },
   },
   methods: {
-    cardClicked: function(){
-      this.openDataset()
+    generateImage(item) {
+      if (item.scaffoldViews.length > 0) {
+        let data = item.scaffoldViews;
+        console.log("item.scaffoldViews");
+        console.log(data);
+        let url = `http://localhost:8000/data/preview/`;
+        let img_list = [];
+        img_list = data.filter((item) => {
+          if (item.is_source_of) {
+            if (item.is_source_of.includes("Layout1")) return item;
+          }
+        });
+        if (img_list.length === 0) {
+          img_list = data.filter((item) => {
+            if (item.is_source_of) {
+              if (item.is_source_of.includes("thumbnail1")) return item;
+            }
+          });
+        }
+        if (img_list.length === 0) {
+          img_list.push(data[0]);
+        }
+        if (img_list[0].filename.includes(item.datasetId))
+          url += `${img_list[0].filename.substring(
+            0,
+            img_list[0].filename.lastIndexOf("/")
+          )}/${img_list[0].is_source_of}`;
+        else
+          url += `${item.datasetId}/${img_list[0].filename.substring(
+            0,
+            img_list[0].filename.lastIndexOf("/")
+          )}/${img_list[0].is_source_of}`;
+        return url;
+      } else {
+        return false;
+      }
+    },
+    cardClicked: function() {
+      this.openDataset();
     },
     categoryChanged: function(name) {
       this.currentCategory = name;
     },
     galleryClicked: function(payload) {
-      this.propogateCardAction(payload)
+      this.propogateCardAction(payload);
     },
-    openDataset: function(){
-      window.open(this.dataLocation,'_blank');
+    openDataset: function() {
+      window.open(this.dataLocation, "_blank");
     },
-    openRepository: function() {
-      let apiLocation = this.envVars.API_LOCATION;
-      this.entry.additionalLinks.forEach(function(el) {
-        if (el.description == "Repository") {
-          let xmlhttp = new XMLHttpRequest();
-          xmlhttp.open("POST", apiLocation + "/pmr_latest_exposure", true);
-          xmlhttp.setRequestHeader("Content-type", "application/json");
-          xmlhttp.onreadystatechange = () => {
-            if (xmlhttp.readyState === 4) {
-              let url = "";
-              if (xmlhttp.status === 200) {
-                url = JSON.parse(xmlhttp.responseText)["url"];
-              }
-              if (url === "") {
-                url = el.uri;
-              }
-              window.open(url,'_blank');
-            }
-          };
-          xmlhttp.send(JSON.stringify({workspace_url: el.uri}));
-        }
-      });
+    // openRepository: function() {
+    //   let apiLocation = this.envVars.API_LOCATION;
+    //   this.entry.additionalLinks.forEach(function(el) {
+    //     if (el.description == "Repository") {
+    //       let xmlhttp = new XMLHttpRequest();
+    //       xmlhttp.open("POST", apiLocation + "/pmr_latest_exposure", true);
+    //       xmlhttp.setRequestHeader("Content-type", "application/json");
+    //       xmlhttp.onreadystatechange = () => {
+    //         if (xmlhttp.readyState === 4) {
+    //           let url = "";
+    //           if (xmlhttp.status === 200) {
+    //             url = JSON.parse(xmlhttp.responseText)["url"];
+    //           }
+    //           if (url === "") {
+    //             url = el.uri;
+    //           }
+    //           window.open(url, "_blank");
+    //         }
+    //       };
+    //       xmlhttp.send(JSON.stringify({ workspace_url: el.uri }));
+    //     }
+    //   });
+    // },
+    propogateCardAction: function(action) {
+      EventBus.$emit("PopoverActionClick", action);
+      this.$emit("contextUpdate", action);
     },
-    propogateCardAction: function(action){
-      EventBus.$emit("PopoverActionClick", action)
-      this.$emit('contextUpdate', action)
+    splitDOI: function(doi) {
+      return [
+        doi.split("/")[doi.split("/").length - 2],
+        doi.split("/")[doi.split("/").length - 1],
+      ];
     },
-    splitDOI: function(doi){
-      return [doi.split('/')[doi.split('/').length-2], doi.split('/')[doi.split('/').length-1]]
-    },
-    getBanner: function () {
-      // Only load banner if card has changed
-      if (this.lastDoi !== this.entry.doi) {
-        this.lastDoi = this.entry.doi
-        this.loading = true
-        let doi = this.splitDOI(this.entry.doi)
-        fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`)
-          .then((response) =>{
-            if (!response.ok){
-              throw Error(response.statusText)
-            } else {
-              return response.json()
-            }
-          })
-          .then((data) => {
-            this.thumbnail = data.banner
-            this.discoverId = data.id
-            this.version = data.version
-            this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
-            this.getBiolucidaInfo(this.discoverId)
-            this.loading = false
-          })
-          .catch(() => {
-            //set defaults if we hit an error
-            this.thumbnail = require('@/../assets/missing-image.svg')
-            this.discoverId = Number(this.entry.datasetId)
-            this.loading = false
-          });
-      }
-
-    },
-    lastName: function(fullName){
-      return fullName.split(',')[0]
+    // getBanner: function() {
+    //   // Only load banner if card has changed
+    //   if (this.lastDoi !== this.entry.doi) {
+    //     this.lastDoi = this.entry.doi;
+    //     this.loading = true;
+    //     let doi = this.splitDOI(this.entry.doi);
+    //     fetch(
+    //       `${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`
+    //     )
+    //       .then((response) => {
+    //         if (!response.ok) {
+    //           throw Error(response.statusText);
+    //         } else {
+    //           return response.json();
+    //         }
+    //       })
+    //       .then((data) => {
+    //         this.thumbnail = data.banner;
+    //         this.discoverId = data.id;
+    //         this.version = data.version;
+    //         this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`;
+    //         this.getBiolucidaInfo(this.discoverId);
+    //         this.loading = false;
+    //       })
+    //       .catch(() => {
+    //         //set defaults if we hit an error
+    //         this.thumbnail = require("@/../assets/missing-image.svg");
+    //         this.discoverId = Number(this.entry.datasetId);
+    //         this.loading = false;
+    //       });
+    //   }
+    // },
+    lastName: function(fullName) {
+      return fullName.split(",")[0];
     },
     getBiolucidaInfo: function(id) {
       let apiLocation = this.envVars.API_LOCATION;
       let endpoint = apiLocation + "image_search/" + id;
       // Add parameters if we are sent them
       fetch(endpoint)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status == "success")
-            this.biolucidaData = data;
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status == "success") this.biolucidaData = data;
         });
-    }
+    },
   },
   created: function() {
-    this.getBanner()
+    console.log("this.entry");
+    console.log(this.entry);
+    this.dataLocation = this.entry.url;
+    // this.getBanner();
   },
   watch: {
     // currently not using card overflow
-    'entry.description': function() { // watch it
-      this.getBanner()
-    }
+    "entry.description": function() {
+      // watch it
+      this.getBanner();
+    },
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+img {
+  width: 10rem;
+}
 .dataset-card {
   padding-left: 16px;
   position: relative;
-  min-height:17rem;
+  min-height: 17rem;
 }
 
 .title {
@@ -256,8 +317,8 @@ export default {
   display: flex;
 }
 
-.card-left{
-  flex: 1
+.card-left {
+  flex: 1;
 }
 
 .card-right {
@@ -265,7 +326,7 @@ export default {
   padding-left: 6px;
 }
 
-.button{
+.button {
   z-index: 10;
   font-family: Asap;
   font-size: 14px;
@@ -293,7 +354,7 @@ export default {
   background-color: #ffffff;
   cursor: pointer;
 }
-.details{
+.details {
   font-family: Asap;
   font-size: 14px;
   font-weight: normal;
@@ -305,7 +366,7 @@ export default {
 }
 
 .badges-container {
-  margin-top:0.75rem;
+  margin-top: 0.75rem;
 }
 
 .loading-icon {
@@ -316,7 +377,7 @@ export default {
 }
 
 .loading-icon >>> .el-loading-mask {
-  background-color: rgba(117, 190, 218, 0.0) !important;
+  background-color: rgba(117, 190, 218, 0) !important;
 }
 
 .loading-icon >>> .el-loading-spinner .path {
