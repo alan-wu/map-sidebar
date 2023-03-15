@@ -63,6 +63,7 @@ const getFacets = (payload, callback) => {
 };
 
 export const mySearch = (payload, callback) => {
+  console.log("mySearch");
   console.log(payload);
   if (payload && callback) {
     if (payload.requestType == "Search") {

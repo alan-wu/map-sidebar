@@ -5,21 +5,19 @@
       <!-- <div v-loading="loading" class="card"> -->
       <div class="card">
         <span class="card-left">
-          <img
-            v-if="generateImage(entry)"
-            :src="generateImage(entry)"
-            alt="image"
-          />
-          <!-- <image-gallery
+          <!-- <img :src="image_url" alt="image" /> -->
+          <image-gallery
             :datasetId="entry.datasetId"
             :scaffolds="entry.scaffolds"
             :scaffoldViews="entry.scaffoldViews"
             :plots="entry.plots"
             :thumbnails="entry.thumbnails"
-          /> -->
+            :datasetThumbnail="image_url"
+            :entry="entry"
+          />
         </span>
         <div class="card-right">
-          <div class="title" @click="cardClicked">{{ entry.title }}</div>
+          <div class="title" @click="cardClicked">{{ entry.name }}</div>
           <div class="details">
             {{ contributors }}
             {{ entry.publishDate ? `(${publishYear})` : "" }}
@@ -62,7 +60,7 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus";
 // import speciesMap from "./species-map";
-// import ImageGallery from "./ImageGallery.vue";
+import ImageGallery from "./ImageGallery.vue";
 
 locale.use(lang);
 Vue.use(Button);
@@ -70,7 +68,7 @@ Vue.use(Icon);
 
 export default {
   name: "DatasetCard",
-  components: { BadgesGroup },
+  components: { BadgesGroup, ImageGallery },
   props: {
     /**
      * Object containing information for
@@ -95,6 +93,7 @@ export default {
       lastDoi: undefined,
       biolucidaData: undefined,
       currentCategory: "All",
+      image_url: "",
     };
   },
   computed: {
@@ -146,21 +145,11 @@ export default {
   methods: {
     generateImage(item) {
       if (item.scaffoldViews.length > 0) {
-        let url = `http://localhost:8000/data/preview/`;
-        let img_list = item.scaffoldViews;
-        if (img_list[0].filename.includes(item.datasetId))
-          url += `${img_list[0].filename.substring(
-            0,
-            img_list[0].filename.lastIndexOf("/")
-          )}/${img_list[0].is_source_of}`;
-        else
-          url += `${item.datasetId}/${img_list[0].filename.substring(
-            0,
-            img_list[0].filename.lastIndexOf("/")
-          )}/${img_list[0].is_source_of}`;
-        return url;
+        this.image_url = item.scaffoldViews[0].image_url;
+      } else if (item.thumbnails.length > 0) {
+        this.image_url = item.thumbnails[0].image_url;
       } else {
-        return false;
+        this.image_url = this.thumbnail;
       }
     },
     cardClicked: function() {
@@ -255,16 +244,17 @@ export default {
     },
   },
   created: function() {
-    console.log("this.entry");
-    console.log(this.entry);
+    // console.log("this.entry");
+    // console.log(this.entry);
     this.dataLocation = this.entry.url;
+    this.generateImage(this.entry);
     // this.getBanner();
   },
   watch: {
     // currently not using card overflow
     "entry.description": function() {
       // watch it
-      this.getBanner();
+      // this.getBanner();
     },
   },
 };
