@@ -178,7 +178,6 @@ export default {
                   this.createCascaderItemValue(facet.label, facetItem.label);
               });
             });
-            this.createDataTypeFacet();
           })
           .finally(() => {
             resolve();
@@ -289,28 +288,6 @@ export default {
         });
       }
       return event;
-    },
-    createDataTypeFacet: function(){
-      let dataFacet = {...this.facets[2]} // copy the 'Experiemental approach' facet
-      let count = this.facets.at(-1).id // get the last id count
-
-      // Step through the children that are valid data types, switch thier values 
-      let newChildren = dataFacet.children.filter( el=> {
-        if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
-          el.key = el.label
-          el.id = count
-          el.value = el.value.replace('Experimental approach', 'Data type')
-          count++
-          return el
-        }
-      })
-      dataFacet.id = count
-      dataFacet.key = 'Data type'
-      // Add 'duplicate' so that the key is unique. This is removed in the cascade event for filtering
-      dataFacet.value += 'duplicate' 
-      dataFacet.children = newChildren
-      dataFacet.label = 'Data type'
-      this.facets.push(dataFacet)
     },
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
