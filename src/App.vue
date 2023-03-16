@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap"
+    />
     Click arrow to open sidebar
     <el-button @click="openSearch">search Uberon from refs</el-button>
     <el-button @click="singleFacets">Add heart to Filter</el-button>
@@ -10,20 +12,28 @@
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <el-button @click="keywordSearch">keyword search</el-button>
-    <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
-      :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked"
-      @search-changed="searchChanged($event)" @actionClick="action"
-      :alternate-search="mySearch"/>
+    <SideBar
+      :envVars="envVars"
+      class="side-bar"
+      ref="sideBar"
+      :visible="sideBarVisibility"
+      :tabs="tabs"
+      :activeId="activeId"
+      @tabClicked="tabClicked"
+      @search-changed="searchChanged($event)"
+      @actionClick="action"
+      :alternate-search="mySearch"
+    />
   </div>
 </template>
 
 <script>
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
-import SideBar from './components/SideBar'
-import { mySearch } from './demo/AlternateResponse.js'
+import SideBar from "./components/SideBar";
+import { mySearch } from "./demo/AlternateResponse.js";
 
-console.log(mySearch)
+console.log(mySearch);
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
 //   "heading": "Digital tracings of enteric plexus",
@@ -69,23 +79,23 @@ console.log(mySearch)
 //   ]
 // }
 export default {
-  name: 'app',
+  name: "app",
   components: {
-    SideBar
+    SideBar,
   },
   computed: {
-    tabs: function(){
-      let temp = [...this.tabArray]
-      for(let i in this.tabArray){
-        temp[i].contextCard = this.contextArray[i]
+    tabs: function() {
+      let temp = [...this.tabArray];
+      for (let i in this.tabArray) {
+        temp[i].contextCard = this.contextArray[i];
       }
-      return temp
-    }
+      return temp;
+    },
   },
-  data: function(){
+  data: function() {
     return {
-      tabArray: [{title: 'Flatmap', id:1}],
-      contextArray: [null,null,null],
+      tabArray: [{ title: "Flatmap", id: 1 }],
+      contextArray: [null, null, null],
       sideBarVisibility: true,
       envVars: {
         API_LOCATION: process.env.VUE_APP_API_LOCATION,
@@ -96,62 +106,113 @@ export default {
         BL_SERVER_URL: process.env.VUE_APP_BL_SERVER_URL,
         NL_LINK_PREFIX: process.env.VUE_APP_NL_LINK_PREFIX,
         ROOT_URL: process.env.VUE_APP_ROOT_URL,
+        PORTAL_URL: process.env.VUE_APP_PORTAL_URL,
+        QUERY_URL: process.env.VUE_APP_QUERY_URL,
       },
       activeId: 1,
       mySearch: mySearch,
       //mySearch: undefined,
-    }
+    };
   },
-  methods:{
-    searchChanged: function(data){
+  methods: {
+    searchChanged: function(data) {
       console.log(data);
     },
-    tabClicked: function(id){
-      this.activeId = id
+    tabClicked: function(id) {
+      this.activeId = id;
     },
-    action: function(val){
-      console.log("action fired: ", val)
+    action: function(val) {
+      console.log("action fired: ", val);
     },
-    openSearch: function(){
-      this.$refs.sideBar.openSearch([], 'http://purl.obolibrary.org/obo/UBERON_0001103')
+    openSearch: function() {
+      this.$refs.sideBar.openSearch(
+        [],
+        "http://purl.obolibrary.org/obo/UBERON_0001103"
+      );
     },
-    singleFacets: function(){
-      this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
+    singleFacets: function() {
+      this.$refs.sideBar.addFilter({
+        facet: "Heart",
+        term: "Anatomical structure",
+        facetPropPath: "anatomy.organ.name",
+        AND: true,
+      });
     },
-    addStomach: function(){
-      this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: false})
+    addStomach: function() {
+      this.$refs.sideBar.addFilter({
+        facet: "Stomach",
+        term: "Anatomical structure",
+        facetPropPath: "anatomy.organ.name",
+        AND: false,
+      });
     },
-    addInvalidTerm: function(){
-      this.$refs.sideBar.addFilter({facet: 'Invalid', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
+    addInvalidTerm: function() {
+      this.$refs.sideBar.addFilter({
+        facet: "Invalid",
+        term: "Anatomical structure",
+        facetPropPath: "anatomy.organ.name",
+        AND: true,
+      });
     },
-    multiFacets: function(){
-      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'},
-        {facet: 'Not correct', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
+    multiFacets: function() {
+      this.$refs.sideBar.openSearch(
+        [
+          {
+            facet: "Male",
+            term: "Sex",
+            facetPropPath: "attributes.subject.sex.value",
+          },
+          {
+            facet: "Heart",
+            term: "Anatomical structure",
+            facetPropPath: "anatomy.organ.name",
+          },
+          {
+            facet: "Not correct",
+            term: "Anatomical structure",
+            facetPropPath: "anatomy.organ.name",
+          },
+        ],
+        ""
+      );
     },
-    keywordSearch: function(){
-      this.$refs.sideBar.addFilter({type: 'Facet', label: undefined, facet: '3d model', facetPropPath: 'item.keywords.keyword', term: 'Keywords', AND: true})
+    keywordSearch: function() {
+      this.$refs.sideBar.addFilter({
+        type: "Facet",
+        label: undefined,
+        facet: "3d model",
+        facetPropPath: "item.keywords.keyword",
+        term: "Keywords",
+        AND: true,
+      });
     },
-    markerFromFlatmap: function(){
-      this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
+    markerFromFlatmap: function() {
+      this.$refs.sideBar.openSearch([
+        {
+          facet: "http://purl.obolibrary.org/obo/UBERON_0001103",
+          term: "Keywords",
+          facetPropPath: "item.keywords.keyword",
+        },
+      ]);
     },
-    neuronSearch: function(){
-      this.$refs.sideBar.openNeuronSearch('ilxtr:neuron-type-keast-10')
-    }
+    neuronSearch: function() {
+      this.$refs.sideBar.openNeuronSearch("ilxtr:neuron-type-keast-10");
+    },
   },
   mounted: function() {
-    console.log("mounted app")
+    console.log("mounted app");
   },
-}
+};
 </script>
 
 <style>
 #app {
-  height:100%;
+  height: 100%;
   width: 100%;
-  position:absolute;
-  font-family: "Asap",sans-serif;
+  position: absolute;
+  font-family: "Asap", sans-serif;
 }
 body {
-  margin:0px;
+  margin: 0px;
 }
 </style>

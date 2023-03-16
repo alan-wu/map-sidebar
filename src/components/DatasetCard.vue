@@ -8,12 +8,12 @@
           <!-- <img :src="image_url" alt="image" /> -->
           <image-gallery
             :datasetId="entry.datasetId"
-            :scaffolds="entry.scaffolds"
-            :scaffoldViews="entry.scaffoldViews"
-            :plots="entry.plots"
-            :thumbnails="entry.thumbnails"
-            :datasetThumbnail="image_url"
+            :datasetThumbnail="thumbnail"
             :entry="entry"
+            :envVars="envVars"
+            :label="label"
+            :category="currentCategory"
+            @card-clicked="galleryClicked"
           />
         </span>
         <div class="card-right">
@@ -87,10 +87,11 @@ export default {
     return {
       thumbnail: require("@/../assets/missing-image.svg"),
       dataLocation: "",
-      discoverId: undefined,
+      discoverId: this.entry.url,
       loading: true,
       version: 1,
       lastDoi: undefined,
+      lastUrl: undefined,
       biolucidaData: undefined,
       currentCategory: "All",
       image_url: "",
@@ -143,15 +144,6 @@ export default {
     },
   },
   methods: {
-    generateImage(item) {
-      if (item.scaffoldViews.length > 0) {
-        this.image_url = item.scaffoldViews[0].image_url;
-      } else if (item.thumbnails.length > 0) {
-        this.image_url = item.thumbnails[0].image_url;
-      } else {
-        this.image_url = this.thumbnail;
-      }
-    },
     cardClicked: function() {
       this.openDataset();
     },
@@ -197,64 +189,74 @@ export default {
         doi.split("/")[doi.split("/").length - 1],
       ];
     },
-    // getBanner: function() {
-    //   // Only load banner if card has changed
-    //   if (this.lastDoi !== this.entry.doi) {
-    //     this.lastDoi = this.entry.doi;
-    //     this.loading = true;
-    //     let doi = this.splitDOI(this.entry.doi);
-    //     fetch(
-    //       `${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`
-    //     )
-    //       .then((response) => {
-    //         if (!response.ok) {
-    //           throw Error(response.statusText);
-    //         } else {
-    //           return response.json();
-    //         }
-    //       })
-    //       .then((data) => {
-    //         this.thumbnail = data.banner;
-    //         this.discoverId = data.id;
-    //         this.version = data.version;
-    //         this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`;
-    //         this.getBiolucidaInfo(this.discoverId);
-    //         this.loading = false;
-    //       })
-    //       .catch(() => {
-    //         //set defaults if we hit an error
-    //         this.thumbnail = require("@/../assets/missing-image.svg");
-    //         this.discoverId = Number(this.entry.datasetId);
-    //         this.loading = false;
-    //       });
-    //   }
-    // },
+    getBanner: function() {
+      if (this.lastUrl !== this.entry.url) {
+        this.lastUrl = this.entry.url;
+        this.dataLocation = this.envVars.PORTAL_URL + this.entry.url;
+        this.discoverId = this.entry.datasetId;
+        if (this.entry.scaffoldViews.length > 0) {
+          this.thumbnail =
+            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+            this.entry.scaffoldViews[0].image_url;
+        } else if (this.entry.thumbnails.length > 0) {
+          this.thumbnail =
+            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+            this.entry.thumbnails[0].image_url;
+        }
+      }
+      //   // Only load banner if card has changed
+      //   if (this.lastDoi !== this.entry.doi) {
+      //     this.lastDoi = this.entry.doi;
+      //     this.loading = true;
+      //     let doi = this.splitDOI(this.entry.doi);
+      //     fetch(
+      //       `${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`
+      //     )
+      //       .then((response) => {
+      //         if (!response.ok) {
+      //           throw Error(response.statusText);
+      //         } else {
+      //           return response.json();
+      //         }
+      //       })
+      //       .then((data) => {
+      //         this.thumbnail = data.banner;
+      //         this.discoverId = data.id;
+      //         this.version = data.version;
+      //         this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`;
+      //         this.getBiolucidaInfo(this.discoverId);
+      //         this.loading = false;
+      //       })
+      //       .catch(() => {
+      //         //set defaults if we hit an error
+      //         this.thumbnail = require("@/../assets/missing-image.svg");
+      //         this.discoverId = Number(this.entry.datasetId);
+      //         this.loading = false;
+      //       });
+      //   }
+    },
     lastName: function(fullName) {
       return fullName.split(",")[0];
     },
-    getBiolucidaInfo: function(id) {
-      let apiLocation = this.envVars.API_LOCATION;
-      let endpoint = apiLocation + "image_search/" + id;
-      // Add parameters if we are sent them
-      fetch(endpoint)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status == "success") this.biolucidaData = data;
-        });
-    },
+    // getBiolucidaInfo: function(id) {
+    //   let apiLocation = this.envVars.API_LOCATION;
+    //   let endpoint = apiLocation + "image_search/" + id;
+    //   // Add parameters if we are sent them
+    //   fetch(endpoint)
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       if (data.status == "success") this.biolucidaData = data;
+    //     });
+    // },
   },
   created: function() {
-    // console.log("this.entry");
-    // console.log(this.entry);
-    this.dataLocation = this.entry.url;
-    this.generateImage(this.entry);
-    // this.getBanner();
+    this.getBanner();
   },
   watch: {
     // currently not using card overflow
     "entry.description": function() {
       // watch it
-      // this.getBanner();
+      this.getBanner();
     },
   },
 };

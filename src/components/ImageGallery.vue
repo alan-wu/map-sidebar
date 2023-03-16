@@ -95,9 +95,9 @@ export default {
         Dataset: [],
         Images: [],
         Scaffolds: [],
-        Segmentations: [],
-        Simulations: [],
-        Videos: [],
+        // Segmentations: [],
+        // Simulations: [],
+        // Videos: [],
         Plots: [],
       },
       bodyStyle: { padding: "0px", background: "#ffffff" },
@@ -120,23 +120,24 @@ export default {
     },
     createSciCurnchItems: function() {
       this.createDatasetItem();
-      this.createScaffoldItems();
-      // this.createSimulationItems();
-      this.createPlotItems();
-      // this.createSegmentationItems();
       this.createImageItems();
+      this.createPlotItems();
+      this.createScaffoldItems();
       /* Disable these two
       this.createVideoItems();
+      this.createSegmentationItems();
+      this.createSimulationItems();
       */
     },
     createDatasetItem: function() {
-      const link = `https://staging.12-labours-demo.org/data/browser/dataset/${this.datasetId}?datasetTab=dataset`;
+      const link = this.envVars.PORTAL_URL + this.entry.url;
       if (this.datasetThumbnail) {
         this.items["Dataset"].push({
           id: -1,
           //Work around gallery requires a truthy string
           title: " ",
-          type: `Dataset ${this.datasetId}`,
+          // type: `Dataset ${this.datasetId}`,
+          type: "Dataset",
           thumbnail: this.datasetThumbnail,
           link,
           hideType: true,
@@ -149,7 +150,9 @@ export default {
         this.entry.thumbnails.forEach((image) => {
           const filePath = image.dataset.path;
           const id = image.identifier;
-          const linkUrl = image.image_url;
+          const linkUrl =
+            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+            image.image_url;
           this.items["Images"].push({
             id,
             title: baseName(filePath),
@@ -161,86 +164,80 @@ export default {
       }
     },
     createPlotItems: function() {
-      if (this.entry.plots) {
-        this.entry.plots.forEach((plot) => {
-          const filePath = plot.dataset.path;
-          const id = plot.identifier;
-          const thumbnail = this.getThumbnailForPlot(
-            plot,
-            this.entry.thumbnails
-          );
-          let thumbnailURL = undefined;
-          let mimetype = "";
-          if (thumbnail) {
-            thumbnailURL = plot.image_url;
-            mimetype = thumbnail.additional_mimetype.name;
-          }
-          // const plotAnnotation = plot.datacite;
-          // const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
-          // const sourceUrl = filePathPrefix + plot.dataset.path;
-
-          // const metadata = JSON.parse(
-          //   plotAnnotation.supplemental_json_metadata.description
-          // );
-
-          // let supplementalData = [];
-          // if (plotAnnotation.isDescribedBy) {
-          //   supplementalData.push({
-          //     url: filePathPrefix + plotAnnotation.isDescribedBy.path,
-          //   });
-          // }
-
-          // const resource = {
-          // dataSource: { url: sourceUrl },
-          //   metadata,
-          //   supplementalData,
-          // };
-
-          let action = {
-            label: capitalise(this.label),
-            // resource: resource,
-            title: "View plot",
-            type: "Plot",
-            discoverId: this.discoverId,
-            version: this.datasetVersion,
-          };
-          this.items["Plots"].push({
-            id,
-            title: baseName(filePath),
-            type: "Plot",
-            thumbnail: thumbnailURL,
-            userData: action,
-            hideType: true,
-            mimetype,
-          });
-        });
-      }
+      // if (this.entry.plots) {
+      //   this.entry.plots.forEach((plot) => {
+      //     const filePath = plot.dataset.path;
+      //     const id = plot.identifier;
+      //     const thumbnail = this.getThumbnailForPlot(plot, this.entry.plots);
+      //     let thumbnailURL = undefined;
+      //     let mimetype = "";
+      //     if (thumbnail) {
+      //       thumbnailURL = plot.image_url;
+      //       mimetype = thumbnail.additional_mimetype.name;
+      //     }
+      //     const plotAnnotation = plot.datacite;
+      //     const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
+      //     const sourceUrl = filePathPrefix + plot.dataset.path;
+      //     const metadata = JSON.parse(
+      //       plotAnnotation.supplemental_json_metadata.description
+      //     );
+      //     let supplementalData = [];
+      //     if (plotAnnotation.isDescribedBy) {
+      //       supplementalData.push({
+      //         url: filePathPrefix + plotAnnotation.isDescribedBy.path,
+      //       });
+      //     }
+      //     const resource = {
+      //     dataSource: { url: sourceUrl },
+      //       metadata,
+      //       supplementalData,
+      //     };
+      //     let action = {
+      //       label: capitalise(this.label),
+      //       resource: resource,
+      //       title: "View plot",
+      //       type: "Plot",
+      //       discoverId: this.discoverId,
+      //       version: this.datasetVersion,
+      //     };
+      //     this.items["Plots"].push({
+      //       id,
+      //       title: baseName(filePath),
+      //       type: "Plot",
+      //       thumbnail: thumbnailURL,
+      //       userData: action,
+      //       hideType: true,
+      //       mimetype,
+      //     });
+      //   });
+      // }
     },
     createScaffoldItems: function() {
-      if (this.entry.scaffolds) {
-        let index = 0;
-        this.entry.scaffolds.forEach((scaffold) => {
+      if (this.entry.scaffoldViews) {
+        // let index = 0;
+        this.entry.scaffoldViews.forEach((scaffold) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
-          const thumbnail = this.getThumbnailForScaffold(
-            scaffold,
-            this.entry.scaffoldViews,
-            this.entry.thumbnails,
-            index
-          );
           let mimetype = "";
           let thumbnailURL = undefined;
-          if (thumbnail) {
-            thumbnailURL = scaffold.image_url;
-            mimetype = thumbnail.additional_mimetype.name;
-          }
+          // thumbnailURL =
+          //   `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+          //   scaffold.image_url;
+          mimetype = scaffold.additional_mimetype.name;
           let action = {
             label: capitalise(this.label),
-            // resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}`,
+            resource: {
+              meta:
+                `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
+                scaffold.datacite.isDerivedFrom.path,
+              view:
+                `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
+                scaffold.name,
+            },
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
-            // apiLocation: this.envVars.API_LOCATION,
+            apiLocation: this.envVars.QUERY_URL,
             version: this.datasetVersion,
             banner: this.datasetThumbnail,
             // contextCardUrl: this.getContextCardUrl(i),
@@ -377,9 +374,6 @@ export default {
     this.createSciCurnchItems();
   },
   watch: {
-    items: function() {
-      console.log(this.items);
-    },
     category: function() {
       this.resetIndex = true;
     },
