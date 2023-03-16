@@ -164,53 +164,49 @@ export default {
       }
     },
     createPlotItems: function() {
-      // if (this.entry.plots) {
-      //   this.entry.plots.forEach((plot) => {
-      //     const filePath = plot.dataset.path;
-      //     const id = plot.identifier;
-      //     const thumbnail = this.getThumbnailForPlot(plot, this.entry.plots);
-      //     let thumbnailURL = undefined;
-      //     let mimetype = "";
-      //     if (thumbnail) {
-      //       thumbnailURL = plot.image_url;
-      //       mimetype = thumbnail.additional_mimetype.name;
-      //     }
-      //     const plotAnnotation = plot.datacite;
-      //     const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
-      //     const sourceUrl = filePathPrefix + plot.dataset.path;
-      //     const metadata = JSON.parse(
-      //       plotAnnotation.supplemental_json_metadata.description
-      //     );
-      //     let supplementalData = [];
-      //     if (plotAnnotation.isDescribedBy) {
-      //       supplementalData.push({
-      //         url: filePathPrefix + plotAnnotation.isDescribedBy.path,
-      //       });
-      //     }
-      //     const resource = {
-      //     dataSource: { url: sourceUrl },
-      //       metadata,
-      //       supplementalData,
-      //     };
-      //     let action = {
-      //       label: capitalise(this.label),
-      //       resource: resource,
-      //       title: "View plot",
-      //       type: "Plot",
-      //       discoverId: this.discoverId,
-      //       version: this.datasetVersion,
-      //     };
-      //     this.items["Plots"].push({
-      //       id,
-      //       title: baseName(filePath),
-      //       type: "Plot",
-      //       thumbnail: thumbnailURL,
-      //       userData: action,
-      //       hideType: true,
-      //       mimetype,
-      //     });
-      //   });
-      // }
+      if (this.entry.plots) {
+        this.entry.plots.forEach((plot) => {
+          const filePath = plot.dataset.path;
+          const id = plot.identifier;
+          let thumbnailURL = undefined;
+          let mimetype = "";
+          mimetype = plot.additional_mimetype.name;
+          const plotAnnotation = plot.datacite;
+          const filePathPrefix = `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}`;
+          const sourceUrl = filePathPrefix + plot.dataset.path;
+          const metadata = eval(
+            `(${plotAnnotation.supplemental_json_metadata.description})`
+          );
+          let supplementalData = [];
+          if (plotAnnotation.isDescribedBy) {
+            supplementalData.push({
+              url: filePathPrefix + plotAnnotation.isDescribedBy.path,
+            });
+          }
+          const resource = {
+            dataSource: { url: sourceUrl },
+            metadata,
+            supplementalData,
+          };
+          let action = {
+            label: capitalise(this.label),
+            resource: resource,
+            title: "View plot",
+            type: "Plot",
+            discoverId: this.datasetId,
+            version: this.datasetVersion,
+          };
+          this.items["Plots"].push({
+            id,
+            title: baseName(filePath),
+            type: "Plot",
+            thumbnail: thumbnailURL,
+            userData: action,
+            hideType: true,
+            mimetype,
+          });
+        });
+      }
     },
     createScaffoldItems: function() {
       if (this.entry.scaffoldViews) {
