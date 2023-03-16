@@ -9,7 +9,7 @@
       :visible.sync="drawerOpen"
       :appendToBody="false"
       :modal-append-to-body="false"
-      size=550
+      size="550"
       :with-header="false"
       :wrapperClosable="false"
       :modal="false"
@@ -19,14 +19,22 @@
           <i class="el-icon-arrow-right"></i>
         </div>
         <div class="sidebar-container">
-          <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId"
-            @titleClicked="tabClicked"/>
+          <tabs
+            v-if="tabs.length > 1"
+            :tabTitles="tabs"
+            :activeId="activeId"
+            @titleClicked="tabClicked"
+          />
           <template v-for="tab in tabs">
-            <sidebar-content class="sidebar-content-container"
-            v-show="tab.id===activeId" :contextCardEntry="tab.contextCard"
-            :envVars="envVars"
-            v-bind:key="tab.id" :ref="tab.id"
-            @search-changed="searchChanged(tab.id, $event)"/>
+            <sidebar-content
+              class="sidebar-content-container"
+              v-show="tab.id === activeId"
+              :contextCardEntry="tab.contextCard"
+              :envVars="envVars"
+              v-bind:key="tab.id"
+              :ref="tab.id"
+              @search-changed="searchChanged(tab.id, $event)"
+            />
           </template>
         </div>
       </div>
@@ -34,114 +42,120 @@
   </div>
 </template>
 
-
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
-import {
-  Drawer,
-  Icon,
-} from "element-ui";
+import { Drawer, Icon } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
-import SidebarContent from './SidebarContent.vue';
-import EventBus from './EventBus';
-import Tabs from './Tabs'
+import SidebarContent from "./SidebarContent.vue";
+import EventBus from "./EventBus";
+import Tabs from "./Tabs";
 
 locale.use(lang);
 Vue.use(Drawer);
 Vue.use(Icon);
 
 export default {
-  components: {SidebarContent, Tabs },
+  components: { SidebarContent, Tabs },
   name: "SideBar",
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     envVars: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     tabs: {
       type: Array,
-      default: () => [{title:'flatmap', id:1}]
+      default: () => [{ title: "flatmap", id: 1 }],
     },
     activeId: {
       type: Number,
-      default: 1
+      default: 1,
     },
     openAtStart: {
       type: Boolean,
-      default: false
+      default: false,
     },
     alternateSearch: {
       type: Function,
-      default: undefined
-    }
+      default: undefined,
+    },
   },
-  data: function () {
+  data: function() {
     return {
       drawerOpen: false,
-    }
+    };
   },
   provide: function() {
     return {
-      alternateSearch: this.alternateSearch
-    }
+      alternateSearch: this.alternateSearch,
+    };
   },
   methods: {
-    searchChanged: function (id, data) {
-      this.$emit("search-changed", {...data, id: id});
+    searchChanged: function(id, data) {
+      this.$emit("search-changed", { ...data, id: id });
     },
-    close: function () {
+    close: function() {
       this.drawerOpen = false;
     },
-    toggleDrawer: function () {
+    toggleDrawer: function() {
       this.drawerOpen = !this.drawerOpen;
     },
-    openSearch: function(facets, query){
+    openSearch: function(facets, query) {
       this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(facets, query)})
+      Vue.nextTick(() => {
+        this.$refs[this.activeId][0].openSearch(facets, query);
+      });
     },
-    addFilter: function(filter){
+    addFilter: function(filter) {
       this.drawerOpen = true;
-      filter.AND = true // When we add a filter external, it is currently only with an AND boolean
+      filter.AND = true; // When we add a filter external, it is currently only with an AND boolean
 
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].addFilter(filter)})
+      Vue.nextTick(() => {
+        this.$refs[this.activeId][0].addFilter(filter);
+      });
     },
-    openNeuronSearch: function(neuron){
+    openNeuronSearch: function(neuron) {
       this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch('', undefined, 'scicrunch-query-string/', {'field': '*organ.curie', 'curie':neuron})})
+      Vue.nextTick(() => {
+        this.$refs[this.activeId][0].openSearch(
+          "",
+          undefined,
+          "scicrunch-query-string/",
+          { field: "*organ.curie", curie: neuron }
+        );
+      });
     },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
   },
-  created:function() {
+  created: function() {
     this.drawerOpen = this.openAtStart;
   },
-  mounted: function(){
+  mounted: function() {
     EventBus.$on("PopoverActionClick", (payLoad) => {
       this.$emit("actionClick", payLoad);
-    })
-    EventBus.$on('anatomyFound', (payLoad)=> {
-      this.$emit('search-changed', {
-        type: 'keyword-update',
-        value: payLoad
-      })
-    })
-  }
+    });
+    EventBus.$on("anatomyFound", (payLoad) => {
+      this.$emit("search-changed", {
+        type: "keyword-update",
+        value: payLoad,
+      });
+    });
+  },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 .box-card {
   flex: 3;
   height: 100%;
@@ -149,14 +163,14 @@ export default {
   pointer-events: auto;
 }
 
-.side-bar{
+.side-bar {
   position: relative;
   height: 100%;
   pointer-events: none;
 }
 
-.side-bar >>> .el-drawer:focus{
-  outline:none;
+.side-bar >>> .el-drawer:focus {
+  outline: none;
 }
 
 .sidebar-container {
@@ -165,7 +179,7 @@ export default {
   display: flex;
 }
 
-.open-tab{
+.open-tab {
   width: 20px;
   height: 40px;
   z-index: 8;
@@ -173,7 +187,7 @@ export default {
   top: calc(50vh - 80px);
   right: 0px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #8300BF;
+  border: solid 1px #8300bf;
   background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
@@ -182,19 +196,18 @@ export default {
 }
 
 .el-icon-arrow-left,
-.el-icon-arrow-right
-{
+.el-icon-arrow-right {
   font-weight: 600;
   margin-top: 12px;
-  color: #8300BF;
+  color: #8300bf;
   cursor: pointer;
   pointer-events: auto;
-  transform: scaleY(2.0);
+  transform: scaleY(2);
   text-align: center;
   vertical-align: middle;
 }
 
-.close-tab{
+.close-tab {
   float: left;
   flex: 1;
   width: 20px;
@@ -202,7 +215,7 @@ export default {
   z-index: 8;
   margin-top: calc(50vh - 80px);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #8300BF; 
+  border: solid 1px #8300bf;
   background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
@@ -218,7 +231,7 @@ export default {
 }
 
 >>> .my-drawer {
-  background: rgba(0,0,0,0);
+  background: rgba(0, 0, 0, 0);
   box-shadow: none;
 }
 
@@ -227,7 +240,6 @@ export default {
 }
 
 .sidebar-content-container {
-   flex: 1 1 auto;
+  flex: 1 1 auto;
 }
-
 </style>

@@ -1,7 +1,11 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card v-if="contextCardEntry && contextCardEnabled" :entry="contextCardEntry" :envVars="envVars"/>
+      <context-card
+        v-if="contextCardEntry && contextCardEnabled"
+        :entry="contextCardEntry"
+        :envVars="envVars"
+      />
       <el-input
         class="search-input"
         placeholder="Search"
@@ -23,12 +27,15 @@
       @cascaderReady="cascaderReady"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
-      <div
-        class="error-feedback"
-        v-if="results.length === 0 && !loadingCards"
-      >No results found - Please change your search / filter criteria.</div>
+      <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
+        No results found - Please change your search / filter criteria.
+      </div>
       <div v-for="result in results" :key="result.doi" class="step-item">
-        <DatasetCard :entry="result" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
+        <DatasetCard
+          :entry="result"
+          :envVars="envVars"
+          @contextUpdate="contextCardUpdate"
+        ></DatasetCard>
       </div>
       <el-pagination
         class="pagination"
@@ -44,7 +51,6 @@
   </el-card>
 </template>
 
-
 <script>
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
@@ -55,17 +61,17 @@ import {
   Icon,
   Input,
   Loading,
-  Pagination
+  Pagination,
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
 import ContextCard from "./ContextCard.vue";
-import EventBus from "./EventBus"
+// import EventBus from "./EventBus";
 
-import {AlgoliaClient} from "../algolia/algolia.js";
-import {getFilters} from "../algolia/utils.js"
+import { AlgoliaClient } from "../algolia/algolia.js";
+// import { getFilters } from "../algolia/utils.js";
 
 locale.use(lang);
 Vue.use(Button);
@@ -100,7 +106,7 @@ const initial_state = {
   numberPerPage: 10,
   page: 1,
   pageModel: 1,
-  start: 0,
+  // start: 0,
   hasSearched: false,
   contextCardEntry: undefined,
   contextCardEnabled: true,
@@ -112,23 +118,23 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isDrawer: {
       type: Boolean,
-      default: true
+      default: true,
     },
     entry: {
       type: Object,
-      default: () => initial_state
+      default: () => initial_state,
     },
     envVars: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
   },
   inject: {
-    'alternateSearch' : {
+    alternateSearch: {
       default: undefined,
     },
   },
@@ -138,7 +144,7 @@ export default {
       bodyStyle: {
         flex: "1 1 auto",
         "flex-flow": "column",
-        display: "flex"
+        display: "flex",
       },
       cascaderIsReady: false,
     };
@@ -148,21 +154,21 @@ export default {
     filterEntry: function() {
       return {
         numberOfHits: this.numberOfHits,
-        filterFacets: this.filter
+        filterFacets: this.filter,
       };
-    }
+    },
   },
   methods: {
-    contextCardUpdate: function(val){
-        this.contextCardEntry = val
+    contextCardUpdate: function(val) {
+      this.contextCardEntry = val;
     },
     resetSearch: function() {
-      this.numberOfHits = 0
-      this._dois = []
-      this.results = []
-      this.loadingCards = false
+      this.numberOfHits = 0;
+      this._dois = [];
+      this.results = [];
+      this.loadingCards = false;
     },
-    openSearch: function(filter, search='') {
+    openSearch: function(filter, search = "") {
       this.searchInput = search;
       this.resetPageNavigation();
       //Proceed normally if cascader is ready
@@ -171,8 +177,12 @@ export default {
         //Facets provided but cannot find at least one valid
         //facet. Tell the users the search is invalid and reset
         //facets check boxes.
-        if ((filter && filter.length > 0) && 
-          (this.filter && this.filter.length === 0)) {
+        if (
+          filter &&
+          filter.length > 0 &&
+          this.filter &&
+          this.filter.length === 0
+        ) {
           this.$refs.filtersRef.checkShowAllBoxes();
           this.resetSearch();
         } else if (this.filter) {
@@ -219,59 +229,61 @@ export default {
       }
     },
     filterUpdate: function(filters) {
-      this.filters = [...filters]
-      this.resetPageNavigation()
-      this.performSearch(filters, this.searchInput)
+      this.filters = [...filters];
+      this.resetPageNavigation();
+      this.performSearch(filters, this.searchInput);
       this.$emit("search-changed", {
         value: filters,
-        type: "filter-update"
+        type: "filter-update",
       });
     },
     processSearchData: function(searchData) {
-      this.numberOfHits = searchData.total
-      this._dois = searchData.dois
-      this.results = searchData.items
-      this.loadingCards = false
-      this.scrollToTop()
-      this.$emit("search-changed", { value: this.searchInput, type: "query-update" })
+      this.numberOfHits = searchData.total;
+      this._dois = searchData.dois;
+      this.results = searchData.items;
+      this.loadingCards = false;
+      this.scrollToTop();
+      this.$emit("search-changed", {
+        value: this.searchInput,
+        type: "query-update",
+      });
     },
     alternateSearchCB: function(payload) {
       this.loadingCards = false;
-      this.processSearchData(payload)
-      //console.log(payload)
+      this.processSearchData(payload);
+      // console.log(payload);
     },
-    performSearch(filters, query='') {
+    performSearch(filters, query = "") {
       if (this.alternateSearch) {
         const payload = {
-          requestType: 'Search',
+          requestType: "Search",
           filters,
           query,
           numberPerPage: this.numberPerPage,
-          page: this.page
+          page: this.page,
         };
         this.alternateSearch(payload, this.alternateSearchCB);
-      }
-      else {
-        this.searchAlgolia(filters, query);
+      } else {
+        // this.searchAlgolia(filters, query);
       }
     },
-    searchAlgolia(filters, query=''){
-      // Algolia search
-      this.loadingCards = true
-      this.algoliaClient.anatomyInSearch(getFilters(filters), query).then(anatomy => {
-        EventBus.$emit("anatomyFound", anatomy) 
-      })
-      this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
-        this.processSearchData(searchData)
-        if (this._abortController)
-          this._abortController.abort()
-        this._abortController = new AbortController()
-        const signal = this._abortController.signal
-        //Search ongoing, let the current flow progress
-        this.perItemSearch(signal, { count: 0 })
-      })
-    },
-    filtersLoading: function (val) {
+    // searchAlgolia(filters, query=''){
+    //   // Algolia search
+    //   this.loadingCards = true
+    //   this.algoliaClient.anatomyInSearch(getFilters(filters), query).then(anatomy => {
+    //     EventBus.$emit("anatomyFound", anatomy)
+    //   })
+    //   this.algoliaClient.search(getFilters(filters), query, this.numberPerPage, this.page).then(searchData => {
+    //     this.processSearchData(searchData)
+    //     if (this._abortController)
+    //       this._abortController.abort()
+    //     this._abortController = new AbortController()
+    //     const signal = this._abortController.signal
+    //     //Search ongoing, let the current flow progress
+    //     this.perItemSearch(signal, { count: 0 })
+    //   })
+    // },
+    filtersLoading: function(val) {
       this.loadingCards = val;
     },
     numberPerPageUpdate: function(val) {
@@ -279,14 +291,13 @@ export default {
       this.pageChange(1);
     },
     pageChange: function(page) {
-      this.start = (page - 1) * this.numberPerPage;
       this.page = page;
-      this.searchAlgolia(this.filters, this.searchInput);
+      this.performSearch(this.filter, this.searchInput);
+      // this.searchAlgolia(this.filters, this.searchInput);
     },
     handleMissingData: function(doi) {
-      let i = this.results.findIndex(res=> res.doi === doi)
-      if (this.results[i])
-        this.results[i].detailsReady = true;
+      let i = this.results.findIndex((res) => res.doi === doi);
+      if (this.results[i]) this.results[i].detailsReady = true;
     },
     perItemSearch: function(signal, data) {
       //Maximum 10 downloads at once to prevent long waiting time
@@ -296,27 +307,25 @@ export default {
         const doi = this._dois.shift();
         if (doi) {
           data.count++;
-          this.callSciCrunch(this.envVars.API_LOCATION, {'dois': [doi]}, signal)
-            .then(result => {
-              if (result.numberOfHits === 0)
-                this.handleMissingData(doi);
-              else
-                this.perItemProcessing(result);
+          this.callSciCrunch(this.envVars.API_LOCATION, { dois: [doi] }, signal)
+            .then((result) => {
+              if (result.numberOfHits === 0) this.handleMissingData(doi);
+              else this.perItemProcessing(result);
               this.$refs.content.style["overflow-y"] = "scroll";
               data.count--;
               //Async::Download finished, get the next one
               this.perItemSearch(signal, data);
             })
-            .catch(result => {
-              if (result.name !== 'AbortError') {
+            .catch((result) => {
+              if (result.name !== "AbortError") {
                 this.handleMissingData(doi);
                 data.count--;
                 //Async::Download not aborted, get the next one
                 this.perItemSearch(signal, data);
               }
             });
-            //Check and make another request until it gets to max downloads
-            this.perItemSearch(signal, data);
+          //Check and make another request until it gets to max downloads
+          this.perItemSearch(signal, data);
         }
       }
     },
@@ -326,7 +335,7 @@ export default {
       }
     },
     resetPageNavigation: function() {
-      this.start = 0;
+      // this.start = 0;
       this.page = 1;
     },
     perItemProcessing: function(data) {
@@ -334,45 +343,60 @@ export default {
       if (data.results.length === 0) {
         return;
       }
-      data.results.forEach(element => {
+      data.results.forEach((element) => {
         // match the scicrunch result with algolia result
-        let i = this.results.findIndex(res => element.doi ? element.doi.includes(res.doi) : false )
+        let i = this.results.findIndex((res) =>
+          element.doi ? element.doi.includes(res.doi) : false
+        );
         // Assign scicrunch results to the object
-        Object.assign(this.results[i], element)
+        Object.assign(this.results[i], element);
         // Assign the attributes that need some processing
-        Object.assign(this.results[i],{
-          numberSamples: element.sampleSize
-            ? parseInt(element.sampleSize)
-            : 0,
+        Object.assign(this.results[i], {
+          numberSamples: element.sampleSize ? parseInt(element.sampleSize) : 0,
           numberSubjects: element.subjectSize
             ? parseInt(element.subjectSize)
             : 0,
-          updated: (element.updated && element.updated.length) > 0 ? element.updated[0].timestamp.split("T")[0] : "",
+          updated:
+            (element.updated && element.updated.length) > 0
+              ? element.updated[0].timestamp.split("T")[0]
+              : "",
           url: element.uri[0],
           datasetId: element.dataset_identifier,
           datasetRevision: element.dataset_revision,
           datasetVersion: element.dataset_version,
-          organs: (element.organs && element.organs.length > 0)
-              ? [...new Set(element.organs.map(v => v.name))]
+          organs:
+            element.organs && element.organs.length > 0
+              ? [...new Set(element.organs.map((v) => v.name))]
               : undefined,
           species: element.organisms
             ? element.organisms[0].species
-              ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
+              ? [
+                  ...new Set(
+                    element.organisms.map((v) =>
+                      v.species ? v.species.name : null
+                    )
+                  ),
+                ]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          scaffolds: element['abi-scaffold-metadata-file'],
-          thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
-          scaffoldViews: element['abi-scaffold-view-file'],
+          scaffolds: element["abi-scaffold-metadata-file"],
+          thumbnails: element["abi-thumbnail"]
+            ? element["abi-thumbnail"]
+            : element["abi-scaffold-thumbnail"],
+          scaffoldViews: element["abi-scaffold-view-file"],
           videos: element.video,
-          plots: element['abi-plot'],
-          images: element['common-images'],
-          contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
-          segmentation: element['mbf-segmentation'],
-          simulation: element['abi-simulation-file'],
+          plots: element["abi-plot"],
+          images: element["common-images"],
+          contextualInformation:
+            element["abi-contextual-information"].length > 0
+              ? element["abi-contextual-information"]
+              : undefined,
+          segmentation: element["mbf-segmentation"],
+          simulation: element["abi-simulation-file"],
           additionalLinks: element.additionalLinks,
           detailsReady: true,
-        })
-        Vue.set(this.results, i, this.results[i])
+        });
+        Vue.set(this.results, i, this.results[i]);
       });
     },
     createfilterParams: function(params) {
@@ -380,7 +404,7 @@ export default {
       //Check if field is array or value
       for (const key in params) {
         if (Array.isArray(params[key])) {
-          params[key].forEach(e => {
+          params[key].forEach((e) => {
             p.append(key, e);
           });
         } else {
@@ -392,19 +416,27 @@ export default {
     callSciCrunch: function(apiLocation, params = {}, signal) {
       return new Promise((resolve, reject) => {
         // Add parameters if we are sent them
-        let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
-        fetch(fullEndpoint, {signal})
+        let fullEndpoint =
+          this.envVars.API_LOCATION +
+          this.searchEndpoint +
+          "?" +
+          this.createfilterParams(params);
+        fetch(fullEndpoint, { signal })
           .then(handleErrors)
-          .then(response => response.json())
-          .then(data => resolve(data))
-          .catch(data => reject(data));
+          .then((response) => response.json())
+          .then((data) => resolve(data))
+          .catch((data) => reject(data));
       });
     },
   },
   mounted: function() {
     if (!this.alternateSearch) {
       // initialise algolia
-      this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
+      this.algoliaClient = new AlgoliaClient(
+        this.envVars.ALGOLIA_ID,
+        this.envVars.ALGOLIA_KEY,
+        this.envVars.PENNSIEVE_API_LOCATION
+      );
       this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX);
     }
     this.openSearch(this.filter, this.searchInput);
@@ -412,7 +444,7 @@ export default {
   created: function() {
     //Create non-reactive local variables
     this.searchEndpoint = "dataset_info/using_multiple_dois/";
-  }
+  },
 };
 </script>
 
@@ -496,11 +528,11 @@ export default {
   stroke: #8300bf;
 }
 
-.content >>> .step-item:first-child .seperator-path{
-   display: none;
+.content >>> .step-item:first-child .seperator-path {
+  display: none;
 }
 
-.content >>> .step-item:not(:first-child) .seperator-path{
+.content >>> .step-item:not(:first-child) .seperator-path {
   width: 486px;
   height: 0px;
   border: solid 1px #e4e7ed;

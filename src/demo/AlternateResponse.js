@@ -1,8 +1,31 @@
 /* eslint-disable no-alert, no-console */
-import data from "./data.json";
-import facet from "./facet.json";
-const searchDataset = (payload, callback) => {
-  console.log(data);
+// import data from "./data.json";
+// import facet from "./facet.json";
+const searchDataset = async (payload, callback) => {
+  let data = {};
+  let search = "";
+  if (payload.query) {
+    search = payload.query;
+  }
+  let url = `${process.env.VUE_APP_QUERY_URL}/graphql/pagination/?search=${search}`;
+  let postPayload = {
+    filter: {},
+    limit: payload.numberPerPage,
+    page: payload.page,
+  };
+  await fetch(url, {
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      Accept: "application.json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(postPayload), // body data type must match "Content-Type" header
+    Cache: "default",
+  })
+    .then((response) => response.json())
+    .then((json) => (data = json));
+  // console.log("searchDataset");
+  // console.log(payload);
   // const element = {};
   // const searchData = {
   //   total: 5, //Total number of items
@@ -35,7 +58,19 @@ const searchDataset = (payload, callback) => {
   callback(searchData);
 };
 
-const getFacets = (payload, callback) => {
+const getFacets = async (payload, callback) => {
+  let facet = {};
+  let url = `${process.env.VUE_APP_QUERY_URL}/filter/?sidebar=true`;
+  await fetch(url, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      Accept: "application.json",
+      "Content-Type": "application/json",
+    },
+    Cache: "default",
+  })
+    .then((response) => response.json())
+    .then((json) => (facet = json));
   // const facets = [
   //   {
   //     key: "anatomy.organ.name",
@@ -63,8 +98,6 @@ const getFacets = (payload, callback) => {
 };
 
 export const mySearch = (payload, callback) => {
-  console.log("mySearch");
-  console.log(payload);
   if (payload && callback) {
     if (payload.requestType == "Search") {
       searchDataset(payload, callback);

@@ -2,11 +2,10 @@
   <div class="dataset-card-container" ref="container">
     <div class="dataset-card" ref="card">
       <div class="seperator-path"></div>
-      <!-- <div v-loading="loading" class="card"> -->
-      <div class="card">
+      <div v-loading="loading" class="card">
         <span class="card-left">
-          <!-- <img :src="image_url" alt="image" /> -->
           <image-gallery
+            v-if="!loading"
             :datasetId="entry.datasetId"
             :datasetThumbnail="thumbnail"
             :entry="entry"
@@ -189,17 +188,21 @@ export default {
       ];
     },
     getBanner: function() {
-      this.dataLocation = `${this.envVars.PORTAL_URL}/data/browser/dataset/${this.entry.datasetId}?datasetTab=abstract`;
-      this.discoverId = this.entry.datasetId;
-      if (this.entry.scaffoldViews.length > 0) {
-        this.thumbnail =
-          `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-          this.entry.scaffoldViews[0].image_url;
-      } else if (this.entry.thumbnails.length > 0) {
-        this.thumbnail =
-          `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-          this.entry.thumbnails[0].image_url;
-      }
+      this.loading = true;
+      this.$nextTick(() => {
+        this.dataLocation = `${this.envVars.PORTAL_URL}/data/browser/dataset/${this.entry.datasetId}?datasetTab=abstract`;
+        this.discoverId = this.entry.datasetId;
+        if (this.entry.scaffoldViews.length > 0) {
+          this.thumbnail =
+            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+            this.entry.scaffoldViews[0].image_url;
+        } else if (this.entry.thumbnails.length > 0) {
+          this.thumbnail =
+            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+            this.entry.thumbnails[0].image_url;
+        }
+        this.loading = false;
+      });
       //   // Only load banner if card has changed
       //   if (this.lastDoi !== this.entry.doi) {
       //     this.lastDoi = this.entry.doi;
@@ -250,7 +253,7 @@ export default {
   },
   watch: {
     // currently not using card overflow
-    "entry.description": function() {
+    "entry.datasetId": function() {
       // watch it
       this.getBanner();
     },
