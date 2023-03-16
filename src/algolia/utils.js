@@ -8,14 +8,12 @@ export const facetPropPathMapping = {
   'item.modalities.keyword' : 'Experimental Approach',
   'attributes.subject.sex.value' : 'Sex',
   'attributes.subject.ageCategory.value' : 'Age Categories',
-  'item.keywords.keyword' : 'Keywords'
 }
 
 // Same as above, but these show on the sidebar filters
 export const shownFilters = {
   'anatomy.organ.name' : 'Anatomical Structure',
   'organisms.primary.species.name' : 'Species',
-  'item.modalities.keyword' : 'Experimental Approach',
   'attributes.subject.sex.value' : 'Sex',
   'attributes.subject.ageCategory.value' : 'Age Categories',
 }
