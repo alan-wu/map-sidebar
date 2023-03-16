@@ -91,7 +91,6 @@ export default {
       loading: true,
       version: 1,
       lastDoi: undefined,
-      lastUrl: undefined,
       biolucidaData: undefined,
       currentCategory: "All",
       image_url: "",
@@ -190,19 +189,16 @@ export default {
       ];
     },
     getBanner: function() {
-      if (this.lastUrl !== this.entry.url) {
-        this.lastUrl = this.entry.url;
-        this.dataLocation = this.envVars.PORTAL_URL + this.entry.url;
-        this.discoverId = this.entry.datasetId;
-        if (this.entry.scaffoldViews.length > 0) {
-          this.thumbnail =
-            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-            this.entry.scaffoldViews[0].image_url;
-        } else if (this.entry.thumbnails.length > 0) {
-          this.thumbnail =
-            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-            this.entry.thumbnails[0].image_url;
-        }
+      this.dataLocation = `${this.envVars.PORTAL_URL}/data/browser/dataset/${this.entry.datasetId}?datasetTab=abstract`;
+      this.discoverId = this.entry.datasetId;
+      if (this.entry.scaffoldViews.length > 0) {
+        this.thumbnail =
+          `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+          this.entry.scaffoldViews[0].image_url;
+      } else if (this.entry.thumbnails.length > 0) {
+        this.thumbnail =
+          `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
+          this.entry.thumbnails[0].image_url;
       }
       //   // Only load banner if card has changed
       //   if (this.lastDoi !== this.entry.doi) {

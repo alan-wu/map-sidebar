@@ -130,7 +130,7 @@ export default {
       */
     },
     createDatasetItem: function() {
-      const link = this.envVars.PORTAL_URL + this.entry.url;
+      const link = `${this.envVars.PORTAL_URL}/data/browser/dataset/${this.entry.datasetId}?datasetTab=abstract`;
       if (this.datasetThumbnail) {
         this.items["Dataset"].push({
           id: -1,
