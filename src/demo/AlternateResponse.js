@@ -1,15 +1,58 @@
 /* eslint-disable no-alert, no-console */
-// import data from "./data.json";
-// import facet from "./facet.json";
 const searchDataset = async (payload, callback) => {
   let data = {};
   let search = "";
+  let allFilter = {};
+
   if (payload.query) {
     search = payload.query;
   }
+  for (let i = 0; i < payload.filters.length; i++) {
+    let filter = payload.filters[i];
+    let node;
+    let field;
+    let element;
+    let subFilter = {};
+    let exist = false;
+    if (filter.facet != "Show all") {
+      let filterPayload = filter.facetPropPath.split(">");
+      node = filterPayload[0];
+      field = filterPayload[1];
+      element = JSON.parse(
+        JSON.stringify(filterPayload[2])
+          .replaceAll("'", '"')
+          .replace(/(^"|"$)/g, "")
+      )[filter.facet];
+      Object.entries(allFilter).forEach((entry) => {
+        const [key, value] = entry;
+        if (node == value.node) {
+          Object.keys(value.filter).forEach((subkey) => {
+            if (node == value.node && field == subkey) {
+              exist = true;
+              let existElement = allFilter[key]["filter"][field];
+              let newElement = existElement.concat(element);
+              allFilter[key]["filter"][field] = newElement;
+            } else {
+              exist = false;
+            }
+          });
+        }
+      });
+      if (exist == false) {
+        subFilter["node"] = node;
+        subFilter["filter"] = {};
+        if (typeof element == "string") {
+          subFilter["filter"][field] = [element];
+        } else if (element instanceof Array) {
+          subFilter["filter"][field] = element;
+        }
+        allFilter[i] = subFilter;
+      }
+    }
+  }
   let url = `${process.env.VUE_APP_QUERY_URL}/graphql/pagination/?search=${search}`;
   let postPayload = {
-    filter: {},
+    filter: allFilter,
     limit: payload.numberPerPage,
     page: payload.page,
   };
@@ -24,8 +67,6 @@ const searchDataset = async (payload, callback) => {
   })
     .then((response) => response.json())
     .then((json) => (data = json));
-  // console.log("searchDataset");
-  // console.log(payload);
   // const element = {};
   // const searchData = {
   //   total: 5, //Total number of items
