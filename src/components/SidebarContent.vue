@@ -292,7 +292,10 @@ export default {
     },
     pageChange: function(page) {
       this.page = page;
-      this.performSearch(this.filters, this.searchInput);
+      this.performSearch(
+        this.filters == undefined ? [] : this.filters,
+        this.searchInput
+      );
       // this.searchAlgolia(this.filters, this.searchInput);
     },
     handleMissingData: function(doi) {
