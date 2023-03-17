@@ -200,6 +200,8 @@ export default {
           this.thumbnail =
             `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
             this.entry.thumbnails[0].image_url;
+        } else {
+          this.thumbnail = require("@/../assets/missing-image.svg");
         }
         this.loading = false;
       });
