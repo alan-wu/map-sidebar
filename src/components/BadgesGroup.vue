@@ -1,19 +1,20 @@
 <template>
-  <div v-if="categories['All'].size > 1" class="container"  ref="container">
+  <div v-if="categories['All'].size > 1" class="container" ref="container">
     <div>
       View data types:
     </div>
-    <template v-for="(item, key) in categories" >
+    <template v-for="(item, key) in categories">
       <el-button
         v-if="item.size > 0"
-        :class="[{ 'active': key == active},'tag-button']"
+        :class="[{ active: key == active }, 'tag-button']"
         @click="categoryClicked(key)"
-        size="small" :key="key">{{ key + " (" + item.size + ")" }}
+        size="small"
+        :key="key"
+        >{{ key + " (" + item.size + ")" }}
       </el-button>
     </template>
   </div>
 </template>
-
 
 <script>
 /* eslint-disable no-alert, no-console */
@@ -44,28 +45,28 @@ export default {
         return {};
       },
     },
-    entry:  {
+    entry: {
       type: Object,
       default: () => {
         return {};
       },
     },
   },
-  data: function () {
+  data: function() {
     return {
       //Always start with 1 image - the dataset thumbnail itself
-      categories: { "All": {size: 1}, "Dataset": {size: 1} },
-      active: "All"
+      categories: { All: { size: 1 }, Dataset: { size: 1 } },
+      active: "All",
     };
   },
   methods: {
-    addToCategories: function (array, name) {
+    addToCategories: function(array, name) {
       if (array && array.length > 0) {
         this.categories[name] = { size: array.length };
         this.categories["All"].size += array.length;
       }
     },
-    addSimulationsToCategories: function (array) {
+    addSimulationsToCategories: function(array) {
       if (array && array.length > 0) {
         const size = 1;
         this.categories["Simulations"] = { size };
@@ -75,32 +76,36 @@ export default {
     categoryClicked: function(name) {
       this.active = name;
       this.$emit("categoryChanged", name);
-    }
+    },
+    resetCategory: function() {
+      this.categories = { All: { size: 1 }, Dataset: { size: 1 } };
+    },
   },
   watch: {
     datasetBiolucida: {
       deep: true,
       immediate: true,
-      handler: function (biolucidaData) {
+      handler: function(biolucidaData) {
         if ("dataset_images" in biolucidaData) {
           this.addToCategories(biolucidaData["dataset_images"], "Images");
         }
-      }
+      },
     },
     entry: {
       deep: true,
       immediate: true,
-      handler: function () {
-        this.addToCategories(this.entry.scaffolds, 'Scaffolds');
-        this.addToCategories(this.entry.segmentation, 'Segmentations');
-        this.addToCategories(this.entry.plots, 'Plots');
+      handler: function() {
+        this.resetCategory();
+        this.addToCategories(this.entry.scaffolds, "Scaffolds");
+        this.addToCategories(this.entry.segmentation, "Segmentations");
+        this.addToCategories(this.entry.plots, "Plots");
         this.addSimulationsToCategories(this.entry.simulation);
         /** disable the following
         this.addToCategories(this.entry.images, 'Images');
         this.addToCategories(this.entry.videos, 'Videos');
         **/
-      }
-    }
+      },
+    },
   },
 };
 </script>
@@ -110,33 +115,29 @@ export default {
 .tag-button,
 .tag-button:hover,
 .tag-button:focus,
-.tag-button.active
-{
+.tag-button.active {
   border-radius: 4px;
   font-size: 0.75rem;
   padding: 0.2rem 0.2rem;
   margin: 0.5rem 0 0 0;
-  margin-right: 0.75rem!important;
+  margin-right: 0.75rem !important;
 }
 
 .tag-button,
 .tag-button:hover,
-.tag-button:focus
-{
+.tag-button:focus {
   background: #f9f2fc;
-  border: 1px solid #8300BF;
-  color: #8300BF;
+  border: 1px solid #8300bf;
+  color: #8300bf;
 }
 
-.tag-button.active
-{
-  background: #8300BF;
-  border: 1px solid #8300BF;
+.tag-button.active {
+  background: #8300bf;
+  border: 1px solid #8300bf;
   color: #fff;
 }
 
-.tag-button+.tag-button
-{
-  margin-left:0;
+.tag-button + .tag-button {
+  margin-left: 0;
 }
 </style>
