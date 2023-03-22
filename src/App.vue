@@ -6,7 +6,7 @@
     />
     Click arrow to open sidebar
     <el-button @click="openSearch">search Uberon from refs</el-button>
-    <el-button @click="singleFacets">Add heart to Filter</el-button>
+    <el-button @click="singleFacets">Add Scaffold to Filter</el-button>
     <el-button @click="addStomach">Add stomach to Filter</el-button>
     <el-button @click="addInvalidTerm">Add invalid term to Filter</el-button>
     <el-button @click="multiFacets">multiple facets</el-button>
@@ -33,7 +33,7 @@
 import SideBar from "./components/SideBar";
 import { mySearch } from "./demo/AlternateResponse.js";
 
-console.log(mySearch);
+// console.log(mySearch);
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
 //   "heading": "Digital tracings of enteric plexus",
@@ -132,9 +132,9 @@ export default {
     },
     singleFacets: function() {
       this.$refs.sideBar.addFilter({
-        facet: "Heart",
-        term: "Anatomical structure",
-        facetPropPath: "anatomy.organ.name",
+        facet: "Scaffold",
+        term: "Mime type",
+        facetPropPath: "manifest_filter>additional_types",
         AND: true,
       });
     },
