@@ -30,12 +30,14 @@ const capitalise = function (string) {
 
 import GalleryHelper from "@abi-software/gallery/src/mixins/GalleryHelpers";
 import Gallery from "@abi-software/gallery";
+//provide the s3Bucket related methods and data.
+import S3Bucket from "../mixins/S3Bucket";
 import "@abi-software/gallery/dist/gallery.css";
 
 export default {
   name: "ImageGallery",
   components: { Gallery },
-  mixins: [GalleryHelper],
+  mixins: [GalleryHelper, S3Bucket],
   props: {
     datasetBiolucida: {
       type: Object,
@@ -108,28 +110,14 @@ export default {
       shadow: "never",
       bottomSpacer: { minHeight: '0rem' },
       resetIndex: false,
-      s3Bucket: undefined
     };
   },
   methods: {
     cardClicked: function(payload) {
       this.$emit('card-clicked', payload);
     },
-    getS3BucketName: function() {
-      if (!this.s3Bucket && this.entry.s3uri) {
-        const substring = this.entry.s3uri.split("//")[1];
-        if (substring)
-          return substring.split("/")[0];
-      }
-    },
-    getS3Args: function() {
-      if (this.s3Bucket) {
-        return `?s3BucketName=${this.s3Bucket}`
-      }
-      return "";
-    },
     createSciCurnchItems: function () {
-      this.s3Bucket = this.getS3BucketName();
+      this.updateS3Bucket(this.entry.s3uri);
       this.createDatasetItem();
       this.createScaffoldItems();
       this.createSimulationItems();
@@ -213,6 +201,7 @@ export default {
           let action = {
             label: capitalise(this.label),
             resource: resource,
+            s3uri: this.entry.s3uri,
             title: "View plot",
             type: "Plot",
             discoverId: this.discoverId,
@@ -263,6 +252,7 @@ export default {
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
             banner: this.datasetThumbnail,
+            s3uri: this.entry.s3uri,
             contextCardUrl: this.getContextCardUrl(i)
           };
           this.items['Scaffolds'].push({
@@ -292,6 +282,7 @@ export default {
             label: capitalise(this.label),
             resource: resource,
             datasetId: this.datasetId,
+            s3uri: this.entry.s3uri,
             title: "View segmentation",
             type: "Segmentation",
           };
@@ -322,6 +313,7 @@ export default {
         let action = {
           label: undefined,
           apiLocation: this.envVars.API_LOCATION,
+          s3uri: this.entry.s3uri,
           version: this.datasetVersion,
           title: "View simulation",
           type: "Simulation",
