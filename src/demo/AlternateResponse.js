@@ -18,20 +18,14 @@ const searchDataset = async (payload, callback) => {
       let filterPayload = filter.facetPropPath.split(">");
       node = filterPayload[0];
       field = filterPayload[1];
-      element = JSON.parse(
-        JSON.stringify(filterPayload[2])
-          .replaceAll("'", '"')
-          .replace(/(^"|"$)/g, "")
-      )[filter.facet];
+      element = filter.facet
       Object.entries(allFilter).forEach((entry) => {
         const [key, value] = entry;
         if (node == value.node) {
           Object.keys(value.filter).forEach((subkey) => {
             if (node == value.node && field == subkey) {
               exist = true;
-              let existElement = allFilter[key]["filter"][field];
-              let newElement = existElement.concat(element);
-              allFilter[key]["filter"][field] = newElement;
+              allFilter[key]["filter"][field].push(element);
             } else {
               exist = false;
             }
@@ -41,11 +35,8 @@ const searchDataset = async (payload, callback) => {
       if (exist == false) {
         subFilter["node"] = node;
         subFilter["filter"] = {};
-        if (typeof element == "string") {
-          subFilter["filter"][field] = [element];
-        } else if (element instanceof Array) {
-          subFilter["filter"][field] = element;
-        }
+        subFilter["filter"][field] = []
+        subFilter["filter"][field].push(element);
         allFilter[i] = subFilter;
       }
     }
