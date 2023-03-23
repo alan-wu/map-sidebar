@@ -71,6 +71,9 @@ import locale from "element-ui/lib/locale";
 import EventBus from "./EventBus"
 import hardcoded_info from './hardcoded-context-info'
 
+//provide the s3Bucket related methods and data.
+import S3Bucket from "../mixins/S3Bucket";
+
 import { marked } from 'marked'
 import xss from 'xss'
 
@@ -105,6 +108,7 @@ const convertBackslashToForwardSlash = function(path){
 
 export default {
   name: "contextCard",
+  mixins: [S3Bucket],
   props: {
     /**
      * Object containing information for
@@ -136,6 +140,12 @@ export default {
         } else {
           this.showContextCard = false
         }
+      },
+      immediate: true
+    },
+    'entry.s3uri': {
+      handler(val){
+        this.updateS3Bucket(val);
       },
       immediate: true
     }
@@ -228,7 +238,7 @@ export default {
         return path
       }
       path = this.removeDoubleFilesPath(path)
-      return  `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}`
+      return  `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}${this.getS3Args()}`
     },
     //  This is used later when generateing links to the resource on sparc.science (see generateFileLink)
     addDiscoverIdsToContextData(){
@@ -263,7 +273,7 @@ export default {
     },
     openViewFile: function(view){
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
-      this.entry.viewUrl = `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/${view.path}`
+      this.entry.viewUrl = `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/${view.path}${this.getS3Args()}`
       this.entry.type = 'Scaffold View'
       EventBus.$emit("PopoverActionClick", this.entry)
     }
