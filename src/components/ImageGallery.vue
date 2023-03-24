@@ -223,11 +223,11 @@ export default {
           let action = {
             label: capitalise(this.label),
             resource:
-              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
+              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}/` +
               scaffold.datacite.isDerivedFrom.path,
             viewUrl:
-              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
-              scaffold.name,
+              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}/` +
+              scaffold.dataset.path,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
