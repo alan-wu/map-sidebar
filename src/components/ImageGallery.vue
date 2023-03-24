@@ -222,14 +222,12 @@ export default {
           mimetype = scaffold.additional_mimetype.name;
           let action = {
             label: capitalise(this.label),
-            resource: {
-              meta:
-                `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
-                scaffold.datacite.isDerivedFrom.path,
-              view:
-                `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
-                scaffold.name,
-            },
+            resource:
+              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
+              scaffold.datacite.isDerivedFrom.path,
+            viewUrl:
+              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}` +
+              scaffold.name,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
