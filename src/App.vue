@@ -22,7 +22,6 @@
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
       @actionClick="action"
-      :alternate-search="mySearch"
     />
   </div>
 </template>

@@ -90,11 +90,6 @@ export default {
       drawerOpen: false,
     };
   },
-  provide: function() {
-    return {
-      alternateSearch: this.alternateSearch,
-    };
-  },
   methods: {
     searchChanged: function(id, data) {
       this.$emit("search-changed", { ...data, id: id });
