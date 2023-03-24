@@ -80,10 +80,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    alternateSearch: {
-      type: Function,
-      default: undefined,
-    },
   },
   data: function() {
     return {
