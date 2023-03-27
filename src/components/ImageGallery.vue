@@ -174,9 +174,11 @@ export default {
           const plotAnnotation = plot.datacite;
           const filePathPrefix = `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}`;
           const sourceUrl = filePathPrefix + plot.dataset.path;
-          const metadata = eval(
-            `(${plotAnnotation.supplemental_json_metadata.description})`
-          );
+          const metadata =
+            plotAnnotation.supplemental_json_metadata.description;
+          // const metadata = eval(
+          //   `(${plotAnnotation.supplemental_json_metadata.description})`
+          // );
           let supplementalData = [];
           if (plotAnnotation.isDescribedBy) {
             supplementalData.push({
