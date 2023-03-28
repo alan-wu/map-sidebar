@@ -173,7 +173,7 @@ export default {
           mimetype = plot.additional_mimetype.name;
           const plotAnnotation = plot.datacite;
           const filePathPrefix = `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}`;
-          const sourceUrl = filePathPrefix + plot.dataset.path;
+          const sourceUrl = filePathPrefix + "/" + plot.dataset.path;
           let metadata = plotAnnotation.supplemental_json_metadata.description;
           if (metadata !== "") {
             metadata = JSON.parse(
