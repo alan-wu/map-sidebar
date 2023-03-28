@@ -174,8 +174,8 @@ export default {
           const plotAnnotation = plot.datacite;
           const filePathPrefix = `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}`;
           const sourceUrl = filePathPrefix + plot.dataset.path;
-          let metadata;
-          if (plotAnnotation.supplemental_json_metadata.description !== "") {
+          let metadata = plotAnnotation.supplemental_json_metadata.description;
+          if (metadata !== "") {
             metadata = JSON.parse(
               plotAnnotation.supplemental_json_metadata.description.replaceAll(
                 "'",
