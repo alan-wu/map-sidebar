@@ -41,7 +41,7 @@ const searchDataset = async (payload, callback) => {
       }
     }
   }
-  let url = `${process.env.VUE_APP_QUERY_URL}/graphql/pagination/?search=${search}`;
+  let url = `${process.env.VUE_APP_API_LOCATION}/graphql/pagination/?search=${search}`;
   let postPayload = {
     filter: allFilter,
     limit: payload.numberPerPage,
@@ -92,7 +92,7 @@ const searchDataset = async (payload, callback) => {
 
 const getFacets = async (payload, callback) => {
   let facet = {};
-  let url = `${process.env.VUE_APP_QUERY_URL}/filter/?sidebar=true`;
+  let url = `${process.env.VUE_APP_API_LOCATION}/filter/?sidebar=true`;
   await fetch(url, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     headers: {

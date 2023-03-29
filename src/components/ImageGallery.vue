@@ -130,7 +130,7 @@ export default {
       */
     },
     createDatasetItem: function() {
-      const link = `${this.envVars.PORTAL_URL}/data/browser/dataset/${this.entry.datasetId}?datasetTab=abstract`;
+      const link = this.entry.data_url;
       if (this.datasetThumbnail) {
         this.items["Dataset"].push({
           id: -1,
@@ -150,9 +150,7 @@ export default {
         this.entry.thumbnails.forEach((image) => {
           const filePath = image.dataset.path;
           const id = image.identifier;
-          const linkUrl =
-            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-            image.image_url;
+          const linkUrl = image.image_url;
           this.items["Images"].push({
             id,
             title: baseName(filePath),
@@ -172,8 +170,7 @@ export default {
           let mimetype = "";
           mimetype = plot.additional_mimetype.name;
           const plotAnnotation = plot.datacite;
-          const filePathPrefix = `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}`;
-          const sourceUrl = filePathPrefix + "/" + plot.dataset.path;
+          const sourceUrl = plot.source_url_prefix + plot.dataset.path;
           let metadata = plotAnnotation.supplemental_json_metadata.description;
           if (metadata !== "") {
             metadata = JSON.parse(
@@ -186,7 +183,7 @@ export default {
           let supplementalData = [];
           if (plotAnnotation.isDescribedBy) {
             supplementalData.push({
-              url: filePathPrefix + plotAnnotation.isDescribedBy.path,
+              url: plot.source_url_prefix + plotAnnotation.isDescribedBy.path,
             });
           }
           const resource = {
@@ -222,22 +219,16 @@ export default {
           const id = scaffold.identifier;
           let mimetype = "";
           let thumbnailURL = undefined;
-          // thumbnailURL =
-          //   `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-          //   scaffold.image_url;
           mimetype = scaffold.additional_mimetype.name;
           let action = {
             label: capitalise(this.label),
             resource:
-              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}/` +
-              scaffold.datacite.isDerivedFrom.path,
-            viewUrl:
-              `${this.envVars.QUERY_URL}/data/download/${this.entry.datasetId}/` +
-              scaffold.dataset.path,
+              scaffold.source_url_prefix + scaffold.datacite.isDerivedFrom.path,
+            viewUrl: scaffold.source_url_prefix + scaffold.dataset.path,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
-            apiLocation: this.envVars.QUERY_URL,
+            apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
             banner: this.datasetThumbnail,
             // contextCardUrl: this.getContextCardUrl(i),

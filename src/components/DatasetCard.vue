@@ -190,16 +190,12 @@ export default {
     getBanner: function() {
       this.loading = true;
       this.$nextTick(() => {
-        this.dataLocation = `${this.envVars.PORTAL_URL}/data/browser/dataset/${this.entry.datasetId}?datasetTab=abstract`;
+        this.dataLocation = this.entry.data_url;
         this.discoverId = this.entry.datasetId;
         if (this.entry.scaffoldViews.length > 0) {
-          this.thumbnail =
-            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-            this.entry.scaffoldViews[0].image_url;
+          this.thumbnail = this.entry.scaffoldViews[0].image_url;
         } else if (this.entry.thumbnails.length > 0) {
-          this.thumbnail =
-            `${this.envVars.QUERY_URL}/data/preview/${this.entry.datasetId}` +
-            this.entry.thumbnails[0].image_url;
+          this.thumbnail = this.entry.thumbnails[0].image_url;
         } else {
           this.thumbnail = require("@/../assets/missing-image.svg");
         }
