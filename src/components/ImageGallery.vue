@@ -35,6 +35,11 @@ import "@abi-software/gallery/dist/gallery.css";
 export default {
   name: "ImageGallery",
   components: { Gallery },
+  inject: {
+    'alternateSearch' : {
+      default: undefined,
+    },
+  },
   mixins: [GalleryHelper],
   props: {
     datasetBiolucida: {
@@ -60,6 +65,10 @@ export default {
     datasetId: {
       type: Number,
       default: -1,
+    },
+    dataLocation: {
+      type: String,
+      default: "",
     },
     datasetVersion: {
       type: Number,
@@ -116,7 +125,8 @@ export default {
     },
     createSciCurnchItems: function () {
       this.createDatasetItem();
-      this.createScaffoldItems();
+      if (this.alternateSearch) this.createScaffoldViewItems();
+      else this.createScaffoldItems();
       this.createSimulationItems();
       this.createPlotItems();
       this.createSegmentationItems();
@@ -126,7 +136,7 @@ export default {
       */
     },
     createDatasetItem: function () {
-      const link = `${this.envVars.ROOT_URL}/datasets/${this.datasetId}?type=dataset`
+      const link = this.dataLocation;
       if (this.datasetThumbnail) {
         this.items['Dataset'].push({
           id: -1,
@@ -161,27 +171,42 @@ export default {
         this.entry.plots.forEach((plot) => {
           const filePath = plot.dataset.path;
           const id = plot.identifier;
-          const thumbnail = this.getThumbnailForPlot(plot, this.entry.thumbnails);
           let thumbnailURL = undefined;
           let mimetype = '';
-          if (thumbnail) {
-            thumbnailURL = this.getImageURLFromS3(this.envVars.API_LOCATION, {
-              id,
-              datasetId: this.datasetId,
-              datasetVersion: this.datasetVersion,
-              file_path: thumbnail.dataset.path,
-            });
-            mimetype = thumbnail.mimetype.name;
-          }
-          const plotAnnotation = plot.datacite;
-          const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
-          const sourceUrl = filePathPrefix + plot.dataset.path;
-
-          const metadata = JSON.parse(
-            plotAnnotation.supplemental_json_metadata.description
-          );
-
           let supplementalData = [];
+          let sourceUrl = "";
+          let metadata = undefined;
+          let filePathPrefix = ""; `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
+          const plotAnnotation = plot.datacite;
+
+          if (!this.alternateSearch) {
+            const thumbnail = this.getThumbnailForPlot(plot, this.entry.thumbnails);
+            if (thumbnail) {
+              thumbnailURL = this.getImageURLFromS3(this.envVars.API_LOCATION, {
+                id,
+                datasetId: this.datasetId,
+                datasetVersion: this.datasetVersion,
+                file_path: thumbnail.dataset.path,
+              });
+              mimetype = thumbnail.mimetype.name;
+            }
+            
+            filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
+            sourceUrl = filePathPrefix + plot.dataset.path;
+            metadata = JSON.parse(
+              plotAnnotation.supplemental_json_metadata.description
+            );
+          } else {
+            mimetype = plot.additional_mimetype.name;
+            sourceUrl = plot.source_url_prefix + plot.dataset.path;
+            metadata = plotAnnotation.supplemental_json_metadata.description;
+            if (metadata !== "") {
+              metadata = JSON.parse(
+                plotAnnotation.supplemental_json_metadata.description.replaceAll("'", '"'));
+            }
+            filePathPrefix = plot.source_url_prefix;
+          }
+
           if (plotAnnotation.isDescribedBy) {
             supplementalData.push({
               url: filePathPrefix + plotAnnotation.isDescribedBy.path
@@ -199,7 +224,7 @@ export default {
             resource: resource,
             title: "View plot",
             type: "Plot",
-            discoverId: this.discoverId,
+            discoverId: this.datasetId,
             version: this.datasetVersion,
           };
           this.items['Plots'].push({
@@ -256,6 +281,40 @@ export default {
             userData: action,
             hideType: true,
             mimetype
+          });
+        });
+      }
+    },
+    createScaffoldViewItems: function() {
+      if (this.entry.scaffoldViews) {
+        // let index = 0;
+        this.entry.scaffoldViews.forEach((scaffold) => {
+          const filePath = scaffold.dataset.path;
+          const id = scaffold.identifier;
+          let mimetype = "";
+          let thumbnailURL = undefined;
+          mimetype = scaffold.additional_mimetype.name;
+          let action = {
+            label: capitalise(this.label),
+            resource:
+              scaffold.source_url_prefix + scaffold.datacite.isDerivedFrom.path,
+            viewUrl: scaffold.source_url_prefix + scaffold.dataset.path,
+            title: "View 3D scaffold",
+            type: "Scaffold",
+            discoverId: this.datasetId,
+            apiLocation: this.envVars.API_LOCATION,
+            version: this.datasetVersion,
+            banner: this.datasetThumbnail,
+            // contextCardUrl: this.getContextCardUrl(i),
+          };
+          this.items["Scaffolds"].push({
+            id,
+            title: baseName(filePath),
+            type: "Scaffold",
+            thumbnail: thumbnailURL,
+            userData: action,
+            hideType: true,
+            mimetype,
           });
         });
       }
@@ -353,8 +412,8 @@ export default {
         let contextIndex = this.entry['abi-contextual-information'].length == this.entry.scaffolds.length ? scaffoldIndex : 0
         return `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}`
       }
-    }
-  },
+    },
+   },
   computed: {
     galleryItems() {
       if (this.resetIndex) {

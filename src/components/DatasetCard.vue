@@ -7,6 +7,7 @@
           <image-gallery v-if="!loading && datasetId" 
             :datasetId="datasetId"
             :datasetVersion="version"
+            :dataLocation="dataLocation"
             :entry="entry"
             :envVars="envVars"
             :label="label"
@@ -209,7 +210,7 @@ export default {
 
     },
     initialise: function() {
-      if (!alternateSearch) {
+      if (!this.alternateSearch) {
         this.getBanner();
       } else {
         this.dataLocation = this.entry.data_url;
