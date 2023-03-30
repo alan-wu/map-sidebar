@@ -75,7 +75,10 @@ export default {
     categoryClicked: function(name) {
       this.active = name;
       this.$emit("categoryChanged", name);
-    }
+    },
+    resetCategory: function() {
+      this.categories = { All: { size: 1 }, Dataset: { size: 1 } };
+    },
   },
   watch: {
     datasetBiolucida: {
@@ -91,6 +94,7 @@ export default {
       deep: true,
       immediate: true,
       handler: function () {
+        this.resetCategory();
         this.addToCategories(this.entry.scaffolds, 'Scaffolds');
         this.addToCategories(this.entry.segmentation, 'Segmentations');
         this.addToCategories(this.entry.plots, 'Plots');
