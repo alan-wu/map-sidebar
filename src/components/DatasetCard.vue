@@ -4,8 +4,8 @@
       <div class="seperator-path"></div>
       <div v-loading="loading" class="card" >
         <span class="card-left">
-          <image-gallery v-if="!loading && discoverId" 
-            :datasetId="discoverId"
+          <image-gallery v-if="!loading && datasetId" 
+            :datasetId="datasetId"
             :datasetVersion="version"
             :entry="entry"
             :envVars="envVars"
@@ -56,6 +56,11 @@ Vue.use(Icon);
 export default {
   name: "DatasetCard",
   components: { BadgesGroup, ImageGallery },
+  inject: {
+    'alternateSearch' : {
+      default: undefined,
+    },
+  },
   props: {
     /**
      * Object containing information for
@@ -74,7 +79,7 @@ export default {
     return {
       thumbnail: require('@/../assets/missing-image.svg'),
       dataLocation: this.entry.doi,
-      discoverId: undefined,
+      datasetId: undefined,
       loading: true,
       version: 1,
       lastDoi: undefined,
@@ -188,20 +193,36 @@ export default {
           })
           .then((data) => {
             this.thumbnail = data.banner
-            this.discoverId = data.id
+            this.datasetId = data.id
             this.version = data.version
-            this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
-            this.getBiolucidaInfo(this.discoverId)
+            this.dataLocation = `${this.envVars.ROOT_URL}/datasets/${data.id}?type=dataset`
+            this.getBiolucidaInfo(this.datasetId)
             this.loading = false
           })
           .catch(() => {
             //set defaults if we hit an error
             this.thumbnail = require('@/../assets/missing-image.svg')
-            this.discoverId = Number(this.entry.datasetId)
+            this.datasetId = Number(this.entry.datasetId)
             this.loading = false
           });
       }
 
+    },
+    initialise: function() {
+      if (!alternateSearch) {
+        this.getBanner();
+      } else {
+        this.dataLocation = this.entry.data_url;
+        this.datasetId = this.entry.datasetId;
+        if (this.entry.scaffoldViews.length > 0) {
+          this.thumbnail = this.entry.scaffoldViews[0].image_url;
+        } else if (this.entry.thumbnails.length > 0) {
+          this.thumbnail = this.entry.thumbnails[0].image_url;
+        } else {
+          this.thumbnail = require("@/../assets/missing-image.svg");
+        }
+        this.loading = false;
+      }
     },
     lastName: function(fullName){
       return fullName.split(',')[0]
@@ -219,12 +240,12 @@ export default {
     }
   },
   created: function() {
-    this.getBanner()
+    this.getBanner();
   },
   watch: {
     // currently not using card overflow
-    'entry.description': function() { // watch it
-      this.getBanner()
+    'entry.datasetId': function() { // watch it
+      this.getBanner();
     }
   },
 };
@@ -257,7 +278,7 @@ export default {
 }
 
 .card-left{
-  flex: 1
+  flex: 1;
 }
 
 .card-right {
