@@ -281,7 +281,7 @@ export default {
     pageChange: function(page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
-      this.searchAlgolia(this.filters, this.searchInput);
+      this.peformSearch(this.filters, this.searchInput);
     },
     handleMissingData: function(doi) {
       let i = this.results.findIndex(res=> res.doi === doi)
@@ -392,8 +392,8 @@ export default {
     callSciCrunch: function(apiLocation, params = {}, signal) {
       return new Promise((resolve, reject) => {
         // Add parameters if we are sent them
-        let fullEndpoint = this.envVars.API_LOCATION + this.searchEndpoint + "?" + this.createfilterParams(params);
-        fetch(fullEndpoint, {signal})
+        let fullEndpoint = apiLocation + this.searchEndpoint + "?" + this.createfilterParams(params);
+        fetch(fullEndpoint, { signal })
           .then(handleErrors)
           .then(response => response.json())
           .then(data => resolve(data))
