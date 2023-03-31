@@ -242,6 +242,7 @@ export default {
     },
     performSearch(filters, query='') {
       if (this.alternateSearch) {
+        this.loadingCards = true;
         const payload = {
           requestType: 'Search',
           filters,
@@ -281,7 +282,7 @@ export default {
     pageChange: function(page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
-      this.peformSearch(this.filters, this.searchInput);
+      this.performSearch(this.filters, this.searchInput);
     },
     handleMissingData: function(doi) {
       let i = this.results.findIndex(res=> res.doi === doi)
