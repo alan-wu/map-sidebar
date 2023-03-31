@@ -15,6 +15,7 @@
             :dataset-biolucida="biolucidaData"
             :category="currentCategory"
             @card-clicked="galleryClicked"
+            :key="datasetId"
           />
         </span>
         <div class="card-right" >
