@@ -62,10 +62,7 @@ export default {
         return [];
       },
     },
-    datasetId: {
-      type: Number,
-      default: -1,
-    },
+    datasetId: [String, Number],
     dataLocation: {
       type: String,
       default: "",

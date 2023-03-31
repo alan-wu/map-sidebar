@@ -105,7 +105,8 @@ export default {
     samples: function() {
       let text = "";
       if (this.entry.species) {
-        if (speciesMap[this.entry.species[0].toLowerCase()]){
+        if (this.entry.species.length > 0 &&
+          speciesMap[this.entry.species[0].toLowerCase()]) {
           text = `${speciesMap[this.entry.species[0].toLowerCase()]}`;
         } else {
           text = `${this.entry.species}`;
@@ -241,12 +242,12 @@ export default {
     }
   },
   created: function() {
-    this.getBanner();
+    this.initialise();
   },
   watch: {
     // currently not using card overflow
     'entry.datasetId': function() { // watch it
-      this.getBanner();
+      this.initialise();
     }
   },
 };
