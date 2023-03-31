@@ -134,6 +134,10 @@ export default {
     },
     createDatasetItem: function () {
       const link = this.dataLocation;
+      let name = String(this.datasetId);
+      if (name.length <= 5) name = `Dataset ${name}`;
+      else name = "Dataset";
+
       if (this.datasetThumbnail) {
         this.items['Dataset'].push({
           id: -1,
