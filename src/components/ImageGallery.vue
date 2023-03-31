@@ -143,7 +143,7 @@ export default {
           id: -1,
           //Work around gallery requires a truthy string
           title: " ",
-          type: `Dataset ${this.datasetId}`,
+          type: name,
           thumbnail: this.datasetThumbnail,
           link,
           hideType: true,
