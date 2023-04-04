@@ -199,13 +199,13 @@ export default {
             );
           } else {
             mimetype = plot.additional_mimetype.name;
-            sourceUrl = plot.source_url_prefix + plot.dataset.path;
+            sourceUrl = this.entry.source_url_prefix + plot.dataset.path;
             metadata = plotAnnotation.supplemental_json_metadata.description;
             if (metadata !== "") {
               metadata = JSON.parse(
                 plotAnnotation.supplemental_json_metadata.description.replaceAll("'", '"'));
             }
-            filePathPrefix = plot.source_url_prefix;
+            filePathPrefix = this.entry.source_url_prefix;
           }
 
           if (plotAnnotation.isDescribedBy) {
@@ -298,8 +298,8 @@ export default {
           let action = {
             label: capitalise(this.label),
             resource:
-              scaffold.source_url_prefix + scaffold.datacite.isDerivedFrom.path,
-            viewUrl: scaffold.source_url_prefix + scaffold.dataset.path,
+              this.entry.source_url_prefix + scaffold.datacite.isDerivedFrom.path,
+            viewUrl: this.entry.source_url_prefix + scaffold.dataset.path,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
