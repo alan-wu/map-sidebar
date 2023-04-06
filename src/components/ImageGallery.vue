@@ -198,6 +198,7 @@ export default {
               plotAnnotation.supplemental_json_metadata.description
             );
           } else {
+            thumbnailURL = this.datasetThumbnail;
             mimetype = plot.additional_mimetype.name;
             sourceUrl = this.entry.source_url_prefix + plot.dataset.path;
             metadata = plotAnnotation.supplemental_json_metadata.description;
@@ -292,9 +293,7 @@ export default {
         this.entry.scaffoldViews.forEach((scaffold) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
-          let mimetype = "";
-          let thumbnailURL = undefined;
-          mimetype = scaffold.additional_mimetype.name;
+          let thumbnailURL = scaffold.image_url;
           let action = {
             label: capitalise(this.label),
             resource:
@@ -315,7 +314,6 @@ export default {
             thumbnail: thumbnailURL,
             userData: action,
             hideType: true,
-            mimetype,
           });
         });
       }
