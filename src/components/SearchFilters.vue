@@ -445,7 +445,6 @@ export default {
   width: 24px !important;
   height: 24px;
   transform: scale(1.1);
-  color: #8300bf;
   cursor: pointer;
 }
 
