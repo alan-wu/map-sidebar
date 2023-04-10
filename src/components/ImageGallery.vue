@@ -29,10 +29,9 @@ const capitalise = function (string) {
 };
 
 import GalleryHelper from "@abi-software/gallery/src/mixins/GalleryHelpers";
-import Gallery from "@abi-software/gallery";
+import Gallery from "@abi-software/gallery/src/main-bundle.js";
 //provide the s3Bucket related methods and data.
 import S3Bucket from "../mixins/S3Bucket";
-import "@abi-software/gallery/dist/gallery.css";
 
 export default {
   name: "ImageGallery",
