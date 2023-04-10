@@ -184,8 +184,7 @@ export default {
         // Algolia facet serach
         this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
           .then((data) => {
-            this.populateCascaderOptions(data)
-            this.createDataTypeFacet();
+            this.populateCascaderOptions(data);
           })
           .finally(() => {
             resolve();
@@ -315,33 +314,6 @@ export default {
         });
       }
       return event;
-    },
-    createDataTypeFacet: function(){
-      const experimentalApproach = this.options.find(option => option.label === "Experimental approach")
-      const dataFacet = {}
-      let count = this.options.at(-1).id // get the last id count
-
-      // Step through the children that are valid data types, switch thier values 
-      let newChildren = []
-      experimentalApproach.children.forEach( el=> {
-        if (el.label === 'Scaffold' || el.label === 'Simulation' || el.label === 'Show all'){
-          const newEl = {}
-          newEl.facetPropPath = el.facetPropPath
-          newEl.key = el.label
-          newEl.id = count
-          newEl.label = el.label
-          newEl.value = el.value.replace('Experimental approach', 'Data type')
-          count++
-          newChildren.push(newEl)
-        }
-      })
-      dataFacet.id = count
-      dataFacet.key = 'Data type'
-      // Add 'duplicate' so that the key is unique. This is removed in the cascade event for filtering
-      dataFacet.value = experimentalApproach.value + 'duplicate' 
-      dataFacet.children = newChildren
-      dataFacet.label = 'Data type'
-      this.options.push(dataFacet)
     },
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
@@ -495,7 +467,6 @@ export default {
   width: 24px !important;
   height: 24px;
   transform: scale(1.1);
-  color: #8300bf;
   cursor: pointer;
 }
 

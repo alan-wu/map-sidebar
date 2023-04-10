@@ -30,6 +30,8 @@ const capitalise = function (string) {
 
 import GalleryHelper from "@abi-software/gallery/src/mixins/GalleryHelpers";
 import Gallery from "@abi-software/gallery";
+//provide the s3Bucket related methods and data.
+import S3Bucket from "../mixins/S3Bucket";
 import "@abi-software/gallery/dist/gallery.css";
 
 export default {
@@ -39,8 +41,8 @@ export default {
     'alternateSearch' : {
       default: undefined,
     },
-  },
-  mixins: [GalleryHelper],
+  },  
+  mixins: [GalleryHelper, S3Bucket],
   props: {
     datasetBiolucida: {
       type: Object,
@@ -113,7 +115,7 @@ export default {
       imageStyle: { maxWidth: '160px', maxHeight: '160px'},
       shadow: "never",
       bottomSpacer: { minHeight: '0rem' },
-      resetIndex: false
+      resetIndex: false,
     };
   },
   methods: {
@@ -121,6 +123,7 @@ export default {
       this.$emit('card-clicked', payload);
     },
     createSciCurnchItems: function () {
+      if (this.entry.s3uri) this.updateS3Bucket(this.entry.s3uri);
       this.createDatasetItem();
       if (this.alternateSearch) this.createScaffoldViewItems();
       else this.createScaffoldItems();
@@ -188,12 +191,13 @@ export default {
                 datasetId: this.datasetId,
                 datasetVersion: this.datasetVersion,
                 file_path: thumbnail.dataset.path,
+                s3Bucket: this.s3Bucket,
               });
               mimetype = thumbnail.mimetype.name;
             }
             
             filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
-            sourceUrl = filePathPrefix + plot.dataset.path;
+            sourceUrl = filePathPrefix + plot.dataset.path + this.getS3Args();
             metadata = JSON.parse(
               plotAnnotation.supplemental_json_metadata.description
             );
@@ -224,6 +228,7 @@ export default {
           let action = {
             label: capitalise(this.label),
             resource: resource,
+            s3uri: this.entry.s3uri,
             title: "View plot",
             type: "Plot",
             discoverId: this.datasetId,
@@ -261,18 +266,20 @@ export default {
               datasetId: this.datasetId,
               datasetVersion: this.datasetVersion,
               file_path: thumbnail.dataset.path,
+              s3Bucket: this.s3Bucket,
             });
             mimetype = thumbnail.mimetype.name;
           }
           let action = {
             label: capitalise(this.label),
-            resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}`,
+            resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}${this.getS3Args()}`,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
             apiLocation: this.envVars.API_LOCATION,
             version: this.datasetVersion,
             banner: this.datasetThumbnail,
+            s3uri: this.entry.s3uri,
             contextCardUrl: this.getContextCardUrl(i)
           };
           this.items['Scaffolds'].push({
@@ -333,6 +340,7 @@ export default {
             label: capitalise(this.label),
             resource: resource,
             datasetId: this.datasetId,
+            s3uri: this.entry.s3uri,
             title: "View segmentation",
             type: "Segmentation",
           };
@@ -343,6 +351,7 @@ export default {
               datasetId: this.datasetId,
               datasetVersion: this.datasetVersion,
               segmentationFilePath: filePath,
+              s3Bucket: this.s3Bucket,
             }
           );
           this.items['Segmentations'].push({
@@ -362,6 +371,7 @@ export default {
         let action = {
           label: undefined,
           apiLocation: this.envVars.API_LOCATION,
+          s3uri: this.entry.s3uri,
           version: this.datasetVersion,
           title: "View simulation",
           type: "Simulation",
@@ -409,7 +419,7 @@ export default {
       } else {
         // The line below checks if there is a context file for each scaffold. If there is not, we use the first context card for each scaffold.
         let contextIndex = this.entry['abi-contextual-information'].length == this.entry.scaffolds.length ? scaffoldIndex : 0
-        return `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}`
+        return `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}${this.getS3Args()}`
       }
     },
    },

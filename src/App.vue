@@ -154,4 +154,7 @@ export default {
 body {
   margin:0px;
 }
+.map-icon {
+  color: #8300bf;
+}
 </style>
