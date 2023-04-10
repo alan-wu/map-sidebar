@@ -444,7 +444,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .full-size {
   height: 100%;
   width: 244px;
@@ -452,7 +452,7 @@ export default {
 
 .key-image-span.active {
   transform: scale(1.16);
-  border: 4px #8300bf solid;
+  border: 4px $app-primary-color solid;
 }
 
 .key-image-span {
@@ -519,7 +519,7 @@ a.next {
   background-color: #555;
 }
 
-.full-size >>> .el-card {
+.full-size ::v-deep .el-card {
   border: 0px;
 }
 </style>

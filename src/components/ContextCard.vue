@@ -282,7 +282,13 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
+@import "~element-ui/packages/theme-chalk/src/button";
+@import "~element-ui/packages/theme-chalk/src/card";
+@import "~element-ui/packages/theme-chalk/src/icon";
+@import "~element-ui/packages/theme-chalk/src/input";
+@import "~element-ui/packages/theme-chalk/src/link";
+@import "~element-ui/packages/theme-chalk/src/select";
 
 .hide{
   color: #e4e7ed;
@@ -319,7 +325,7 @@ export default {
   flex: 8;
 }
 
-.context-card >>> .el-card__body {
+.context-card ::v-deep .el-card__body {
   padding: 0px;
   display: flex;
   width: 516px;
@@ -333,7 +339,7 @@ export default {
 .color-box {
   width: 16px;
   height: 16px;
-  border: solid 1px #8300bf;
+  border: solid 1px $app-primary-color;
   border-radius: 2px;
   margin-right: 8px;
 }
@@ -355,7 +361,7 @@ export default {
 
 .info{
   transform: rotate(180deg);
-  color: #8300bf;
+  color: $app-primary-color;
   margin-left: 8px;
 }
 

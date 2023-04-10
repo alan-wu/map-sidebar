@@ -106,7 +106,9 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
+@import "~element-ui/packages/theme-chalk/src/button";
+
 .tag-button,
 .tag-button:hover,
 .tag-button:focus,
@@ -124,14 +126,14 @@ export default {
 .tag-button:focus
 {
   background: #f9f2fc;
-  border: 1px solid #8300BF;
-  color: #8300BF;
+  border: 1px solid $app-primary-color;
+  color: $app-primary-color;
 }
 
 .tag-button.active
 {
-  background: #8300BF;
-  border: 1px solid #8300BF;
+  background: $app-primary-color;
+  border: 1px solid $app-primary-color;
   color: #fff;
 }
 
