@@ -453,7 +453,11 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
+@import "~element-ui/packages/theme-chalk/src/option";
+@import "~element-ui/packages/theme-chalk/src/popover";
+@import "~element-ui/packages/theme-chalk/src/select";
+
 .filter-default-value {
   pointer-events: none;
   position: absolute;
@@ -497,16 +501,16 @@ export default {
   padding-bottom: 6px;
 }
 
-.cascader >>> .el-cascder-panel {
+.cascader ::v-deep .el-cascder-panel {
   max-height: 500px;
 }
 
-.cascader >>> .el-scrollbar__wrap {
+.cascader::v-deep .el-scrollbar__wrap {
   overflow-x: hidden;
   margin-bottom: 2px !important;
 }
 
-.cascader >>> li[aria-owns*="cascader"] > .el-checkbox {
+.cascader ::v-deep li[aria-owns*="cascader"] > .el-checkbox {
   display: none;
 }
 
@@ -531,76 +535,74 @@ export default {
   float: right;
 }
 
-.number-shown-select >>> .el-input__inner {
+.number-shown-select ::v-deep .el-input__inner {
   width: 68px;
   height: 40px;
   color: rgb(48, 49, 51);
 }
 
-.search-filters >>> .el-cascader-node.is-active {
-  color: #8300bf;
+.search-filters ::v-deep .el-cascader-node.is-active {
+  color: $app-primary-color;
 }
 
-.search-filters >>> .el-cascader-node.in-active-path {
-  color: #8300bf;
+.search-filters ::v-deep .el-cascader-node.in-active-path {
+  color: $app-primary-color;
 }
 
-.search-filters >>> .el-checkbox__input.is-checked > .el-checkbox__inner {
-  background-color: #8300bf;
-  border-color: #8300bf;
+.search-filters ::v-deep .el-checkbox__input.is-checked > .el-checkbox__inner {
+  background-color: $app-primary-color;
+  border-color: $app-primary-color;
 }
 
-.cascader >>> .el-cascader-menu:nth-child(2) .el-cascader-node:first-child {
+.cascader ::v-deep .el-cascader-menu:nth-child(2) .el-cascader-node:first-child {
   border-bottom: 1px solid #e4e7ed;
 }
 
-.cascader >>> .el-cascader-node__label {
+.cascader ::v-deep .el-cascader-node__label {
   text-align: left;
 }
 
-.filters >>> .el-popover {
+.filters ::v-deep .el-popover {
     background: #f3ecf6 !important;
-    border: 1px solid #8300BF;
+    border: 1px solid $app-primary-color;
     border-radius: 4px;
     color: #303133 !important;
     font-size: 12px;
     line-height: 18px;
-  
-  
 }
 
-.filters >>> .el-popover[x-placement^="top"] .popper__arrow {
-  border-top-color: #8300BF;
+.filters ::v-deep .el-popover[x-placement^="top"] .popper__arrow {
+  border-top-color: $app-primary-color;
   border-bottom-width: 0;
 }
-.filters >>> .el-popover[x-placement^="top"] .popper__arrow::after {
+.filters ::v-deep .el-popover[x-placement^="top"] .popper__arrow::after {
   border-top-color: #f3ecf6;
   border-bottom-width: 0;
 }
 
-.filters >>> .el-popover[x-placement^="bottom"] .popper__arrow {
+.filters ::v-deep .el-popover[x-placement^="bottom"] .popper__arrow {
   border-top-width: 0;
-  border-bottom-color: #8300BF;
+  border-bottom-color: $app-primary-color;
 }
-.filters >>> .el-popover[x-placement^="bottom"] .popper__arrow::after {
+.filters ::v-deep .el-popover[x-placement^="bottom"] .popper__arrow::after {
   border-top-width: 0;
   border-bottom-color: #f3ecf6;
 }
 
-.filters >>> .el-popover[x-placement^="right"] .popper__arrow {
-  border-right-color: #8300BF;
+.filters ::v-deep .el-popover[x-placement^="right"] .popper__arrow {
+  border-right-color: $app-primary-color;
   border-left-width: 0;
 }
-.filters >>> .el-popover[x-placement^="right"] .popper__arrow::after {
+.filters ::v-deep .el-popover[x-placement^="right"] .popper__arrow::after {
   border-right-color: #f3ecf6;
   border-left-width: 0;
 }
 
-.filters >>> .el-popover[x-placement^="left"] .popper__arrow {
+.filters ::v-deep .el-popover[x-placement^="left"] .popper__arrow {
   border-right-width: 0;
-  border-left-color: #8300BF;
+  border-left-color: $app-primary-color;
 }
-.filters >>> .el-popover[x-placement^="left"] .popper__arrow::after {
+.filters ::v-deep .el-popover[x-placement^="left"] .popper__arrow::after {
   border-right-width: 0;
   border-left-color: #f3ecf6;
 }

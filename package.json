@@ -1,6 +1,6 @@
 {
   "name": "@abi-software/map-side-bar",
-  "version": "2.0.0-response.0",
+  "version": "2.0.0-response.1",
   "main": "./dist/map-side-bar.common.js",
   "files": [
     "dist/*",
@@ -17,7 +17,7 @@
     "start": "vue-cli-service serve"
   },
   "dependencies": {
-    "@abi-software/gallery": "^0.3.2",
+    "@abi-software/gallery": "^0.3.3",
     "@abi-software/svg-sprite": "^0.2.0",
     "algoliasearch": "^4.10.5",
     "element-ui": "^2.13.0",
@@ -34,7 +34,9 @@
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
     "file-loader": "^5.0.2",
+    "node-sass": "^4.14.1",
     "raw-loader": "^0.5.1",
+    "sass-loader": "^8.0.2",
     "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
     "vue-custom-element": "^3.3.0",

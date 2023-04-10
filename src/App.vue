@@ -144,7 +144,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
   height:100%;
   width: 100%;
@@ -155,6 +155,6 @@ body {
   margin:0px;
 }
 .map-icon {
-  color: #8300bf;
+  color: $app-primary-color;
 }
 </style>

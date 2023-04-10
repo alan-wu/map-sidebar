@@ -1,7 +1,11 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card v-if="contextCardEntry && contextCardEnabled" :entry="contextCardEntry" :envVars="envVars"/>
+      <context-card
+        v-if="contextCardEntry && contextCardEnabled"
+        :entry="contextCardEntry"
+        :envVars="envVars"
+      />
       <el-input
         class="search-input"
         placeholder="Search"
@@ -23,12 +27,15 @@
       @cascaderReady="cascaderReady"
     ></SearchFilters>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
-      <div
-        class="error-feedback"
-        v-if="results.length === 0 && !loadingCards"
-      >No results found - Please change your search / filter criteria.</div>
+      <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
+        No results found - Please change your search / filter criteria.
+      </div>
       <div v-for="result in results" :key="result.doi" class="step-item">
-        <DatasetCard :entry="result" :envVars="envVars" @contextUpdate="contextCardUpdate"></DatasetCard>
+        <DatasetCard
+          :entry="result"
+          :envVars="envVars"
+          @contextUpdate="contextCardUpdate"
+        ></DatasetCard>
       </div>
       <el-pagination
         class="pagination"
@@ -55,17 +62,17 @@ import {
   Icon,
   Input,
   Loading,
-  Pagination
+  Pagination,
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
 import ContextCard from "./ContextCard.vue";
-import EventBus from "./EventBus"
+import EventBus from "./EventBus";
 
-import {AlgoliaClient} from "../algolia/algolia.js";
-import {getFilters} from "../algolia/utils.js"
+import { AlgoliaClient } from "../algolia/algolia.js";
+import { getFilters } from "../algolia/utils.js";
 
 locale.use(lang);
 Vue.use(Button);
@@ -78,7 +85,7 @@ Vue.use(Pagination);
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
-var handleErrors = async function(response) {
+var handleErrors = async function (response) {
   if (!response.ok) {
     let parse = await response.json();
     if (parse) {
@@ -112,19 +119,19 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isDrawer: {
       type: Boolean,
-      default: true
+      default: true,
     },
     entry: {
       type: Object,
-      default: () => initial_state
+      default: () => initial_state,
     },
     envVars: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
   },
   inject: {
@@ -138,23 +145,23 @@ export default {
       bodyStyle: {
         flex: "1 1 auto",
         "flex-flow": "column",
-        display: "flex"
+        display: "flex",
       },
       cascaderIsReady: false,
     };
   },
   computed: {
     // This computed property populates filter data's entry object with $data from this sidebar
-    filterEntry: function() {
+    filterEntry: function () {
       return {
         numberOfHits: this.numberOfHits,
-        filterFacets: this.filter
+        filterFacets: this.filter,
       };
-    }
+    },
   },
   methods: {
-    contextCardUpdate: function(val){
-        this.contextCardEntry = val
+    contextCardUpdate: function (val) {
+      this.contextCardEntry = val;
     },
     resetSearch: function() {
       this.numberOfHits = 0
@@ -162,7 +169,7 @@ export default {
       this.results = []
       this.loadingCards = false
     },
-    openSearch: function(filter, search='') {
+    openSearch: function (filter, search = "") {
       this.searchInput = search;
       this.resetPageNavigation();
       //Proceed normally if cascader is ready
@@ -171,8 +178,12 @@ export default {
         //Facets provided but cannot find at least one valid
         //facet. Tell the users the search is invalid and reset
         //facets check boxes.
-        if ((filter && filter.length > 0) && 
-          (this.filter && this.filter.length === 0)) {
+        if (
+          filter &&
+          filter.length > 0 &&
+          this.filter &&
+          this.filter.length === 0
+        ) {
           this.$refs.filtersRef.checkShowAllBoxes();
           this.resetSearch();
         } else if (this.filter) {
@@ -188,7 +199,7 @@ export default {
         }
       }
     },
-    addFilter: function(filter) {
+    addFilter: function (filter) {
       if (this.cascaderIsReady) {
         this.resetPageNavigation();
         if (filter) {
@@ -203,16 +214,16 @@ export default {
         }
       }
     },
-    cascaderReady: function() {
+    cascaderReady: function () {
       this.cascaderIsReady = true;
       this.openSearch(this.filter, this.searchInput);
     },
-    clearSearchClicked: function() {
+    clearSearchClicked: function () {
       this.searchInput = "";
       this.resetPageNavigation();
       this.performSearch(this.filters, this.searchInput);
     },
-    searchEvent: function(event = false) {
+    searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation();
         this.performSearch(this.filters, this.searchInput);
@@ -224,7 +235,7 @@ export default {
       this.performSearch(filters, this.searchInput)
       this.$emit("search-changed", {
         value: filters,
-        type: "filter-update"
+        type: "filter-update",
       });
     },
     processSearchData: function(searchData) {
@@ -275,21 +286,20 @@ export default {
     filtersLoading: function (val) {
       this.loadingCards = val;
     },
-    numberPerPageUpdate: function(val) {
+    numberPerPageUpdate: function (val) {
       this.numberPerPage = val;
       this.pageChange(1);
     },
-    pageChange: function(page) {
+    pageChange: function (page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
       this.performSearch(this.filters, this.searchInput);
     },
-    handleMissingData: function(doi) {
-      let i = this.results.findIndex(res=> res.doi === doi)
-      if (this.results[i])
-        this.results[i].detailsReady = true;
+    handleMissingData: function (doi) {
+      let i = this.results.findIndex((res) => res.doi === doi);
+      if (this.results[i]) this.results[i].detailsReady = true;
     },
-    perItemSearch: function(signal, data) {
+    perItemSearch: function (signal, data) {
       //Maximum 10 downloads at once to prevent long waiting time
       //between unfinished search and new search
       const maxDownloads = 10;
@@ -308,25 +318,25 @@ export default {
               //Async::Download finished, get the next one
               this.perItemSearch(signal, data);
             })
-            .catch(result => {
-              if (result.name !== 'AbortError') {
+            .catch((result) => {
+              if (result.name !== "AbortError") {
                 this.handleMissingData(doi);
                 data.count--;
                 //Async::Download not aborted, get the next one
                 this.perItemSearch(signal, data);
               }
             });
-            //Check and make another request until it gets to max downloads
-            this.perItemSearch(signal, data);
+          //Check and make another request until it gets to max downloads
+          this.perItemSearch(signal, data);
         }
       }
     },
-    scrollToTop: function() {
+    scrollToTop: function () {
       if (this.$refs.content) {
         this.$refs.content.scroll({ top: 0, behavior: "smooth" });
       }
     },
-    resetPageNavigation: function() {
+    resetPageNavigation: function () {
       this.start = 0;
       this.page = 1;
     },
@@ -335,53 +345,68 @@ export default {
       if (data.results.length === 0) {
         return;
       }
-      data.results.forEach(element => {
+      data.results.forEach((element) => {
         // match the scicrunch result with algolia result
-        let i = this.results.findIndex(res => element.doi ? element.doi.includes(res.doi) : false )
+        let i = this.results.findIndex((res) =>
+          element.doi ? element.doi.includes(res.doi) : false
+        );
         // Assign scicrunch results to the object
-        Object.assign(this.results[i], element)
+        Object.assign(this.results[i], element);
         // Assign the attributes that need some processing
-        Object.assign(this.results[i],{
-          numberSamples: element.sampleSize
-            ? parseInt(element.sampleSize)
-            : 0,
+        Object.assign(this.results[i], {
+          numberSamples: element.sampleSize ? parseInt(element.sampleSize) : 0,
           numberSubjects: element.subjectSize
             ? parseInt(element.subjectSize)
             : 0,
-          updated: (element.updated && element.updated.length) > 0 ? element.updated[0].timestamp.split("T")[0] : "",
+          updated:
+            (element.updated && element.updated.length) > 0
+              ? element.updated[0].timestamp.split("T")[0]
+              : "",
           url: element.uri[0],
           datasetId: element.dataset_identifier,
           datasetRevision: element.dataset_revision,
           datasetVersion: element.dataset_version,
-          organs: (element.organs && element.organs.length > 0)
-              ? [...new Set(element.organs.map(v => v.name))]
+          organs:
+            element.organs && element.organs.length > 0
+              ? [...new Set(element.organs.map((v) => v.name))]
               : undefined,
           species: element.organisms
             ? element.organisms[0].species
-              ? [...new Set(element.organisms.map((v) =>v.species ? v.species.name : null))]
+              ? [
+                  ...new Set(
+                    element.organisms.map((v) =>
+                      v.species ? v.species.name : null
+                    )
+                  ),
+                ]
               : undefined
             : undefined, // This processing only includes each gender once into 'sexes'
-          scaffolds: element['abi-scaffold-metadata-file'],
-          thumbnails: element['abi-thumbnail'] ? element['abi-thumbnail']: element['abi-scaffold-thumbnail'],
-          scaffoldViews: element['abi-scaffold-view-file'],
+          scaffolds: element["abi-scaffold-metadata-file"],
+          thumbnails: element["abi-thumbnail"]
+            ? element["abi-thumbnail"]
+            : element["abi-scaffold-thumbnail"],
+          scaffoldViews: element["abi-scaffold-view-file"],
           videos: element.video,
-          plots: element['abi-plot'],
-          images: element['common-images'],
-          contextualInformation: element['abi-contextual-information'].length > 0 ? element['abi-contextual-information'] : undefined,
-          segmentation: element['mbf-segmentation'],
-          simulation: element['abi-simulation-file'],
+          plots: element["abi-plot"],
+          images: element["common-images"],
+          contextualInformation:
+            element["abi-contextual-information"].length > 0
+              ? element["abi-contextual-information"]
+              : undefined,
+          segmentation: element["mbf-segmentation"],
+          simulation: element["abi-simulation-file"],
           additionalLinks: element.additionalLinks,
           detailsReady: true,
-        })
-        Vue.set(this.results, i, this.results[i])
+        });
+        Vue.set(this.results, i, this.results[i]);
       });
     },
-    createfilterParams: function(params) {
+    createfilterParams: function (params) {
       let p = new URLSearchParams();
       //Check if field is array or value
       for (const key in params) {
         if (Array.isArray(params[key])) {
-          params[key].forEach(e => {
+          params[key].forEach((e) => {
             p.append(key, e);
           });
         } else {
@@ -390,15 +415,15 @@ export default {
       }
       return p.toString();
     },
-    callSciCrunch: function(apiLocation, params = {}, signal) {
+    callSciCrunch: function (apiLocation, params = {}, signal) {
       return new Promise((resolve, reject) => {
         // Add parameters if we are sent them
         let fullEndpoint = apiLocation + this.searchEndpoint + "?" + this.createfilterParams(params);
         fetch(fullEndpoint, { signal })
           .then(handleErrors)
-          .then(response => response.json())
-          .then(data => resolve(data))
-          .catch(data => reject(data));
+          .then((response) => response.json())
+          .then((data) => resolve(data))
+          .catch((data) => reject(data));
       });
     },
   },
@@ -410,15 +435,23 @@ export default {
     }
     this.openSearch(this.filter, this.searchInput);
   },
-  created: function() {
+  created: function () {
     //Create non-reactive local variables
     this.searchEndpoint = "dataset_info/using_multiple_dois/";
-  }
+  },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
+@import "~element-ui/packages/theme-chalk/src/button";
+@import "~element-ui/packages/theme-chalk/src/card";
+@import "~element-ui/packages/theme-chalk/src/drawer";
+@import "~element-ui/packages/theme-chalk/src/icon";
+@import "~element-ui/packages/theme-chalk/src/input";
+@import "~element-ui/packages/theme-chalk/src/loading";
+@import "~element-ui/packages/theme-chalk/src/pagination";
+
 .content-card {
   height: 100%;
   flex-flow: column;
@@ -426,8 +459,8 @@ export default {
 }
 
 .button {
-  background-color: #8300bf;
-  border: #8300bf;
+  background-color: $app-primary-color;
+  border: $app-primary-color;
   color: white;
 }
 
@@ -456,14 +489,14 @@ export default {
   text-align: center;
 }
 
-.pagination >>> button {
+.pagination ::v-deep button {
   background-color: white !important;
 }
-.pagination >>> li {
+.pagination ::v-deep li {
   background-color: white !important;
 }
-.pagination >>> li.active {
-  color: #8300bf;
+.pagination ::v-deep li.active {
+  color: $app-primary-color;
 }
 
 .error-feedback {
@@ -473,12 +506,12 @@ export default {
   padding-top: 15px;
 }
 
-.content-card >>> .el-card__header {
+.content-card ::v-deep .el-card__header {
   background-color: #292b66;
   border: solid 1px #292b66;
 }
 
-.content-card >>> .el-card__body {
+.content-card ::v-deep .el-card__body {
   background-color: #f7faff;
   overflow-y: hidden;
 }
@@ -493,15 +526,15 @@ export default {
   scrollbar-width: thin;
 }
 
-.content >>> .el-loading-spinner .path {
-  stroke: #8300bf;
+.content ::v-deep .el-loading-spinner .path {
+  stroke: $app-primary-color;
 }
 
-.content >>> .step-item:first-child .seperator-path{
-   display: none;
+.content ::v-deep .step-item:first-child .seperator-path {
+  display: none;
 }
 
-.content >>> .step-item:not(:first-child) .seperator-path{
+.content ::v-deep .step-item:not(:first-child) .seperator-path {
   width: 486px;
   height: 0px;
   border: solid 1px #e4e7ed;
@@ -525,11 +558,11 @@ export default {
   background-color: #979797;
 }
 
->>> .el-input__suffix {
+::v-deep .el-input__suffix {
   padding-right: 10px;
 }
 
->>> .my-drawer {
+::v-deep .my-drawer {
   background: rgba(0, 0, 0, 0);
   box-shadow: none;
 }

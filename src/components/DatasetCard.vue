@@ -255,7 +255,10 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
+@import "~element-ui/packages/theme-chalk/src/col";
+@import "~element-ui/packages/theme-chalk/src/loading";
+
 .dataset-card {
   padding-left: 16px;
   position: relative;
@@ -298,15 +301,15 @@ export default {
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
-  background-color: #8300bf;
-  border: #8300bf;
+  background-color: $app-primary-color;
+  border: $app-primary-color;
   color: white;
   cursor: pointer;
   margin-top: 8px;
 }
 
 .button:hover {
-  background-color: #8300bf;
+  background-color: $app-primary-color;
   color: white;
 }
 
@@ -339,11 +342,11 @@ export default {
   left: 80px;
 }
 
-.loading-icon >>> .el-loading-mask {
+.loading-icon ::v-deep .el-loading-mask {
   background-color: rgba(117, 190, 218, 0.0) !important;
 }
 
-.loading-icon >>> .el-loading-spinner .path {
-  stroke: #8300bf;
+.loading-icon ::v-deep .el-loading-spinner .path {
+  stroke: $app-primary-color;
 }
 </style>

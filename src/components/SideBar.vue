@@ -140,7 +140,9 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
+@import "~element-ui/packages/theme-chalk/src/drawer";
+@import "~element-ui/packages/theme-chalk/src/icon";
 
 .box-card {
   flex: 3;
@@ -155,7 +157,7 @@ export default {
   pointer-events: none;
 }
 
-.side-bar >>> .el-drawer:focus{
+.side-bar ::v-deep .el-drawer:focus{
   outline:none;
 }
 
@@ -173,7 +175,7 @@ export default {
   top: calc(50vh - 80px);
   right: 0px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #8300BF;
+  border: solid 1px $app-primary-color;
   background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
@@ -186,7 +188,7 @@ export default {
 {
   font-weight: 600;
   margin-top: 12px;
-  color: #8300BF;
+  color: $app-primary-color;
   cursor: pointer;
   pointer-events: auto;
   transform: scaleY(2.0);
@@ -202,7 +204,7 @@ export default {
   z-index: 8;
   margin-top: calc(50vh - 80px);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px #8300BF; 
+  border: solid 1px $app-primary-color; 
   background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
@@ -217,12 +219,12 @@ export default {
   pointer-events: auto;
 }
 
->>> .my-drawer {
+::v-deep .my-drawer {
   background: rgba(0,0,0,0);
   box-shadow: none;
 }
 
->>> .my-drawer .el-drawer__body {
+::v-deep .my-drawer .el-drawer__body {
   height: 100%;
 }
 
