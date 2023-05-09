@@ -96,6 +96,7 @@ export default {
         BL_SERVER_URL: process.env.VUE_APP_BL_SERVER_URL,
         NL_LINK_PREFIX: process.env.VUE_APP_NL_LINK_PREFIX,
         ROOT_URL: process.env.VUE_APP_ROOT_URL,
+        QUERY_URL: process.env.VUE_APP_QUERY_URL,
       },
       activeId: 1,
       mySearch: mySearch,

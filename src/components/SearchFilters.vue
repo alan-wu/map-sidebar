@@ -204,7 +204,11 @@ export default {
     },
     populateCascader: function () {
       if (this.alternateSearch) {
-        this.alternateSearch({requestType: 'getFacets'}, this.alternateSearchCB);
+        const payload = {
+          requestType: "getFacets",
+          queryUrl: this.envVars.QUERY_URL,
+        };
+        this.alternateSearch(payload, this.alternateSearchCB);
       } else {
         this.populateDefaultCascader().then(() => {
           this.setCascaderReady();
