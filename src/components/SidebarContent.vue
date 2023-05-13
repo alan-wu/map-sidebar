@@ -255,11 +255,12 @@ export default {
       if (this.alternateSearch) {
         this.loadingCards = true;
         const payload = {
-          requestType: 'Search',
+          requestType: "Search",
+          queryUrl: this.envVars.QUERY_URL,
           filters,
           query,
           numberPerPage: this.numberPerPage,
-          page: this.page
+          page: this.page,
         };
         this.alternateSearch(payload, this.alternateSearchCB);
       }
