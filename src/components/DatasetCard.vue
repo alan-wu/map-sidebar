@@ -215,12 +215,12 @@ export default {
       if (!this.alternateSearch) {
         this.getBanner();
       } else {
-        this.dataLocation = this.entry.data_url;
+        this.dataLocation = this.envVars.ROOT_URL + this.entry.data_url_suffix;
         this.datasetId = this.entry.datasetId;
         if (this.entry.scaffoldViews.length > 0) {
-          this.thumbnail = this.entry.scaffoldViews[0].image_url;
+          this.thumbnail = this.envVars.QUERY_URL + this.entry.scaffoldViews[0].image_url;
         } else if (this.entry.thumbnails.length > 0) {
-          this.thumbnail = this.entry.thumbnails[0].image_url;
+          this.thumbnail = this.envVars.QUERY_URL + this.entry.thumbnails[0].image_url;
         } else {
           this.thumbnail = require("@/../assets/missing-image.svg");
         }
