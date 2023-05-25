@@ -14,7 +14,10 @@
     "build-bundle": "vue-cli-service build --target lib --name map-side-bar ./src/components/index.js ",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "vue-cli-service serve"
+    "start": "vue-cli-service serve",
+    "release:beta": "npm version prerelease --preid=beta; npm publish --tag beta",
+    "release:minor": "npm version minor; npm publish",
+    "release:patch": "npm version patch;  npm publish"
   },
   "dependencies": {
     "@abi-software/gallery": "^0.3.3",
