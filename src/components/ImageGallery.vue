@@ -180,9 +180,16 @@ export default {
           const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
           const sourceUrl = filePathPrefix + plot.dataset.path + this.getS3Args();
 
-          const metadata = JSON.parse(
-            plotAnnotation.supplemental_json_metadata.description
-          );
+          //plotAnnotation.supplemental_json_metadata.description can be undefined or
+          //contain an empty string causing an error with JSON.parse
+          let metadata = {};
+          try { 
+            metadata = JSON.parse(
+              plotAnnotation.supplemental_json_metadata.description
+            );
+          } catch (error) {
+            console.warn(error);
+          }
 
           let supplementalData = [];
           if (plotAnnotation.isDescribedBy) {
