@@ -9,8 +9,6 @@ module.exports = {
     }
   },
   css: {
-    sourceMap: process.env.NODE_ENV === 'wc',
-    extract: process.env.NODE_ENV !== 'wc',
     //Import variables into all stylesheets.
     loaderOptions: {
       sass: {
