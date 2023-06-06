@@ -203,13 +203,13 @@ export default {
           } else {
             thumbnailURL = this.datasetThumbnail;
             mimetype = plot.additional_mimetype.name;
-            sourceUrl = this.entry.source_url_prefix + plot.dataset.path;
+            sourceUrl = this.envVars.QUERY_URL + this.entry.source_url_middle + plot.dataset.path;
             metadata = plotAnnotation.supplemental_json_metadata.description;
             if (metadata !== "") {
               metadata = JSON.parse(
                 plotAnnotation.supplemental_json_metadata.description.replaceAll("'", '"'));
             }
-            filePathPrefix = this.entry.source_url_prefix;
+            filePathPrefix = this.envVars.QUERY_URL + this.entry.source_url_middle;
           }
 
           if (plotAnnotation.isDescribedBy) {
@@ -299,12 +299,12 @@ export default {
         this.entry.scaffoldViews.forEach((scaffold) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
-          let thumbnailURL = scaffold.image_url;
+          let thumbnailURL = this.envVars.QUERY_URL + scaffold.image_url;
           let action = {
             label: capitalise(this.label),
             resource:
-              this.entry.source_url_prefix + scaffold.datacite.isDerivedFrom.path,
-            viewUrl: this.entry.source_url_prefix + scaffold.dataset.path,
+              this.envVars.QUERY_URL + this.entry.source_url_middle + scaffold.datacite.isDerivedFrom.path,
+            viewUrl: this.envVars.QUERY_URL + this.entry.source_url_middle + scaffold.dataset.path,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
