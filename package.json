@@ -14,7 +14,12 @@
     "build-bundle": "vue-cli-service build --target lib --name map-side-bar ./src/components/index.js ",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "vue-cli-service serve"
+    "start": "vue-cli-service serve",
+    "release:beta": "npm version prerelease --preid=beta; npm publish --tag beta",
+    "release:minor": "npm version minor; npm publish",
+    "release:patch": "npm version patch;  npm publish",
+    "changelog": "auto-changelog -p --output CHANGELOG.md --template keepachangelog",
+    "version": "npm run build-bundle;npm run changelog; git add CHANGELOG.md"
   },
   "dependencies": {
     "@abi-software/gallery": "^0.3.3",
@@ -22,13 +27,14 @@
     "algoliasearch": "^4.10.5",
     "element-ui": "^2.13.0",
     "marked": "^4.1.1",
-    "vue": "^2.6.10",
+    "vue": "^2.7.14",
     "xss": "^1.0.14"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.0.0",
-    "@vue/cli-plugin-eslint": "^4.0.0",
-    "@vue/cli-service": "^4.0.0",
+    "@vue/cli-plugin-babel": "^4.5.19",
+    "@vue/cli-plugin-eslint": "^4.5.19",
+    "@vue/cli-service": "^4.5.19",
+    "auto-changelog": "^2.4.0",
     "babel-eslint": "^10.0.3",
     "babel-plugin-component": "^1.1.1",
     "eslint": "^5.16.0",
@@ -40,7 +46,7 @@
     "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
     "vue-custom-element": "^3.3.0",
-    "vue-template-compiler": "^2.6.10",
+    "vue-template-compiler": "^2.7.14",
     "webpack-node-externals": "^2.5.2"
   },
   "eslintConfig": {
