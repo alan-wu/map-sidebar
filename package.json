@@ -27,7 +27,7 @@
     "algoliasearch": "^4.10.5",
     "element-ui": "^2.13.0",
     "marked": "^4.1.1",
-    "vue": "^2.6.10",
+    "vue": "^2.6.14",
     "xss": "^1.0.14"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
     "vue-custom-element": "^3.3.0",
-    "vue-template-compiler": "^2.6.10",
+    "vue-template-compiler": "^2.6.14",
     "webpack-node-externals": "^2.5.2"
   },
   "eslintConfig": {
