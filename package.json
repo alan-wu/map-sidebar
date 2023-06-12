@@ -22,7 +22,7 @@
     "version": "npm run build-bundle;npm run changelog; git add CHANGELOG.md"
   },
   "dependencies": {
-    "@abi-software/gallery": "^0.3.3",
+    "@abi-software/gallery": "^0.4.0",
     "@abi-software/svg-sprite": "^0.2.0",
     "algoliasearch": "^4.10.5",
     "element-ui": "^2.15.13",
