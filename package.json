@@ -22,12 +22,12 @@
     "version": "npm run build-bundle;npm run changelog; git add CHANGELOG.md"
   },
   "dependencies": {
-    "@abi-software/gallery": "^0.4.0",
+    "@abi-software/gallery": "^0.4.1-beta.0",
     "@abi-software/svg-sprite": "^0.2.0",
     "algoliasearch": "^4.10.5",
     "element-ui": "^2.15.13",
     "marked": "^4.1.1",
-    "vue": "2.6.14",
+    "vue": "^2.7.14",
     "xss": "^1.0.14"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
     "vue-custom-element": "^3.3.0",
-    "vue-template-compiler": "2.6.14",
+    "vue-template-compiler": "^2.7.14",
     "webpack-node-externals": "^2.5.2"
   },
   "eslintConfig": {
