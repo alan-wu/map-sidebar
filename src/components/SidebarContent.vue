@@ -72,7 +72,7 @@ import ContextCard from "./ContextCard.vue";
 import EventBus from "./EventBus";
 
 import { AlgoliaClient } from "../algolia/algolia.js";
-import { getFilters } from "../algolia/utils.js";
+import { getFilters, facetPropPathMapping } from "../algolia/utils.js";
 
 locale.use(lang);
 Vue.use(Button);
@@ -413,6 +413,10 @@ export default {
           .catch((data) => reject(data));
       });
     },
+    getAlgoliaFacets: async function(){
+      let facets = await this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
+      return facets;
+    }
   },
   mounted: function () {
     // initialise algolia

@@ -10,6 +10,7 @@
     <el-button @click="multiFacets">multiple facets</el-button>
     <el-button @click="neuronSearch">open neuron search</el-button>
     <el-button @click="keywordSearch">keyword search</el-button>
+    <el-button @click="getFacets">Get facets</el-button>
     <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
       :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked"
       @search-changed="searchChanged($event)" @actionClick="action"/>
@@ -131,6 +132,10 @@ export default {
     },
     neuronSearch: function(){
       this.$refs.sideBar.openNeuronSearch('ilxtr:neuron-type-keast-10')
+    },
+    getFacets: async function(){
+      let facets = await this.$refs.sideBar.getAlgoliaFacets()
+      console.log('Algolia facets:', facets)
     }
   },
   mounted: function() {

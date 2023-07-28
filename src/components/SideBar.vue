@@ -109,6 +109,9 @@ export default {
       // Because refs are in v-for, nextTick is needed here
       Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch('', undefined, 'scicrunch-query-string/', {'field': '*organ.curie', 'curie':neuron})})
     },
+    getAlgoliaFacets: async function(){
+      return await this.$refs[this.activeId][0].getAlgoliaFacets()
+    },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
