@@ -129,6 +129,9 @@ export default {
         value: payLoad
       })
     })
+    EventBus.$on('contextUpdate', (payLoad)=> {
+      this.$emit('contextUpdate', payLoad)
+    })
   }
 };
 </script>

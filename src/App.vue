@@ -21,6 +21,7 @@
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
 import SideBar from './components/SideBar'
+import EventBus from './components/EventBus'
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -140,6 +141,9 @@ export default {
   },
   mounted: function() {
     console.log("mounted app")
+    EventBus.$on("contextUpdate", (payLoad) => {
+      console.log("contextUpdate", payLoad)
+    })
   },
 }
 </script>
