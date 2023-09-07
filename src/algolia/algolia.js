@@ -9,6 +9,7 @@ export class AlgoliaClient {
       algoliaKey
     )
     this.PENNSIEVE_API_LOCATION = PENNSIEVE_API_LOCATION
+    this.anatomyFacetLabels = []
   }
   initIndex(ALGOLIA_INDEX) {
     this.index = this.client.initIndex(ALGOLIA_INDEX);
@@ -93,6 +94,8 @@ export class AlgoliaClient {
 
   _processAnatomy(hits) {
     let foundKeyWords = []
+    let foundLabels = []
+    let uniqueLabels = []
     let uniqueKeywords = []
     hits.forEach(hit => {
       if (hit.item && hit.item.keywords) {
@@ -107,11 +110,14 @@ export class AlgoliaClient {
         hit.anatomy.organ.forEach(anatomy => {
           if (anatomy.curie) {
             foundKeyWords.push(anatomy.curie)
+            foundLabels.push(anatomy.name)
           }
         })
       }
     })
-    uniqueKeywords = [...new Set(foundKeyWords)]
+    uniqueKeywords = [...new Set(foundKeyWords) ]
+    uniqueLabels = [...new Set(foundLabels) ]
+    this.anatomyFacetLabels = uniqueLabels
     return uniqueKeywords
   }
 

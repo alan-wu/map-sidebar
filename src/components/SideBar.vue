@@ -129,6 +129,12 @@ export default {
         value: payLoad
       })
     })
+    EventBus.$on('labelsFound', (payLoad)=> {
+      this.$emit('search-changed', {
+        type: 'filter-label-update',
+        value: payLoad
+      })
+    })
     EventBus.$on('contextUpdate', (payLoad)=> {
       this.$emit('contextUpdate', payLoad)
     })
