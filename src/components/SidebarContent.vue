@@ -110,7 +110,7 @@ var initial_state = {
   start: 0,
   hasSearched: false,
   contextCardEntry: undefined,
-  contextCardEnabled: true,
+  contextCardEnabled: false,
 };
 
 export default {
