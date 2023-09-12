@@ -167,7 +167,6 @@ export default {
     },
     propogateCardAction: function(action){
       EventBus.$emit("PopoverActionClick", action)
-      this.$emit('contextUpdate', action)
       EventBus.$emit("contextUpdate", action) // Pass to mapintegratedvuer
     },
     splitDOI: function(doi){

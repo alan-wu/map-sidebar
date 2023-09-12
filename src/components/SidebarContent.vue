@@ -240,8 +240,10 @@ export default {
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
         .then((anatomy) => {
-          EventBus.$emit("anatomyFound", anatomy);
-          EventBus.$emit("labelsFound", this.algoliaClient.anatomyFacetLabels);
+          EventBus.$emit("available-facets", {
+            'uberons': anatomy,
+            'labels': this.algoliaClient.anatomyFacetLabels
+          });
         });
       this.algoliaClient
         .search(getFilters(filters), query, this.numberPerPage, this.page)

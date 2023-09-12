@@ -123,15 +123,9 @@ export default {
     EventBus.$on("PopoverActionClick", (payLoad) => {
       this.$emit("actionClick", payLoad);
     })
-    EventBus.$on('anatomyFound', (payLoad)=> {
+    EventBus.$on('available-facets', (payLoad)=> {
       this.$emit('search-changed', {
-        type: 'keyword-update',
-        value: payLoad
-      })
-    })
-    EventBus.$on('labelsFound', (payLoad)=> {
-      this.$emit('search-changed', {
-        type: 'filter-label-update',
+        type: 'available-facects',
         value: payLoad
       })
     })
