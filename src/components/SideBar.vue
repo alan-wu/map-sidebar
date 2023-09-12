@@ -125,7 +125,7 @@ export default {
     })
     EventBus.$on('available-facets', (payLoad)=> {
       this.$emit('search-changed', {
-        type: 'available-facects',
+        type: 'available-facets',
         value: payLoad
       })
     })
