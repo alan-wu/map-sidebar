@@ -1,11 +1,6 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <div slot="header" class="header">
-      <context-card
-        v-if="contextCardEntry && contextCardEnabled"
-        :entry="contextCardEntry"
-        :envVars="envVars"
-      />
       <el-input
         class="search-input"
         placeholder="Search"
@@ -34,7 +29,6 @@
         <DatasetCard
           :entry="result"
           :envVars="envVars"
-          @contextUpdate="contextCardUpdate"
         ></DatasetCard>
       </div>
       <el-pagination
@@ -68,7 +62,6 @@ import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
-import ContextCard from "./ContextCard.vue";
 import EventBus from "./EventBus";
 
 import { AlgoliaClient } from "../algolia/algolia.js";
@@ -109,12 +102,11 @@ var initial_state = {
   pageModel: 1,
   start: 0,
   hasSearched: false,
-  contextCardEntry: undefined,
   contextCardEnabled: false,
 };
 
 export default {
-  components: { SearchFilters, DatasetCard, ContextCard },
+  components: { SearchFilters, DatasetCard },
   name: "SideBarContent",
   props: {
     visible: {
@@ -155,9 +147,6 @@ export default {
     },
   },
   methods: {
-    contextCardUpdate: function (val) {
-      this.contextCardEntry = val;
-    },
     resetSearch: function () {
       this.numberOfHits = 0;
       this.discoverIds = [];
