@@ -10,6 +10,14 @@
         @clear="clearSearchClicked"
       ></el-input>
       <el-button class="button" @click="searchEvent">Search</el-button>
+         <el-select v-model="selectValue" class="data-type-select" placeholder="Search over...">
+          <el-option
+            v-for="item in selectOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
     </div>
     <SearchFilters
       class="filters"
@@ -25,12 +33,22 @@
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
-      <div v-for="result in results" :key="result.doi" class="step-item">
-        <DatasetCard
-          :entry="result"
-          :envVars="envVars"
-        ></DatasetCard>
-      </div>
+      <template v-if="!pmrMode">
+        <div v-for="result in results" :key="result.doi" class="step-item">
+          <DatasetCard
+            :entry="result"
+            :envVars="envVars"
+          ></DatasetCard>
+        </div>
+      </template>
+      <template v-if="pmrMode">
+        <div v-for="(result, i) in pmrResults" :key="i" class="step-item">
+          <PMRDatasetCard
+            :entry="result"
+            :envVars="envVars"
+          ></PMRDatasetCard>
+        </div>
+      </template>
       <el-pagination
         class="pagination"
         :current-page.sync="page"
@@ -57,15 +75,18 @@ import {
   Input,
   Loading,
   Pagination,
+  Dropdown,
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
 import DatasetCard from "./DatasetCard";
+import PMRDatasetCard from "./PMRDatasetCard";
 import EventBus from "./EventBus";
 
 import { AlgoliaClient } from "../algolia/algolia.js";
 import { getFilters, facetPropPathMapping } from "../algolia/utils.js";
+import pmrTest from "./pmrTest"
 
 locale.use(lang);
 Vue.use(Button);
@@ -75,6 +96,7 @@ Vue.use(Icon);
 Vue.use(Input);
 Vue.use(Loading);
 Vue.use(Pagination);
+Vue.use(Dropdown);
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
@@ -103,10 +125,16 @@ var initial_state = {
   start: 0,
   hasSearched: false,
   contextCardEnabled: false,
+  pmrResults: pmrTest.data,
+  selectOptions: [
+    { value: "Sparc Datasets", label: "Sparc Datasets" },
+    { value: "PMR", label: "PMR" },
+  ],
+  selectValue: undefined
 };
 
 export default {
-  components: { SearchFilters, DatasetCard },
+  components: { SearchFilters, DatasetCard, PMRDatasetCard },
   name: "SideBarContent",
   props: {
     visible: {
@@ -144,6 +172,9 @@ export default {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
       };
+    },
+    pmrMode: function() {
+      return this.selectValue === "PMR";
     },
   },
   methods: {
@@ -441,6 +472,11 @@ export default {
   height: 100%;
   flex-flow: column;
   display: flex;
+}
+
+.data-type-select {
+  width: 90px;
+  margin-left: 10px;
 }
 
 .button {
