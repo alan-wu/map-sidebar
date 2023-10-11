@@ -115,10 +115,25 @@ export default {
       shadow: "never",
       bottomSpacer: { minHeight: '0rem' },
       resetIndex: false,
+      clickedCard: null
     };
   },
   methods: {
+    alternateSearchCB: function(payload) {
+      this.clickedCard.banner = this.clickedCard.banner.replace("<one_off_token>", payload.one_off_token);
+      this.clickedCard.resource = this.clickedCard.resource.replace("<one_off_token>", payload.one_off_token);
+      this.clickedCard.viewUrl = this.clickedCard.viewUrl.replace("<one_off_token>", payload.one_off_token);
+    },
     cardClicked: function(payload) {
+      if (this.alternateSearch) {
+        this.clickedCard = payload
+        const tokenPayload = {
+          requestType: "getToken",
+          queryUrl: this.envVars.QUERY_URL,
+        };
+        this.alternateSearch(tokenPayload, this.alternateSearchCB);
+        payload = this.clickedCard
+      }
       this.$emit('card-clicked', payload);
     },
     createSciCurnchItems: function () {

@@ -217,10 +217,13 @@ export default {
       } else {
         this.dataLocation = this.envVars.ROOT_URL + this.entry.data_url_suffix;
         this.datasetId = this.entry.datasetId;
+        const token = localStorage.getItem("one_off_token");
         if (this.entry.scaffoldViews.length > 0) {
-          this.thumbnail = this.envVars.QUERY_URL + this.entry.scaffoldViews[0].image_url;
+          const urlWithAuth = this.entry.scaffoldViews[0].image_url.replace("<one_off_token>", token)
+          this.thumbnail = this.envVars.QUERY_URL + urlWithAuth;
         } else if (this.entry.thumbnails.length > 0) {
-          this.thumbnail = this.envVars.QUERY_URL + this.entry.thumbnails[0].image_url;
+          const urlWithAuth = this.entry.thumbnails[0].image_url.replace("<one_off_token>", token)
+          this.thumbnail = this.envVars.QUERY_URL + urlWithAuth;
         } else {
           this.thumbnail = require("@/../assets/missing-image.svg");
         }
