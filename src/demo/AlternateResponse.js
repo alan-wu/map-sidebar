@@ -34,7 +34,6 @@ const searchDataset = async (payload, callback) => {
       },
     })
     .then((res) => {
-      console.log(res);
       data = res.data;
       localStorage.setItem("one_off_token", res.headers["x-one-off"]);
     })
