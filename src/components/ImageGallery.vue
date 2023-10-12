@@ -120,9 +120,10 @@ export default {
   },
   methods: {
     alternateSearchCB: function(payload) {
-      this.clickedCard.banner = this.clickedCard.banner.replace("<one_off_token>", payload.one_off_token);
-      this.clickedCard.resource = this.clickedCard.resource.replace("<one_off_token>", payload.one_off_token);
-      this.clickedCard.viewUrl = this.clickedCard.viewUrl.replace("<one_off_token>", payload.one_off_token);
+      const token = `?token=${payload.one_off_token}`
+      this.clickedCard.banner += token;
+      this.clickedCard.resource += token;
+      this.clickedCard.viewUrl += token;
     },
     cardClicked: function(payload) {
       if (this.alternateSearch) {
