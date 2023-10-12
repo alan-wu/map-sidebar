@@ -121,7 +121,6 @@ export default {
   methods: {
     alternateSearchCB: function(payload) {
       const token = `?token=${payload.one_off_token}`
-      this.clickedCard.banner += token;
       this.clickedCard.resource += token;
       this.clickedCard.viewUrl += token;
     },
@@ -312,10 +311,11 @@ export default {
     createScaffoldViewItems: function() {
       if (this.entry.scaffoldViews) {
         // let index = 0;
+        const token = localStorage.getItem("one_off_token");
         this.entry.scaffoldViews.forEach((scaffold) => {
           const filePath = scaffold.dataset.path;
           const id = scaffold.identifier;
-          let thumbnailURL = this.envVars.QUERY_URL + scaffold.image_url;
+          let thumbnailURL = this.envVars.QUERY_URL + scaffold.image_url + `?token=${token}`;
           let action = {
             label: capitalise(this.label),
             resource:
