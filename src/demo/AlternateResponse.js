@@ -70,7 +70,6 @@ const getFacets = async (payload, callback) => {
 };
 
 const getOneOffToken = async (payload, callback) => {
-  let token = {};
   let url = `${payload.queryUrl}/access/oneoff`;
   
   await axios
@@ -80,14 +79,12 @@ const getOneOffToken = async (payload, callback) => {
       },
     })
     .then((res) => {
-      token = res.data;
+      localStorage.setItem("one_off_token", res.data.one_off_token);
     })
     .catch((err) => {
       console.log(err);
     });
-
-  const oneOffToken = token;
-  callback(oneOffToken);
+  callback();
 };
 
 export const mySearch = (payload, callback) => {

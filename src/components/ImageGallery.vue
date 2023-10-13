@@ -118,21 +118,23 @@ export default {
     };
   },
   methods: {
-    alternateSearchCB: function(payload) {
-      const token = `?token=${payload.one_off_token}`
-      this.clickedCard.resource += token;
-      this.clickedCard.viewUrl += token;
+    alternateSearchCB: function() {
+      return
     },
     cardClicked: function(payload) {
+      let clickedCard = {}
+      Object.assign(clickedCard, payload);
       if (this.alternateSearch) {
-        this.clickedCard = payload
         const tokenPayload = {
           requestType: "getToken",
           queryUrl: this.envVars.QUERY_URL,
         };
         this.alternateSearch(tokenPayload, this.alternateSearchCB);
+        const token = localStorage.getItem("one_off_token");
+        clickedCard.resource += `?token=${token}`;
+        clickedCard.viewUrl += `?token=${token}`;
       }
-      this.$emit('card-clicked', payload);
+      this.$emit('card-clicked', clickedCard);
     },
     createSciCurnchItems: function () {
       if (this.entry.s3uri) this.updateS3Bucket(this.entry.s3uri);
