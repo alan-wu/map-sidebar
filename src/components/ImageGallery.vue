@@ -115,7 +115,6 @@ export default {
       shadow: "never",
       bottomSpacer: { minHeight: '0rem' },
       resetIndex: false,
-      clickedCard: null
     };
   },
   methods: {
@@ -132,7 +131,6 @@ export default {
           queryUrl: this.envVars.QUERY_URL,
         };
         this.alternateSearch(tokenPayload, this.alternateSearchCB);
-        payload = this.clickedCard
       }
       this.$emit('card-clicked', payload);
     },
