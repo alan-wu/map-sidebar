@@ -71,7 +71,7 @@ const getFacets = async (payload, callback) => {
 
 const getOneOffToken = async (payload, callback) => {
   let url = `${payload.queryUrl}/access/oneoff`;
-  
+
   await axios
     .get(url, {
       headers: {
