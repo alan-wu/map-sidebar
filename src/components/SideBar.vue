@@ -112,6 +112,9 @@ export default {
     getAlgoliaFacets: async function(){
       return await this.$refs[this.activeId][0].getAlgoliaFacets()
     },
+    setDrawerOpen: function(value=true){
+      this.drawerOpen = value;
+    },
     tabClicked: function(id) {
       this.$emit("tabClicked", id);
     },
