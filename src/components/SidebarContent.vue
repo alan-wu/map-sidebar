@@ -33,7 +33,7 @@
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
-      <template v-if="!pmrMode">
+      <template v-if="mode == 'Sparc Datasets'">
         <div v-for="result in results" :key="result.doi" class="step-item">
           <DatasetCard
             :entry="result"
@@ -41,12 +41,20 @@
           ></DatasetCard>
         </div>
       </template>
-      <template v-if="pmrMode">
+      <template v-if="mode == 'PMR'">
         <div v-for="(result, i) in pmrResults" :key="i" class="step-item">
           <PMRDatasetCard
             :entry="result"
             :envVars="envVars"
           ></PMRDatasetCard>
+        </div>
+      </template>
+      <template v-if="mode == 'Flatmap'">
+        <div v-for="(result, i) in allPaths" :key="i" class="step-item">
+          <flatmap-dataset-card
+            :entry="result"
+            :envVars="envVars"
+          ></flatmap-dataset-card>
         </div>
       </template>
       <el-pagination
@@ -87,6 +95,8 @@ import EventBus from "./EventBus";
 import { AlgoliaClient } from "../algolia/algolia.js";
 import { getFilters, facetPropPathMapping } from "../algolia/utils.js";
 import pmrTest from "./pmrTest"
+import allPaths from "./allPaths"
+import FlatmapDatasetCard from './FlatmapDatasetCard.vue';
 
 locale.use(lang);
 Vue.use(Button);
@@ -126,15 +136,17 @@ var initial_state = {
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: pmrTest.data,
+  allPaths: allPaths.values,
   selectOptions: [
     { value: "Sparc Datasets", label: "Sparc Datasets" },
     { value: "PMR", label: "PMR" },
+    { value: "Flatmap", label: "Flatmap"}
   ],
   selectValue: undefined
 };
 
 export default {
-  components: { SearchFilters, DatasetCard, PMRDatasetCard },
+  components: { SearchFilters, DatasetCard, PMRDatasetCard, FlatmapDatasetCard },
   name: "SideBarContent",
   props: {
     visible: {
@@ -173,8 +185,8 @@ export default {
         filterFacets: this.filter,
       };
     },
-    pmrMode: function() {
-      return this.selectValue === "PMR";
+    mode: function() {
+      return this.selectValue 
     },
   },
   methods: {
