@@ -21,6 +21,7 @@
       @loading="filtersLoading"
       @cascaderReady="cascaderReady"
     ></SearchFilters>
+    <search-history ref="searchHistory" @search="searchHistorySearch"></search-history>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
@@ -61,6 +62,7 @@ import {
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SearchFilters from "./SearchFilters";
+import SearchHistory from "./SearchHistory";
 import DatasetCard from "./DatasetCard";
 import EventBus from "./EventBus";
 
@@ -106,7 +108,7 @@ var initial_state = {
 };
 
 export default {
-  components: { SearchFilters, DatasetCard },
+  components: { SearchFilters, DatasetCard, SearchHistory },
   name: "SideBarContent",
   props: {
     visible: {
@@ -212,6 +214,7 @@ export default {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation();
         this.searchAlgolia(this.filters, this.searchInput);
+        this.$refs.searchHistory.addSearchToHistory(this.filters, this.searchInput);
       }
     },
     filterUpdate: function (filters) {
@@ -408,6 +411,11 @@ export default {
     getAlgoliaFacets: async function(){
       let facets = await this.algoliaClient.getAlgoliaFacets(facetPropPathMapping)
       return facets;
+    },
+    searchHistorySearch: function(item){
+      this.searchInput = item.search;
+      this.filters = item.filters;
+      this.openSearch(item.filters, item.search);
     }
   },
   mounted: function () {
