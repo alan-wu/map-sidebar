@@ -506,7 +506,6 @@ export default {
   position: relative;
   float: left;
   padding-right: 15px;
-  padding-bottom: 12px;
 }
 
 .number-shown-select {
