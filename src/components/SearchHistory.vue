@@ -6,33 +6,40 @@
     </template>
     <el-select  
       v-if="reversedSearchHistory.length > 6" 
-      v-model="selectValue" 
+      :value="selectValue" 
       class="m-2 search-select" 
-      placeholder="Select" 
+      placeholder="Full search History" 
       size="small"
       popper-class="sidebar-search-select-popper"
-      @change="search"
+      @change="selectChange"
     >
       <el-option
-        v-for="item in cascaderOptions"
-        :key="item.value"
+        v-for="(item, i) in cascaderOptions"
+        :key="i"
         :label="item.label"
         :value="item.value"
       />
-  </el-select>
+    </el-select>
   </div>
 
 </template>
 
 <script>
+/* eslint-disable no-alert, no-console */
 import Vue from "vue";
 import {
-  Tag
+  Tag,
+  Select,
 } from "element-ui";
 
 Vue.use(Tag);
+Vue.use(Select);
 import EventBus from './EventBus';
 
+// remove duplicates by stringifying the objects
+const removeDuplicates = function(arrayOfAnything){
+  return [...new Set(arrayOfAnything.map(e => JSON.stringify(e)))].map(e => JSON.parse(e)) 
+}
 
 export default {
   name: 'SearchHistory',
@@ -45,7 +52,7 @@ export default {
   },
   computed: {
     reversedSearchHistory: function(){
-      return [...new Set(this.searchHistory.slice().reverse().filter(item => item.search !== ''))];
+      return removeDuplicates(this.searchHistory.slice().reverse().filter(item => item.search !== ''))
     },
     cascaderOptions: function(){
       return this.reversedSearchHistory.map(item => {
@@ -72,14 +79,18 @@ export default {
       let searchHistory = JSON.parse(localStorage.getItem('sparc.science-sidebar-search-history'));
       if (searchHistory) {
         searchHistory.push({filters: filters, search: search});
-        this.searchHistory = searchHistory
+        this.searchHistory = removeDuplicates(searchHistory)
         localStorage.setItem('sparc.science-sidebar-search-history', JSON.stringify(searchHistory));
       } else {
         localStorage.setItem('sparc.science-sidebar-search-history', JSON.stringify([{filters: filters, search: search}]));
       }
     },
-    search(item) {
+    search: function(item) {
       this.$emit("search", item);
+    },
+    selectChange: function(value) {
+      this.selectValue = value;
+      this.search({search: value})
     }
   },
   mounted: function () {
