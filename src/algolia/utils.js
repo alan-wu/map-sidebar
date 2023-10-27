@@ -2,14 +2,45 @@
 
 // Mapping between display categories and their Algolia index property path
 // Used for populating the Dataset Search Results facet menu dynamically
-export const facetPropPathMapping = {
-  'anatomy.organ.name' : 'Anatomical Structure',
-  'organisms.primary.species.name' : 'Species',
-  'item.modalities.keyword' : 'Experimental Approach',
-  'attributes.subject.sex.value' : 'Sex',
-  'attributes.subject.ageCategory.value' : 'Age Categories',
-  'item.types.name' : 'Data type',
-}
+export const facetPropPathMapping = [
+  {
+    label: 'Data Type',
+    id: 'item.types',
+    facetPropPath: 'item.types.name',
+    facetSubpropPath: 'item.types.subcategory.name'
+  },
+  {
+    label: 'Anatomical Structure',
+    id: 'anatomy.organ.category',
+    facetPropPath: 'anatomy.organ.category.name',
+    facetSubpropPath: 'anatomy.organ.subcategory.name',
+    facetFilterPath: 'anatomy.organ.name'
+  },
+  {
+    label: 'Species',
+    id: 'organisms.primary.species',
+    facetPropPath: 'organisms.primary.species.name',
+    facetSubpropPath: 'organisms.primary.species.subcategory.name'
+  },
+  {
+    label: 'Experimental Approach',
+    id: 'item.modalities',
+    facetPropPath: 'item.modalities.keyword',
+    facetSubpropPath: 'item.modalities.subcategory.name'
+  },
+  {
+    label: 'Sex',
+    id: 'attributes.subject.sex',
+    facetPropPath: 'attributes.subject.sex.value',
+    facetSubpropPath: 'attributes.subject.sex.subcategory.name'
+  },
+  {
+    label: 'Age Categories',
+    id: 'attributes.subject.ageCategory',
+    facetPropPath: 'attributes.subject.ageCategory.value',
+    facetSubpropPath: 'attributes.subject.ageCategory.subcategory.name'
+  },
+]
 
 // Same as above, but these show on the sidebar filters
 export const shownFilters = {
@@ -37,19 +68,19 @@ export function getFilters(selectedFacetArray=undefined) {
 
   let filters = "NOT item.published.status:embargo";
   filters = `(${filters}) AND `;
-
-  const facetPropPaths = Object.keys(facetPropPathMapping);
+  const facetPropPaths = facetPropPathMapping.map((f) => f.facetPropPath);
   facetPropPaths.map((facetPropPath) => {
-    const facetsToBool = facets.filter(
+    let facetsToBool = facets.filter(
       (facet) => facet.facetPropPath == facetPropPath
     );
     let orFilters = "";
     let andFilters = "";
     facetsToBool.map((facet) => {
+      let facetPropPathToUse = facet.facetSubPropPath ? facet.facetSubPropPath : facetPropPath // Check if we have a subpath
       if (facet.AND){
-        andFilters += `AND "${facetPropPath}":"${facet.label}"`;
+        andFilters += `AND "${facetPropPathToUse}":"${facet.label}"`;
       } else {
-        orFilters += `"${facetPropPath}":"${facet.label}" OR `;
+        orFilters += `"${facetPropPathToUse}":"${facet.label}" OR `;
       }
     });
     if (orFilters == "" && andFilters =="") {
@@ -62,6 +93,7 @@ export function getFilters(selectedFacetArray=undefined) {
 
     filters = filters.split('()AND ').join(''); // Handle case where there where no OR facets
   });
+  console.log('filters about to be applied:', filters)
   return filters.substring(0, filters.lastIndexOf(" AND "));
 }
 
