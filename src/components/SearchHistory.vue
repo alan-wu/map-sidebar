@@ -5,7 +5,7 @@
       <el-tag class="search-tag" v-if="i < 3" v-bind:key="i" @click="search(item)">{{ item.search }} </el-tag>
     </template>
     <el-select  
-      v-if="reversedSearchHistory.length > 6" 
+      v-if="reversedSearchHistory.length > 0" 
       :value="selectValue" 
       class="m-2 search-select" 
       placeholder="Full search History" 
@@ -76,6 +76,7 @@ export default {
       this.searchHistory = [];
     },
     addSearchToHistory(filters, search) {
+      filters = [] // disable filters for now
       let searchHistory = JSON.parse(localStorage.getItem('sparc.science-sidebar-search-history'));
       if (searchHistory) {
         searchHistory.push({filters: filters, search: search});

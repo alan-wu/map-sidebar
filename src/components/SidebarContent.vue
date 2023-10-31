@@ -209,11 +209,13 @@ export default {
       this.searchInput = "";
       this.resetPageNavigation();
       this.searchAlgolia(this.filters, this.searchInput);
+      this.$refs.searchHistory.selectValue = 'Full search history'
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.resetPageNavigation();
         this.searchAlgolia(this.filters, this.searchInput);
+        this.$refs.searchHistory.selectValue = 'Full search history'
         this.$refs.searchHistory.addSearchToHistory(this.filters, this.searchInput);
       }
     },
