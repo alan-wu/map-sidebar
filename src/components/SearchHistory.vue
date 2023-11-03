@@ -77,6 +77,7 @@ export default {
     },
     addSearchToHistory(filters, search) {
       filters = [] // disable filters for now
+      search = search.trim() // remove whitespace
       let searchHistory = JSON.parse(localStorage.getItem('sparc.science-sidebar-search-history'));
       if (searchHistory) {
         searchHistory.push({filters: filters, search: search});
@@ -142,5 +143,6 @@ export default {
   line-height: normal;
   letter-spacing: normal;
   color: #292b66;
+  max-width: 200px;
 }
 </style>
