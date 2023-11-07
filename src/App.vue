@@ -113,7 +113,7 @@ export default {
       this.$refs.sideBar.openSearch([], 'http://purl.obolibrary.org/obo/UBERON_0001103')
     },
     singleFacets: function(){
-      this.$refs.sideBar.addFilter({facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
+      this.$refs.sideBar.addFilter({facet: 'Cardiovascular system', facet2:"Heart", term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true})
     },
     addStomach: function(){
       this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: false})
@@ -122,7 +122,7 @@ export default {
       this.$refs.sideBar.addFilter({facet: 'Invalid', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
     },
     multiFacets: function(){
-      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Heart', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'},
+      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Cardiovascular system', facet2:"Heart", term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true},
         {facet: 'Not correct', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
     },
     keywordSearch: function(){

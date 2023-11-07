@@ -258,8 +258,9 @@ export default {
     //  are stored in the cascader
     findHierarachyStringAndBooleanString(cascadeEventItem){ 
       let hString, bString
+      console.log('cascadeEventItem:', cascadeEventItem)
       if (cascadeEventItem.length >= 3){
-        if (cascadeEventItem[2].split('>').length > 2){
+        if (cascadeEventItem[2] && cascadeEventItem[2].split('>').length > 2){
           hString = cascadeEventItem[2]
           bString = cascadeEventItem.length == 4 ? cascadeEventItem[3] : undefined
         } else {
@@ -407,8 +408,8 @@ export default {
       if (this.cascaderIsReady && filter) {
         if (this.validateFilter(filter)) {
           this.cascadeSelected.filter(f=>f.term != filter.term)
-          this.cascadeSelected.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
-          this.cascadeSelectedWithBoolean.push([filter.facetPropPath, this.createCascaderItemValue(filter.term, filter.facet), filter.AND])
+          this.cascadeSelected.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2), filter.AND])
+          this.cascadeSelectedWithBoolean.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2), filter.AND])
           // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
           return true;
         }
