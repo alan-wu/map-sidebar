@@ -159,7 +159,7 @@ export default {
       this.resetPageNavigation();
       //Proceed normally if cascader is ready
       if (this.cascaderIsReady) {
-        this.filter = this.$refs.filtersRef.getValidatedFilters(filter);
+        this.filter = this.$refs.filtersRef.getHierarchicalValidatedFilters(filter)
         //Facets provided but cannot find at least one valid
         //facet. Tell the users the search is invalid and reset
         //facets check boxes.

@@ -116,7 +116,7 @@ export default {
       this.$refs.sideBar.addFilter({facet: 'Cardiovascular system', facet2:"Heart", term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true})
     },
     addStomach: function(){
-      this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: false})
+      this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true})
     },
     addInvalidTerm: function(){
       this.$refs.sideBar.addFilter({facet: 'Invalid', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})

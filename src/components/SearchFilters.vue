@@ -406,9 +406,11 @@ export default {
     addFilter: function (filter) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filter) {
-        if (this.validateFilter(filter)) {
+        filter = this.validateAndConvertFilterToHierarchical(filter)
+        console.log('we got:', filter)
+        if (filter) {
           this.cascadeSelected.filter(f=>f.term != filter.term)
-          this.cascadeSelected.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2), filter.AND])
+          this.cascadeSelected.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2)])
           this.cascadeSelectedWithBoolean.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2), filter.AND])
           // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
           return true;
@@ -449,31 +451,52 @@ export default {
           });
       });
     },
-    /**
-     * Validate ther filter term to make sure the term is correct
-     */
-    validateFilter: function(filter) {
+
+    /*
+      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
+      */
+    validateAndConvertFilterToHierarchical: function (filter) {
+      console.log('validateAndConvertFilterToHierarchical:', filter)
       if (filter && filter.facet && filter.term) {
-        const item = this.createCascaderItemValue(filter.term, filter.facet);
-        const facet = this.options.find(element => element.value === filter.facetPropPath);
-        if (facet) {
-          const filter = facet.children.find(element => element.value === item);
-          if (filter)
-            return true;
+        if (filter.facet2) {
+          return filter // if it has a second term we will assume it is hierarchical and return it as is
+        } else {
+          for (const firstLayer of this.options){
+            if (firstLayer.value === filter.facetPropPath) {
+              for (const secondLayer of firstLayer.children) {
+                if (secondLayer.label === filter.facet) {
+                  // if we find a match on the second level, the filter will already be correct
+                  return filter
+                } else {
+                  if (secondLayer.children && secondLayer.children.length > 0) {
+                    for (const thirdLayer of secondLayer.children) {
+                      if (thirdLayer.label === filter.facet) {
+                        // If we find a match on the third level, we need to switch facet1 to facet2
+                        //   and populate facet1 with its parents label.
+                        filter.facet2 = thirdLayer.label
+                        filter.facet = secondLayer.label
+                        console.log('found it! returning:', filter)
+                        return filter
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
-      return false;
+      return false
     },
-    /**
-     * Return a list of valid filers given a list of filters, 
-     */
-    getValidatedFilters: function (filters) {
+
+    getHierarchicalValidatedFilters: function (filters) {
       if (filters) {
         if (this.cascaderIsReady) {
           const result = [];
           filters.forEach(filter => {
-            if (this.validateFilter(filter)) {
-              result.push(filter);
+            const validatedFilter = this.validateAndConvertFilterToHierarchical(filter)
+            if (validatedFilter) {
+              result.push(validatedFilter);
             }
           });
           return result;
@@ -481,6 +504,7 @@ export default {
       }
       return [];
     },
+
   },
   mounted: function () {
     this.algoliaClient = new AlgoliaClient(this.envVars.ALGOLIA_ID, this.envVars.ALGOLIA_KEY, this.envVars.PENNSIEVE_API_LOCATION);
