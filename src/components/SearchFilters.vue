@@ -9,6 +9,7 @@
           v-model="cascadeSelected"
           placeholder
           :collapse-tags="true"
+          collapse-tags-tooltip
           :options="options"
           :props="props"
           @change="cascadeEvent($event)"
@@ -209,7 +210,6 @@ export default {
     },
     // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (event) {
-      console.log('cascadeEvent:',event)
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event);
@@ -251,14 +251,13 @@ export default {
 
         this.$emit("filterResults", filters); // emit filters for apps above sidebar
         this.setCascader(filterKeys); //update our cascader v-model if we modified the event
-        this.makeCascadeLabelsClickable();
+        this.cssMods(); // update css for the cascader
       }
     },
     //this fucntion is needed as we previously stored booleans in the array of event that 
     //  are stored in the cascader
     findHierarachyStringAndBooleanString(cascadeEventItem){ 
       let hString, bString
-      console.log('cascadeEventItem:', cascadeEventItem)
       if (cascadeEventItem.length >= 3){
         if (cascadeEventItem[2] && cascadeEventItem[2].split('>').length > 2){
           hString = cascadeEventItem[2]
@@ -355,7 +354,7 @@ export default {
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
       this.__expandItem__ = event;
-      this.makeCascadeLabelsClickable();
+      this.cssMods();
     },
     numberShownChanged: function (event) {
       this.$emit("numberPerPage", parseInt(event));
@@ -407,7 +406,6 @@ export default {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filter) {
         filter = this.validateAndConvertFilterToHierarchical(filter)
-        console.log('we got:', filter)
         if (filter) {
           this.cascadeSelected.filter(f=>f.term != filter.term)
           this.cascadeSelected.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2)])
@@ -435,8 +433,8 @@ export default {
     makeCascadeLabelsClickable: function () {
       // Next tick allows the cascader menu to change
       this.$nextTick(() => {
-        this.$refs.cascader.$el
-          .querySelectorAll(".el-cascader-node__label")
+        document
+          .querySelectorAll(".sidebar-cascader-popper .el-cascader-node__label")
           .forEach((el) => {
             // step through each cascade label
             el.onclick = function () {
@@ -452,11 +450,25 @@ export default {
       });
     },
 
+    cssMods: function (){
+      this.makeCascadeLabelsClickable();
+      this.removeTopLevelCascaderCheckboxes();
+    },
+
+    removeTopLevelCascaderCheckboxes: function () {
+      // Next tick allows the cascader menu to change
+      this.$nextTick(() => {
+        let cascadePanels = document.querySelectorAll(".sidebar-cascader-popper .el-cascader-menu__list");
+        // Hide the checkboxes on the first level of the cascader
+        cascadePanels[0].querySelectorAll('.el-checkbox__input').forEach(el=>el.style.display='none');
+      });
+    },
+
+
     /*
       * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
       */
     validateAndConvertFilterToHierarchical: function (filter) {
-      console.log('validateAndConvertFilterToHierarchical:', filter)
       if (filter && filter.facet && filter.term) {
         if (filter.facet2) {
           return filter // if it has a second term we will assume it is hierarchical and return it as is
@@ -475,7 +487,6 @@ export default {
                         //   and populate facet1 with its parents label.
                         filter.facet2 = thirdLayer.label
                         filter.facet = secondLayer.label
-                        console.log('found it! returning:', filter)
                         return filter
                       }
                     }
@@ -513,7 +524,7 @@ export default {
       this.cascaderIsReady = true;
       this.checkShowAllBoxes();
       this.setCascader(this.entry.filterFacets);
-      this.makeCascadeLabelsClickable();
+      this.cssMods();
       this.$emit("cascaderReady");
     });
   },
@@ -685,7 +696,8 @@ export default {
   margin-bottom: 2px !important;
 }
 
-.sidebar-cascader-popper li[aria-owns*="cascader"] > .el-checkbox {
-  display: none;
+.sidebar-cascader-popper .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner{
+  background-color: $app-primary-color;
+  border-color: $app-primary-color;
 }
 </style>
