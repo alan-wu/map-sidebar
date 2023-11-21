@@ -148,7 +148,8 @@ export default {
     createCascaderItemValue: function (term, facet1=undefined, facet2=undefined) {
       let value = term;
       if (facet1) value = `${term}>${facet1}`;
-      if (facet2) value = `${term}>${facet1}>${facet2}`;
+      if (facet1 && facet2) value = `${term}>${facet1}>${facet2}`;
+      if (!facet1 && facet2) console.warn(`Warning: ${facet2} provided without its parent, this will not be shown in the cascader`) 
       return value;
     },
     populateCascader: function () {
@@ -402,10 +403,10 @@ export default {
         this.updatePreviousShowAllChecked(this.cascadeSelected);
       }
     },
-    addFilter: function (filter) {
+    addFilter: function (filterToAdd) {
       //Do not set the value unless it is ready
-      if (this.cascaderIsReady && filter) {
-        filter = this.validateAndConvertFilterToHierarchical(filter)
+      if (this.cascaderIsReady && filterToAdd) {
+        let filter = this.validateAndConvertFilterToHierarchical(filterToAdd)
         if (filter) {
           this.cascadeSelected.filter(f=>f.term != filter.term)
           this.cascadeSelected.push([filter.facetPropPath,this.createCascaderItemValue(filter.term, filter.facet), this.createCascaderItemValue(filter.term, filter.facet, filter.facet2)])
