@@ -167,17 +167,17 @@ export default {
           let thumbnailURL = undefined;
           let mimetype = '';
           if (thumbnail) {
-            thumbnailURL = this.getImageURLFromS3(this.envVars.API_LOCATION, {
+            
+            thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
               id,
-              datasetId: this.datasetId,
-              datasetVersion: this.datasetVersion,
+              prefix: this.getS3Prefix(),
               file_path: thumbnail.dataset.path,
               s3Bucket: this.s3Bucket,
             });
             mimetype = thumbnail.mimetype.name;
           }
           const plotAnnotation = plot.datacite;
-          const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.datasetId}/${this.datasetVersion}/files/`;
+          const filePathPrefix = `${this.envVars.API_LOCATION}/s3-resource/${this.getS3Prefix()}files/`;
           const sourceUrl = filePathPrefix + plot.dataset.path + this.getS3Args();
 
           //plotAnnotation.supplemental_json_metadata.description can be undefined or
@@ -240,10 +240,9 @@ export default {
           let mimetype = '';
           let thumbnailURL = undefined;
           if (thumbnail) {
-            thumbnailURL = this.getImageURLFromS3(this.envVars.API_LOCATION, {
+            thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
               id,
-              datasetId: this.datasetId,
-              datasetVersion: this.datasetVersion,
+              prefix: this.getS3Prefix(),
               file_path: thumbnail.dataset.path,
               s3Bucket: this.s3Bucket,
             });
@@ -251,7 +250,7 @@ export default {
           }
           let action = {
             label: capitalise(this.label),
-            resource: `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${filePath}${this.getS3Args()}`,
+            resource: `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${filePath}${this.getS3Args()}`,
             title: "View 3D scaffold",
             type: "Scaffold",
             discoverId: this.datasetId,
@@ -361,15 +360,22 @@ export default {
       this.maxWidth = this.$el.clientWidth;
       // this.$emit('resize', this.$el.clientWidth)
     },
-    getContextCardUrl(scaffoldIndex){
+    getContextCardUrl: function(scaffoldIndex){
       if(!this.entry.contextualInformation || this.entry.contextualInformation.length == 0){
         return undefined
       } else {
         // The line below checks if there is a context file for each scaffold. If there is not, we use the first context card for each scaffold.
         let contextIndex = this.entry['abi-contextual-information'].length == this.entry.scaffolds.length ? scaffoldIndex : 0
-        return `${this.envVars.API_LOCATION}s3-resource/${this.datasetId}/${this.datasetVersion}/files/${this.entry.contextualInformation[contextIndex]}${this.getS3Args()}`
+        return `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${this.entry.contextualInformation[contextIndex]}${this.getS3Args()}`
       }
-    }
+    },
+    getImageURL: function(apiEndpoint, info) {
+      let url = `${apiEndpoint}/s3-resource/${info.prefix}files/${info.file_path}?encodeBase64=true`
+      if (info.s3Bucket) {
+        url = url + `&s3BucketName=${info.s3Bucket}`
+      }
+      return url
+    },
   },
   computed: {
     galleryItems() {
