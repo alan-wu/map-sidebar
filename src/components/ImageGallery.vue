@@ -1,6 +1,6 @@
 <template>
   <div class="full-size">
-    <gallery
+    <!-- <gallery
       :bottomSpacer="bottomSpacer"
       :cardWidth="10"
       :items="galleryItems"
@@ -14,7 +14,7 @@
       :shadow="shadow"
       @card-clicked="cardClicked"
       ref="gallery"
-    />
+    /> -->
   </div>
 </template>
 
@@ -29,13 +29,13 @@ const capitalise = function (string) {
 };
 
 import GalleryHelper from "@abi-software/gallery/src/mixins/GalleryHelpers";
-import Gallery from "@abi-software/gallery/src/main-bundle.js";
+// import Gallery from "@abi-software/gallery/src/main-bundle.js";
 //provide the s3Bucket related methods and data.
-import S3Bucket from "../mixins/S3Bucket";
+import S3Bucket from "../mixins/S3Bucket.vue";
 
 export default {
   name: "ImageGallery",
-  components: { Gallery },
+  // components: { Gallery },
   mixins: [GalleryHelper, S3Bucket],
   props: {
     datasetBiolucida: {

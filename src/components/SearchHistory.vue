@@ -105,7 +105,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/tag";
+// @import "~element-ui/packages/theme-chalk/src/tag";
 
 .container {
 }

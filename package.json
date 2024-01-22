@@ -10,11 +10,10 @@
     "*.js"
   ],
   "scripts": {
-    "serve": "vue-cli-service serve --port 8081",
-    "build-bundle": "vue-cli-service build --target lib --name map-side-bar ./src/components/index.js ",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "start": "vue-cli-service serve",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
     "release:beta": "npm version prerelease --preid=beta; npm publish --tag beta",
     "release:minor": "npm version minor; npm publish",
     "release:patch": "npm version patch;  npm publish",
@@ -31,45 +30,24 @@
     "xss": "^1.0.14"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.0.0",
-    "@vue/cli-plugin-eslint": "^4.0.0",
-    "@vue/cli-service": "^4.0.0",
+    "@vitejs/plugin-vue": "^1.6.1",
     "auto-changelog": "^2.4.0",
-    "babel-eslint": "^10.0.3",
-    "babel-plugin-component": "^1.1.1",
-    "eslint": "^5.16.0",
-    "eslint-plugin-vue": "^5.0.0",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-plugin-vue": "^8.7.1",
     "file-loader": "^5.0.2",
     "node-sass": "^4.14.1",
     "raw-loader": "^0.5.1",
-    "sass-loader": "^8.0.2",
+    "sass": "^1.70.0",
     "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
+    "vite": "^2.5.4",
+    "vite-plugin-vue2": "^1.9.0",
     "vue-custom-element": "^3.3.0",
     "vue-template-compiler": "^2.6.10",
     "webpack-node-externals": "^2.5.2"
   },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "rules": {},
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
   "browserslist": [
-    "> 1%",
-    "last 2 versions"
+    "defaults"
   ]
 }

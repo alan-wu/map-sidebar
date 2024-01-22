@@ -1,6 +1,6 @@
 <template>
   <div class="filters">
-    <map-svg-sprite-color />
+    <!-- <map-svg-sprite-color /> -->
     <transition name="el-zoom-in-top">
       <span v-show="showFilters" class="search-filters transition-box">
         <custom-cascader
@@ -67,11 +67,11 @@
 /* eslint-disable no-alert, no-console */
 import Vue from "vue";
 import { Option, Select, Popover } from "element-ui";
-import CustomCascader from "./Cascader";
+import CustomCascader from "./Cascader.vue";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import speciesMap from "./species-map";
-import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
+// import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 import {AlgoliaClient} from "../algolia/algolia.js";
 import {facetPropPathMapping} from "../algolia/utils.js";
@@ -98,8 +98,8 @@ export default {
   name: "SearchFilters",
   components: {
     CustomCascader,
-    MapSvgIcon,
-    MapSvgSpriteColor,
+    // MapSvgIcon,
+    // MapSvgSpriteColor,
   },
   props: {
     /**
@@ -534,9 +534,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/option";
-@import "~element-ui/packages/theme-chalk/src/popover";
-@import "~element-ui/packages/theme-chalk/src/select";
+// @import "~element-ui/packages/theme-chalk/src/option";
+// @import "~element-ui/packages/theme-chalk/src/popover";
+// @import "~element-ui/packages/theme-chalk/src/select";
 
 .filter-default-value {
   pointer-events: none;

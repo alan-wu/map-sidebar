@@ -61,10 +61,10 @@ import {
 } from "element-ui";
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
-import SearchFilters from "./SearchFilters";
-import SearchHistory from "./SearchHistory";
-import DatasetCard from "./DatasetCard";
-import EventBus from "./EventBus";
+import SearchFilters from "./SearchFilters.vue";
+import SearchHistory from "./SearchHistory.vue";
+import DatasetCard from "./DatasetCard.vue";
+import EventBus from "./EventBus.js";
 
 import { AlgoliaClient } from "../algolia/algolia.js";
 import { getFilters, facetPropPathMapping } from "../algolia/utils.js";
@@ -439,13 +439,13 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/button";
-@import "~element-ui/packages/theme-chalk/src/card";
-@import "~element-ui/packages/theme-chalk/src/drawer";
-@import "~element-ui/packages/theme-chalk/src/icon";
-@import "~element-ui/packages/theme-chalk/src/input";
-@import "~element-ui/packages/theme-chalk/src/loading";
-@import "~element-ui/packages/theme-chalk/src/pagination";
+// @import "~element-ui/packages/theme-chalk/src/button";
+// @import "~element-ui/packages/theme-chalk/src/card";
+// @import "~element-ui/packages/theme-chalk/src/drawer";
+// @import "~element-ui/packages/theme-chalk/src/icon";
+// @import "~element-ui/packages/theme-chalk/src/input";
+// @import "~element-ui/packages/theme-chalk/src/loading";
+// @import "~element-ui/packages/theme-chalk/src/pagination";
 
 .content-card {
   height: 100%;

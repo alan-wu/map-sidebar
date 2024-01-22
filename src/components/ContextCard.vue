@@ -283,12 +283,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/button";
-@import "~element-ui/packages/theme-chalk/src/card";
-@import "~element-ui/packages/theme-chalk/src/icon";
-@import "~element-ui/packages/theme-chalk/src/input";
-@import "~element-ui/packages/theme-chalk/src/link";
-@import "~element-ui/packages/theme-chalk/src/select";
+// @import "~element-ui/packages/theme-chalk/src/button";
+// @import "~element-ui/packages/theme-chalk/src/card";
+// @import "~element-ui/packages/theme-chalk/src/icon";
+// @import "~element-ui/packages/theme-chalk/src/input";
+// @import "~element-ui/packages/theme-chalk/src/link";
+// @import "~element-ui/packages/theme-chalk/src/select";
 
 .hide{
   color: #e4e7ed;

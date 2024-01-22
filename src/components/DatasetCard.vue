@@ -232,8 +232,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/col";
-@import "~element-ui/packages/theme-chalk/src/loading";
+// @import "~element-ui/packages/theme-chalk/src/col";
+// @import "~element-ui/packages/theme-chalk/src/loading";
 
 .dataset-card {
   padding-left: 16px;

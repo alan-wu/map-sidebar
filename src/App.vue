@@ -20,8 +20,8 @@
 <script>
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
-import SideBar from './components/SideBar'
-import EventBus from './components/EventBus'
+import SideBar from './components/SideBar.vue'
+import EventBus from './components/EventBus.js'
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -87,14 +87,14 @@ export default {
       contextArray: [null,null,null],
       sideBarVisibility: true,
       envVars: {
-        API_LOCATION: process.env.VUE_APP_API_LOCATION,
-        ALGOLIA_KEY: process.env.VUE_APP_ALGOLIA_KEY,
-        ALGOLIA_ID: process.env.VUE_APP_ALGOLIA_ID,
-        ALGOLIA_INDEX: process.env.VUE_APP_ALGOLIA_INDEX,
-        PENNSIEVE_API_LOCATION: process.env.VUE_APP_PENNSIEVE_API_LOCATION,
-        BL_SERVER_URL: process.env.VUE_APP_BL_SERVER_URL,
-        NL_LINK_PREFIX: process.env.VUE_APP_NL_LINK_PREFIX,
-        ROOT_URL: process.env.VUE_APP_ROOT_URL,
+        API_LOCATION: import.meta.env.VITE_APP_API_LOCATION,
+        ALGOLIA_KEY: import.meta.env.VITE_APP_ALGOLIA_KEY,
+        ALGOLIA_ID: import.meta.env.VITE_APP_ALGOLIA_ID,
+        ALGOLIA_INDEX: import.meta.env.VITE_APP_ALGOLIA_INDEX,
+        PENNSIEVE_API_LOCATION: import.meta.env.VITE_APP_PENNSIEVE_API_LOCATION,
+        BL_SERVER_URL: import.meta.env.VITE_APP_BL_SERVER_URL,
+        NL_LINK_PREFIX: import.meta.env.VITE_APP_NL_LINK_PREFIX,
+        ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
       },
       activeId: 1,
     }

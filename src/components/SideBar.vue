@@ -45,8 +45,8 @@ import {
 import lang from "element-ui/lib/locale/lang/en";
 import locale from "element-ui/lib/locale";
 import SidebarContent from './SidebarContent.vue';
-import EventBus from './EventBus';
-import Tabs from './Tabs'
+import EventBus from './EventBus.js';
+import Tabs from './Tabs.vue'
 
 locale.use(lang);
 Vue.use(Drawer);
@@ -141,8 +141,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/drawer";
-@import "~element-ui/packages/theme-chalk/src/icon";
+// @import "~element-ui/packages/theme-chalk/src/drawer";
+// @import "~element-ui/packages/theme-chalk/src/icon";
 
 .box-card {
   flex: 3;
