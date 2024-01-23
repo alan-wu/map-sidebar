@@ -1,10 +1,11 @@
 <template>
-  <div class="dataset-card-container"  ref="container">
-    <div class="dataset-card"  ref="card">
+  <div class="dataset-card-container" ref="container">
+    <div class="dataset-card" ref="card">
       <div class="seperator-path"></div>
-      <div v-loading="loading" class="card" >
+      <div v-loading="loading" class="card">
         <span class="card-left">
-          <image-gallery v-if="!loading && discoverId" 
+          <image-gallery
+            v-if="!loading && discoverId"
             :datasetId="discoverId"
             :datasetVersion="version"
             :entry="entry"
@@ -16,13 +17,26 @@
             @card-clicked="galleryClicked"
           />
         </span>
-        <div class="card-right" >
-          <div class="title" @click="cardClicked">{{entry.name}}</div>
-          <div class="details">{{contributors}} {{entry.publishDate ? `(${publishYear})` : ''}}</div>
-          <div class="details">{{samples}}</div>
-          <div v-if="!entry.detailsReady" class="details loading-icon" v-loading="!entry.detailsReady"></div>
+        <div class="card-right">
+          <div class="title" @click="cardClicked">{{ entry.name }}</div>
+          <div class="details">
+            {{ contributors }} {{ entry.publishDate ? `(${publishYear})` : '' }}
+          </div>
+          <div class="details">{{ samples }}</div>
+          <div
+            v-if="!entry.detailsReady"
+            class="details loading-icon"
+            v-loading="!entry.detailsReady"
+          ></div>
           <div>
-            <el-button v-if="entry.simulation"  @click="openRepository" size="mini" class="button" icon="el-icon-view">View repository</el-button>
+            <el-button
+              v-if="entry.simulation"
+              @click="openRepository"
+              size="mini"
+              class="button"
+              :icon="ElIconView"
+              >View repository</el-button
+            >
           </div>
           <div class="badges-container">
             <badges-group
@@ -37,25 +51,23 @@
   </div>
 </template>
 
-
 <script>
+import { View as ElIconView } from '@element-plus/icons-vue'
 /* eslint-disable no-alert, no-console */
-import Vue from "vue";
-import BadgesGroup from "./BadgesGroup.vue";
-import { Button, Icon } from "element-ui";
-import lang from "element-ui/lib/locale/lang/en";
-import locale from "element-ui/lib/locale";
-import EventBus from "./EventBus"
-import speciesMap from "./species-map";
-import ImageGallery from "./ImageGallery.vue";
-
-locale.use(lang);
-Vue.use(Button);
-Vue.use(Icon);
+import BadgesGroup from './BadgesGroup.vue'
+import { ElButton as Button, ElIcon as Icon } from 'element-plus'
+import EventBus from './EventBus.js'
+import speciesMap from './species-map'
+import ImageGallery from './ImageGallery.vue'
 
 export default {
-  name: "DatasetCard",
-  components: { BadgesGroup, ImageGallery },
+  data() {
+    return {
+      ElIconView,
+    }
+  },
+  name: 'DatasetCard',
+  components: { BadgesGroup, ImageGallery, Button, Icon },
   props: {
     /**
      * Object containing information for
@@ -63,11 +75,11 @@ export default {
      */
     entry: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     envVars: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
   },
   data: function () {
@@ -79,98 +91,104 @@ export default {
       version: 1,
       lastDoi: undefined,
       biolucidaData: undefined,
-      currentCategory: "All"
-    };
+      currentCategory: 'All',
+    }
   },
   computed: {
-    contributors: function() {
-      let text = "";
+    contributors: function () {
+      let text = ''
       if (this.entry.contributors) {
         if (this.entry.contributors.length === 1) {
-          text = this.lastName(this.entry.contributors[0].name);
+          text = this.lastName(this.entry.contributors[0].name)
         } else if (this.entry.contributors.length === 2) {
-          text = this.lastName(this.entry.contributors[0].name) + " & " + this.lastName(this.entry.contributors[1].name);
+          text =
+            this.lastName(this.entry.contributors[0].name) +
+            ' & ' +
+            this.lastName(this.entry.contributors[1].name)
         } else if (this.entry.contributors.length > 2) {
-          text = this.lastName(this.entry.contributors[0].name) + " et al.";
+          text = this.lastName(this.entry.contributors[0].name) + ' et al.'
         }
       }
-      return text;
+      return text
     },
-    samples: function() {
-      let text = "";
+    samples: function () {
+      let text = ''
       if (this.entry.species) {
-        if (speciesMap[this.entry.species[0].toLowerCase()]){
-          text = `${speciesMap[this.entry.species[0].toLowerCase()]}`;
+        if (speciesMap[this.entry.species[0].toLowerCase()]) {
+          text = `${speciesMap[this.entry.species[0].toLowerCase()]}`
         } else {
-          text = `${this.entry.species}`;
+          text = `${this.entry.species}`
         }
       }
       if (this.entry.numberSamples > 0) {
-        text += " (";
+        text += ' ('
         if (this.entry.numberSamples === 1) {
-          text += `${this.entry.numberSamples} sample`;
+          text += `${this.entry.numberSamples} sample`
         } else if (this.entry.numberSamples > 1) {
-          text += `${this.entry.numberSamples} samples`;
+          text += `${this.entry.numberSamples} samples`
         }
         if (this.entry.numberSubjects === 1) {
-          text += ` from ${this.entry.numberSubjects} subject`;
+          text += ` from ${this.entry.numberSubjects} subject`
         } else if (this.entry.numberSamples > 1) {
-          text += ` from ${this.entry.numberSubjects} subjects`;
+          text += ` from ${this.entry.numberSubjects} subjects`
         }
-        text += ")";
+        text += ')'
       }
 
-      return text;
+      return text
     },
-    label: function(){
+    label: function () {
       return this.entry.organs ? this.entry.organs[0] : this.entry.name
     },
-    publishYear: function() {
+    publishYear: function () {
       return this.entry.publishDate.split('-')[0]
-    }
+    },
   },
   methods: {
-    cardClicked: function(){
+    cardClicked: function () {
       this.openDataset()
     },
-    categoryChanged: function(name) {
-      this.currentCategory = name;
+    categoryChanged: function (name) {
+      this.currentCategory = name
     },
-    galleryClicked: function(payload) {
+    galleryClicked: function (payload) {
       this.propogateCardAction(payload)
     },
-    openDataset: function(){
-      window.open(this.dataLocation,'_blank');
+    openDataset: function () {
+      window.open(this.dataLocation, '_blank')
     },
-    openRepository: function() {
-      let apiLocation = this.envVars.API_LOCATION;
-      this.entry.additionalLinks.forEach(function(el) {
-        if (el.description == "Repository") {
-          let xmlhttp = new XMLHttpRequest();
-          xmlhttp.open("POST", apiLocation + "/pmr_latest_exposure", true);
-          xmlhttp.setRequestHeader("Content-type", "application/json");
+    openRepository: function () {
+      let apiLocation = this.envVars.API_LOCATION
+      this.entry.additionalLinks.forEach(function (el) {
+        if (el.description == 'Repository') {
+          let xmlhttp = new XMLHttpRequest()
+          xmlhttp.open('POST', apiLocation + '/pmr_latest_exposure', true)
+          xmlhttp.setRequestHeader('Content-type', 'application/json')
           xmlhttp.onreadystatechange = () => {
             if (xmlhttp.readyState === 4) {
-              let url = "";
+              let url = ''
               if (xmlhttp.status === 200) {
-                url = JSON.parse(xmlhttp.responseText)["url"];
+                url = JSON.parse(xmlhttp.responseText)['url']
               }
-              if (url === "") {
-                url = el.uri;
+              if (url === '') {
+                url = el.uri
               }
-              window.open(url,'_blank');
+              window.open(url, '_blank')
             }
-          };
-          xmlhttp.send(JSON.stringify({workspace_url: el.uri}));
+          }
+          xmlhttp.send(JSON.stringify({ workspace_url: el.uri }))
         }
-      });
+      })
     },
-    propogateCardAction: function(action){
-      EventBus.$emit("PopoverActionClick", action)
-      EventBus.$emit("contextUpdate", action) // Pass to mapintegratedvuer
+    propogateCardAction: function (action) {
+      EventBus.emit('PopoverActionClick', action)
+      EventBus.emit('contextUpdate', action) // Pass to mapintegratedvuer
     },
-    splitDOI: function(doi){
-      return [doi.split('/')[doi.split('/').length-2], doi.split('/')[doi.split('/').length-1]]
+    splitDOI: function (doi) {
+      return [
+        doi.split('/')[doi.split('/').length - 2],
+        doi.split('/')[doi.split('/').length - 1],
+      ]
     },
     getBanner: function () {
       // Only load banner if card has changed
@@ -178,9 +196,11 @@ export default {
         this.lastDoi = this.entry.doi
         this.loading = true
         let doi = this.splitDOI(this.entry.doi)
-        fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`)
-          .then((response) =>{
-            if (!response.ok){
+        fetch(
+          `${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${doi[0]}/${doi[1]}`
+        )
+          .then((response) => {
+            if (!response.ok) {
               throw Error(response.statusText)
             } else {
               return response.json()
@@ -199,46 +219,44 @@ export default {
             this.thumbnail = require('@/../assets/missing-image.svg')
             this.discoverId = Number(this.entry.datasetId)
             this.loading = false
-          });
+          })
       }
-
     },
-    lastName: function(fullName){
+    lastName: function (fullName) {
       return fullName.split(',')[0]
     },
-    getBiolucidaInfo: function(id) {
-      let apiLocation = this.envVars.API_LOCATION;
-      let endpoint = apiLocation + "image_search/" + id;
+    getBiolucidaInfo: function (id) {
+      let apiLocation = this.envVars.API_LOCATION
+      let endpoint = apiLocation + 'image_search/' + id
       // Add parameters if we are sent them
       fetch(endpoint)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status == "success")
-            this.biolucidaData = data;
-        });
-    }
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status == 'success') this.biolucidaData = data
+        })
+    },
   },
-  created: function() {
+  created: function () {
     this.getBanner()
   },
   watch: {
     // currently not using card overflow
-    'entry.description': function() { // watch it
+    'entry.description': function () {
+      // watch it
       this.getBanner()
-    }
+    },
   },
-};
+}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-// @import "~element-ui/packages/theme-chalk/src/col";
-// @import "~element-ui/packages/theme-chalk/src/loading";
+<style lang="scss" scoped>
+@use 'element-plus/theme-chalk/src/col';
+@use 'element-plus/theme-chalk/src/loading';
 
 .dataset-card {
   padding-left: 16px;
   position: relative;
-  min-height:17rem;
+  min-height: 17rem;
 }
 
 .title {
@@ -259,8 +277,8 @@ export default {
   display: flex;
 }
 
-.card-left{
-  flex: 1
+.card-left {
+  flex: 1;
 }
 
 .card-right {
@@ -268,7 +286,7 @@ export default {
   padding-left: 6px;
 }
 
-.button{
+.button {
   z-index: 10;
   font-family: Asap;
   font-size: 14px;
@@ -296,7 +314,7 @@ export default {
   background-color: #ffffff;
   cursor: pointer;
 }
-.details{
+.details {
   font-family: Asap;
   font-size: 14px;
   font-weight: normal;
@@ -308,7 +326,7 @@ export default {
 }
 
 .badges-container {
-  margin-top:0.75rem;
+  margin-top: 0.75rem;
 }
 
 .loading-icon {
@@ -318,11 +336,11 @@ export default {
   left: 80px;
 }
 
-.loading-icon ::v-deep .el-loading-mask {
-  background-color: rgba(117, 190, 218, 0.0) !important;
+.loading-icon :deep(.el-loading-mask) {
+  background-color: rgba(117, 190, 218, 0) !important;
 }
 
-.loading-icon ::v-deep .el-loading-spinner .path {
+.loading-icon :deep(.el-loading-spinner .path) {
   stroke: $app-primary-color;
 }
 </style>

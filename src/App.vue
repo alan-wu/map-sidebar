@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Asap:400,400i,500,600,700&display=swap"
+    />
     Click arrow to open sidebar
     <el-button @click="openSearch">search Uberon from refs</el-button>
     <el-button @click="singleFacets">Add heart to Filter</el-button>
@@ -11,9 +13,17 @@
     <el-button @click="neuronSearch">open neuron search</el-button>
     <el-button @click="keywordSearch">keyword search</el-button>
     <el-button @click="getFacets">Get facets</el-button>
-    <SideBar :envVars="envVars" class="side-bar" ref="sideBar" :visible="sideBarVisibility"
-      :tabs="tabs" :activeId="activeId" @tabClicked="tabClicked"
-      @search-changed="searchChanged($event)" @actionClick="action"/>
+    <SideBar
+      :envVars="envVars"
+      class="side-bar"
+      ref="sideBar"
+      :visible="sideBarVisibility"
+      :tabs="tabs"
+      :activeId="activeId"
+      @tabClicked="tabClicked"
+      @search-changed="searchChanged($event)"
+      @actionClick="action"
+    />
   </div>
 </template>
 
@@ -70,21 +80,21 @@ import EventBus from './components/EventBus.js'
 export default {
   name: 'app',
   components: {
-    SideBar
+    SideBar,
   },
   computed: {
-    tabs: function(){
+    tabs: function () {
       let temp = [...this.tabArray]
-      for(let i in this.tabArray){
+      for (let i in this.tabArray) {
         temp[i].contextCard = this.contextArray[i]
       }
       return temp
-    }
+    },
   },
-  data: function(){
+  data: function () {
     return {
-      tabArray: [{title: 'Flatmap', id:1}],
-      contextArray: [null,null,null],
+      tabArray: [{ title: 'Flatmap', id: 1 }],
+      contextArray: [null, null, null],
       sideBarVisibility: true,
       envVars: {
         API_LOCATION: import.meta.env.VITE_APP_API_LOCATION,
@@ -99,50 +109,102 @@ export default {
       activeId: 1,
     }
   },
-  methods:{
-    searchChanged: function(data){
-      console.log(data);
+  methods: {
+    searchChanged: function (data) {
+      console.log(data)
     },
-    tabClicked: function(id){
+    tabClicked: function (id) {
       this.activeId = id
     },
-    action: function(val){
-      console.log("action fired: ", val)
+    action: function (val) {
+      console.log('action fired: ', val)
     },
-    openSearch: function(){
-      this.$refs.sideBar.openSearch([], 'http://purl.obolibrary.org/obo/UBERON_0001103')
+    openSearch: function () {
+      this.$refs.sideBar.openSearch(
+        [],
+        'http://purl.obolibrary.org/obo/UBERON_0001103'
+      )
     },
-    singleFacets: function(){
-      this.$refs.sideBar.addFilter({facet: 'Cardiovascular system', facet2:"Heart", term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true})
+    singleFacets: function () {
+      this.$refs.sideBar.addFilter({
+        facet: 'Cardiovascular system',
+        facet2: 'Heart',
+        term: 'Anatomical structure',
+        facetPropPath: 'anatomy.organ.category.name',
+        AND: true,
+      })
     },
-    addStomach: function(){
-      this.$refs.sideBar.addFilter({facet: 'Stomach', term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true})
+    addStomach: function () {
+      this.$refs.sideBar.addFilter({
+        facet: 'Stomach',
+        term: 'Anatomical structure',
+        facetPropPath: 'anatomy.organ.category.name',
+        AND: true,
+      })
     },
-    addInvalidTerm: function(){
-      this.$refs.sideBar.addFilter({facet: 'Invalid', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name', AND: true})
+    addInvalidTerm: function () {
+      this.$refs.sideBar.addFilter({
+        facet: 'Invalid',
+        term: 'Anatomical structure',
+        facetPropPath: 'anatomy.organ.name',
+        AND: true,
+      })
     },
-    multiFacets: function(){
-      this.$refs.sideBar.openSearch([{facet: 'Male', term:'Sex', facetPropPath:'attributes.subject.sex.value'}, {facet: 'Cardiovascular system', facet2:"Heart", term:'Anatomical structure', facetPropPath: 'anatomy.organ.category.name', AND: true},
-        {facet: 'Not correct', term:'Anatomical structure', facetPropPath: 'anatomy.organ.name'}], '')
+    multiFacets: function () {
+      this.$refs.sideBar.openSearch(
+        [
+          {
+            facet: 'Male',
+            term: 'Sex',
+            facetPropPath: 'attributes.subject.sex.value',
+          },
+          {
+            facet: 'Cardiovascular system',
+            facet2: 'Heart',
+            term: 'Anatomical structure',
+            facetPropPath: 'anatomy.organ.category.name',
+            AND: true,
+          },
+          {
+            facet: 'Not correct',
+            term: 'Anatomical structure',
+            facetPropPath: 'anatomy.organ.name',
+          },
+        ],
+        ''
+      )
     },
-    keywordSearch: function(){
-      this.$refs.sideBar.addFilter({type: 'Facet', label: undefined, facet: '3d model', facetPropPath: 'item.keywords.keyword', term: 'Keywords', AND: true})
+    keywordSearch: function () {
+      this.$refs.sideBar.addFilter({
+        type: 'Facet',
+        label: undefined,
+        facet: '3d model',
+        facetPropPath: 'item.keywords.keyword',
+        term: 'Keywords',
+        AND: true,
+      })
     },
-    markerFromFlatmap: function(){
-      this.$refs.sideBar.openSearch([{facet: 'http://purl.obolibrary.org/obo/UBERON_0001103', term:'Keywords', facetPropPath:'item.keywords.keyword'}])
+    markerFromFlatmap: function () {
+      this.$refs.sideBar.openSearch([
+        {
+          facet: 'http://purl.obolibrary.org/obo/UBERON_0001103',
+          term: 'Keywords',
+          facetPropPath: 'item.keywords.keyword',
+        },
+      ])
     },
-    neuronSearch: function(){
+    neuronSearch: function () {
       this.$refs.sideBar.openNeuronSearch('ilxtr:neuron-type-keast-10')
     },
-    getFacets: async function(){
+    getFacets: async function () {
       let facets = await this.$refs.sideBar.getAlgoliaFacets()
       console.log('Algolia facets:', facets)
-    }
+    },
   },
-  mounted: function() {
-    console.log("mounted app")
-    EventBus.$on("contextUpdate", (payLoad) => {
-      console.log("contextUpdate", payLoad)
+  mounted: function () {
+    console.log('mounted app')
+    EventBus.on('contextUpdate', (payLoad) => {
+      console.log('contextUpdate', payLoad)
     })
   },
 }
@@ -150,13 +212,13 @@ export default {
 
 <style lang="scss">
 #app {
-  height:100%;
+  height: 100%;
   width: 100%;
-  position:absolute;
-  font-family: "Asap",sans-serif;
+  position: absolute;
+  font-family: 'Asap', sans-serif;
 }
 body {
-  margin:0px;
+  margin: 0px;
 }
 .map-icon {
   color: $app-primary-color;

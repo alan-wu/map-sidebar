@@ -2,13 +2,19 @@
   <div class="container">
     <!-- <span v-if="reversedSearchHistory.length > 0" class="title"> Search History </span> -->
     <template v-for="(item, i) in reversedSearchHistory">
-      <el-tag class="search-tag" v-if="i < 3" v-bind:key="i" @click="search(item)">{{ item.search }} </el-tag>
+      <el-tag
+        class="search-tag"
+        v-if="i < 3"
+        v-bind:key="i"
+        @click="search(item)"
+        >{{ item.search }}
+      </el-tag>
     </template>
-    <el-select  
-      v-if="reversedSearchHistory.length > 0" 
-      :value="selectValue" 
-      class="m-2 search-select" 
-      placeholder="Full search History" 
+    <el-select
+      v-if="reversedSearchHistory.length > 0"
+      :model-value="selectValue"
+      class="m-2 search-select"
+      placeholder="Full search History"
       size="small"
       popper-class="sidebar-search-select-popper"
       @change="selectChange"
@@ -21,91 +27,104 @@
       />
     </el-select>
   </div>
-
 </template>
 
 <script>
 /* eslint-disable no-alert, no-console */
-import Vue from "vue";
-import {
-  Tag,
-  Select,
-} from "element-ui";
+import { ElTag as Tag, ElSelect as Select } from 'element-plus'
 
-Vue.use(Tag);
-Vue.use(Select);
-import EventBus from './EventBus';
+import EventBus from './EventBus.js'
 
 // remove duplicates by stringifying the objects
-const removeDuplicates = function(arrayOfAnything){
-  return [...new Set(arrayOfAnything.map(e => JSON.stringify(e)))].map(e => JSON.parse(e)) 
+const removeDuplicates = function (arrayOfAnything) {
+  return [...new Set(arrayOfAnything.map((e) => JSON.stringify(e)))].map((e) =>
+    JSON.parse(e)
+  )
 }
 
 export default {
   name: 'SearchHistory',
+  components: {
+    Tag,
+    Select
+  },
   data() {
-      return {
-        searchHistory: [],
-        selectValue: 'Full search history'
-      }
-
+    return {
+      searchHistory: [],
+      selectValue: 'Full search history',
+    }
   },
   computed: {
-    reversedSearchHistory: function(){
-      return removeDuplicates(this.searchHistory.slice().reverse().filter(item => item.search !== ''))
+    reversedSearchHistory: function () {
+      return removeDuplicates(
+        this.searchHistory
+          .slice()
+          .reverse()
+          .filter((item) => item.search !== '')
+      )
     },
-    cascaderOptions: function(){
-      return this.reversedSearchHistory.map(item => {
+    cascaderOptions: function () {
+      return this.reversedSearchHistory.map((item) => {
         return {
           value: item.search,
-          label: item.search
+          label: item.search,
         }
       })
-    }
+    },
   },
   methods: {
     getSearchHistory() {
       if (localStorage.getItem('sparc.science-sidebar-search-history')) {
-        this.searchHistory = JSON.parse(localStorage.getItem('sparc.science-sidebar-search-history'));
+        this.searchHistory = JSON.parse(
+          localStorage.getItem('sparc.science-sidebar-search-history')
+        )
       } else {
-        this.searchHistory = [];
+        this.searchHistory = []
       }
     },
     clearSearchHistory() {
-      localStorage.removeItem('sparc.science-sidebar-search-history');
-      this.searchHistory = [];
+      localStorage.removeItem('sparc.science-sidebar-search-history')
+      this.searchHistory = []
     },
     addSearchToHistory(filters, search) {
       filters = [] // disable filters for now
       search = search.trim() // remove whitespace
-      let searchHistory = JSON.parse(localStorage.getItem('sparc.science-sidebar-search-history'));
+      let searchHistory = JSON.parse(
+        localStorage.getItem('sparc.science-sidebar-search-history')
+      )
       if (searchHistory) {
-        searchHistory.push({filters: filters, search: search});
+        searchHistory.push({ filters: filters, search: search })
         this.searchHistory = removeDuplicates(searchHistory)
-        localStorage.setItem('sparc.science-sidebar-search-history', JSON.stringify(searchHistory));
+        localStorage.setItem(
+          'sparc.science-sidebar-search-history',
+          JSON.stringify(searchHistory)
+        )
       } else {
-        localStorage.setItem('sparc.science-sidebar-search-history', JSON.stringify([{filters: filters, search: search}]));
+        localStorage.setItem(
+          'sparc.science-sidebar-search-history',
+          JSON.stringify([{ filters: filters, search: search }])
+        )
       }
     },
-    search: function(item) {
-      this.$emit("search", item);
+    search: function (item) {
+      this.$emit('search', item)
     },
-    selectChange: function(value) {
-      this.selectValue = value;
-      this.search({search: value})
-    }
+    selectChange: function (value) {
+      this.selectValue = value
+      this.search({ search: value })
+    },
   },
   mounted: function () {
-    this.getSearchHistory();
-    EventBus.$on('search-changed', (data) => {
-      this.setSearchHistory(data);
+    this.getSearchHistory()
+    EventBus.on('search-changed', (data) => {
+      this.setSearchHistory(data)
     })
-  }
+  },
 }
 </script>
 
-<style scoped lang="scss">
-// @import "~element-ui/packages/theme-chalk/src/tag";
+<style lang="scss" scoped>
+@use 'element-plus/theme-chalk/src/tag';
 
 .container {
 }
@@ -125,7 +144,6 @@ export default {
   // center text vertically
   display: flex;
   align-items: center;
-  
 }
 
 .search-select {

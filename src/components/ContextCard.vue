@@ -1,58 +1,138 @@
 <template>
-  <div class="context-card-container"  ref="container">
+  <div class="context-card-container" ref="container">
     <div v-show="showContextCard">
-      <div v-show="showDetails" class="hide" @click="showDetails = !showDetails">Hide information<i class="el-icon-arrow-up"></i></div>
-      <div v-show="!showDetails" class="hide" @click="showDetails = !showDetails">Show information<i class="el-icon-arrow-down"></i></div>
-      <el-card v-if="showDetails && Object.keys(contextData).length !== 0" v-loading="loading" class="context-card" >
+      <div
+        v-show="showDetails"
+        class="hide"
+        @click="showDetails = !showDetails"
+      >
+        Hide information<el-icon><el-icon-arrow-up /></el-icon>
+      </div>
+      <div
+        v-show="!showDetails"
+        class="hide"
+        @click="showDetails = !showDetails"
+      >
+        Show information<el-icon><el-icon-arrow-down /></el-icon>
+      </div>
+      <el-card
+        v-if="showDetails && Object.keys(contextData).length !== 0"
+        v-loading="loading"
+        class="context-card"
+      >
         <div class="card-left">
-          <img :src="banner" class="context-image">
+          <img :src="banner" class="context-image" />
         </div>
         <div class="card-right scrollbar">
-          <div class="title">{{contextData.heading}}</div>
-          <div v-html="parseMarkdown(contextData.description)"/>
-          <br/>
+          <div class="title">{{ contextData.heading }}</div>
+          <div v-html="parseMarkdown(contextData.description)" />
+          <br />
 
           <!-- Show sampeles and views seperately if they do not match -->
           <template v-if="!samplesUnderViews">
-            <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
+            <div
+              v-if="contextData.views && contextData.views.length > 0"
+              class="subtitle"
+            >
+              Scaffold Views
+            </div>
             <template v-for="(view, i) in contextData.views">
-              <div v-bind:key="i+'_1'" @click="openViewFile(view)" class="context-card-view">
-                <img class="view-image" :src="getFileFromPath(view.thumbnail)"> 
-                <div class="view-description">{{view.description}}</div>
+              <div
+                v-bind:key="i + '_1'"
+                @click="openViewFile(view)"
+                class="context-card-view"
+              >
+                <img
+                  class="view-image"
+                  :src="getFileFromPath(view.thumbnail)"
+                />
+                <div class="view-description">{{ view.description }}</div>
               </div>
-              <div v-bind:key="i" class="padding"/>
+              <div v-bind:key="i" class="padding" />
             </template>
-            <div style="margin-bottom: 16px;"/>
-            <div v-if="contextData.samples && contextData.samples.length > 0" class="subtitle">Samples on Scaffold</div>
+            <div style="margin-bottom: 16px" />
+            <div
+              v-if="contextData.samples && contextData.samples.length > 0"
+              class="subtitle"
+            >
+              Samples on Scaffold
+            </div>
             <template v-for="(sample, i) in contextData.samples">
-                <span v-bind:key="i+'_3'" class="context-card-item cursor-pointer" @click="toggleSampleDetails(i)">
-                  <div v-bind:key="i+'_6'" style="display: flex">
-                    <div v-if="sample.color" class="color-box" :style="'background-color:'+ sample.color"></div>
-                    <img class="key-image" v-else-if="sample.thumbnail" :src="getFileFromPath(sample.thumbnail)">
-                    {{sample.heading}}
-                    <i class="el-icon-warning-outline info"></i>
-                  </div>
-                </span>
-                <div v-bind:key="i+'_4'" v-if="sampleDetails[i]" v-html="sample.description"/>
-                <a v-bind:key="i+'_5'" v-if="sampleDetails[i] && sample.path" :href="generateFileLink(sample)" target="_blank">View Source</a>
-                <div v-bind:key="i+'_2'" class="padding"/>
+              <span
+                v-bind:key="i + '_3'"
+                class="context-card-item cursor-pointer"
+                @click="toggleSampleDetails(i)"
+              >
+                <div v-bind:key="i + '_6'" style="display: flex">
+                  <div
+                    v-if="sample.color"
+                    class="color-box"
+                    :style="'background-color:' + sample.color"
+                  ></div>
+                  <img
+                    class="key-image"
+                    v-else-if="sample.thumbnail"
+                    :src="getFileFromPath(sample.thumbnail)"
+                  />
+                  {{ sample.heading }}
+                  <el-icon class="info"><el-icon-warning-outline /></el-icon>
+                </div>
+              </span>
+              <div
+                v-bind:key="i + '_4'"
+                v-if="sampleDetails[i]"
+                v-html="sample.description"
+              />
+              <a
+                v-bind:key="i + '_5'"
+                v-if="sampleDetails[i] && sample.path"
+                :href="generateFileLink(sample)"
+                target="_blank"
+                >View Source</a
+              >
+              <div v-bind:key="i + '_2'" class="padding" />
             </template>
           </template>
 
           <!-- Show samples under views if the ids match -->
           <template v-else>
-            <div v-if="contextData.views && contextData.views.length > 0" class="subtitle">Scaffold Views</div>
+            <div
+              v-if="contextData.views && contextData.views.length > 0"
+              class="subtitle"
+            >
+              Scaffold Views
+            </div>
             <template v-for="(view, i) in contextData.views">
-              <span :key="i+'_1'" @click="viewClicked(view, i)" class="context-card-view">
-                <img class="view-image" :src="getFileFromPath(view.thumbnail)"/> 
-                <div class="view-description">{{view.description}}<i class="el-icon-warning-outline info"></i> </div>
+              <span
+                :key="i + '_1'"
+                @click="viewClicked(view, i)"
+                class="context-card-view"
+              >
+                <img
+                  class="view-image"
+                  :src="getFileFromPath(view.thumbnail)"
+                />
+                <div class="view-description">
+                  {{ view.description
+                  }}<el-icon class="info"><el-icon-warning-outline /></el-icon>
+                </div>
               </span>
-              <div v-if="sampleDetails[i]" v-html="samplesMatching(view.id).description" :key="i+'_2'"/>
-              <a v-bind:key="i+'_5'" v-if="sampleDetails[i] && samplesMatching(view.id).path" :href="generateFileLink(samplesMatching(view.id))" target="_blank">View Source</a>
-              <div :key="i" class="padding"/>
+              <div
+                v-if="sampleDetails[i]"
+                v-html="samplesMatching(view.id).description"
+                :key="i + '_2'"
+              />
+              <a
+                v-bind:key="i + '_5'"
+                v-if="sampleDetails[i] && samplesMatching(view.id).path"
+                :href="generateFileLink(samplesMatching(view.id))"
+                target="_blank"
+                >View Source</a
+              >
+              <div :key="i" class="padding" />
 
               <!-- Extra padding if sample details is open -->
-              <div :key="i+'_6'" v-if="sampleDetails[i]" class="padding"/>
+              <div :key="i + '_6'" v-if="sampleDetails[i]" class="padding" />
             </template>
           </template>
         </div>
@@ -61,53 +141,57 @@
   </div>
 </template>
 
-
 <script>
+import {
+  ArrowUp as ElIconArrowUp,
+  ArrowDown as ElIconArrowDown,
+  WarningOutline as ElIconWarningOutline,
+} from '@element-plus/icons-vue'
 /* eslint-disable no-alert, no-console */
-import Vue from "vue";
-import { Link, Icon, Card, Button, Select, Input } from "element-ui";
-import lang from "element-ui/lib/locale/lang/en";
-import locale from "element-ui/lib/locale";
-import EventBus from "./EventBus"
-import hardcoded_info from './hardcoded-context-info'
+import {
+  ElLink as Link,
+  ElIcon as Icon,
+  ElCard as Card,
+  ElButton as Button,
+  ElSelect as Select,
+  ElInput as Input,
+} from 'element-plus'
+import EventBus from './EventBus.js'
+import hardcoded_info from './hardcoded-context-info.js'
 
 //provide the s3Bucket related methods and data.
-import S3Bucket from "../mixins/S3Bucket";
+import S3Bucket from '../mixins/S3Bucket.vue'
 
 import { marked } from 'marked'
 import xss from 'xss'
 
-locale.use(lang);
-Vue.use(Link);
-Vue.use(Icon);
-Vue.use(Card);
-Vue.use(Button);
-Vue.use(Select);
-Vue.use(Input);
-
-const addFilesToPathIfMissing = function(path){
-  if (!path.includes('files')){
+const addFilesToPathIfMissing = function (path) {
+  if (!path.includes('files')) {
     return 'files/' + path
   } else {
     return path
   }
 }
 
-const convertBackslashToForwardSlash = function(path){
-  path = path.replaceAll('\\','/')
+const convertBackslashToForwardSlash = function (path) {
+  path = path.replaceAll('\\', '/')
   path = path.replaceAll('\\\\', '/')
   return path
 }
 
-// const switchPathToDirectory = function(path){
-//   let newPath = path.split('/')
-//   newPath.pop()
-//   return newPath.join('/')
-// }
-
-
 export default {
-  name: "contextCard",
+  components: {
+    ElIconArrowUp,
+    ElIconArrowDown,
+    ElIconWarningOutline,
+    Link,
+    Icon,
+    Card,
+    Button,
+    Select,
+    Input
+  },
+  name: 'contextCard',
   mixins: [S3Bucket],
   props: {
     /**
@@ -123,15 +207,15 @@ export default {
       showDetails: true,
       showContextCard: true,
       sampleDetails: {},
-      loading: false
-    };
+      loading: false,
+    }
   },
   watch: {
     'entry.contextCardUrl': {
-      handler(val){
+      handler(val) {
         if (val) {
           // used for hardcoding data
-          if (val === true){
+          if (val === true) {
             this.contextData = hardcoded_info[this.entry.discoverId]
           } else {
             this.getContextFile(val)
@@ -141,72 +225,77 @@ export default {
           this.showContextCard = false
         }
       },
-      immediate: true
+      immediate: true,
     },
     'entry.s3uri': {
-      handler(val){
-        this.updateS3Bucket(val);
+      handler(val) {
+        this.updateS3Bucket(val)
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   computed: {
-    samplesUnderViews: function(){
-      if (this.contextData){
-        if (this.contextData.samplesUnderViews){
+    samplesUnderViews: function () {
+      if (this.contextData) {
+        if (this.contextData.samplesUnderViews) {
           return true
         } else {
-          let viewId = this.contextData.views.map(v=>v.id)
-          let samplesView = this.contextData.samples.map(s=>s.view)
+          let viewId = this.contextData.views.map((v) => v.id)
+          let samplesView = this.contextData.samples.map((s) => s.view)
 
           // get matching values
-          let matching = viewId.filter(v=>samplesView.includes(v))
+          let matching = viewId.filter((v) => samplesView.includes(v))
 
           // check all arrays have the same length (which means all values are in all three)
-          if ( viewId.length === matching.length && matching.length === samplesView.length){
+          if (
+            viewId.length === matching.length &&
+            matching.length === samplesView.length
+          ) {
             return true
           }
           return false
         }
-      }
-      else return false
+      } else return false
     },
-    banner: function(){
-      if (this.contextData.banner){
-        return this.getFileFromPath(this.contextData.banner) 
-      } else if (this.contextData && this.contextData.views && this.contextData.views.length > 0) {
-        if(this.contextData.views[0].thumbnail){
+    banner: function () {
+      if (this.contextData.banner) {
+        return this.getFileFromPath(this.contextData.banner)
+      } else if (
+        this.contextData &&
+        this.contextData.views &&
+        this.contextData.views.length > 0
+      ) {
+        if (this.contextData.views[0].thumbnail) {
           return this.getFileFromPath(this.contextData.views[0].thumbnail)
         }
-      } 
+      }
       return this.entry.banner
-    }
+    },
   },
   methods: {
-    samplesMatching: function(viewId){
-      if (this.contextData && this.contextData.samples){
-        return this.contextData.samples.filter(s=>s.view == viewId)[0]
-      }
-      else return []
+    samplesMatching: function (viewId) {
+      if (this.contextData && this.contextData.samples) {
+        return this.contextData.samples.filter((s) => s.view == viewId)[0]
+      } else return []
     },
-    viewClicked: function(view, i){
-      this.openViewFile(view) 
+    viewClicked: function (view, i) {
+      this.openViewFile(view)
       this.toggleSampleDetails(i)
     },
     getContextFile: function (contextFileUrl) {
       this.loading = true
       fetch(contextFileUrl)
-        .then((response) =>{
-          if (!response.ok){
+        .then((response) => {
+          if (!response.ok) {
             throw Error(response.statusText)
           } else {
-             return response.json()
+            return response.json()
           }
         })
         .then((data) => {
           this.contextData = data
           this.loading = false
-          this.addDiscoverIdsToContextData() 
+          this.addDiscoverIdsToContextData()
         })
         .catch((err) => {
           //set defaults if we hit an error
@@ -214,10 +303,10 @@ export default {
           this.thumbnail = require('@/../assets/missing-image.svg')
           this.discoverId = undefined
           this.loading = false
-        });
+        })
     },
-    removeDoubleFilesPath: function(path){
-      if (path.includes('files/')){
+    removeDoubleFilesPath: function (path) {
+      if (path.includes('files/')) {
         return path.replace('files/', '')
       } else if (path.includes('files\\')) {
         return path.replace('files\\', '')
@@ -225,79 +314,87 @@ export default {
         return path
       }
     },
-    toggleSampleDetails: function(i){
-      if (this.sampleDetails[i] === undefined){
-        Vue.set(this.sampleDetails, i, true)
+    toggleSampleDetails: function (i) {
+      if (this.sampleDetails[i] === undefined) {
+        this.sampleDetails[i] = true
       } else {
-        Vue.set(this.sampleDetails, i, !this.sampleDetails[i])
+        this.sampleDetails[i] = !this.sampleDetails[i]
       }
     },
-    getFileFromPath: function(path){
+    getFileFromPath: function (path) {
       // for hardcoded data
-      if(this.entry.contextCardUrl === true){
+      if (this.entry.contextCardUrl === true) {
         return path
       }
       path = this.removeDoubleFilesPath(path)
-      return  `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/files/${path}${this.getS3Args()}`
+      return `${this.envVars.API_LOCATION}s3-resource/${
+        this.entry.discoverId
+      }/${this.entry.version}/files/${path}${this.getS3Args()}`
     },
     //  This is used later when generateing links to the resource on sparc.science (see generateFileLink)
-    addDiscoverIdsToContextData(){
-      this.contextData.samples.forEach((sample, i)=>{
-        if (sample && sample.doi && sample.doi !== ""){
-          fetch(`${this.envVars.PENNSIEVE_API_LOCATION}/discover/datasets/doi/${this.splitDoiFromUrl(sample.doi)}`)
-          .then((response) => response.json())
-          .then((data) => {
-            this.contextData.samples[i].discoverId = data.id
-            this.contextData.samples[i].version = data.version
-          })
+    addDiscoverIdsToContextData() {
+      this.contextData.samples.forEach((sample, i) => {
+        if (sample && sample.doi && sample.doi !== '') {
+          fetch(
+            `${
+              this.envVars.PENNSIEVE_API_LOCATION
+            }/discover/datasets/doi/${this.splitDoiFromUrl(sample.doi)}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              this.contextData.samples[i].discoverId = data.id
+              this.contextData.samples[i].version = data.version
+            })
         } else {
-            this.contextData.samples[i].discoverId = this.entry.discoverId
-            this.contextData.samples[i].version = this.entry.version
+          this.contextData.samples[i].discoverId = this.entry.discoverId
+          this.contextData.samples[i].version = this.entry.version
         }
       })
     },
-    processPathForUrl(path){
+    processPathForUrl(path) {
       path = convertBackslashToForwardSlash(path)
       path = addFilesToPathIfMissing(path)
       return encodeURI(path)
     },
-    splitDoiFromUrl(url){
+    splitDoiFromUrl(url) {
       return url.split('https://doi.org/').pop()
     },
-    generateFileLink(sample){
-      return `${this.envVars.ROOT_URL}/file/${sample.discoverId}/${sample.version}?path=${this.processPathForUrl(sample.path)}`
-
+    generateFileLink(sample) {
+      return `${this.envVars.ROOT_URL}/file/${sample.discoverId}/${
+        sample.version
+      }?path=${this.processPathForUrl(sample.path)}`
     },
-    parseMarkdown(markdown){
+    parseMarkdown(markdown) {
       return xss(marked.parse(markdown))
     },
-    openViewFile: function(view){
+    openViewFile: function (view) {
       // note that we assume that the view file is in the same directory as the scaffold (viewUrls take relative paths)
-      this.entry.viewUrl = `${this.envVars.API_LOCATION}s3-resource/${this.entry.discoverId}/${this.entry.version}/${view.path}${this.getS3Args()}`
+      this.entry.viewUrl = `${this.envVars.API_LOCATION}s3-resource/${
+        this.entry.discoverId
+      }/${this.entry.version}/${view.path}${this.getS3Args()}`
       this.entry.type = 'Scaffold View'
-      EventBus.$emit("PopoverActionClick", this.entry)
-    }
-  }
-};
+      EventBus.emit('PopoverActionClick', this.entry)
+    },
+  },
+}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-// @import "~element-ui/packages/theme-chalk/src/button";
-// @import "~element-ui/packages/theme-chalk/src/card";
-// @import "~element-ui/packages/theme-chalk/src/icon";
-// @import "~element-ui/packages/theme-chalk/src/input";
-// @import "~element-ui/packages/theme-chalk/src/link";
-// @import "~element-ui/packages/theme-chalk/src/select";
+<style lang="scss" scoped>
+@use 'element-plus/theme-chalk/src/button';
+@use 'element-plus/theme-chalk/src/card';
+@use 'element-plus/theme-chalk/src/icon';
+@use 'element-plus/theme-chalk/src/input';
+@use 'element-plus/theme-chalk/src/link';
+@use 'element-plus/theme-chalk/src/select';
 
-.hide{
+.hide {
   color: #e4e7ed;
   cursor: pointer;
 }
 
-.context-card{
+.context-card {
   background-color: white;
-  max-height: 10  50px;
+  max-height: 10 50px;
   padding: 8px;
   font-size: 14px;
   margin-bottom: 18px;
@@ -308,7 +405,7 @@ export default {
   max-height: 258px;
 }
 
-.context-card-view{
+.context-card-view {
   cursor: pointer;
   padding-bottom: 8px;
   display: flex;
@@ -325,13 +422,13 @@ export default {
   flex: 8;
 }
 
-.context-card ::v-deep .el-card__body {
+.context-card :deep(.el-card__body) {
   padding: 0px;
   display: flex;
   width: 516px;
 }
 
-.context-image{
+.context-image {
   width: 250px;
   height: auto;
 }
@@ -344,8 +441,8 @@ export default {
   margin-right: 8px;
 }
 
-.card-left{
-  flex: 1
+.card-left {
+  flex: 1;
 }
 
 .card-right {
@@ -359,7 +456,7 @@ export default {
   cursor: pointer;
 }
 
-.info{
+.info {
   transform: rotate(180deg);
   color: $app-primary-color;
   margin-left: 8px;
@@ -369,11 +466,11 @@ export default {
   padding-bottom: 8px;
 }
 
-.title{
+.title {
   font-weight: bold;
 }
 
-.subtitle{
+.subtitle {
   font-weight: bold;
 }
 
@@ -393,5 +490,4 @@ export default {
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   background-color: #979797;
 }
-
 </style>
