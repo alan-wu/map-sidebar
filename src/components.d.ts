@@ -13,6 +13,7 @@ declare module 'vue' {
     DatasetCard: typeof import('./components/DatasetCard.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
+    ElCascader: typeof import('element-plus/es')['ElCascader']
     ElDrawer: typeof import('element-plus/es')['ElDrawer']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElIconArrowLeft: typeof import('@element-plus/icons-vue')['ArrowLeft']

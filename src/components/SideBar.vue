@@ -199,10 +199,9 @@ export default {
   pointer-events: auto;
 }
 
-.el-icon-arrow-left,
-.el-icon-arrow-right {
+.el-icon svg {
   font-weight: 600;
-  margin-top: 12px;
+  margin-top: 24px;
   color: $app-primary-color;
   cursor: pointer;
   pointer-events: auto;

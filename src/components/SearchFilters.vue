@@ -27,7 +27,9 @@
           :append-to-body="false"
           popper-class="popover"
         >
-          <map-svg-icon slot="reference" icon="help" class="help" />
+          <template #reference>
+            <map-svg-icon icon="help" class="help" />
+          </template>
           <div>
             <strong>Within categories:</strong> OR
             <br />
@@ -69,6 +71,7 @@ import {
 import CustomCascader from './Cascader.vue'
 import speciesMap from './species-map.js'
 import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
+import '@abi-software/svg-sprite/dist/style.css'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { facetPropPathMapping } from '../algolia/utils.js'
@@ -650,7 +653,7 @@ export default {
   float: right;
 }
 
-.number-shown-select :deep(.el-input__inner) {
+.number-shown-select :deep(.el-select__wrapper) {
   width: 68px;
   height: 40px;
   color: rgb(48, 49, 51);

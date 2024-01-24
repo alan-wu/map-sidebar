@@ -400,7 +400,7 @@ export default {
           if (key !== 'Dataset') items = items.concat(value)
         }
         return items
-      } else return this.items[this.category]
+      } else return [...this.items[this.category]]
     },
   },
   created: function () {

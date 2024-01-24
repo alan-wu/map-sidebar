@@ -9,13 +9,7 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
-        vue({
-            template: {
-              compilerOptions: {
-                isCustomElement: (tag) => ['map-svg-sprite-color', 'map-svg-icon'].includes(tag),
-              }
-            }
-          }),
+        vue(),
         Components({
             // allow auto load markdown components under `./src/components/`
             extensions: ['vue', 'md'],

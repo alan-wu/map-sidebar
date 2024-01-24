@@ -1,16 +1,18 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
-    <div slot="header" class="header">
-      <el-input
-        class="search-input"
-        placeholder="Search"
-        v-model="searchInput"
-        @keyup.native="searchEvent"
-        clearable
-        @clear="clearSearchClicked"
-      ></el-input>
-      <el-button class="button" @click="searchEvent">Search</el-button>
-    </div>
+    <template #header>
+      <div class="header">
+        <el-input
+          class="search-input"
+          placeholder="Search"
+          v-model="searchInput"
+          @keyup.native="searchEvent"
+          clearable
+          @clear="clearSearchClicked"
+        ></el-input>
+        <el-button class="button" @click="searchEvent">Search</el-button>
+      </div>
+    </template>
     <SearchFilters
       class="filters"
       ref="filtersRef"
@@ -34,7 +36,7 @@
       </div>
       <el-pagination
         class="pagination"
-        :current-page.sync="page"
+        v-model:current-page="page"
         hide-on-single-page
         large
         layout="prev, pager, next"
@@ -474,6 +476,7 @@ export default {
   padding-bottom: 16px;
   background-color: white;
   text-align: center;
+  padding-left: 72px;
 }
 
 .pagination :deep(button) {
@@ -482,7 +485,7 @@ export default {
 .pagination :deep(li) {
   background-color: white !important;
 }
-.pagination :deep(li.active) {
+.pagination :deep(li.is-active) {
   color: $app-primary-color;
 }
 

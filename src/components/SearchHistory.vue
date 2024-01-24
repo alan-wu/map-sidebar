@@ -15,7 +15,6 @@
       :model-value="selectValue"
       class="m-2 search-select"
       placeholder="Full search History"
-      size="small"
       popper-class="sidebar-search-select-popper"
       @change="selectChange"
     >
@@ -148,6 +147,7 @@ export default {
 
 .search-select {
   float: right;
+  width: 180px;
 }
 </style>
 

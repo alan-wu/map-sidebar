@@ -57,8 +57,9 @@ import { View as ElIconView } from '@element-plus/icons-vue'
 import BadgesGroup from './BadgesGroup.vue'
 import { ElButton as Button, ElIcon as Icon } from 'element-plus'
 import EventBus from './EventBus.js'
-import speciesMap from './species-map'
+import speciesMap from './species-map.js'
 import ImageGallery from './ImageGallery.vue'
+import MissingImage from '@/../assets/missing-image.svg'
 
 export default {
   data() {
@@ -84,7 +85,7 @@ export default {
   },
   data: function () {
     return {
-      thumbnail: require('@/../assets/missing-image.svg'),
+      thumbnail: MissingImage,
       dataLocation: this.entry.doi,
       discoverId: undefined,
       loading: true,
@@ -216,7 +217,7 @@ export default {
           })
           .catch(() => {
             //set defaults if we hit an error
-            this.thumbnail = require('@/../assets/missing-image.svg')
+            this.thumbnail = MissingImage
             this.discoverId = Number(this.entry.datasetId)
             this.loading = false
           })
