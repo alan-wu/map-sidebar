@@ -1,25 +1,37 @@
 <template>
   <div class="filters">
-    <map-svg-sprite-color />
+    <MapSvgSpriteColor />
     <transition name="el-zoom-in-top">
       <span v-show="showFilters" class="search-filters transition-box">
-        <custom-cascader
+        <el-cascader
           class="cascader"
           ref="cascader"
           v-model="cascadeSelected"
-          placeholder
+          size="large"
+          placeholder=" "
           :collapse-tags="true"
           collapse-tags-tooltip
           :options="options"
           :props="props"
           @change="cascadeEvent($event)"
           @expand-change="cascadeExpandChange"
-          :show-all-levels="false"
+          :show-all-levels="true"
           v-loading="!cascaderIsReady"
           popper-class="sidebar-cascader-popper"
-          @tags-changed="tagsChangedCallback"
-        ></custom-cascader>
-        <div v-if="showFiltersText" class="filter-default-value">Filters</div>
+        ></el-cascader>
+        <div class="filter-default-value">
+          <span v-if="showFiltersText">Filters</span>
+          <template v-else>
+          <el-tag class="ml-2" type="info">{{ presentTags[0] }}</el-tag>
+            <el-tag 
+              v-if="presentTags.length > 1" 
+              class="ml-2" 
+              type="info" 
+            >
+              +{{ presentTags.length-1 }}
+            </el-tag>
+          </template>
+        </div>
         <el-popover
           title="How do filters work?"
           width="250"
@@ -28,7 +40,7 @@
           popper-class="popover"
         >
           <template #reference>
-            <map-svg-icon icon="help" class="help" />
+            <MapSvgIcon icon="help" class="help" />
           </template>
           <div>
             <strong>Within categories:</strong> OR
@@ -43,21 +55,22 @@
         </el-popover>
       </span>
     </transition>
-
-    <el-select
-      class="number-shown-select"
-      v-model="numberShown"
-      placeholder="10"
-      @change="numberShownChanged($event)"
-    >
-      <el-option
-        v-for="item in numberDatasetsShown"
-        :key="item"
-        :label="item"
-        :value="item"
-      ></el-option>
-    </el-select>
-    <span class="dataset-results-feedback">{{ this.numberOfResultsText }}</span>
+    <div class="dataset-shown">
+      <span class="dataset-results-feedback">{{ numberOfResultsText }}</span>
+      <el-select
+        class="number-shown-select"
+        v-model="numberShown"
+        placeholder="10"
+        @change="numberShownChanged($event)"
+      >
+        <el-option
+          v-for="item in numberDatasetsShown"
+          :key="item"
+          :label="item"
+          :value="item"
+        ></el-option>
+      </el-select>
+    </div>
   </div>
 </template>
 
@@ -67,8 +80,9 @@ import {
   ElOption as Option,
   ElSelect as Select,
   ElPopover as Popover,
+  ElCascader as Cascader,
 } from 'element-plus'
-import CustomCascader from './Cascader.vue'
+// import CustomCascader from './Cascader.vue'
 import speciesMap from './species-map.js'
 import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 import '@abi-software/svg-sprite/dist/style.css'
@@ -92,12 +106,12 @@ const convertReadableLabel = function (original) {
 export default {
   name: 'SearchFilters',
   components: {
-    CustomCascader,
     MapSvgIcon,
     MapSvgSpriteColor,
     Option,
     Select,
-    Popover
+    Popover,
+    Cascader
   },
   props: {
     /**
@@ -135,6 +149,8 @@ export default {
           children: [{}],
         },
       ],
+      cascaderTags: {},
+      presentTags:[],
     }
   },
   computed: {
@@ -211,7 +227,29 @@ export default {
       })
     },
     tagsChangedCallback: function (presentTags) {
-      if (presentTags.length > 0) {
+      /**
+       * Temporary alternative solution
+       * Currently focus on the general functionality
+       * Will fix after
+       */
+      if (Object.keys(this.cascaderTags).length > 0) {
+        for (const key in this.cascaderTags) {
+          this.cascaderTags[key] = []
+        }
+      }
+      presentTags.map((tag)=>{
+        const key = tag[0]
+        const valuePath = tag[tag.length - 1].split('>')
+        const value = valuePath[valuePath.length - 1]
+        if (!(key in this.cascaderTags) || value == "Show all") {
+          this.cascaderTags[key] = []
+        }
+        if (value !== "Show all") {
+          this.cascaderTags[key].push(value)
+        }
+      })
+      this.presentTags = Object.values(this.cascaderTags).flat(1)
+      if (this.presentTags.length > 0) {
         this.showFiltersText = false
       } else {
         this.showFiltersText = true
@@ -219,6 +257,7 @@ export default {
     },
     // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (event) {
+      this.tagsChangedCallback(event);
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event)
@@ -580,6 +619,13 @@ export default {
       this.setCascader(this.entry.filterFacets)
       this.cssMods()
       this.$emit('cascaderReady')
+      /**
+       * Temporary alternative solution
+       * Currently focus on the general functionality
+       * Will fix after
+       */
+      const cascaderTags = document.getElementsByClassName('el-cascader__tags')[0]
+      cascaderTags.remove()
     })
   },
 }
@@ -589,6 +635,7 @@ export default {
 @use 'element-plus/theme-chalk/src/option';
 @use 'element-plus/theme-chalk/src/popover';
 @use 'element-plus/theme-chalk/src/select';
+@use 'element-plus/theme-chalk/src/cascader';
 
 .filter-default-value {
   pointer-events: none;
@@ -633,8 +680,15 @@ export default {
   padding-bottom: 6px;
 }
 
-.dataset-results-feedback {
+.dataset-shown {
+  display: flex;
+  flex-direction: row;
   float: right;
+  padding-bottom: 6px;
+}
+
+.dataset-results-feedback {
+  white-space:nowrap;
   text-align: right;
   color: rgb(48, 49, 51);
   font-family: Asap;
@@ -647,10 +701,6 @@ export default {
   position: relative;
   float: left;
   padding-right: 15px;
-}
-
-.number-shown-select {
-  float: right;
 }
 
 .number-shown-select :deep(.el-select__wrapper) {
