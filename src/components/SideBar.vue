@@ -8,7 +8,7 @@
       v-model="drawerOpen"
       :teleported="false"
       :modal-append-to-body="false"
-      size="550"
+      size="620"
       :with-header="false"
       :wrapperClosable="false"
       :modal="false"
@@ -18,14 +18,14 @@
           <el-icon><el-icon-arrow-right /></el-icon>
         </div>
         <div class="sidebar-container">
-          <tabs
+          <Tabs
             v-if="tabs.length > 1"
             :tabTitles="tabs"
             :activeId="activeId"
             @titleClicked="tabClicked"
           />
           <template v-for="tab in tabs" key="tab.id">
-            <sidebar-content
+            <SidebarContent
               class="sidebar-content-container"
               v-show="tab.id === activeId"
               :contextCardEntry="tab.contextCard"

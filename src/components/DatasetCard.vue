@@ -4,7 +4,7 @@
       <div class="seperator-path"></div>
       <div v-loading="loading" class="card">
         <span class="card-left">
-          <image-gallery
+          <ImageGallery
             v-if="!loading && discoverId"
             :datasetId="discoverId"
             :datasetVersion="version"
@@ -39,7 +39,7 @@
             >
           </div>
           <div class="badges-container">
-            <badges-group
+            <BadgesGroup
               :entry="entry"
               :dataset-biolucida="biolucidaData"
               @categoryChanged="categoryChanged"
@@ -52,10 +52,13 @@
 </template>
 
 <script>
-import { View as ElIconView } from '@element-plus/icons-vue'
 /* eslint-disable no-alert, no-console */
+import { View as ElIconView } from '@element-plus/icons-vue'
 import BadgesGroup from './BadgesGroup.vue'
-import { ElButton as Button, ElIcon as Icon } from 'element-plus'
+import {
+  ElButton as Button,
+  ElIcon as Icon
+} from 'element-plus'
 import EventBus from './EventBus.js'
 import speciesMap from './species-map.js'
 import ImageGallery from './ImageGallery.vue'
@@ -255,7 +258,7 @@ export default {
 @use 'element-plus/theme-chalk/src/loading';
 
 .dataset-card {
-  padding-left: 16px;
+  padding-left: 15px;
   position: relative;
   min-height: 17rem;
 }

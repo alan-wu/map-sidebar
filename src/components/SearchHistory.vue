@@ -7,7 +7,9 @@
         v-if="i < 3"
         v-bind:key="i"
         @click="search(item)"
-        >{{ item.search }}
+        size="large"
+      >
+        {{ item.search }}
       </el-tag>
     </template>
     <el-select
@@ -30,7 +32,10 @@
 
 <script>
 /* eslint-disable no-alert, no-console */
-import { ElTag as Tag, ElSelect as Select } from 'element-plus'
+import {
+  ElTag as Tag,
+  ElSelect as Select
+} from 'element-plus'
 
 import EventBus from './EventBus.js'
 
@@ -126,6 +131,7 @@ export default {
 @use 'element-plus/theme-chalk/src/tag';
 
 .container {
+  padding-bottom: 3px;
 }
 
 .search-tag {

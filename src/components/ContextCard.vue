@@ -142,12 +142,12 @@
 </template>
 
 <script>
+  /* eslint-disable no-alert, no-console */
 import {
   ArrowUp as ElIconArrowUp,
   ArrowDown as ElIconArrowDown,
   WarningOutline as ElIconWarningOutline,
 } from '@element-plus/icons-vue'
-/* eslint-disable no-alert, no-console */
 import {
   ElLink as Link,
   ElIcon as Icon,

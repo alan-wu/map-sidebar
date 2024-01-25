@@ -10,7 +10,7 @@
           clearable
           @clear="clearSearchClicked"
         ></el-input>
-        <el-button class="button" @click="searchEvent">Search</el-button>
+        <el-button class="button" @click="searchEvent" size="large">Search</el-button>
       </div>
     </template>
     <SearchFilters
@@ -23,10 +23,10 @@
       @loading="filtersLoading"
       @cascaderReady="cascaderReady"
     ></SearchFilters>
-    <search-history
+    <SearchHistory
       ref="searchHistory"
       @search="searchHistorySearch"
-    ></search-history>
+    ></SearchHistory>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
@@ -475,8 +475,8 @@ export default {
 .pagination {
   padding-bottom: 16px;
   background-color: white;
-  text-align: center;
-  padding-left: 72px;
+  padding-left: 92px;
+  font-weight: bold;
 }
 
 .pagination :deep(button) {
@@ -507,7 +507,7 @@ export default {
 }
 
 .content {
-  width: 518px;
+  width: 515px;
   flex: 1 1 auto;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px #e4e7ed;

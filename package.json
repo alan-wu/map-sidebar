@@ -31,7 +31,7 @@
     "./src/*": "./src/*"
   },
   "dependencies": {
-    "@abi-software/gallery": "^0.5.0-vue3.4",
+    "@abi-software/gallery": "^0.5.0-vue3.5",
     "@abi-software/svg-sprite": "^0.4.0-vue3-beta.0",
     "@element-plus/icons-vue": "^2.3.1",
     "algoliasearch": "^4.10.5",

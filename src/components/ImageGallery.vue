@@ -1,6 +1,6 @@
 <template>
   <div class="full-size">
-    <gallery
+    <Gallery
         :bottomSpacer="bottomSpacer"
         :cardWidth="10"
         :items="galleryItems"
