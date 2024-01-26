@@ -1,6 +1,44 @@
 <template>
   <div class="filters">
     <MapSvgSpriteColor />
+      <div class="cascader-tag" v-if="presentTags.length > 0">
+        <el-tag 
+          class="ml-2" 
+          type="info" 
+          closable 
+          @close="cascadeTagClose()"
+        >
+          {{ presentTags[0] }}
+        </el-tag>
+        <el-popover
+          v-if="presentTags.length > 1"
+          placement="bottom-start"
+          :width="200"
+          trigger="hover"
+        >
+          <template #default>
+            <el-tag 
+              v-for="(tag, i) in presentTags.slice(1)"
+              :key="i"
+              class="ml-2" 
+              type="info" 
+              closable
+              @close="cascadeTagClose(tag)"
+            >
+              {{ tag }}
+            </el-tag>
+          </template>
+          <template #reference>
+            <el-tag 
+              v-if="presentTags.length > 1" 
+              class="ml-2" 
+              type="info" 
+            >
+              +{{ presentTags.length - 1 }}
+            </el-tag>
+          </template>
+        </el-popover>
+      </div>
     <transition name="el-zoom-in-top">
       <span v-show="showFilters" class="search-filters transition-box">
         <el-cascader
@@ -19,19 +57,7 @@
           v-loading="!cascaderIsReady"
           popper-class="sidebar-cascader-popper"
         ></el-cascader>
-        <div class="filter-default-value">
-          <span v-if="showFiltersText">Filters</span>
-          <template v-else>
-          <el-tag class="ml-2" type="info">{{ presentTags[0] }}</el-tag>
-            <el-tag 
-              v-if="presentTags.length > 1" 
-              class="ml-2" 
-              type="info" 
-            >
-              +{{ presentTags.length-1 }}
-            </el-tag>
-          </template>
-        </div>
+        <div v-if="showFiltersText" class="filter-default-value">Filters</div>
         <el-popover
           title="How do filters work?"
           width="250"
@@ -226,12 +252,24 @@ export default {
           })
       })
     },
+    /**
+     * Temporary alternative solution
+     * Currently focus on the general functionality
+     * Will fix after
+     */
+    cascadeTagClose: function (tag) {
+      if (tag) {
+        this.presentTags = this.presentTags.filter((item) => item !== tag)
+      } else {
+        this.presentTags.shift();
+      }
+    },
+    /**
+     * Temporary alternative solution
+     * Currently focus on the general functionality
+     * Will fix after
+     */
     tagsChangedCallback: function (presentTags) {
-      /**
-       * Temporary alternative solution
-       * Currently focus on the general functionality
-       * Will fix after
-       */
       if (Object.keys(this.cascaderTags).length > 0) {
         for (const key in this.cascaderTags) {
           this.cascaderTags[key] = []
@@ -241,10 +279,10 @@ export default {
         const key = tag[0]
         const valuePath = tag[tag.length - 1].split('>')
         const value = valuePath[valuePath.length - 1]
-        if (!(key in this.cascaderTags) || value == "Show all") {
+        if (!(key in this.cascaderTags) || value.toLowerCase() == "show all") {
           this.cascaderTags[key] = []
         }
-        if (value !== "Show all") {
+        if (value.toLowerCase() !== "show all") {
           this.cascaderTags[key].push(value)
         }
       })
@@ -255,13 +293,49 @@ export default {
         this.showFiltersText = true
       }
     },
+    /**
+     * When uncheck for all child, automatically check "Show all"
+     * Demo function, will make some change later
+     */
+    showAllEventModifier2: function (event) {
+      let facetMap = {}
+      const keyList = this.options.map((options) => options.key)
+      const valueList = this.options.map((options) => options.children)
+      for (let index = 0; index < keyList.length; index++) {
+        const key = keyList[index]
+        const value = valueList[index].filter((child) => child.label == "Show all")[0].value
+        facetMap[key] = [key, value]
+      }
+      keyList.map((key) => {
+        const currentKeys = event.map((e)=> e[0])
+        if (!currentKeys.includes(key)) {
+          if (this.__expandItem__) {
+            event.push(facetMap[key])
+          } else {
+            event.unshift(facetMap[key])
+          }
+        }
+      })
+      return event
+    },
     // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (event) {
-      this.tagsChangedCallback(event);
       if (event) {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event)
 
+        event = this.showAllEventModifier2(event)
+        /**
+         * Move new added event to the top
+         * Otherwise, cascader will show different expand item
+         * Caused by uncheck "Show all"
+         */
+        if (this.__expandItem__) {
+          const current = event.filter((e) => e[0] == this.__expandItem__[0]);
+          const rest = event.filter((e) => e[0] !== this.__expandItem__[0]);
+          event = [...current, ...rest]
+        }
+        this.tagsChangedCallback(event);
         // Create results for the filter update
         let filterKeys = event
           .filter((selection) => selection !== undefined)
@@ -632,10 +706,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use 'element-plus/theme-chalk/src/option';
-@use 'element-plus/theme-chalk/src/popover';
-@use 'element-plus/theme-chalk/src/select';
-@use 'element-plus/theme-chalk/src/cascader';
+
+.cascader-tag {
+  position: absolute;
+  top: 130px;
+  left: 70px;
+  z-index: 1;
+}
 
 .filter-default-value {
   pointer-events: none;
@@ -707,6 +784,10 @@ export default {
   width: 68px;
   height: 40px;
   color: rgb(48, 49, 51);
+}
+
+.el-select-dropdown__item.is-selected {
+  color: #8300BF;
 }
 
 .filters :deep(.el-popover) {
