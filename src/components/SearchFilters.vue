@@ -1,44 +1,44 @@
 <template>
   <div class="filters">
     <MapSvgSpriteColor />
-      <div class="cascader-tag" v-if="presentTags.length > 0">
-        <el-tag 
-          class="ml-2" 
-          type="info" 
-          closable 
-          @close="cascadeTagClose()"
-        >
-          {{ presentTags[0] }}
-        </el-tag>
-        <el-popover
-          v-if="presentTags.length > 1"
-          placement="bottom-start"
-          :width="200"
-          trigger="hover"
-        >
-          <template #default>
-            <el-tag 
-              v-for="(tag, i) in presentTags.slice(1)"
-              :key="i"
-              class="ml-2" 
-              type="info" 
-              closable
-              @close="cascadeTagClose(tag)"
-            >
-              {{ tag }}
-            </el-tag>
-          </template>
-          <template #reference>
-            <el-tag 
-              v-if="presentTags.length > 1" 
-              class="ml-2" 
-              type="info" 
-            >
-              +{{ presentTags.length - 1 }}
-            </el-tag>
-          </template>
-        </el-popover>
-      </div>
+    <div class="cascader-tag" v-if="presentTags.length > 0">
+      <el-tag 
+        class="ml-2" 
+        type="info" 
+        closable 
+        @close="cascadeTagClose(presentTags[0])"
+      >
+        {{ presentTags[0] }}
+      </el-tag>
+      <el-popover
+        v-if="presentTags.length > 1"
+        placement="bottom-start"
+        :width="200"
+        trigger="hover"
+      >
+        <template #default>
+          <el-tag 
+            v-for="(tag, i) in presentTags.slice(1)"
+            :key="i"
+            class="ml-2" 
+            type="info" 
+            closable
+            @close="cascadeTagClose(tag)"
+          >
+            {{ tag }}
+          </el-tag>
+        </template>
+        <template #reference>
+          <el-tag 
+            v-if="presentTags.length > 1" 
+            class="ml-2" 
+            type="info" 
+          >
+            +{{ presentTags.length - 1 }}
+          </el-tag>
+        </template>
+      </el-popover>
+    </div>
     <transition name="el-zoom-in-top">
       <span v-show="showFilters" class="search-filters transition-box">
         <el-cascader
@@ -258,11 +258,36 @@ export default {
      * Will fix after
      */
     cascadeTagClose: function (tag) {
-      if (tag) {
-        this.presentTags = this.presentTags.filter((item) => item !== tag)
+      this.presentTags = this.presentTags.filter((t) => t !== tag)
+      let manualEvent = []
+      if (this.presentTags.length == 0) {
+        this.options.map((option) => {
+          const key = option.key
+          const value = option.children.filter((child) => child.label === "Show all")[0].value
+          manualEvent.push([key, value])
+        })
       } else {
-        this.presentTags.shift();
+        this.presentTags.map((tag) => {
+          const tagBelongTo = Object.keys(this.cascaderTags).filter((key) => {
+            return this.cascaderTags[key].includes(tag)
+          })[0]
+          const children = this.options.filter((option) => {
+            return option.key === tagBelongTo
+          })[0].children
+          children.map((first) => {
+            if (first.children) {
+              first.children.map((second) => {
+                if (second.label === tag) {
+                  manualEvent.push([tagBelongTo, first.value, second.value])
+                }
+              })
+            } else if (first.label === tag) {
+              manualEvent.push([tagBelongTo, first.value])
+            }
+          })
+        })
       }
+      this.cascadeEvent(manualEvent)
     },
     /**
      * Temporary alternative solution
@@ -270,23 +295,38 @@ export default {
      * Will fix after
      */
     tagsChangedCallback: function (presentTags) {
-      if (Object.keys(this.cascaderTags).length > 0) {
-        for (const key in this.cascaderTags) {
-          this.cascaderTags[key] = []
-        }
-      }
-      presentTags.map((tag)=>{
-        const key = tag[0]
-        const valuePath = tag[tag.length - 1].split('>')
-        const value = valuePath[valuePath.length - 1]
-        if (!(key in this.cascaderTags) || value.toLowerCase() == "show all") {
-          this.cascaderTags[key] = []
-        }
-        if (value.toLowerCase() !== "show all") {
-          this.cascaderTags[key].push(value)
+      this.cascaderTags = {}
+      this.presentTags = []
+      presentTags.map((tag) => {
+        let { hString } = this.findHierarachyStringAndBooleanString(tag)
+        let { facet, facet2, term } = this.getFacetsFromHierarchyString(hString)
+        if (facet2) {
+          if (term in this.cascaderTags) {
+            if (facet in this.cascaderTags[term]) {
+              this.cascaderTags[term][facet].push(facet2)
+            } else {
+              this.cascaderTags[term][facet] = [facet2]
+            }
+          } else {
+            this.cascaderTags[term] = {}
+            this.cascaderTags[term][facet] = [facet2]
+          }
+        } else {
+          if (term in this.cascaderTags) {
+            this.cascaderTags[term].push(facet)
+          } else {
+            if (facet.toLowerCase() !== "show all") {
+              this.cascaderTags[term] = [facet]
+            } else {
+              this.cascaderTags[term] = []
+            }
+          }
         }
       })
-      this.presentTags = Object.values(this.cascaderTags).flat(1)
+      Object.values(this.cascaderTags).map((value) => {
+        const extend = Array.isArray(value) ? value : Object.values(value).flat(1)
+        this.presentTags = [...this.presentTags, ...extend]
+      })
       if (this.presentTags.length > 0) {
         this.showFiltersText = false
       } else {
@@ -299,15 +339,14 @@ export default {
      */
     showAllEventModifier2: function (event) {
       let facetMap = {}
-      const keyList = this.options.map((options) => options.key)
-      const valueList = this.options.map((options) => options.children)
-      for (let index = 0; index < keyList.length; index++) {
-        const key = keyList[index]
-        const value = valueList[index].filter((child) => child.label == "Show all")[0].value
-        facetMap[key] = [key, value]
-      }
+      const keyList = this.options.map((option) => {
+        const key = option.key
+        const value = option.children.filter((child) => child.label === "Show all")[0].value
+        facetMap[key] = ([key, value])
+        return key
+      })
       keyList.map((key) => {
-        const currentKeys = event.map((e)=> e[0])
+        const currentKeys = event.map((e) => e[0])
         if (!currentKeys.includes(key)) {
           if (this.__expandItem__) {
             event.push(facetMap[key])
@@ -336,6 +375,7 @@ export default {
           event = [...current, ...rest]
         }
         this.tagsChangedCallback(event);
+
         // Create results for the filter update
         let filterKeys = event
           .filter((selection) => selection !== undefined)
