@@ -128,8 +128,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use 'element-plus/theme-chalk/src/tag';
-
 .container {
   padding-bottom: 3px;
 }

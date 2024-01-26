@@ -254,9 +254,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use 'element-plus/theme-chalk/src/col';
-@use 'element-plus/theme-chalk/src/loading';
-
 .dataset-card {
   padding-left: 15px;
   position: relative;

@@ -157,9 +157,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use 'element-plus/theme-chalk/src/drawer';
-@use 'element-plus/theme-chalk/src/icon';
-
 .box-card {
   flex: 3;
   height: 100%;
@@ -244,5 +241,22 @@ export default {
 
 .sidebar-content-container {
   flex: 1 1 auto;
+}
+</style>
+
+<style lang="scss">
+.side-bar {
+  --el-color-primary: #8300BF;
+  --el-color-primary-light-7: #DAB3EC;
+  --el-color-primary-light-8: #e6ccf2;
+  --el-color-primary-light-9: #f3e6f9;
+  --el-color-primary-light-3: #f3e6f9;
+  --el-color-primary-dark-2: #7600AC;
+}
+.el-button--primary { 
+  --el-button-hover-text-color: var(--el-color-primary);
+  --el-button-hover-link-text-color: var(--el-color-primary-light-5);
+  --el-button-hover-bg-color: var(--el-color-primary-light-3);
+  --el-button-hover-border-color: var(--el-color-primary-light-3);
 }
 </style>

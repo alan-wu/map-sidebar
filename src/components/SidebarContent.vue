@@ -10,7 +10,14 @@
           clearable
           @clear="clearSearchClicked"
         ></el-input>
-        <el-button class="button" @click="searchEvent" size="large">Search</el-button>
+        <el-button 
+          type="primary" 
+          class="button" 
+          @click="searchEvent" 
+          size="large"
+        >
+          Search
+        </el-button>
       </div>
     </template>
     <SearchFilters
@@ -433,24 +440,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use 'element-plus/theme-chalk/src/button';
-@use 'element-plus/theme-chalk/src/card';
-@use 'element-plus/theme-chalk/src/drawer';
-@use 'element-plus/theme-chalk/src/icon';
-@use 'element-plus/theme-chalk/src/input';
-@use 'element-plus/theme-chalk/src/loading';
-@use 'element-plus/theme-chalk/src/pagination';
-
 .content-card {
   height: 100%;
   flex-flow: column;
   display: flex;
-}
-
-.button {
-  background-color: $app-primary-color;
-  border: $app-primary-color;
-  color: white;
 }
 
 .step-item {
