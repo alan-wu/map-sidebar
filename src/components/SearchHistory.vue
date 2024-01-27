@@ -19,6 +19,7 @@
       placeholder="Full search History"
       popper-class="sidebar-search-select-popper"
       @change="selectChange"
+      :teleported="false"
     >
       <el-option
         v-for="(item, i) in cascaderOptions"
