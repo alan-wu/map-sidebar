@@ -379,8 +379,12 @@ export default {
          * Caused by uncheck "Show all"
          */
         if (this.__expandItem__) {
-          const current = event.filter((e) => e[0] == this.__expandItem__[0]);
-          const rest = event.filter((e) => e[0] !== this.__expandItem__[0]);
+          let position = 0
+          if (this.__expandItem__.length > 1) {
+            position = 1
+          }
+          const current = event.filter((e) => e[position] == this.__expandItem__[position]);
+          const rest = event.filter((e) => e[position] !== this.__expandItem__[position]);
           event = [...current, ...rest]
         }
         this.tagsChangedCallback(event);
@@ -747,8 +751,9 @@ export default {
        * Currently focus on the general functionality
        * Will fix after
        */
-      const cascaderTags = document.getElementsByClassName('el-cascader__tags')[0]
-      cascaderTags.remove()
+      this.$nextTick(() => {
+        document.getElementsByClassName('el-cascader__tags')[0].remove()
+      })
     })
   },
 }
