@@ -258,35 +258,43 @@ export default {
      * Will fix after
      */
     cascadeTagClose: function (tag) {
-      this.presentTags = this.presentTags.filter((t) => t !== tag)
       let manualEvent = []
-      if (this.presentTags.length == 0) {
+      Object.entries(this.cascaderTags).map((entry) => {
+        const term = entry[0]
+        const facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
         this.options.map((option) => {
-          const key = option.key
-          const value = option.children.filter((child) => child.label === "Show all")[0].value
-          manualEvent.push([key, value])
-        })
-      } else {
-        this.presentTags.map((tag) => {
-          const tagBelongTo = Object.keys(this.cascaderTags).filter((key) => {
-            return this.cascaderTags[key].includes(tag)
-          })[0]
-          const children = this.options.filter((option) => {
-            return option.key === tagBelongTo
-          })[0].children
-          children.map((first) => {
-            if (first.children) {
-              first.children.map((second) => {
-                if (second.label === tag) {
-                  manualEvent.push([tagBelongTo, first.value, second.value])
+          if (option.label === term) {
+            option.children.map((child) => {
+              const key = option.key
+              const label = child.label
+              const value = child.value
+              if (Array.isArray(facet)) {
+                if (facet.length === 0 && label === "Show all") {
+                  manualEvent.push([key, value])
+                  return
+                } else {
+                  if (label !== tag && facet.includes(label)) {
+                    manualEvent.push([key, value])
+                  }
                 }
-              })
-            } else if (first.label === tag) {
-              manualEvent.push([tagBelongTo, first.value])
-            }
-          })
+              } else {
+                Object.keys(facet).map((k) => {
+                  const facet2 = facet[k]
+                  if (k === label) {
+                    child.children.map((grandchild) => {
+                      const nestedLabel = grandchild.label
+                      const nestedValue = grandchild.value
+                      if (nestedLabel !== tag && facet2.includes(nestedLabel)) {
+                        manualEvent.push([key, nestedValue])
+                      }
+                    })
+                  }
+                })
+              }
+            })
+          }
         })
-      }
+      })
       this.cascadeEvent(manualEvent)
     },
     /**
@@ -327,6 +335,7 @@ export default {
         const extend = Array.isArray(value) ? value : Object.values(value).flat(1)
         this.presentTags = [...this.presentTags, ...extend]
       })
+      this.presentTags = [...new Set(this.presentTags)]
       if (this.presentTags.length > 0) {
         this.showFiltersText = false
       } else {
