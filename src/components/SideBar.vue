@@ -8,7 +8,7 @@
       v-model="drawerOpen"
       :teleported="false"
       :modal-append-to-body="false"
-      size="620"
+      size="584"
       :with-header="false"
       :wrapperClosable="false"
       :modal="false"
@@ -223,13 +223,6 @@ export default {
   pointer-events: auto;
 }
 
-.box-card {
-  flex: 3;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: auto;
-}
-
 :deep(.my-drawer) {
   background: rgba(0, 0, 0, 0);
   box-shadow: none;
@@ -237,6 +230,7 @@ export default {
 
 :deep(.my-drawer .el-drawer__body) {
   height: 100%;
+  padding: 0;
 }
 
 .sidebar-content-container {
