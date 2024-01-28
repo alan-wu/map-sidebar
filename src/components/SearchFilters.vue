@@ -40,7 +40,7 @@
       </el-popover>
     </div>
     <transition name="el-zoom-in-top">
-      <span v-show="showFilters" class="search-filters transition-box">
+      <span v-show="showFilters" v-loading="!cascaderIsReady" class="search-filters transition-box">
         <el-cascader
           class="cascader"
           ref="cascader"
@@ -54,9 +54,8 @@
           @change="cascadeEvent($event)"
           @expand-change="cascadeExpandChange"
           :show-all-levels="true"
-          v-loading="!cascaderIsReady"
           popper-class="sidebar-cascader-popper"
-        ></el-cascader>
+        />
         <div v-if="showFiltersText" class="filter-default-value">Filters</div>
         <el-popover
           title="How do filters work?"
@@ -680,7 +679,6 @@ export default {
           .forEach((el) => (el.style.display = 'none'))
       })
     },
-
     /*
      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
      */
@@ -715,7 +713,6 @@ export default {
       }
       return false
     },
-
     getHierarchicalValidatedFilters: function (filters) {
       if (filters) {
         if (this.cascaderIsReady) {
@@ -745,7 +742,6 @@ export default {
       this.checkShowAllBoxes()
       this.setCascader(this.entry.filterFacets)
       this.cssMods()
-      this.$emit('cascaderReady')
       /**
        * Temporary alternative solution
        * Currently focus on the general functionality
@@ -754,6 +750,7 @@ export default {
       this.$nextTick(() => {
         document.getElementsByClassName('el-cascader__tags')[0].remove()
       })
+      this.$emit('cascaderReady')
     })
   },
 }
@@ -763,8 +760,8 @@ export default {
 
 .cascader-tag {
   position: absolute;
-  top: 130px;
-  left: 70px;
+  top: 110px;
+  left: 50px;
   z-index: 1;
 }
 
