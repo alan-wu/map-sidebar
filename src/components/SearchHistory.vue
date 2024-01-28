@@ -139,6 +139,7 @@ export default {
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
+  float: left;
 }
 
 .title {

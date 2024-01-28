@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     BadgesGroup: typeof import('./components/BadgesGroup.vue')['default']
     Cascader: typeof import('./components/Cascader.vue')['default']
-    ContextCard: typeof import('./components/ContextCard.vue')['default']
     DatasetCard: typeof import('./components/DatasetCard.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']

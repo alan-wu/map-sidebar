@@ -71,7 +71,12 @@ export default {
     }
   },
   name: 'DatasetCard',
-  components: { BadgesGroup, ImageGallery, Button, Icon },
+  components: {
+    BadgesGroup,
+    ImageGallery,
+    Button,
+    Icon
+  },
   props: {
     /**
      * Object containing information for

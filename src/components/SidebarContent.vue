@@ -63,7 +63,6 @@ import {
   ElDrawer as Drawer,
   ElIcon as Icon,
   ElInput as Input,
-  ElLoading as Loading,
   ElPagination as Pagination,
 } from 'element-plus'
 import SearchFilters from './SearchFilters.vue'
@@ -104,7 +103,17 @@ var initial_state = {
 }
 
 export default {
-  components: { SearchFilters, DatasetCard, SearchHistory, Button, Card, Drawer, Icon, Input, Loading, Pagination },
+  components: {
+    SearchFilters,
+    DatasetCard,
+    SearchHistory,
+    Button,
+    Card,
+    Drawer,
+    Icon,
+    Input,
+    Pagination
+  },
   name: 'SideBarContent',
   props: {
     visible: {
@@ -468,7 +477,7 @@ export default {
 .pagination {
   padding-bottom: 16px;
   background-color: white;
-  padding-left: 92px;
+  padding-left: 95px;
   font-weight: bold;
 }
 
