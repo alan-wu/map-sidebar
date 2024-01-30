@@ -12,6 +12,8 @@
       :with-header="false"
       :wrapperClosable="false"
       :modal="false"
+      modal-class="sidebar-body"
+      z-index="10"
     >
       <div class="box-card">
         <div v-if="drawerOpen" @click="close" class="close-tab">
@@ -168,6 +170,10 @@ export default {
   position: relative;
   height: 100%;
   pointer-events: none;
+}
+
+:deep(.sidebar-body) {
+  position: absolute !important;
 }
 
 .side-bar :deep(.el-drawer:focus) {
