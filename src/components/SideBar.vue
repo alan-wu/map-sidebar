@@ -14,6 +14,7 @@
       :modal="false"
       modal-class="sidebar-body"
       :z-index="10"
+      :lock-scroll="false"
     >
       <div class="box-card">
         <div v-if="drawerOpen" @click="close" class="close-tab">
