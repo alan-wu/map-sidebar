@@ -1,6 +1,6 @@
 {
   "name": "@abi-software/map-side-bar",
-  "version": "1.7.0-vue3.2",
+  "version": "1.7.0-vue3.3",
   "files": [
     "dist/*",
     "src/*",

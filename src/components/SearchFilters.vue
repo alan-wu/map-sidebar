@@ -742,14 +742,6 @@ export default {
       this.checkShowAllBoxes()
       this.setCascader(this.entry.filterFacets)
       this.cssMods()
-      /**
-       * Temporary alternative solution
-       * Currently focus on the general functionality
-       * Will fix after
-       */
-      this.$nextTick(() => {
-        document.getElementsByClassName('el-cascader__tags')[0].remove()
-      })
       this.$emit('cascaderReady')
     })
   },
@@ -763,6 +755,10 @@ export default {
   top: 110px;
   left: 50px;
   z-index: 1;
+}
+
+:deep(.el-cascader__tags) {
+  display: none;
 }
 
 .filter-default-value {
