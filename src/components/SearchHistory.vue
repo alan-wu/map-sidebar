@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="history-container">
     <!-- <span v-if="reversedSearchHistory.length > 0" class="title"> Search History </span> -->
     <template v-for="(item, i) in reversedSearchHistory">
       <el-tag
@@ -129,17 +129,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.container {
+.history-container {
   padding-bottom: 3px;
 }
 
-.search-tag {
+.search-tag.el-tag {
   margin: 0 5px 5px 0;
   cursor: pointer;
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
   float: left;
+  background: #f9f2fc!important;
+  border-color: $app-primary-color!important;
+  color:$app-primary-color!important;
 }
 
 .title {

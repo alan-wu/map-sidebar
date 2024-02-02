@@ -6,7 +6,7 @@
           class="search-input"
           placeholder="Search"
           v-model="searchInput"
-          @keyup.native="searchEvent"
+          @keyup="searchEvent"
           clearable
           @clear="clearSearchClicked"
         ></el-input>

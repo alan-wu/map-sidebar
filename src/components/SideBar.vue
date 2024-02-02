@@ -171,6 +171,8 @@ export default {
   position: relative;
   height: 100%;
   pointer-events: none;
+  width:600px;
+  float: right;
 }
 
 :deep(.sidebar-body) {

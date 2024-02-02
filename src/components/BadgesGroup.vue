@@ -100,32 +100,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.tag-button,
-.tag-button:hover,
-.tag-button:focus,
-.tag-button.active {
-  border-radius: 4px;
-  font-size: 0.75rem;
-  padding: 0.2rem 0.2rem;
-  margin: 0.5rem 0 0 0;
-  margin-right: 0.75rem !important;
-}
-
-.tag-button,
-.tag-button:hover,
-.tag-button:focus {
-  background: #f9f2fc;
-  border: 1px solid $app-primary-color;
-  color: $app-primary-color;
-}
-
-.tag-button.active {
-  background: $app-primary-color;
-  border: 1px solid $app-primary-color;
-  color: #fff;
-}
-
-.tag-button + .tag-button {
-  margin-left: 0;
+.container {
+  .tag-button.el-button {
+    border-radius: 4px!important;
+    font-size: 0.75rem!important;
+    padding: 0.2rem 0.2rem!important;
+    margin: 0.5rem 0 0 0!important;
+    margin-right: 0.75rem !important;
+    background: #f9f2fc!important;
+    border: 1px solid $app-primary-color!important;
+    color: $app-primary-color!important;
+    &.active {
+      background: $app-primary-color!important;
+      border: 1px solid $app-primary-color!important;
+      color: #fff!important;
+    }
+  }
+  
+  .tag-button + .tag-button {
+    margin-left: 0!important;
+  }
 }
 </style>

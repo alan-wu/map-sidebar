@@ -1,6 +1,6 @@
 {
   "name": "@abi-software/map-side-bar",
-  "version": "1.7.0-vue3.3",
+  "version": "1.7.0-vue3.4",
   "files": [
     "dist/*",
     "src/*",
@@ -50,7 +50,6 @@
     "eslint": "^8.56.0",
     "eslint-plugin-vue": "^9.19.2",
     "file-loader": "^5.0.2",
-    "node-sass": "^4.14.1",
     "raw-loader": "^0.5.1",
     "sass": "^1.70.0",
     "transform-loader": "^0.2.4",
