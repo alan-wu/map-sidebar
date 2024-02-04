@@ -350,17 +350,13 @@ export default {
       const keyList = this.options.map((option) => {
         const key = option.key
         const value = option.children.filter((child) => child.label === "Show all")[0].value
-        facetMap[key] = ([key, value])
+        facetMap[key] = [key, value]
         return key
       })
+      const currentKeys = event.map((e) => e[0])
       keyList.map((key) => {
-        const currentKeys = event.map((e) => e[0])
         if (!currentKeys.includes(key)) {
-          if (this.__expandItem__) {
-            event.push(facetMap[key])
-          } else {
-            event.unshift(facetMap[key])
-          }
+          event.unshift(facetMap[key])
         }
       })
       return event
