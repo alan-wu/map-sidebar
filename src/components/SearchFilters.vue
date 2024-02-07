@@ -209,6 +209,8 @@ export default {
 
             // create top level of options in cascader
             this.options.forEach((facet, i) => {
+              this.options[i].total = this.countTotalFacet(facet)
+              
               this.options[i].label = convertReadableLabel(facet.label)
               this.options[i].value = this.createCascaderItemValue(
                 facet.key,
@@ -342,22 +344,41 @@ export default {
       }
     },
     /**
-     * When uncheck for all child, automatically check "Show all"
-     * Demo function, will make some change later
+     * Support for function 'showAllEventModifierForAutoCheckAll'
+     * Called in function 'populateCascader'
      */
-    showAllEventModifier2: function (event) {
-      let facetMap = {}
-      const keyList = this.options.map((option) => {
+    countTotalFacet: function (facet) {
+      if (['anatomy.organ.category.name'].includes(facet.key)) {
+        const count = facet.children.reduce((total, num) => {
+          // The first 'total' will be an object
+          total = typeof total == 'number' ? total : total.children.length
+          return total + num.children.length
+        })
+        return count
+      }
+      return facet.children.length
+    },
+    /**
+     * When check/uncheck all child items, automatically check "Show all"
+     */
+    showAllEventModifierForAutoCheckAll: function (event) {
+      const currentKeys = {}
+      event.map((e) => {
+        const eventKey = e[0]
+        if (eventKey in currentKeys) currentKeys[eventKey] += 1
+        else currentKeys[eventKey] = 1
+      })
+      this.options.map((option) => {
         const key = option.key
         const value = option.children.filter((child) => child.label === "Show all")[0].value
-        facetMap[key] = [key, value]
-        return key
-      })
-      const currentKeys = event.map((e) => e[0])
-      keyList.map((key) => {
-        if (!currentKeys.includes(key)) {
-          event.unshift(facetMap[key])
+        const total = option.total
+        // Remove events if all child items is checked
+        if (currentKeys[key] === total) {
+          event = event.filter((e) => e[0] !== option.key)
+          delete currentKeys[key]
         }
+        // Add 'Show all' if facet type not exist in event
+        if (!(key in currentKeys)) event.unshift([key, value])
       })
       return event
     },
@@ -367,11 +388,10 @@ export default {
         // Check for show all in selected cascade options
         event = this.showAllEventModifier(event)
 
-        event = this.showAllEventModifier2(event)
+        event = this.showAllEventModifierForAutoCheckAll(event)
         /**
-         * Move new added event to the top
+         * Move the new added event to the beginning
          * Otherwise, cascader will show different expand item
-         * Caused by uncheck "Show all"
          */
         if (this.__expandItem__) {
           let position = 0
