@@ -254,81 +254,69 @@ export default {
       })
     },
     /**
-     * Temporary alternative solution
-     * Currently focus on the general functionality
-     * Will fix after
+     * Create manual events when cascader tag is closed
      */
     cascadeTagClose: function (tag) {
       let manualEvent = []
+
       Object.entries(this.cascaderTags).map((entry) => {
-        const term = entry[0]
-        const facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
-        this.options.map((option) => {
-          if (option.label === term) {
-            option.children.map((child) => {
-              const key = option.key
-              const label = child.label
-              const value = child.value
-              if (Array.isArray(facet)) {
-                if (facet.length === 0 && label === "Show all") {
-                  manualEvent.push([key, value])
-                  return
-                } else {
-                  if (label !== tag && facet.includes(label)) {
-                    manualEvent.push([key, value])
-                  }
-                }
-              } else {
-                Object.keys(facet).map((k) => {
-                  const facet2 = facet[k]
-                  if (k === label) {
-                    child.children.map((grandchild) => {
-                      const nestedLabel = grandchild.label
-                      const nestedValue = grandchild.value
-                      if (nestedLabel !== tag && facet2.includes(nestedLabel)) {
-                        manualEvent.push([key, nestedValue])
-                      }
-                    })
-                  }
+        const term = entry[0], facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
+        const option = this.options.filter((option) => option.label == term)[0]
+        const key = option.key
+
+        for (let index = 0; index < option.children.length; index++) {
+          const child = option.children[index]
+          const label = child.label, value = child.value
+
+          if (Array.isArray(facet)) {
+            // push "Show all" if there is no item checked
+            if (facet.length === 0 && label.toLowerCase() === "show all") {
+              manualEvent.push([key, value])
+              break
+              // push all checked items
+            } else if (label !== tag && facet.includes(label))
+              manualEvent.push([key, value])
+          } else {
+            // loop nested cascader items
+            Object.entries(facet).map((entry2) => {
+              const term2 = entry2[0], facet2 = entry2[1] // object key, object value
+
+              if (term2 === label) {
+                child.children.map((child2) => {
+                  const label2 = child2.label, value2 = child2.value
+                  // push all checked items
+                  if (label2 !== tag && facet2.includes(label2))
+                    manualEvent.push([key, value2])
                 })
               }
             })
           }
-        })
+        }
       })
       this.cascadeEvent(manualEvent)
     },
     /**
-     * Temporary alternative solution
-     * Currently focus on the general functionality
-     * Will fix after
+     * Re-generate 'cascaderTags' and 'presentTags'
      */
-    tagsChangedCallback: function (presentTags) {
+    tagsChangedCallback: function (event) {
       this.cascaderTags = {}
       this.presentTags = []
-      presentTags.map((tag) => {
+      event.map((tag) => {
         let { hString } = this.findHierarachyStringAndBooleanString(tag)
         let { facet, facet2, term } = this.getFacetsFromHierarchyString(hString)
         if (facet2) {
           if (term in this.cascaderTags) {
-            if (facet in this.cascaderTags[term]) {
-              this.cascaderTags[term][facet].push(facet2)
-            } else {
-              this.cascaderTags[term][facet] = [facet2]
-            }
+            if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(facet2)
+            else this.cascaderTags[term][facet] = [facet2]
           } else {
             this.cascaderTags[term] = {}
             this.cascaderTags[term][facet] = [facet2]
           }
         } else {
-          if (term in this.cascaderTags) {
-            this.cascaderTags[term].push(facet)
-          } else {
-            if (facet.toLowerCase() !== "show all") {
-              this.cascaderTags[term] = [facet]
-            } else {
-              this.cascaderTags[term] = []
-            }
+          if (term in this.cascaderTags) this.cascaderTags[term].push(facet)
+          else {
+            if (facet.toLowerCase() !== "show all") this.cascaderTags[term] = [facet]
+            else this.cascaderTags[term] = []
           }
         }
       })
@@ -337,11 +325,8 @@ export default {
         this.presentTags = [...this.presentTags, ...extend]
       })
       this.presentTags = [...new Set(this.presentTags)]
-      if (this.presentTags.length > 0) {
-        this.showFiltersText = false
-      } else {
-        this.showFiltersText = true
-      }
+      if (this.presentTags.length > 0) this.showFiltersText = false
+      else this.showFiltersText = true
     },
     /**
      * Support for function 'showAllEventModifierForAutoCheckAll'
