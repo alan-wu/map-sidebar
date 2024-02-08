@@ -297,13 +297,13 @@ export default {
     },
     /**
      * Re-generate 'cascaderTags' and 'presentTags'
+     * Not able to avoid wrong facet at the moment
      */
     tagsChangedCallback: function (event) {
       this.cascaderTags = {}
       this.presentTags = []
-      event.map((tag) => {
-        let { hString } = this.findHierarachyStringAndBooleanString(tag)
-        let { facet, facet2, term } = this.getFacetsFromHierarchyString(hString)
+      event.map((item) => {
+        const { facet, facet2, term } = item
         if (facet2) {
           if (term in this.cascaderTags) {
             if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(facet2)
@@ -313,13 +313,15 @@ export default {
             this.cascaderTags[term][facet] = [facet2]
           }
         } else {
-          if (term in this.cascaderTags) this.cascaderTags[term].push(facet)
+          if (term in this.cascaderTags && !['anatomical structure'].includes(term.toLowerCase()))
+            this.cascaderTags[term].push(facet)
           else {
             if (facet.toLowerCase() !== "show all") this.cascaderTags[term] = [facet]
             else this.cascaderTags[term] = []
           }
         }
       })
+
       Object.values(this.cascaderTags).map((value) => {
         const extend = Array.isArray(value) ? value : Object.values(value).flat(1)
         this.presentTags = [...this.presentTags, ...extend]
@@ -387,7 +389,6 @@ export default {
           const rest = event.filter((e) => e[position] !== this.__expandItem__[position]);
           event = [...current, ...rest]
         }
-        this.tagsChangedCallback(event);
 
         // Create results for the filter update
         let filterKeys = event
@@ -597,6 +598,8 @@ export default {
         })
         this.updatePreviousShowAllChecked(this.cascadeSelected)
       }
+
+      this.tagsChangedCallback(filterFacets);
     },
     addFilter: function (filterToAdd) {
       //Do not set the value unless it is ready
