@@ -32,7 +32,7 @@
             <el-button
               v-if="entry.simulation"
               @click="openRepository"
-              size="mini"
+              size="small"
               class="button"
               :icon="ElIconView"
               >View repository</el-button
