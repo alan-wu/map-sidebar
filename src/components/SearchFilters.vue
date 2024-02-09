@@ -176,6 +176,11 @@ export default {
       ],
       cascaderTags: {},
       presentTags:[],
+      correctnessCheck: {
+        term: new Set(),
+        facet: new Set(),
+        facet2: new Set()
+      }
     }
   },
   computed: {
@@ -300,24 +305,45 @@ export default {
      * Not able to avoid wrong facet at the moment
      */
     tagsChangedCallback: function (event) {
+      if (this.correctnessCheck.term && this.correctnessCheck.facet && this.correctnessCheck.facet2) {
+        this.options.map((option) => {
+          this.correctnessCheck.term.add(option.label)
+          option.children.map((child) => {
+            this.correctnessCheck.facet.add(child.label)
+            if (option.label === 'Anatomical structure' && child.label !== 'Show all') {
+              child.children.map((child2) => {
+                this.correctnessCheck.facet2.add(child2.label)
+              })
+            }
+          })
+        })
+      }
+
       this.cascaderTags = {}
       this.presentTags = []
       event.map((item) => {
         const { facet, facet2, term } = item
-        if (facet2) {
-          if (term in this.cascaderTags) {
-            if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(facet2)
-            else this.cascaderTags[term][facet] = [facet2]
+        if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facet)) {
+          if (facet2) {
+            if (this.correctnessCheck.facet2.has(facet2)) {
+              if (term in this.cascaderTags) {
+                if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(facet2)
+                else this.cascaderTags[term][facet] = [facet2]
+              } else {
+                this.cascaderTags[term] = {}
+                this.cascaderTags[term][facet] = [facet2]
+              }
+            }
           } else {
-            this.cascaderTags[term] = {}
-            this.cascaderTags[term][facet] = [facet2]
-          }
-        } else {
-          if (term in this.cascaderTags && !['anatomical structure'].includes(term.toLowerCase()))
-            this.cascaderTags[term].push(facet)
-          else {
-            if (facet.toLowerCase() !== "show all") this.cascaderTags[term] = [facet]
-            else this.cascaderTags[term] = []
+            // If 'cascaderTags' has key 'Anatomical structure',
+            // it's value type will be Object (because it has nested facets), 
+            // in this case 'push' action will not available.
+            if (term in this.cascaderTags && term !== 'Anatomical structure')
+              this.cascaderTags[term].push(facet)
+            else {
+              if (facet.toLowerCase() !== "show all") this.cascaderTags[term] = [facet]
+              else this.cascaderTags[term] = []
+            }
           }
         }
       })
