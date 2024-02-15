@@ -101,13 +101,13 @@
 
 <script>
 /* eslint-disable no-alert, no-console */
+import { markRaw } from 'vue'
 import {
   ElOption as Option,
   ElSelect as Select,
   ElPopover as Popover,
   ElCascader as Cascader,
 } from 'element-plus'
-// import CustomCascader from './Cascader.vue'
 import speciesMap from './species-map.js'
 import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 import '@abi-software/svg-sprite/dist/style.css'
@@ -174,14 +174,17 @@ export default {
           children: [{}],
         },
       ],
-      cascaderTags: {},
       presentTags:[],
-      correctnessCheck: {
-        term: new Set(),
-        facet: new Set(),
-        facet2: new Set()
-      }
     }
+  },
+  setup() {
+    const cascaderTags = markRaw({});
+    const correctnessCheck = markRaw({
+      term: new Set(),
+      facet: new Set(),
+      facet2: new Set()
+    });
+    return { cascaderTags, correctnessCheck }
   },
   computed: {
     numberOfResultsText: function () {
