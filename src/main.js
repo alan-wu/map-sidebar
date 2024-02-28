@@ -1,8 +1,9 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
+import MapSideBar from './components/SideBar.vue'
 
-import vueCustomElement from 'vue-custom-element'
-Vue.use(vueCustomElement)
+const app = createApp(App);
 
-Vue.config.productionTip = false
-Vue.customElement('map-side-bar', App)
+app.component('MapSideBar', MapSideBar)
+
+app.mount("#app");
