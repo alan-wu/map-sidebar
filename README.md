@@ -45,7 +45,7 @@ import "@abi-software/map-side-bar/dist/style.css";
 The code in template should looks like this
 
 ```html
-<SideBar 
+<SideBar
   :envVars="envVars"
   :visible="sideBarVisibility"
   @actionClick="actionClick"
@@ -112,7 +112,7 @@ README = 'readme'
 TITLE = 'title'
 ```
 
-Note: All are optional except for ‘name’ 
+Note: All are optional except for ‘name’
 
 ### Sidebar input processing
 Sidebar input processing can be viewed here:
@@ -146,7 +146,7 @@ All fields are strings:
       "path": required // relative path to the view file, eg "derivative\\Scaffolds\\scaffoldMap_tenial_view.json",
       "sample": optional // used to link to views to samples
       "thumbnail": optional // technically optional but it won’t look great
-    } 
+    }
   ]
 }
 ```
@@ -155,4 +155,14 @@ An example context card file can be viewed here:
 https://drive.google.com/file/d/15NVRBny7WGltpMSRbsgMglXo0xOC3-Q9/view?usp=sharing
 
 
+## API Documentation
+
+The API documentation is developed with `vitepress` and `vuese`. Documentation pages are in the `docs` folder.
+
+### To run in local development mode
+```bash
+npm run docs:watch
+```
+
+This will start the documentation server with `vitepress` on port `:5173` and watch the components' changes.
 
