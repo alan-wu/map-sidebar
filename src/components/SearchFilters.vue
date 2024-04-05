@@ -17,25 +17,29 @@
         trigger="hover"
       >
         <template #default>
-          <el-tag
-            v-for="(tag, i) in presentTags.slice(1)"
-            :key="i"
-            class="ml-2"
-            type="info"
-            closable
-            @close="cascadeTagClose(tag)"
-          >
-            {{ tag }}
-          </el-tag>
+          <div class="el-tags-container">
+            <el-tag
+              v-for="(tag, i) in presentTags.slice(1)"
+              :key="i"
+              class="ml-2"
+              type="info"
+              closable
+              @close="cascadeTagClose(tag)"
+            >
+              {{ tag }}
+            </el-tag>
+          </div>
         </template>
         <template #reference>
-          <el-tag
-            v-if="presentTags.length > 1"
-            class="ml-2"
-            type="info"
-          >
-            +{{ presentTags.length - 1 }}
-          </el-tag>
+          <div class="el-tags-container">
+            <el-tag
+              v-if="presentTags.length > 1"
+              class="ml-2"
+              type="info"
+            >
+              +{{ presentTags.length - 1 }}
+            </el-tag>
+          </div>
         </template>
       </el-popover>
     </div>
@@ -788,6 +792,14 @@ export default {
   top: 110px;
   left: 50px;
   z-index: 1;
+  display: flex;
+  gap: 4px;
+}
+
+.el-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 :deep(.el-cascader__tags) {
@@ -842,6 +854,7 @@ export default {
   flex-direction: row;
   float: right;
   padding-bottom: 6px;
+  gap: 8px;
 }
 
 .dataset-results-feedback {
