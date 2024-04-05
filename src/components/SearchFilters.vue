@@ -2,10 +2,10 @@
   <div class="filters">
     <MapSvgSpriteColor />
     <div class="cascader-tag" v-if="presentTags.length > 0">
-      <el-tag 
-        class="ml-2" 
-        type="info" 
-        closable 
+      <el-tag
+        class="ml-2"
+        type="info"
+        closable
         @close="cascadeTagClose(presentTags[0])"
       >
         {{ presentTags[0] }}
@@ -17,11 +17,11 @@
         trigger="hover"
       >
         <template #default>
-          <el-tag 
+          <el-tag
             v-for="(tag, i) in presentTags.slice(1)"
             :key="i"
-            class="ml-2" 
-            type="info" 
+            class="ml-2"
+            type="info"
             closable
             @close="cascadeTagClose(tag)"
           >
@@ -29,10 +29,10 @@
           </el-tag>
         </template>
         <template #reference>
-          <el-tag 
-            v-if="presentTags.length > 1" 
-            class="ml-2" 
-            type="info" 
+          <el-tag
+            v-if="presentTags.length > 1"
+            class="ml-2"
+            type="info"
           >
             +{{ presentTags.length - 1 }}
           </el-tag>
@@ -218,7 +218,7 @@ export default {
             // create top level of options in cascader
             this.options.forEach((facet, i) => {
               this.options[i].total = this.countTotalFacet(facet)
-              
+
               this.options[i].label = convertReadableLabel(facet.label)
               this.options[i].value = this.createCascaderItemValue(
                 facet.key,
@@ -339,7 +339,7 @@ export default {
             }
           } else {
             // If 'cascaderTags' has key 'Anatomical structure',
-            // it's value type will be Object (because it has nested facets), 
+            // it's value type will be Object (because it has nested facets),
             // in this case 'push' action will not available.
             if (term in this.cascaderTags && term !== 'Anatomical structure')
               this.cascaderTags[term].push(facet)
