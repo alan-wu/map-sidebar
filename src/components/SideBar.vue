@@ -192,7 +192,7 @@ export default {
   mounted: function () {
     EventBus.on('PopoverActionClick', (payLoad) => {
       /**
-       * This event is emitted when user clicks the gallery image.
+       * This event is emitted when the image is clicked on or the button below the image is clicked on.
        * @arg payLoad
        */
       this.$emit('actionClick', payLoad)
