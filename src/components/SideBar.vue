@@ -54,6 +54,9 @@ import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
 
+/**
+ * Aims to provide a sidebar for searching capability for SPARC portal.
+ */
 export default {
   components: {
     SidebarContent,
@@ -65,22 +68,40 @@ export default {
   },
   name: 'SideBar',
   props: {
+    /**
+     * The option to show side bar.
+     */
     visible: {
       type: Boolean,
       default: false,
     },
+    /**
+     * The environment variables object with
+     * `API_LOCATION`, `ALGOLIA_KEY`, `ALGOLIA_ID`,
+     * `ALGOLIA_INDEX`, `PENNSIEVE_API_LOCATION`, `BL_SERVER_URL`,
+     * `NL_LINK_PREFIX`, `ROOT_URL`
+     */
     envVars: {
       type: Object,
       default: () => {},
     },
+    /**
+     * The array of objects to show multiple sidebar contents.
+     */
     tabs: {
       type: Array,
       default: () => [{ title: 'flatmap', id: 1 }],
     },
+    /**
+     * The active tab id for default tab.
+     */
     activeId: {
       type: Number,
       default: 1,
     },
+    /**
+     * The option to show or hide sidebar on page load.
+     */
     openAtStart: {
       type: Boolean,
       default: false,
@@ -93,11 +114,23 @@ export default {
   },
   methods: {
     searchChanged: function (id, data) {
+      /**
+       * This event is emitted when the search filters are changed.
+       * @arg `obj` {data, id}
+       */
       this.$emit('search-changed', { ...data, id: id })
     },
+    /**
+     * @vuese
+     * The function to close sidebar.
+     */
     close: function () {
       this.drawerOpen = false
     },
+    /**
+     * @vuese
+     * The function to toggle (open and close) sidebar.
+     */
     toggleDrawer: function () {
       this.drawerOpen = !this.drawerOpen
     },
@@ -108,6 +141,11 @@ export default {
         this.$refs[this.activeId][0].openSearch(facets, query)
       })
     },
+    /**
+     * @vuese
+     * The function to add filters to sidebar search.
+     * @arg filter `object`
+     */
     addFilter: function (filter) {
       this.drawerOpen = true
       filter.AND = true // When we add a filter external, it is currently only with an AND boolean
@@ -135,7 +173,16 @@ export default {
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
     },
+    /**
+     * @vuese
+     * The function to emit 'tabClicked' event with tab's `id` when user clicks the sidebar tab.
+     * @arg id
+     */
     tabClicked: function (id) {
+      /**
+       * This event is emitted when user click sidebar's tab.
+       * @arg id
+       */
       this.$emit('tabClicked', id)
     },
   },
@@ -144,6 +191,10 @@ export default {
   },
   mounted: function () {
     EventBus.on('PopoverActionClick', (payLoad) => {
+      /**
+       * This event is emitted when the image is clicked on or the button below the image is clicked on.
+       * @arg payLoad
+       */
       this.$emit('actionClick', payLoad)
     })
     EventBus.on('available-facets', (payLoad) => {
@@ -153,6 +204,11 @@ export default {
       })
     })
     EventBus.on('contextUpdate', (payLoad) => {
+      /**
+       * This event is emitted when the context is updated.
+       * Example, context update on first load.
+       * @arg payload
+       */
       this.$emit('contextUpdate', payLoad)
     })
   },
@@ -256,7 +312,7 @@ export default {
   --el-color-primary-light-3: #f3e6f9;
   --el-color-primary-dark-2: #7600AC;
 }
-.el-button--primary { 
+.el-button--primary {
   --el-button-hover-text-color: var(--el-color-primary);
   --el-button-hover-link-text-color: var(--el-color-primary-light-5);
   --el-button-hover-bg-color: var(--el-color-primary-light-3);

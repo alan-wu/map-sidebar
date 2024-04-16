@@ -17,7 +17,13 @@
     "release:minor": "npm version minor; npm publish",
     "release:patch": "npm version patch;  npm publish",
     "changelog": "auto-changelog -p --output CHANGELOG.md --template keepachangelog",
-    "version": "npm run build-bundle;npm run changelog; git add CHANGELOG.md"
+    "version": "npm run build-bundle;npm run changelog; git add CHANGELOG.md",
+    "vuese-gen": "node vuese-generator.js",
+    "vuese-watch": "node vuese-generator.js watch",
+    "docs:dev": "vitepress dev docs",
+    "docs:watch": "concurrently \"npm run vuese-watch\" \"npm run docs:dev\"",
+    "docs:build": "npm run vuese-gen; vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "type": "module",
   "main": "./dist/map-side-bar.umd.cjs",
@@ -45,8 +51,12 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.6.2",
     "@vue/compiler-sfc": "^3.3.13",
+    "@vuese/markdown-render": "^2.11.3",
+    "@vuese/parser": "^2.10.3",
     "auto-changelog": "^2.4.0",
     "autoprefixer": "^10.4.17",
+    "chokidar": "^3.6.0",
+    "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
     "eslint-plugin-vue": "^9.19.2",
     "file-loader": "^5.0.2",
@@ -55,6 +65,7 @@
     "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
     "vite": "^5.0.10",
+    "vitepress": "^1.0.2",
     "vue-custom-element": "^3.3.0",
     "webpack-node-externals": "^2.5.2"
   }
