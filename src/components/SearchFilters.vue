@@ -802,6 +802,17 @@ export default {
   gap: 4px;
 }
 
+.el-tag {
+  .cascader-tag &,
+  .el-tags-container & {
+    font-family: 'Asap', sans-serif;
+    font-size: 12px;
+    color: #303133 !important;
+    background-color: #fff;
+    border-color: #dcdfe6 !important;
+  }
+}
+
 :deep(.el-cascader__tags) {
   display: none;
 }
