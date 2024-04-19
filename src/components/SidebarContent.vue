@@ -10,10 +10,10 @@
           clearable
           @clear="clearSearchClicked"
         ></el-input>
-        <el-button 
-          type="primary" 
-          class="button" 
-          @click="searchEvent" 
+        <el-button
+          type="primary"
+          class="button"
+          @click="searchEvent"
           size="large"
         >
           Search
@@ -551,7 +551,7 @@ export default {
 }
 
 :deep(.el-input__suffix) {
-  padding-right: 10px;
+  padding-right: 0px;
 }
 
 :deep(.my-drawer) {

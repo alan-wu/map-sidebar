@@ -2,10 +2,10 @@
   <div class="filters">
     <MapSvgSpriteColor />
     <div class="cascader-tag" v-if="presentTags.length > 0">
-      <el-tag 
-        class="ml-2" 
-        type="info" 
-        closable 
+      <el-tag
+        class="ml-2"
+        type="info"
+        closable
         @close="cascadeTagClose(presentTags[0])"
       >
         {{ presentTags[0] }}
@@ -17,25 +17,29 @@
         trigger="hover"
       >
         <template #default>
-          <el-tag 
-            v-for="(tag, i) in presentTags.slice(1)"
-            :key="i"
-            class="ml-2" 
-            type="info" 
-            closable
-            @close="cascadeTagClose(tag)"
-          >
-            {{ tag }}
-          </el-tag>
+          <div class="el-tags-container">
+            <el-tag
+              v-for="(tag, i) in presentTags.slice(1)"
+              :key="i"
+              class="ml-2"
+              type="info"
+              closable
+              @close="cascadeTagClose(tag)"
+            >
+              {{ tag }}
+            </el-tag>
+          </div>
         </template>
         <template #reference>
-          <el-tag 
-            v-if="presentTags.length > 1" 
-            class="ml-2" 
-            type="info" 
-          >
-            +{{ presentTags.length - 1 }}
-          </el-tag>
+          <div class="el-tags-container">
+            <el-tag
+              v-if="presentTags.length > 1"
+              class="ml-2"
+              type="info"
+            >
+              +{{ presentTags.length - 1 }}
+            </el-tag>
+          </div>
         </template>
       </el-popover>
     </div>
@@ -218,7 +222,7 @@ export default {
             // create top level of options in cascader
             this.options.forEach((facet, i) => {
               this.options[i].total = this.countTotalFacet(facet)
-              
+
               this.options[i].label = convertReadableLabel(facet.label)
               this.options[i].value = this.createCascaderItemValue(
                 facet.key,
@@ -339,7 +343,7 @@ export default {
             }
           } else {
             // If 'cascaderTags' has key 'Anatomical structure',
-            // it's value type will be Object (because it has nested facets), 
+            // it's value type will be Object (because it has nested facets),
             // in this case 'push' action will not available.
             if (term in this.cascaderTags && term !== 'Anatomical structure')
               this.cascaderTags[term].push(facet)
@@ -788,6 +792,25 @@ export default {
   top: 110px;
   left: 50px;
   z-index: 1;
+  display: flex;
+  gap: 4px;
+}
+
+.el-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.el-tag {
+  .cascader-tag &,
+  .el-tags-container & {
+    font-family: 'Asap', sans-serif;
+    font-size: 12px;
+    color: #303133 !important;
+    background-color: #fff;
+    border-color: #dcdfe6 !important;
+  }
 }
 
 :deep(.el-cascader__tags) {
@@ -842,6 +865,7 @@ export default {
   flex-direction: row;
   float: right;
   padding-bottom: 6px;
+  gap: 8px;
 }
 
 .dataset-results-feedback {
