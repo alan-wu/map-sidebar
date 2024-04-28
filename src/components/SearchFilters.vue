@@ -403,9 +403,11 @@ export default {
       return event
     },
     // cascadeEvent: initiate searches based off cascader changes
-    cascadeEvent: function (event) {
+    cascadeEvent: function (eventIn) {
+      let event = [...eventIn]
       if (event) {
         // Check for show all in selected cascade options
+
         event = this.showAllEventModifier(event)
 
         event = this.showAllEventModifierForAutoCheckAll(event)
@@ -422,7 +424,6 @@ export default {
           const rest = event.filter((e) => e[position] !== this.__expandItem__[position]);
           event = [...current, ...rest]
         }
-
         // Create results for the filter update
         let filterKeys = event
           .filter((selection) => selection !== undefined)
@@ -465,9 +466,8 @@ export default {
               facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
             }
           })
-
+        
         this.$emit('loading', true) // let sidebarcontent wait for the requests
-
         this.$emit('filterResults', filters) // emit filters for apps above sidebar
         this.setCascader(filterKeys) //update our cascader v-model if we modified the event
         this.cssMods() // update css for the cascader
@@ -478,10 +478,12 @@ export default {
     findHierarachyStringAndBooleanString(cascadeEventItem) {
       let hString, bString
       if (cascadeEventItem.length >= 3) {
-        if (cascadeEventItem[2] && cascadeEventItem[2].split('>').length > 2) {
+        if (cascadeEventItem[2] &&
+          (typeof cascadeEventItem[2] === 'string' ||
+          cascadeEventItem[2] instanceof String) &&
+          cascadeEventItem[2].split('>').length > 2) {
           hString = cascadeEventItem[2]
-          bString =
-            cascadeEventItem.length == 4 ? cascadeEventItem[3] : undefined
+          bString = cascadeEventItem.length == 4 ? cascadeEventItem[3] : undefined
         } else {
           hString = cascadeEventItem[1]
           bString = cascadeEventItem[2]
@@ -603,13 +605,14 @@ export default {
     setCascader: function (filterFacets) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filterFacets && filterFacets.length != 0) {
-        this.cascadeSelected = filterFacets.map((e) => {
+        //An inner function only used by this function
+        const createFilter = (e) => {
           let filters = [
             e.facetPropPath,
             this.createCascaderItemValue(capitalise(e.term), e.facet),
           ]
           // Add the third level of the cascader if it exists
-          if (e.facet2)
+          if (e.facet2) {
             filters.push(
               this.createCascaderItemValue(
                 capitalise(e.term),
@@ -617,21 +620,24 @@ export default {
                 e.facet2
               )
             )
+          }
+          return filters;
+        }
+
+        this.cascadeSelected = filterFacets.map((e) => {
+          let filters = createFilter(e)
           return filters
         })
-
+        
         // Unforttunately the cascader is very particular about it's v-model
         //   to get around this we create a clone of it and use this clone for adding our boolean information
         this.cascadeSelectedWithBoolean = filterFacets.map((e) => {
-          return [
-            e.facetPropPath,
-            this.createCascaderItemValue(capitalise(e.term), e.facet),
-            e.AND,
-          ]
+          let filters = createFilter(e)
+          filters.push(e.AND)
+          return filters
         })
         this.updatePreviousShowAllChecked(this.cascadeSelected)
       }
-
       this.tagsChangedCallback(filterFacets);
     },
     addFilter: function (filterToAdd) {
