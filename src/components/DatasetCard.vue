@@ -165,7 +165,7 @@ export default {
       this.propogateCardAction(payload)
     },
     galleryDatasetClicked: function (payload) {
-      EventBus.emit('dataset-clicked', payload) // Pass to mapintegratedvuer
+      EventBus.emit('dataset-clicked', payload); // Pass to mapintegratedvuer
     },
     openDataset: function () {
       window.open(this.dataLocation, '_blank')

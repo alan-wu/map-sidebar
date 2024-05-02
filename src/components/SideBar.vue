@@ -218,7 +218,7 @@ export default {
        * from the gallery component is clicked.
        * @arg payload
        */
-      this.$emit('dataset-clicked', payLoad)
+      this.$emit('dataset-clicked', payLoad);
     })
   },
 }

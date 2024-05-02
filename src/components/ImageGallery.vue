@@ -118,7 +118,7 @@ export default {
       this.$emit('card-clicked', payload)
     },
     datasetClicked: function (payload) {
-      this.$emit('dataset-clicked', payload)
+      this.$emit('dataset-clicked', payload);
     },
     createSciCurnchItems: function () {
       this.updateS3Bucket(this.entry.s3uri)
