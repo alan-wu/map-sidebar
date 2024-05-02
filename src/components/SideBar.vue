@@ -211,14 +211,14 @@ export default {
        */
       this.$emit('contextUpdate', payLoad)
     })
-    EventBus.on('dataset-clicked', (payLoad) => {
+    EventBus.on('datalink-clicked', (payLoad) => {
       /**
        * This event is emitted
        * when the dataset button or dataset image thumbnail
        * from the gallery component is clicked.
        * @arg payload
        */
-      this.$emit('dataset-clicked', payLoad);
+      this.$emit('datalink-clicked', payLoad);
     })
   },
 }

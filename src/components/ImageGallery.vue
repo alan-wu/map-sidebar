@@ -13,7 +13,7 @@
         :body-style="bodyStyle"
         :shadow="shadow"
         @card-clicked="cardClicked"
-        @dataset-clicked="datasetClicked"
+        @datalink-clicked="datalinkClicked"
         ref="gallery"
       />
   </div>
@@ -117,8 +117,8 @@ export default {
     cardClicked: function (payload) {
       this.$emit('card-clicked', payload)
     },
-    datasetClicked: function (payload) {
-      this.$emit('dataset-clicked', payload);
+    datalinkClicked: function (payload) {
+      this.$emit('datalink-clicked', payload);
     },
     createSciCurnchItems: function () {
       this.updateS3Bucket(this.entry.s3uri)
