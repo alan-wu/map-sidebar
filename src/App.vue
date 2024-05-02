@@ -205,7 +205,10 @@ export default {
     console.log('mounted app')
     EventBus.on('contextUpdate', (payLoad) => {
       console.log('contextUpdate', payLoad)
-    })
+    });
+    EventBus.on('datalink-clicked', (payLoad) => {
+      console.log('datalink-clicked', payLoad)
+    });
   },
 }
 </script>
