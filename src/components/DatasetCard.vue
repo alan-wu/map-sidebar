@@ -15,6 +15,7 @@
             :dataset-biolucida="biolucidaData"
             :category="currentCategory"
             @card-clicked="galleryClicked"
+            @datalink-clicked="galleryDatalinkClicked"
           />
         </span>
         <div class="card-right">
@@ -162,6 +163,9 @@ export default {
     },
     galleryClicked: function (payload) {
       this.propogateCardAction(payload)
+    },
+    galleryDatalinkClicked: function (payload) {
+      EventBus.emit('datalink-clicked', payload); // Pass to mapintegratedvuer
     },
     openDataset: function () {
       window.open(this.dataLocation, '_blank')

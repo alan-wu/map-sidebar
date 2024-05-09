@@ -13,6 +13,7 @@
         :body-style="bodyStyle"
         :shadow="shadow"
         @card-clicked="cardClicked"
+        @datalink-clicked="datalinkClicked"
         ref="gallery"
       />
   </div>
@@ -116,6 +117,9 @@ export default {
     cardClicked: function (payload) {
       this.$emit('card-clicked', payload)
     },
+    datalinkClicked: function (payload) {
+      this.$emit('datalink-clicked', payload);
+    },
     createSciCurnchItems: function () {
       this.updateS3Bucket(this.entry.s3uri)
       this.createDatasetItem()
@@ -171,7 +175,7 @@ export default {
           let thumbnailURL = undefined
           let mimetype = ''
           if (thumbnail) {
-            
+
             thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
               id,
               prefix: this.getS3Prefix(),
