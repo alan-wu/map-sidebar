@@ -35,6 +35,7 @@
               :envVars="envVars"
               :ref="tab.id"
               @search-changed="searchChanged(tab.id, $event)"
+              @hover-changed="hoverChanged($event)"
             />
           </template>
         </div>
@@ -113,11 +114,14 @@ export default {
     }
   },
   methods: {
+    hoverChanged: function (data) {
+      this.$emit('hover-changed', data)
+    },
+    /**
+     * This event is emitted when the search filters are changed.
+     * @arg `obj` {data, id}
+     */
     searchChanged: function (id, data) {
-      /**
-       * This event is emitted when the search filters are changed.
-       * @arg `obj` {data, id}
-       */
       this.$emit('search-changed', { ...data, id: id })
     },
     /**

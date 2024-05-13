@@ -100,6 +100,7 @@ export class AlgoliaClient {
     for (let res of results) {
       newResult = { ...res }
       newResult = {
+        anatomy: res.anatomy ? res.anatomy.organ.map((organ => organ.curie)) : undefined,
         doi: res.item.curie.split(':')[1],
         name: res.item.name,
         description: res.item.description,
@@ -167,6 +168,7 @@ export class AlgoliaClient {
             'item.name',
             'item.description',
             'objectID',
+            'anatomy.organ.curie'
           ],
         })
         .then(response => {
