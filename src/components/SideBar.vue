@@ -114,6 +114,10 @@ export default {
     }
   },
   methods: {
+    /**
+     * This event is emitted when the mouse hover are changed.
+     * @arg data
+     */
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
     },
