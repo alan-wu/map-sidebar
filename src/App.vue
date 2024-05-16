@@ -22,6 +22,7 @@
       :activeId="activeId"
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
+      @hover-changed="hoverChanged($event)"
       @actionClick="action"
     />
   </div>
@@ -110,6 +111,9 @@ export default {
     }
   },
   methods: {
+    hoverChanged: function (data) {
+      console.log('hoverChanged', data)
+    },
     searchChanged: function (data) {
       console.log(data)
     },

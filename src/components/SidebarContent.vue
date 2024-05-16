@@ -39,7 +39,13 @@
         No results found - Please change your search / filter criteria.
       </div>
       <div v-for="result in results" :key="result.doi" class="step-item">
-        <DatasetCard :entry="result" :envVars="envVars"></DatasetCard>
+        <DatasetCard
+          class="dataset-card"
+          :entry="result" 
+          :envVars="envVars" 
+          @mouseenter="hoverChanged(result)" 
+          @mouseleave="hoverChanged(undefined)"
+        />
       </div>
       <el-pagination
         class="pagination"
@@ -154,6 +160,9 @@ export default {
     },
   },
   methods: {
+    hoverChanged: function (data) {
+      this.$emit('hover-changed', data)
+    },
     resetSearch: function () {
       this.numberOfHits = 0
       this.discoverIds = []
@@ -449,6 +458,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.dataset-card:hover {
+  border-style: solid;
+  border-color: var(--el-color-primary);
+  border-radius: 5px;
+}
+
 .content-card {
   height: 100%;
   flex-flow: column;
@@ -527,7 +542,7 @@ export default {
 }
 
 .content :deep(.step-item:not(:first-child) .seperator-path) {
-  width: 486px;
+  width: 455px;
   height: 0px;
   border: solid 1px #e4e7ed;
   background-color: #e4e7ed;
