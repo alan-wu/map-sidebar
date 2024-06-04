@@ -248,7 +248,12 @@ export default {
     },
     searchAlgolia(filters, query = '') {
       // Algolia search
+      
       this.loadingCards = true
+      this.algoliaClient.getAnatomyForDatasets(getFilters(filters), query)
+        .then((datasets) => {
+          EventBus.emit('organs-in-datasets', datasets)
+        })
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
         .then((anatomy) => {
