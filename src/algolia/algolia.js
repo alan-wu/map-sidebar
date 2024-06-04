@@ -164,7 +164,7 @@ export class AlgoliaClient {
           // The line below restructures the response to be an array of objects with the dataset id and the curie
           let curieForDatsets = response.hits.map(h=>({
             id: h.objectID,
-            curie: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
+            terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
           }))
           resolve(curieForDatsets)
         })
