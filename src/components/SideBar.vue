@@ -211,10 +211,19 @@ export default {
         value: payLoad,
       })
     })
-    EventBus.on('contextUpdate', (payLoad) => {
-      /**
+    EventBus.on('organs-in-datasets', (payLoad) => {
+       /**
        * This event is emitted when the context is updated.
        * Example, context update on first load.
+       * @arg payload
+       */
+      this.$emit('organs-in-datasets', payLoad)
+    })
+    
+    EventBus.on('contextUpdate', (payLoad) => {
+      /**
+       * This event is emitted when the context card is updated.
+       * Example, context card update on first load.
        * @arg payload
        */
       this.$emit('contextUpdate', payLoad)
