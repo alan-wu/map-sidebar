@@ -252,7 +252,7 @@ export default {
       this.loadingCards = true
       this.algoliaClient.getAnatomyForDatasets(getFilters(filters), query)
         .then((datasets) => {
-          EventBus.emit('organs-in-datasets', datasets)
+          EventBus.emit('anatomy-in-datasets', datasets)
         })
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
