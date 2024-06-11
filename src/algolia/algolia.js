@@ -208,7 +208,7 @@ export class AlgoliaClient {
           // let anatomyAsUberons = this._processAnatomy(response.hits)
 
           resolve({
-            forFlamap: this.processResultsForFlatmap(response.hits),
+            forFlatmap: this.processResultsForFlatmap(response.hits),
             forScaffold: this.processResultsForScaffold(response.hits)
           })
         })
