@@ -250,17 +250,12 @@ export default {
       // Algolia search
       
       this.loadingCards = true
-      this.algoliaClient.getAnatomyForDatasets(getFilters(filters), query)
-        .then((datasets) => {
-          EventBus.emit('anatomy-in-datasets', datasets)
-        })
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
-        .then((anatomy) => {
-          EventBus.emit('available-facets', {
-            uberons: anatomy,
-            labels: this.algoliaClient.anatomyFacetLabels,
-          })
+        .then((r) => {
+          // Send result anatomy to the scaffold and flatmap
+          EventBus.emit('anatomy-in-datasets', r.forFlatmap)
+          EventBus.emit('number-of-datasets-for-anatomies', r.forScaffold)
         })
       this.algoliaClient
         .search(getFilters(filters), query, this.numberPerPage, this.page)

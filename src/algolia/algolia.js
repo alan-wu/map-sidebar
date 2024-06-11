@@ -148,29 +148,6 @@ export class AlgoliaClient {
     return ub.replace('_', ':')
   }
 
-  getAnatomyForDatasets(filter, query = '',){
-    return new Promise(resolve => {
-      this.index
-        .search(query, {
-          facets: ['*'],
-          filters: filter,
-          attributesToRetrieve: [
-            'objectID',
-            'anatomy.organ.curie',
-          ],
-          hitsPerPage: 999999,
-        })
-        .then(response => {
-          // The line below restructures the response to be an array of objects with the dataset id and the curie
-          let curieForDatsets = response.hits.map(h=>({
-            id: h.objectID,
-            terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
-          }))
-          resolve(curieForDatsets)
-        })
-    })
-  }
-
   /**
    * Get Search results
    * This is using fetch from the Algolia API
@@ -220,15 +197,46 @@ export class AlgoliaClient {
           filters: filter,
           attributesToHighlight: [],
           attributesToRetrieve: [
+            'objectID',
             'item.keywords.keyword',
             'anatomy.organ.name',
             'anatomy.organ.curie'
           ],
         })
         .then(response => {
-          let anatomyAsUberons = this._processAnatomy(response.hits)
-          resolve(anatomyAsUberons)
+          // Saving the line below incase we want to starty using keywords again
+          // let anatomyAsUberons = this._processAnatomy(response.hits)
+
+          resolve({
+            forFlamap: this.processResultsForFlatmap(response.hits),
+            forScaffold: this.processResultsForScaffold(response.hits)
+          })
         })
     })
   }
+  processResultsForFlatmap(hits) {
+    let curieForDatsets = hits.map(h=>({
+      id: h.objectID,
+      terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
+    }))
+    return curieForDatsets 
+  }
+  processResultsForScaffold(hits) {
+    let numberOfDatasetsForAnatomy = {}
+    hits.forEach(hit => {
+      if (hit.anatomy && hit.anatomy.organ ) {
+        hit.anatomy.organ.forEach(anatomy => {
+          if (anatomy.name) {
+            if (numberOfDatasetsForAnatomy[anatomy.name]) {
+              numberOfDatasetsForAnatomy[anatomy.name]++
+            } else {
+              numberOfDatasetsForAnatomy[anatomy.name] = 1
+            }
+          }
+        })
+      }
+    })
+    return numberOfDatasetsForAnatomy
+  }
+
 }
