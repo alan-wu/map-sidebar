@@ -2,44 +2,57 @@
 
 [![npm version](https://badge.fury.io/js/%40abi-software%2Fmap-side-bar.svg)](https://badge.fury.io/js/%40abi-software%2Fmap-side-bar)
 
-This project aims to provide a sidebar for searching capability for
+The project is developed based on Vite-Vue3. Aims to provide a sidebar for searching capability for
 SPARC portal.
 
-## Project installation
+## Customize configuration
+
+See [Vite Configuration Reference](https://vitejs.dev/config/).
+
+## Package installation
+
 ```
 npm i @abi-software/map-side-bar
 ```
 
+## Project Setup
 
-## Project setup
 ```
 npm install
+```
+
+### Compile and Hot-Reload for Development
+
+```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Compile and Minify for Production
+
 ```
 npm run build-bundle
 ```
 
 ## How to use
-Include the package in your script.
+
+Import the component and the style from the package.
+
 ```javascript
-import '@abi-software/map-side-bar'
-import '@abi-software/map-side-bar/dist/map-side-bar.css'
+import { SideBar } from "@abi-software/map-side-bar";
+import "@abi-software/map-side-bar/dist/style.css";
 ```
 
-#Template
-The code should looks like this
+The code in template should looks like this
 
 ```html
-<SideBar :envVars="envVars"
-         :visible="sideBarVisibility"
-         @actionClick="actionClick">
-</SideBar>
+<SideBar
+  :envVars="envVars"
+  :visible="sideBarVisibility"
+  @actionClick="actionClick"
+/>
 ```
 
-envVars contains environment varibables like so:
+envVars contains environment variables like so:
 
 ```yaml
 {
@@ -50,8 +63,7 @@ envVars contains environment varibables like so:
 }
 ```
 
-actionClick event is called when an action button has benn clicked on.
-
+actionClick event is called when an action button has been clicked on.
 
 ## Sidebar Data formats
 ### Algolia
@@ -60,14 +72,14 @@ Data retrieved from Algolia can be found here:
 https://github.com/ABI-Software/map-sidebar/blob/3310b165489b10901f50a21e5689ef046251dbd9/src/algolia/algolia.js#L136
 
 ```
-           [
-            'pennsieve.publishDate',  // optional
-            'pennsieve.updatedAt', // optional
-            'Item.curie', //contains the DOI for the dataset (required)
-            'Item.name', // dataset title (required)
-            'Item.description', // dataset description (required)
-            'objectID', // Pennsieve discover ID (required)
-          ],
+[
+  'pennsieve.publishDate',  // optional
+  'pennsieve.updatedAt', // optional
+  'Item.curie', //contains the DOI for the dataset (required)
+  'Item.name', // dataset title (required)
+  'Item.description', // dataset description (required)
+  'objectID', // Pennsieve discover ID (required)
+],
 ```
 
 ### Scicrunch
@@ -100,7 +112,7 @@ README = 'readme'
 TITLE = 'title'
 ```
 
-Note: All are optional except for ‘name’ 
+Note: All are optional except for ‘name’
 
 ### Sidebar input processing
 Sidebar input processing can be viewed here:
@@ -130,11 +142,11 @@ All fields are strings:
     {
       "annotation": optional,
       "description": required,
-      "id": requried,
+      "id": required,
       "path": required // relative path to the view file, eg "derivative\\Scaffolds\\scaffoldMap_tenial_view.json",
       "sample": optional // used to link to views to samples
       "thumbnail": optional // technically optional but it won’t look great
-    } 
+    }
   ]
 }
 ```
@@ -143,4 +155,14 @@ An example context card file can be viewed here:
 https://drive.google.com/file/d/15NVRBny7WGltpMSRbsgMglXo0xOC3-Q9/view?usp=sharing
 
 
+## API Documentation
+
+The API documentation is developed with `vitepress` and `vuese`. Documentation pages are in the `docs` folder.
+
+### To run in local development mode
+```bash
+npm run docs:watch
+```
+
+This will start the documentation server with `vitepress` on port `:5173` and watch the components' changes.
 

@@ -1,32 +1,42 @@
 <template>
   <div ref="container">
     <div v-if="!drawerOpen" @click="toggleDrawer" class="open-tab">
-      <i class="el-icon-arrow-left"></i>
+      <el-icon><el-icon-arrow-left /></el-icon>
     </div>
     <el-drawer
-      custom-class="my-drawer"
-      class="side-bar"
-      :visible.sync="drawerOpen"
-      :appendToBody="false"
+      class="side-bar my-drawer"
+      v-model="drawerOpen"
+      :teleported="false"
       :modal-append-to-body="false"
-      size=550
+      size="584"
       :with-header="false"
       :wrapperClosable="false"
       :modal="false"
+      modal-class="sidebar-body"
+      :z-index="10"
+      :lock-scroll="false"
     >
       <div class="box-card">
         <div v-if="drawerOpen" @click="close" class="close-tab">
-          <i class="el-icon-arrow-right"></i>
+          <el-icon><el-icon-arrow-right /></el-icon>
         </div>
         <div class="sidebar-container">
-          <tabs v-if="tabs.length > 1" :tabTitles="tabs" :activeId="activeId"
-            @titleClicked="tabClicked"/>
-          <template v-for="tab in tabs">
-            <sidebar-content class="sidebar-content-container"
-            v-show="tab.id===activeId" :contextCardEntry="tab.contextCard"
-            :envVars="envVars"
-            v-bind:key="tab.id" :ref="tab.id"
-            @search-changed="searchChanged(tab.id, $event)"/>
+          <Tabs
+            v-if="tabs.length > 1"
+            :tabTitles="tabs"
+            :activeId="activeId"
+            @titleClicked="tabClicked"
+          />
+          <template v-for="tab in tabs" key="tab.id">
+            <SidebarContent
+              class="sidebar-content-container"
+              v-show="tab.id === activeId"
+              :contextCardEntry="tab.contextCard"
+              :envVars="envVars"
+              :ref="tab.id"
+              @search-changed="searchChanged(tab.id, $event)"
+              @hover-changed="hoverChanged($event)"
+            />
           </template>
         </div>
       </div>
@@ -34,48 +44,69 @@
   </div>
 </template>
 
-
 <script>
-/* eslint-disable no-alert, no-console */
-import Vue from "vue";
 import {
-  Drawer,
-  Icon,
-} from "element-ui";
-import lang from "element-ui/lib/locale/lang/en";
-import locale from "element-ui/lib/locale";
-import SidebarContent from './SidebarContent.vue';
-import EventBus from './EventBus';
-import Tabs from './Tabs'
+  ArrowLeft as ElIconArrowLeft,
+  ArrowRight as ElIconArrowRight,
+} from '@element-plus/icons-vue'
+/* eslint-disable no-alert, no-console */
+import { ElDrawer as Drawer, ElIcon as Icon } from 'element-plus'
+import SidebarContent from './SidebarContent.vue'
+import EventBus from './EventBus.js'
+import Tabs from './Tabs.vue'
 
-locale.use(lang);
-Vue.use(Drawer);
-Vue.use(Icon);
-
+/**
+ * Aims to provide a sidebar for searching capability for SPARC portal.
+ */
 export default {
-  components: {SidebarContent, Tabs },
-  name: "SideBar",
+  components: {
+    SidebarContent,
+    Tabs,
+    ElIconArrowLeft,
+    ElIconArrowRight,
+    Drawer,
+    Icon
+  },
+  name: 'SideBar',
   props: {
+    /**
+     * The option to show side bar.
+     */
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
+    /**
+     * The environment variables object with
+     * `API_LOCATION`, `ALGOLIA_KEY`, `ALGOLIA_ID`,
+     * `ALGOLIA_INDEX`, `PENNSIEVE_API_LOCATION`, `BL_SERVER_URL`,
+     * `NL_LINK_PREFIX`, `ROOT_URL`
+     */
     envVars: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
+    /**
+     * The array of objects to show multiple sidebar contents.
+     */
     tabs: {
       type: Array,
-      default: () => [{title:'flatmap', id:1}]
+      default: () => [{ title: 'flatmap', id: 1 }],
     },
+    /**
+     * The active tab id for default tab.
+     */
     activeId: {
       type: Number,
-      default: 1
+      default: 1,
     },
+    /**
+     * The option to show or hide sidebar on page load.
+     */
     openAtStart: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data: function () {
     return {
@@ -83,64 +114,125 @@ export default {
     }
   },
   methods: {
+    /**
+     * This event is emitted when the mouse hover are changed.
+     * @arg data
+     */
+    hoverChanged: function (data) {
+      this.$emit('hover-changed', data)
+    },
+    /**
+     * This event is emitted when the search filters are changed.
+     * @arg `obj` {data, id}
+     */
     searchChanged: function (id, data) {
-      this.$emit("search-changed", {...data, id: id});
+      this.$emit('search-changed', { ...data, id: id })
     },
+    /**
+     * @vuese
+     * The function to close sidebar.
+     */
     close: function () {
-      this.drawerOpen = false;
+      this.drawerOpen = false
     },
+    /**
+     * @vuese
+     * The function to toggle (open and close) sidebar.
+     */
     toggleDrawer: function () {
-      this.drawerOpen = !this.drawerOpen;
+      this.drawerOpen = !this.drawerOpen
     },
-    openSearch: function(facets, query){
-      this.drawerOpen = true;
+    openSearch: function (facets, query) {
+      this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch(facets, query)})
+      this.$nextTick(() => {
+        this.$refs[this.activeId][0].openSearch(facets, query)
+      })
     },
-    addFilter: function(filter){
-      this.drawerOpen = true;
+    /**
+     * @vuese
+     * The function to add filters to sidebar search.
+     * @arg filter `object`
+     */
+    addFilter: function (filter) {
+      this.drawerOpen = true
       filter.AND = true // When we add a filter external, it is currently only with an AND boolean
 
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].addFilter(filter)})
+      this.$nextTick(() => {
+        this.$refs[this.activeId][0].addFilter(filter)
+      })
     },
-    openNeuronSearch: function(neuron){
-      this.drawerOpen = true;
+    openNeuronSearch: function (neuron) {
+      this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
-      Vue.nextTick(()=>{this.$refs[this.activeId][0].openSearch('', undefined, 'scicrunch-query-string/', {'field': '*organ.curie', 'curie':neuron})})
+      this.$nextTick(() => {
+        this.$refs[this.activeId][0].openSearch(
+          '',
+          undefined,
+          'scicrunch-query-string/',
+          { field: '*organ.curie', curie: neuron }
+        )
+      })
     },
-    getAlgoliaFacets: async function(){
+    getAlgoliaFacets: async function () {
       return await this.$refs[this.activeId][0].getAlgoliaFacets()
     },
-    tabClicked: function(id) {
-      this.$emit("tabClicked", id);
+    setDrawerOpen: function (value = true) {
+      this.drawerOpen = value
+    },
+    /**
+     * @vuese
+     * The function to emit 'tabClicked' event with tab's `id` when user clicks the sidebar tab.
+     * @arg id
+     */
+    tabClicked: function (id) {
+      /**
+       * This event is emitted when user click sidebar's tab.
+       * @arg id
+       */
+      this.$emit('tabClicked', id)
     },
   },
-  created:function() {
-    this.drawerOpen = this.openAtStart;
+  created: function () {
+    this.drawerOpen = this.openAtStart
   },
-  mounted: function(){
-    EventBus.$on("PopoverActionClick", (payLoad) => {
-      this.$emit("actionClick", payLoad);
+  mounted: function () {
+    EventBus.on('PopoverActionClick', (payLoad) => {
+      /**
+       * This event is emitted when the image is clicked on or the button below the image is clicked on.
+       * @arg payLoad
+       */
+      this.$emit('actionClick', payLoad)
     })
-    EventBus.$on('available-facets', (payLoad)=> {
+    EventBus.on('available-facets', (payLoad) => {
       this.$emit('search-changed', {
         type: 'available-facets',
-        value: payLoad
+        value: payLoad,
       })
     })
-    EventBus.$on('contextUpdate', (payLoad)=> {
+    EventBus.on('contextUpdate', (payLoad) => {
+      /**
+       * This event is emitted when the context is updated.
+       * Example, context update on first load.
+       * @arg payload
+       */
       this.$emit('contextUpdate', payLoad)
     })
-  }
-};
+    EventBus.on('datalink-clicked', (payLoad) => {
+      /**
+       * This event is emitted
+       * when the dataset button or dataset image thumbnail
+       * from the gallery component is clicked.
+       * @arg payload
+       */
+      this.$emit('datalink-clicked', payLoad);
+    })
+  },
+}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/drawer";
-@import "~element-ui/packages/theme-chalk/src/icon";
-
+<style lang="scss" scoped>
 .box-card {
   flex: 3;
   height: 100%;
@@ -148,14 +240,20 @@ export default {
   pointer-events: auto;
 }
 
-.side-bar{
+.side-bar {
   position: relative;
   height: 100%;
   pointer-events: none;
+  width:600px;
+  float: right;
 }
 
-.side-bar ::v-deep .el-drawer:focus{
-  outline:none;
+:deep(.sidebar-body) {
+  position: absolute !important;
+}
+
+.side-bar :deep(.el-drawer:focus) {
+  outline: none;
 }
 
 .sidebar-container {
@@ -164,7 +262,7 @@ export default {
   display: flex;
 }
 
-.open-tab{
+.open-tab {
   width: 20px;
   height: 40px;
   z-index: 8;
@@ -180,20 +278,18 @@ export default {
   pointer-events: auto;
 }
 
-.el-icon-arrow-left,
-.el-icon-arrow-right
-{
+.el-icon svg {
   font-weight: 600;
-  margin-top: 12px;
+  margin-top: 24px;
   color: $app-primary-color;
   cursor: pointer;
   pointer-events: auto;
-  transform: scaleY(2.0);
+  transform: scaleY(2);
   text-align: center;
   vertical-align: middle;
 }
 
-.close-tab{
+.close-tab {
   float: left;
   flex: 1;
   width: 20px;
@@ -201,7 +297,7 @@ export default {
   z-index: 8;
   margin-top: calc(50vh - 80px);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  border: solid 1px $app-primary-color; 
+  border: solid 1px $app-primary-color;
   background-color: #f9f2fc;
   text-align: center;
   vertical-align: middle;
@@ -209,24 +305,34 @@ export default {
   pointer-events: auto;
 }
 
-.box-card {
-  flex: 3;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: auto;
-}
-
-::v-deep .my-drawer {
-  background: rgba(0,0,0,0);
+:deep(.my-drawer) {
+  background: rgba(0, 0, 0, 0);
   box-shadow: none;
 }
 
-::v-deep .my-drawer .el-drawer__body {
+:deep(.my-drawer .el-drawer__body) {
   height: 100%;
+  padding: 0;
 }
 
 .sidebar-content-container {
-   flex: 1 1 auto;
+  flex: 1 1 auto;
 }
+</style>
 
+<style lang="scss">
+.side-bar {
+  --el-color-primary: #8300BF;
+  --el-color-primary-light-7: #DAB3EC;
+  --el-color-primary-light-8: #e6ccf2;
+  --el-color-primary-light-9: #f3e6f9;
+  --el-color-primary-light-3: #f3e6f9;
+  --el-color-primary-dark-2: #7600AC;
+}
+.el-button--primary {
+  --el-button-hover-text-color: var(--el-color-primary);
+  --el-button-hover-link-text-color: var(--el-color-primary-light-5);
+  --el-button-hover-bg-color: var(--el-color-primary-light-3);
+  --el-button-hover-border-color: var(--el-color-primary-light-3);
+}
 </style>

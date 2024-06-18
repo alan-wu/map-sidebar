@@ -21,17 +21,17 @@
 
 <script>
 /* eslint-disable no-alert, no-console */
-import Vue from "vue";
-import { Button, Icon } from "element-ui";
-import lang from "element-ui/lib/locale/lang/en";
-import locale from "element-ui/lib/locale";
-
-locale.use(lang);
-Vue.use(Button);
-Vue.use(Icon);
+import {
+  ElButton,
+  ElIcon
+} from 'element-plus'
 
 export default {
   name: "PMRDatasetCard",
+  components: {
+    ElButton,
+    ElIcon
+  },
   props: {
     /**
      * Object containing information for
@@ -48,7 +48,8 @@ export default {
   },
   data: function () {
     return {
-      thumbnail: require('@/../assets/missing-image.svg'),
+      // url below is a missing image icon
+      thumbnail: 'assets/missing-image.svg',
       dataLocation: this.entry.doi,
       discoverId: undefined,
       loading: false,
@@ -68,8 +69,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import "~element-ui/packages/theme-chalk/src/col";
-@import "~element-ui/packages/theme-chalk/src/loading";
 
 .dataset-card {
   padding-left: 16px;
@@ -154,11 +153,11 @@ export default {
   left: 80px;
 }
 
-.loading-icon ::v-deep .el-loading-mask {
+.loading-icon ::v-deep(.el-loading-mask) {
   background-color: rgba(117, 190, 218, 0.0) !important;
 }
 
-.loading-icon ::v-deep .el-loading-spinner .path {
+.loading-icon ::v-deep(.el-loading-spinner .path) {
   stroke: $app-primary-color;
 }
 

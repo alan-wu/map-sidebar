@@ -16,34 +16,55 @@ export class AlgoliaClient {
   }
 
   getAlgoliaFacets(propPathMapping) {
-    const map = new Map(Object.entries(propPathMapping));
-    const facetPropPaths = Array.from(map.keys());
+    const facetPropPaths = propPathMapping.map(facet => facet.facetPropPath)
+    const facetSubpropPaths = propPathMapping.map(item => item.facetSubpropPath)
     let facetData = []
     let facetId = 0
     return this.index
       .search('', {
         sortFacetValuesBy: 'alpha',
-        facets: facetPropPaths
+        facets: facetPropPaths.concat(facetSubpropPaths),
       })
       .then(response => {
         facetPropPaths.map((facetPropPath) => {
+          const parentFacet = propPathMapping.find(item => item.facetPropPath == facetPropPath)
           var children = []
           const responseFacets = response.facets
-          if (responseFacets === undefined) { return }
+          if (responseFacets === undefined) {return}
           const responseFacetChildren =
-            responseFacets[facetPropPath] == undefined
+            responseFacets[facetPropPath] == undefined // if no facets, return empty object
               ? {}
               : responseFacets[facetPropPath]
+          const allPossibleChildrenSubfacets = parentFacet && responseFacets[parentFacet.facetSubpropPath] ? Object.keys(responseFacets[parentFacet.facetSubpropPath]) : []
+          // Loop through all subfacets and find the ones that are children of the current facet
           Object.keys(responseFacetChildren).map(facet => {
-            children.push({
+            const childrenSubfacets = allPossibleChildrenSubfacets.reduce((filtered, childFacetInfo) => {
+              const info = childFacetInfo.split('.');
+              if (info.length !== 2) {
+                return filtered;
+              }
+              if (facet === info[0]) {
+                filtered.push({
+                  label: info[1], 
+                  id: facetId++,
+                  facetPropPath: `${parentFacet ? parentFacet.facetSubpropPath : undefined}`
+                });
+              }
+              return filtered;
+            }, []); // Provide an empty array as the initial value
+            let newChild = {
               label: facet,
               id: facetId++,
               facetPropPath: facetPropPath
-            })
+            }
+            if (childrenSubfacets.length > 0) {
+              newChild.children = childrenSubfacets
+            }
+            children.push(newChild)
           })
           if (children.length > 0) {
             facetData.push({
-              label: map.get(facetPropPath),
+              label: parentFacet ? parentFacet.label : '',
               id: facetId++,
               children: children,
               key: facetPropPath
@@ -79,6 +100,7 @@ export class AlgoliaClient {
     for (let res of results) {
       newResult = { ...res }
       newResult = {
+        anatomy: res.anatomy ? res.anatomy.organ.map((organ => organ.curie)) : undefined,
         doi: res.item.curie.split(':')[1],
         name: res.item.name,
         description: res.item.description,
@@ -146,6 +168,7 @@ export class AlgoliaClient {
             'item.name',
             'item.description',
             'objectID',
+            'anatomy.organ.curie'
           ],
         })
         .then(response => {
