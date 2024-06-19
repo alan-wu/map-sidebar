@@ -21,6 +21,26 @@
           <el-icon><el-icon-arrow-right /></el-icon>
         </div>
         <div class="sidebar-container">
+
+          <!-- Provenance Info Title -->
+          <div v-if="provenanceEntry" class="provenance-info-title">
+            <div class="block" v-if="provenanceEntry.title">
+              <div class="title">{{ capitalise(provenanceEntry.title) }}</div>
+              <div
+                v-if="
+                  provenanceEntry.provenanceTaxonomyLabel &&
+                  provenanceEntry.provenanceTaxonomyLabel.length > 0
+                "
+                class="subtitle"
+              >
+                {{ provSpeciesDescription() }}
+              </div>
+            </div>
+            <div class="block" v-else>
+              <div class="title">{{ provenanceEntry.featureId }}</div>
+            </div>
+          </div>
+
           <Tabs
             v-if="tabs.length > 1"
             :tabTitles="tabs"
@@ -28,6 +48,15 @@
             @titleClicked="tabClicked"
           />
           <template v-for="tab in tabs" key="tab.id">
+            <!-- Provenance Info -->
+            <template v-if="tab.id === 2">
+              <provenance-popup
+                :entry="provenanceEntry"
+                v-show="tab.id === activeId"
+                :ref="tab.id"
+              />
+            </template>
+            <template v-else>
             <SidebarContent
               class="sidebar-content-container"
               v-show="tab.id === activeId"
@@ -37,6 +66,7 @@
               @search-changed="searchChanged(tab.id, $event)"
               @hover-changed="hoverChanged($event)"
             />
+            </template>
           </template>
         </div>
       </div>
@@ -54,6 +84,7 @@ import { ElDrawer as Drawer, ElIcon as Icon } from 'element-plus'
 import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
+import ProvenancePopup from './ProvenancePopup.vue'
 
 /**
  * Aims to provide a sidebar for searching capability for SPARC portal.
@@ -65,7 +96,8 @@ export default {
     ElIconArrowLeft,
     ElIconArrowRight,
     Drawer,
-    Icon
+    Icon,
+    ProvenancePopup,
   },
   name: 'SideBar',
   props: {
@@ -91,7 +123,10 @@ export default {
      */
     tabs: {
       type: Array,
-      default: () => [{ title: 'flatmap', id: 1 }],
+      default: () => [
+        { title: 'Search', id: 1 },
+        { title: 'Overview', id: 2 }
+      ],
     },
     /**
      * The active tab id for default tab.
@@ -106,6 +141,13 @@ export default {
     openAtStart: {
       type: Boolean,
       default: false,
+    },
+    /**
+     * The provenance info data to show in sidebar.
+     */
+    provenanceEntry: {
+      type: Object,
+      default: null,
     },
   },
   data: function () {
@@ -146,7 +188,7 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        this.$refs[this.activeId][0].openSearch(facets, query)
+        this.$refs[1][0].openSearch(facets, query)
       })
     },
     /**
@@ -193,6 +235,19 @@ export default {
        */
       this.$emit('tabClicked', id)
     },
+    capitalise: function (text) {
+      if (text) return text.charAt(0).toUpperCase() + text.slice(1);
+      return '';
+    },
+    provSpeciesDescription: function () {
+      let text = 'Studied in';
+      this.provenanceEntry.provenanceTaxonomyLabel.forEach((label) => {
+        text += ` ${label},`;
+      });
+      text = text.slice(0, -1); // remove last comma
+      text += ' species';
+      return text;
+    },
   },
   created: function () {
     this.drawerOpen = this.openAtStart
@@ -205,6 +260,10 @@ export default {
        */
       this.$emit('actionClick', payLoad)
     })
+    EventBus.on('onProvenanceActionClick', (payLoad) => {
+      this.tabClicked(1);
+      this.$emit('actionClick', payLoad)
+    });
     EventBus.on('available-facets', (payLoad) => {
       this.$emit('search-changed', {
         type: 'available-facets',
@@ -233,6 +292,29 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.provenance-info-title {
+  padding: 1rem;
+}
+
+.title {
+  text-align: left;
+  // width: 16em;
+  line-height: 1.5em !important;
+  font-size: 18px;
+  font-family: Helvetica;
+  font-weight: bold;
+  padding-bottom: 8px;
+  color: $app-primary-color;
+}
+
+.block {
+  margin-bottom: 0.5em;
+
+  .main > &:first-of-type {
+    margin-right: 1em;
+  }
+}
+
 .box-card {
   flex: 3;
   height: 100%;
@@ -260,6 +342,9 @@ export default {
   height: 100%;
   flex-flow: column;
   display: flex;
+  background-color: white;
+  box-shadow: var(--el-box-shadow-light);
+  border-radius: var(--el-card-border-radius);
 }
 
 .open-tab {

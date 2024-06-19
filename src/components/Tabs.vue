@@ -40,12 +40,13 @@ export default {
 <style lang="scss" scoped>
 .tab-container {
   height: 28px;
+  border-bottom: 1px solid var(--el-border-color);
 }
 
 .title {
   width: 101px;
   height: 28px;
-  border: solid 1px $lineColor1;
+  border: 1px solid var(--el-border-color);
   border-bottom: none;
   background-color: white;
   display: inline-block;
