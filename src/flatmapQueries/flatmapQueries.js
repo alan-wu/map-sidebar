@@ -1,3 +1,12 @@
+function transformKeyValueArrayToObject(data) {
+  return data.values.map(valueArray => 
+    data.keys.reduce((acc, key, index) => {
+      acc[key] = valueArray[index];
+      return acc;
+    }, {})
+  );
+}
+
 
 let FlatmapQueries = function () {
   this.initialise = function (flatmapApi) {
@@ -26,7 +35,13 @@ let FlatmapQueries = function () {
   }
 
   this.pmrSearch = function () {
-    return  this.flatmapQuery(this.pmrSQL())
+    return new Promise((resolve, reject) => {
+      this.flatmapQuery(this.pmrSQL())
+        .then(data => {
+          resolve(transformKeyValueArrayToObject(data));
+        })
+        .catch(reject);
+    });
   }
 }
 
