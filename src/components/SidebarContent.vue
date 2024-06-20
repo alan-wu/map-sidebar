@@ -11,7 +11,7 @@
           @clear="clearSearchClicked"
         ></el-input>
         <el-select
-          v-model="selectValue"
+          v-model="mode"
           class="data-type-select"
           placeholder="Search over..."
           @change="onSelectValueChange"
@@ -103,6 +103,7 @@ import allPaths from './allPaths.js'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
+import FlatmapQueries from '../flatmapQueries/flatmapQueries.js'
 
 // TODO: to update API URL
 const API_URL = "/data/pmr-sample.json";
@@ -135,13 +136,13 @@ var initial_state = {
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
+  mode: 'Sparc Datasets',
   allPaths: allPaths.values,
   selectOptions: [
     { value: "Sparc Datasets", label: "Sparc Datasets" },
     { value: "PMR", label: "PMR" },
     { value: "Flatmap", label: "Flatmap"}
   ],
-  selectValue: undefined
 };
 
 
@@ -198,9 +199,6 @@ export default {
         filterFacets: this.filter,
       }
     },
-    mode: function() {
-      return this.selectValue
-    },
   },
   methods: {
     hoverChanged: function (data) {
@@ -213,7 +211,24 @@ export default {
       this.results = []
       this.loadingCards = false
     },
-    openSearch: function (filter, search = '') {
+    // openSearch: Resets the results, populates dataset cards and filters. Will use Algolia and SciCrunch data uness pmr mode is set
+    openSearch: function(filter, search = '', mode = 'Sparc Datasets') {
+      if (!mode || mode === 'Sparc Datasets') {
+        this.openAlgoliaSearch(filter, search)
+      } else if (mode === 'PMR') {
+        this.openPMRSearch(filter, search)
+      } 
+    },
+
+    // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
+    openPMRSearch: function (filter, search = '') {
+      this.flatmapQueries.pmrSearch(search).then((data) => {
+        this.pmrResults = data
+      })
+    },
+
+    // openAlgoliaSearch: Resets the results, populates dataset cards and filters with Algloia and SciCrunch data.
+    openAlgoliaSearch: function (filter, search = '') {
       this.searchInput = search
       this.resetPageNavigation()
       //Proceed normally if cascader is ready
@@ -483,19 +498,8 @@ export default {
       this.openSearch(item.filters, item.search)
     },
     onSelectValueChange: function (val) {
-      if (val === 'PMR' && !this.pmrResults.length) {
-        // load PMR data
-        this.getPMRData(API_URL).then((response) => {
-          this.pmrResults = response;
-        }, (error) => {
-          console.error('PMR Data Loading Error!', error);
-        });
-      }
-    },
-    getPMRData: async function (apiUrl) {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-      return data;
+      this.mode = val
+      this.openSearch(this.filter, this.searchInput, val)
     },
   },
   mounted: function () {
@@ -506,7 +510,13 @@ export default {
       this.envVars.PENNSIEVE_API_LOCATION
     )
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
-    this.openSearch(this.filter, this.searchInput)
+
+    // initialise flatmap queries
+    this.flatmapQueries = new FlatmapQueries()
+    this.flatmapQueries.initialise(this.envVars.FLATMAP_API_LOCATION)
+
+    // open search
+    this.openSearch(this.filter, this.searchInput, this.mode )
   },
   created: function () {
     //Create non-reactive local variables
