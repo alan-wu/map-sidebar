@@ -10,7 +10,12 @@
           clearable
           @clear="clearSearchClicked"
         ></el-input>
-        <el-select v-model="selectValue" class="data-type-select" placeholder="Search over...">
+        <el-select
+          v-model="selectValue"
+          class="data-type-select"
+          placeholder="Search over..."
+          @change="onSelectValueChange"
+        >
           <el-option
             v-for="item in selectOptions"
             :key="item.value"
@@ -94,11 +99,13 @@ import DatasetCard from "./DatasetCard.vue";
 import PMRDatasetCard from "./PMRDatasetCard.vue";
 import FlatmapDatasetCard from './FlatmapDatasetCard.vue';
 
-import pmrTest from './pmrTest.js'
 import allPaths from './allPaths.js'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
+
+// TODO: to update API URL
+const API_URL = "/data/pmr-sample.json";
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
@@ -127,7 +134,7 @@ var initial_state = {
   start: 0,
   hasSearched: false,
   contextCardEnabled: false,
-  pmrResults: pmrTest.data,
+  pmrResults: [],
   allPaths: allPaths.values,
   selectOptions: [
     { value: "Sparc Datasets", label: "Sparc Datasets" },
@@ -192,7 +199,7 @@ export default {
       }
     },
     mode: function() {
-      return this.selectValue 
+      return this.selectValue
     },
   },
   methods: {
@@ -474,6 +481,21 @@ export default {
       this.searchInput = item.search
       this.filters = item.filters
       this.openSearch(item.filters, item.search)
+    },
+    onSelectValueChange: function (val) {
+      if (val === 'PMR' && !this.pmrResults.length) {
+        // load PMR data
+        this.getPMRData(API_URL).then((response) => {
+          this.pmrResults = response;
+        }, (error) => {
+          console.error('PMR Data Loading Error!', error);
+        });
+      }
+    },
+    getPMRData: async function (apiUrl) {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      return data;
     },
   },
   mounted: function () {
