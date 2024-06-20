@@ -9,7 +9,7 @@ export default {
             "workspace": "https://models.physiomeproject.org/workspace/shi_hose_2009",
             "omex": "https://models.physiomeproject.org/exposure/c49d416ae3a5132882e6ea7479ba50f5/download_generated_omex",
             "image": "https://models.physiomeproject.org/workspace/shi_hose_2009/@@rawfile/a679cdc2e97429fb5280af8132c119758626c1f2/CSysBase.png",
-            "authors": "James Lawson <j.lawson@auckland.ac.nz>, admin",
+            "authors": "James Lawson <j.lawson@auckland.ac.nz>",
             "description": "Zero dimensional (lumped parameter) modelling of native human cardiovascular dynamics"
         },
         {
