@@ -107,8 +107,6 @@ export default {
   data: function () {
     return {
       thumbnail: this.entry.image || placeholderThumbnail,
-      dataLocation: this.entry.doi || '',
-      discoverId: undefined,
       loading: false,
     };
   },
@@ -172,7 +170,7 @@ export default {
   text-decoration: none;
 }
 
-.button{
+.button {
   background-color: $app-primary-color;
   border: $app-primary-color;
   color: white;
@@ -208,21 +206,6 @@ export default {
   margin-top: 0.5rem;
   font-size: 12px;
   color: #444;
-}
-
-.details{
-  font-family: Asap;
-  font-size: 14px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.5;
-  letter-spacing: 1.05px;
-  color: #484848;
-}
-
-.badges-container {
-  margin-top:0.75rem;
 }
 
 .loading-icon {
