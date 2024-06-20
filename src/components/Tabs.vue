@@ -1,6 +1,11 @@
 <template>
   <div class="tab-container">
-    <div class="title" v-for="title in tabTitles" :key="title.id">
+    <div
+      class="title"
+      v-for="title in tabTitles"
+      :key="title.id"
+      :class="{ 'active-tab': title.id == activeId }"
+    >
       <div
         class="title-text-table"
         v-bind:class="{ highlightText: title.id == activeId }"
@@ -40,7 +45,6 @@ export default {
 <style lang="scss" scoped>
 .tab-container {
   height: 28px;
-  border-bottom: 1px solid var(--el-border-color);
 }
 
 .title {
@@ -71,6 +75,10 @@ export default {
 
 .parent-dialog:hover .title-text {
   color: $app-primary-color;
+}
+
+.active-tab {
+  border-color: $app-primary-color;
 }
 
 .highlightText {

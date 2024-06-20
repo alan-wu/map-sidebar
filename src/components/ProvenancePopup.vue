@@ -1,6 +1,6 @@
 <template>
   <div v-if="entry" class="main" v-loading="loading">
-    <!-- 
+    <!--
     <div class="block" v-if="entry.title">
       <div class="title">{{ capitalise(entry.title) }}</div>
       <div
@@ -389,9 +389,11 @@ export default {
   font-family: Asap, sans-serif, Helvetica;
   font-weight: 400;
   /* outline: thin red solid; */
-  padding: 1em !important;
   overflow: hidden;
   min-width: 16rem;
+  background-color: #f7faff;
+  height: 100%;
+  border-top: 1px solid var(--el-border-color);
 }
 
 .attribute-title-container {
@@ -506,7 +508,8 @@ export default {
   scrollbar-width: thin !important;
   max-height: 100%;
   flex: 1 1 100%;
-  padding-bottom: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
 
   .block {
     padding-top: 0.5em;

@@ -42,7 +42,7 @@
           </div>
 
           <Tabs
-            v-if="tabs.length > 1"
+            v-if="tabs.length > 1 && provenanceEntry"
             :tabTitles="tabs"
             :activeId="activeId"
             @titleClicked="tabClicked"
@@ -402,6 +402,8 @@ export default {
 
 .sidebar-content-container {
   flex: 1 1 auto;
+  border-radius: 0;
+  border: 0 none;
 }
 </style>
 
