@@ -38,11 +38,21 @@ let FlatmapQueries = function () {
     return new Promise((resolve, reject) => {
       this.flatmapQuery(this.pmrSQL())
         .then(data => {
-          resolve(transformKeyValueArrayToObject(data));
+          resolve(this.processFlatmapData(data));
         })
         .catch(reject);
     });
   }
+
+  this.processFlatmapData = function (data) {
+    // Convert the flatmap data into an array of objects
+    let dataObj = transformKeyValueArrayToObject(data)
+    
+    // Only use the results with metadata
+    let metadata = dataObj.filter(d => d.metadata)
+    return metadata.map(d => JSON.parse(d.metadata))
+  }
+
 }
 
 export default FlatmapQueries
