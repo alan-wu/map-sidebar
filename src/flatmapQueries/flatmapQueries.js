@@ -7,6 +7,14 @@ function transformKeyValueArrayToObject(data) {
   );
 }
 
+// remove duplicates by stringifying the objects
+const removeDuplicates = function (arrayOfAnything) {
+  if (!arrayOfAnything) return []
+  return [...new Set(arrayOfAnything.map((e) => JSON.stringify(e)))].map((e) =>
+    JSON.parse(e)
+  )
+}
+
 
 let FlatmapQueries = function () {
   this.initialise = function (flatmapApi) {
@@ -47,10 +55,14 @@ let FlatmapQueries = function () {
   this.processFlatmapData = function (data) {
     // Convert the flatmap data into an array of objects
     let dataObj = transformKeyValueArrayToObject(data)
-    
+
     // Only use the results with metadata
-    let metadata = dataObj.filter(d => d.metadata)
-    return metadata.map(d => JSON.parse(d.metadata))
+    let metadataResults = dataObj.filter(d => d.metadata)
+    let metadataOnly = metadataResults.map(d => JSON.parse(d.metadata))
+
+    // Remove duplicates
+    let uniqueResults = removeDuplicates(metadataOnly)
+    return uniqueResults
   }
 
 }
