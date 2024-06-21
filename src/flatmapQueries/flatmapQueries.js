@@ -19,10 +19,11 @@ const removeDuplicates = function (arrayOfAnything) {
 let FlatmapQueries = function () {
   this.initialise = function (flatmapApi) {
     this.flatmapApi = flatmapApi
+    this.features = []
   }
 
   this.pmrSQL = function () {
-    let sql = 'select model, workspace, exposure, score, metadata from pmr_models left join pmr_metadata on exposure = entity limit 100;'
+    let sql = 'select * from pmr_models left join pmr_metadata on exposure = entity limit 100;'
     return sql
   }
 
@@ -42,15 +43,40 @@ let FlatmapQueries = function () {
     })
   }
 
-  this.pmrSearch = function () {
+  this.pmrSearch = function (features=[]) {
     return new Promise((resolve, reject) => {
       this.flatmapQuery(this.pmrSQL())
         .then(data => {
-          resolve(this.processFlatmapData(data));
+          const pd = this.processFlatmapData(data)
+          this.setAvailableFeatures(pd)
+          if (features.length > 0) {
+            resolve(this.filterFlatmapData(pd, features))
+          }
+          resolve(pd);
         })
         .catch(reject);
     });
   }
+
+  // filterFlatmapData filters the flatmap data based on the filters
+  // pd is the processed data from the flatmap, filters is an array of entries to filter by
+  this.filterFlatmapData = function (pd, filters) {
+    // Line below looks for the entity of each result in the filters array
+    return pd.filter(d => filters.includes(d['term']))
+  }
+
+  // setAvailableFeatures returns the available features in the flatmap for filtering
+  // pd is the processed data from the flatmap
+  this.setAvailableFeatures = function (pd) {
+    pd.forEach((d) => {
+      Object.keys(d).forEach((key) => {
+        if (!features.includes(key)) {
+          this.features.push(key)
+        }
+      })
+    })
+  }
+
 
   this.processFlatmapData = function (data) {
     // Convert the flatmap data into an array of objects
