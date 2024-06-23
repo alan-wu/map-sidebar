@@ -73,6 +73,10 @@ export default {
   display: table;
   height: 100%;
   width: 100%;
+
+  &:hover {
+    color: $app-primary-color;
+  }
 }
 
 .parent-dialog:hover .title-text {
