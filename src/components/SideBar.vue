@@ -24,20 +24,36 @@
 
           <!-- Provenance Info Title -->
           <div v-if="provenanceEntry" class="provenance-info-title">
-            <div class="block" v-if="provenanceEntry.title">
-              <div class="title">{{ capitalise(provenanceEntry.title) }}</div>
-              <div
-                v-if="
-                  provenanceEntry.provenanceTaxonomyLabel &&
-                  provenanceEntry.provenanceTaxonomyLabel.length > 0
-                "
-                class="subtitle"
-              >
-                {{ provSpeciesDescription() }}
+            <div>
+              <div class="block" v-if="provenanceEntry.title">
+                <div class="title">{{ capitalise(provenanceEntry.title) }}</div>
+                <div
+                  v-if="
+                    provenanceEntry.provenanceTaxonomyLabel &&
+                    provenanceEntry.provenanceTaxonomyLabel.length > 0
+                  "
+                  class="subtitle"
+                >
+                  {{ provSpeciesDescription() }}
+                </div>
               </div>
+              <div class="block" v-else>
+                <div class="title">{{ provenanceEntry.featureId }}</div>
+              </div>
+              <external-resource-card :resources="resources"></external-resource-card>
             </div>
-            <div class="block" v-else>
-              <div class="title">{{ provenanceEntry.featureId }}</div>
+            <div class="provenance-title-buttons">
+              <el-button
+                @click="clearProvenanceData"
+                class="button-clear-data"
+                title="Clear"
+              >
+                &times;
+              </el-button>
+              <!--
+              <el-button @click="moveProvenance('left')">Left</el-button>
+              <el-button @click="moveProvenance('right')">Right</el-button>
+              -->
             </div>
           </div>
 
@@ -85,6 +101,7 @@ import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
 import ProvenancePopup from './ProvenancePopup.vue'
+import ExternalResourceCard from './ExternalResourceCard.vue'
 
 /**
  * Aims to provide a sidebar for searching capability for SPARC portal.
@@ -98,6 +115,7 @@ export default {
     Drawer,
     Icon,
     ProvenancePopup,
+    ExternalResourceCard,
   },
   name: 'SideBar',
   props: {
@@ -125,7 +143,7 @@ export default {
       type: Array,
       default: () => [
         { title: 'Search', id: 1 },
-        { title: 'Overview', id: 2 }
+        { title: 'Connectivity', id: 2 }
       ],
     },
     /**
@@ -154,6 +172,15 @@ export default {
     return {
       drawerOpen: false,
     }
+  },
+  computed: {
+    resources: function () {
+      let resources = [];
+      if (this.provenanceEntry && this.provenanceEntry.hyperlinks) {
+        resources = this.provenanceEntry.hyperlinks;
+      }
+      return resources;
+    },
   },
   methods: {
     /**
@@ -248,6 +275,13 @@ export default {
       text += ' species';
       return text;
     },
+    clearProvenanceData: function () {
+      this.tabClicked(1);
+      this.$emit('provenance-popup-close');
+    },
+    // moveProvenance: function (option) {
+    //   this.$emit('provenance-move', option);
+    // },
   },
   created: function () {
     this.drawerOpen = this.openAtStart
@@ -294,12 +328,31 @@ export default {
 <style lang="scss" scoped>
 .provenance-info-title {
   padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.provenance-title-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 8px;
+}
+
+.button-clear-data {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 24px;
+  color: $app-primary-color;
+  line-height: 1;
 }
 
 .title {
   text-align: left;
   // width: 16em;
-  line-height: 1.5em !important;
+  line-height: 1.3em !important;
   font-size: 18px;
   font-family: Helvetica;
   font-weight: bold;

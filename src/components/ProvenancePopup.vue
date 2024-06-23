@@ -158,8 +158,6 @@
         >
           Search for data on components
         </el-button>
-
-        <external-resource-card :resources="resources"></external-resource-card>
       </div>
     <!-- </transition> -->
   </div>
@@ -179,7 +177,6 @@ import {
 } from 'element-plus'
 
 import EventBus from './EventBus'
-import ExternalResourceCard from './ExternalResourceCard.vue'
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -198,7 +195,6 @@ export default {
     Button,
     Container,
     Icon,
-    ExternalResourceCard,
     ElIconArrowUp,
     ElIconArrowDown,
     ElIconWarning,
@@ -237,13 +233,6 @@ export default {
   computed: {
     featuresAlert() {
       // return this.getFeaturesAlert()
-    },
-    resources: function () {
-      let resources = []
-      if (this.entry && this.entry.hyperlinks) {
-        resources = this.entry.hyperlinks
-      }
-      return resources
     },
     originDescription: function () {
       if (
@@ -306,17 +295,6 @@ export default {
 .display {
   width: 44px;
   word-break: normal;
-}
-
-.title {
-  text-align: left;
-  // width: 16em;
-  line-height: 1.5em !important;
-  font-size: 18px;
-  font-family: Helvetica;
-  font-weight: bold;
-  padding-bottom: 8px;
-  color: $app-primary-color;
 }
 
 .block {

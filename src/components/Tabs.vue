@@ -45,13 +45,14 @@ export default {
 <style lang="scss" scoped>
 .tab-container {
   height: 28px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid $app-primary-color;
 }
 
 .title {
-  width: 101px;
   height: 28px;
   border: 1px solid var(--el-border-color);
-  border-bottom: none;
+  border-bottom-color: $app-primary-color;
   background-color: white;
   display: inline-block;
 }
@@ -65,6 +66,7 @@ export default {
   display: table-cell;
   vertical-align: middle;
   font-size: 14px;
+  padding: 0 1rem;
 }
 
 .title-text-table {
@@ -79,6 +81,7 @@ export default {
 
 .active-tab {
   border-color: $app-primary-color;
+  border-bottom-color: #292b66;
 }
 
 .highlightText {
