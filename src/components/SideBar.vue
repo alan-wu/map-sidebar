@@ -455,8 +455,11 @@ export default {
 
 .sidebar-content-container {
   flex: 1 1 auto;
-  border-radius: 0;
-  border: 0 none;
+
+  .provenance-info-title ~ & {
+    border-radius: 0;
+    border: 0 none;
+  }
 }
 </style>
 
