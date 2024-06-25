@@ -20,21 +20,38 @@ let FlatmapQueries = function () {
   this.initialise = function (flatmapApi) {
     this.flatmapApi = flatmapApi
     this.features = []
+    this.numberPerPage = 10
+    this.page = 1
+  }
+
+  this.updatePage = function (page) {
+    this.page = page
+  }
+  this.updateNumberPerPage = function (numberPerPage) {
+    this.numberPerPage = numberPerPage
+  }
+
+  this.calculateOffset = function () {
+    const offset =  (this.page - 1) * this.numberPerPage
+    const limit = this.numberPerPage
+    return 'limit ' + limit + ' offset ' + offset
   }
 
   this.pmrSQL = function (terms=[]) {
-    if (term.length > 0) {
-      let sql = `select * from pmr_models left join pmr_metadata where term='
-      ${terms.join("' or term='")}';`
-      return sql
-    } else {
-      return 'select * from pmr_models left join pmr_metadata on exposure = entity limit 100;'
-    }
+    let sql = 'select * from pmr_models left join pmr_metadata where exposure is not null '
+    if (terms && terms.length > 0) {
+      sql += 'and '
+      sql += `term='${terms.join("' or term='")}'`
+    } 
+    // add the limit and offset for pagination
+    sql += ' ' + this.calculateOffset() + ';'
+    return sql
   }
 
 
   this.flatmapQuery = function (sql) {
     const data = { sql: sql }
+    console.log('Fetching data from flatmap', sql)
     return fetch(`${this.flatmapApi}knowledge/query/`, {
       method: 'POST',
       headers: {
@@ -75,7 +92,7 @@ let FlatmapQueries = function () {
   this.setAvailableFeatures = function (pd) {
     pd.forEach((d) => {
       Object.keys(d).forEach((key) => {
-        if (!features.includes(key)) {
+        if (!this.features.includes(key)) {
           this.features.push(key)
         }
       })

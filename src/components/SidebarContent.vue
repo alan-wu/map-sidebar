@@ -340,6 +340,7 @@ export default {
     },
     numberPerPageUpdate: function (val) {
       this.numberPerPage = val
+      this.flatmapQueries.updateNumberPerPage(this.numberPerPage)
       this.pageChange(1)
     },
     pageChange: function (page) {
@@ -351,6 +352,10 @@ export default {
         this.numberPerPage,
         this.page
       )
+      this.flatmapQueries.updatePage(this.page)
+      if (this.mode === 'PMR') {
+        this.openPMRSearch(this.filter, this.search)
+      }
     },
     handleMissingData: function (doi) {
       let i = this.results.findIndex((res) => res.doi === doi)
