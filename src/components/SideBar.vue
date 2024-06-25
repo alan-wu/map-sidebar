@@ -217,7 +217,6 @@ export default {
       this.$emit('tabClicked', id)
     },
     tabClose: function (id) {
-      console.log('tab id ', id)
       this.$emit('provenance-popup-close');
     },
   },
