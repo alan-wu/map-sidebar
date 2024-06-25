@@ -21,47 +21,12 @@
           <el-icon><el-icon-arrow-right /></el-icon>
         </div>
         <div class="sidebar-container">
-
-          <!-- Provenance Info Title -->
-          <div v-if="provenanceEntry" class="provenance-info-title">
-            <div>
-              <div class="block" v-if="provenanceEntry.title">
-                <div class="title">{{ capitalise(provenanceEntry.title) }}</div>
-                <div
-                  v-if="
-                    provenanceEntry.provenanceTaxonomyLabel &&
-                    provenanceEntry.provenanceTaxonomyLabel.length > 0
-                  "
-                  class="subtitle"
-                >
-                  {{ provSpeciesDescription() }}
-                </div>
-              </div>
-              <div class="block" v-else>
-                <div class="title">{{ provenanceEntry.featureId }}</div>
-              </div>
-              <external-resource-card :resources="resources"></external-resource-card>
-            </div>
-            <div class="provenance-title-buttons">
-              <el-button
-                @click="clearProvenanceData"
-                class="button-clear-data"
-                title="Clear"
-              >
-                &times;
-              </el-button>
-              <!--
-              <el-button @click="moveProvenance('left')">Left</el-button>
-              <el-button @click="moveProvenance('right')">Right</el-button>
-              -->
-            </div>
-          </div>
-
           <Tabs
             v-if="tabs.length > 1 && provenanceEntry"
             :tabTitles="tabs"
             :activeId="activeId"
             @titleClicked="tabClicked"
+            @tab-close="tabClose"
           />
           <template v-for="tab in tabs" key="tab.id">
             <!-- Provenance Info -->
@@ -101,7 +66,6 @@ import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
 import ProvenancePopup from './ProvenancePopup.vue'
-import ExternalResourceCard from './ExternalResourceCard.vue'
 
 /**
  * Aims to provide a sidebar for searching capability for SPARC portal.
@@ -115,7 +79,6 @@ export default {
     Drawer,
     Icon,
     ProvenancePopup,
-    ExternalResourceCard,
   },
   name: 'SideBar',
   props: {
@@ -172,15 +135,6 @@ export default {
     return {
       drawerOpen: false,
     }
-  },
-  computed: {
-    resources: function () {
-      let resources = [];
-      if (this.provenanceEntry && this.provenanceEntry.hyperlinks) {
-        resources = this.provenanceEntry.hyperlinks;
-      }
-      return resources;
-    },
   },
   methods: {
     /**
@@ -262,26 +216,10 @@ export default {
        */
       this.$emit('tabClicked', id)
     },
-    capitalise: function (text) {
-      if (text) return text.charAt(0).toUpperCase() + text.slice(1);
-      return '';
-    },
-    provSpeciesDescription: function () {
-      let text = 'Studied in';
-      this.provenanceEntry.provenanceTaxonomyLabel.forEach((label) => {
-        text += ` ${label},`;
-      });
-      text = text.slice(0, -1); // remove last comma
-      text += ' species';
-      return text;
-    },
-    clearProvenanceData: function () {
-      this.tabClicked(1);
+    tabClose: function (id) {
+      console.log('tab id ', id)
       this.$emit('provenance-popup-close');
     },
-    // moveProvenance: function (option) {
-    //   this.$emit('provenance-move', option);
-    // },
   },
   created: function () {
     this.drawerOpen = this.openAtStart
@@ -326,48 +264,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.provenance-info-title {
-  padding: 1rem;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.provenance-title-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-left: 8px;
-}
-
-.button-clear-data {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  font-size: 24px;
-  color: $app-primary-color;
-  line-height: 1;
-}
-
-.title {
-  text-align: left;
-  // width: 16em;
-  line-height: 1.3em !important;
-  font-size: 18px;
-  font-family: Helvetica;
-  font-weight: bold;
-  padding-bottom: 8px;
-  color: $app-primary-color;
-}
-
-.block {
-  margin-bottom: 0.5em;
-
-  .main > &:first-of-type {
-    margin-right: 1em;
-  }
-}
-
 .box-card {
   flex: 3;
   height: 100%;
@@ -456,7 +352,7 @@ export default {
 .sidebar-content-container {
   flex: 1 1 auto;
 
-  .provenance-info-title ~ & {
+  .tab-container ~ & {
     border-radius: 0;
     border: 0 none;
   }

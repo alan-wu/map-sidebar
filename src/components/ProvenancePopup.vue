@@ -1,22 +1,26 @@
 <template>
   <div v-if="entry" class="main" v-loading="loading">
-    <!--
-    <div class="block" v-if="entry.title">
-      <div class="title">{{ capitalise(entry.title) }}</div>
-      <div
-        v-if="
-          entry.provenanceTaxonomyLabel &&
-          entry.provenanceTaxonomyLabel.length > 0
-        "
-        class="subtitle"
-      >
-        {{ provSpeciesDescription }}
+    <!-- Provenance Info Title -->
+    <div class="provenance-info-title">
+      <div>
+        <div class="block" v-if="entry.title">
+          <div class="title">{{ capitalise(entry.title) }}</div>
+          <div
+            v-if="
+              entry.provenanceTaxonomyLabel &&
+              entry.provenanceTaxonomyLabel.length > 0
+            "
+            class="subtitle"
+          >
+            {{ provSpeciesDescription }}
+          </div>
+        </div>
+        <div class="block" v-else>
+          <div class="title">{{ entry.featureId }}</div>
+        </div>
+        <external-resource-card :resources="resources"></external-resource-card>
       </div>
     </div>
-    <div class="block" v-else>
-      <div class="title">{{ entry.featureId }}</div>
-    </div>
-    -->
     <div v-if="featuresAlert" class="attribute-title-container">
       <span class="attribute-title">Alert</span>
       <el-popover
@@ -33,133 +37,121 @@
         </span>
       </el-popover>
     </div>
-    <!--
-    <div v-show="showDetails" class="hide" id="hide-path-info" @click="showDetails = false">
-      Hide path information
-      <el-icon><el-icon-arrow-up /></el-icon>
-    </div>
-    <div v-show="!showDetails" class="hide" id="show-path-info" @click="showDetails = true">
-      Show path information
-      <el-icon><el-icon-arrow-down /></el-icon>
-    </div>
-    -->
-    <!-- <transition name="slide-fade"> -->
-      <div class="content-container scrollbar">
-        {{ entry.paths }}
-        <div v-if="entry.origins && entry.origins.length > 0" class="block">
-          <div class="attribute-title-container">
-            <span class="attribute-title">Origin</span>
-            <el-popover
-              width="250"
-              trigger="hover"
-              :teleported="false"
-              popper-class="popover-origin-help"
-            >
-              <template #reference>
-                <el-icon class="info"><el-icon-warning /></el-icon>
-              </template>
-              <span style="word-break: keep-all">
-                <i>Origin</i> {{ originDescription }}
-              </span>
+    <div class="content-container scrollbar">
+      {{ entry.paths }}
+      <div v-if="entry.origins && entry.origins.length > 0" class="block">
+        <div class="attribute-title-container">
+          <span class="attribute-title">Origin</span>
+          <el-popover
+            width="250"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-origin-help"
+          >
+            <template #reference>
+              <el-icon class="info"><el-icon-warning /></el-icon>
+            </template>
+            <span style="word-break: keep-all">
+              <i>Origin</i> {{ originDescription }}
+            </span>
 
-            </el-popover>
-          </div>
-          <div
-            v-for="(origin, i) in entry.origins"
-            class="attribute-content"
-            :origin-item-label="origin"
-            :key="origin"
-          >
-            {{ capitalise(origin) }}
-            <div v-if="i != entry.origins.length - 1" class="seperator"></div>
-          </div>
-          <el-button
-            v-show="
-              entry.originsWithDatasets && entry.originsWithDatasets.length > 0
-            "
-            class="button"
-            id="open-dendrites-button"
-            @click="openDendrites"
-          >
-            Explore origin data
-          </el-button>
+          </el-popover>
         </div>
         <div
-          v-if="entry.components && entry.components.length > 0"
-          class="block"
+          v-for="(origin, i) in entry.origins"
+          class="attribute-content"
+          :origin-item-label="origin"
+          :key="origin"
         >
-          <div class="attribute-title-container">
-            <div class="attribute-title">Components</div>
-          </div>
-          <div
-            v-for="(component, i) in entry.components"
-            class="attribute-content"
-            :component-item-label="component"
-            :key="component"
-          >
-            {{ capitalise(component) }}
-            <div
-              v-if="i != entry.components.length - 1"
-              class="seperator"
-            ></div>
-          </div>
+          {{ capitalise(origin) }}
+          <div v-if="i != entry.origins.length - 1" class="seperator"></div>
         </div>
-        <div
-          v-if="entry.destinations && entry.destinations.length > 0"
-          class="block"
-        >
-          <div class="attribute-title-container">
-            <span class="attribute-title">Destination</span>
-            <el-popover
-              width="250"
-              trigger="hover"
-              :teleported="false"
-              popper-class="popover-origin-help"
-            >
-              <template #reference>
-                <el-icon class="info"><el-icon-warning /></el-icon>
-              </template>
-              <span style="word-break: keep-all">
-                <i>Destination</i> is where the axons terminate
-              </span>
-            </el-popover>
-          </div>
-          <div
-            v-for="(destination, i) in entry.destinations"
-            class="attribute-content"
-            :destination-item-label="destination"
-            :key="destination"
-          >
-            {{ capitalise(destination) }}
-            <div
-              v-if="i != entry.destinations.length - 1"
-              class="seperator"
-            ></div>
-          </div>
-          <el-button
-            v-show="
-              entry.destinationsWithDatasets &&
-              entry.destinationsWithDatasets.length > 0
-            "
-            class="button"
-            @click="openAxons"
-          >
-            Explore destination data
-          </el-button>
-        </div>
-
         <el-button
           v-show="
-            entry.componentsWithDatasets &&
-            entry.componentsWithDatasets.length > 0
+            entry.originsWithDatasets && entry.originsWithDatasets.length > 0
           "
           class="button"
-          @click="openAll"
+          id="open-dendrites-button"
+          @click="openDendrites"
         >
-          Search for data on components
+          Explore origin data
         </el-button>
       </div>
-    <!-- </transition> -->
+      <div
+        v-if="entry.components && entry.components.length > 0"
+        class="block"
+      >
+        <div class="attribute-title-container">
+          <div class="attribute-title">Components</div>
+        </div>
+        <div
+          v-for="(component, i) in entry.components"
+          class="attribute-content"
+          :component-item-label="component"
+          :key="component"
+        >
+          {{ capitalise(component) }}
+          <div
+            v-if="i != entry.components.length - 1"
+            class="seperator"
+          ></div>
+        </div>
+      </div>
+      <div
+        v-if="entry.destinations && entry.destinations.length > 0"
+        class="block"
+      >
+        <div class="attribute-title-container">
+          <span class="attribute-title">Destination</span>
+          <el-popover
+            width="250"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-origin-help"
+          >
+            <template #reference>
+              <el-icon class="info"><el-icon-warning /></el-icon>
+            </template>
+            <span style="word-break: keep-all">
+              <i>Destination</i> is where the axons terminate
+            </span>
+          </el-popover>
+        </div>
+        <div
+          v-for="(destination, i) in entry.destinations"
+          class="attribute-content"
+          :destination-item-label="destination"
+          :key="destination"
+        >
+          {{ capitalise(destination) }}
+          <div
+            v-if="i != entry.destinations.length - 1"
+            class="seperator"
+          ></div>
+        </div>
+        <el-button
+          v-show="
+            entry.destinationsWithDatasets &&
+            entry.destinationsWithDatasets.length > 0
+          "
+          class="button"
+          @click="openAxons"
+        >
+          Explore destination data
+        </el-button>
+      </div>
+
+      <el-button
+        v-show="
+          entry.componentsWithDatasets &&
+          entry.componentsWithDatasets.length > 0
+        "
+        class="button"
+        @click="openAll"
+      >
+        Search for data on components
+      </el-button>
+    </div>
   </div>
 </template>
 
@@ -175,7 +167,7 @@ import {
   ElContainer as Container,
   ElIcon as Icon,
 } from 'element-plus'
-
+import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus'
 
 const titleCase = (str) => {
@@ -198,6 +190,7 @@ export default {
     ElIconArrowUp,
     ElIconArrowDown,
     ElIconWarning,
+    ExternalResourceCard,
   },
   props: {
     entry: {
@@ -231,6 +224,13 @@ export default {
     }
   },
   computed: {
+    resources: function () {
+      let resources = [];
+      if (this.entry && this.entry.hyperlinks) {
+        resources = this.entry.hyperlinks;
+      }
+      return resources;
+    },
     featuresAlert() {
       // return this.getFeaturesAlert()
     },
@@ -295,6 +295,24 @@ export default {
 .display {
   width: 44px;
   word-break: normal;
+}
+
+.provenance-info-title {
+  padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.title {
+  text-align: left;
+  // width: 16em;
+  line-height: 1.3em !important;
+  font-size: 18px;
+  font-family: Helvetica;
+  font-weight: bold;
+  padding-bottom: 8px;
+  color: $app-primary-color;
 }
 
 .block {
@@ -367,7 +385,8 @@ export default {
   font-family: Asap, sans-serif, Helvetica;
   font-weight: 400;
   /* outline: thin red solid; */
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
   min-width: 16rem;
   background-color: #f7faff;
   height: 100%;
@@ -482,15 +501,16 @@ export default {
 }
 
 .content-container {
-  overflow-y: auto;
-  scrollbar-width: thin !important;
-  max-height: 100%;
   flex: 1 1 100%;
   padding: 1rem;
   box-sizing: border-box;
 
   .block {
     padding-top: 0.5em;
+  }
+
+  .provenance-info-title ~ & {
+    padding-top: 0;
   }
 }
 
