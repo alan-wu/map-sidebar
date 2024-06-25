@@ -22,9 +22,14 @@ let FlatmapQueries = function () {
     this.features = []
   }
 
-  this.pmrSQL = function () {
-    let sql = 'select * from pmr_models left join pmr_metadata on exposure = entity limit 100;'
-    return sql
+  this.pmrSQL = function (terms=[]) {
+    if (term.length > 0) {
+      let sql = `select * from pmr_models left join pmr_metadata where term='
+      ${terms.join("' or term='")}';`
+      return sql
+    } else {
+      return 'select * from pmr_models left join pmr_metadata on exposure = entity limit 100;'
+    }
   }
 
 
@@ -45,7 +50,7 @@ let FlatmapQueries = function () {
 
   this.pmrSearch = function (features=[]) {
     return new Promise((resolve, reject) => {
-      this.flatmapQuery(this.pmrSQL())
+      this.flatmapQuery(this.pmrSQL(features))
         .then(data => {
           const pd = this.processFlatmapData(data)
           this.setAvailableFeatures(pd)
