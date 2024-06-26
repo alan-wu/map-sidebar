@@ -231,10 +231,6 @@ export default {
        */
       this.$emit('actionClick', payLoad)
     })
-    EventBus.on('onProvenanceActionClick', (payLoad) => {
-      this.tabClicked(1);
-      this.$emit('actionClick', payLoad)
-    });
     EventBus.on('available-facets', (payLoad) => {
       this.$emit('search-changed', {
         type: 'available-facets',
@@ -257,6 +253,10 @@ export default {
        * @arg payload
        */
       this.$emit('datalink-clicked', payLoad);
+    })
+    EventBus.on('onProvenanceActionClick', (payLoad) => {
+      this.tabClicked(1);
+      this.$emit('actionClick', payLoad);
     })
   },
 }
