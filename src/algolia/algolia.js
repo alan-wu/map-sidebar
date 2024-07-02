@@ -100,6 +100,7 @@ export class AlgoliaClient {
     for (let res of results) {
       newResult = { ...res }
       newResult = {
+        dataSource: 'SPARC',
         anatomy: res.anatomy ? res.anatomy.organ.map((organ => organ.curie)) : undefined,
         doi: res.item.curie.split(':')[1],
         name: res.item.name,

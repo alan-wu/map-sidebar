@@ -9,13 +9,14 @@
               class="card-image"
               :src="thumbnail"
               width="210"
-              height="120"
+              height="210"
               :alt="entry.title"
               loading="lazy"
             />
           </a>
         </span>
         <div class="card-right">
+          <el-tag type="primary" class="source-tag">PMR</el-tag>
           <div>
             <h4 class="title">{{ entry.title }}</h4>
             <div class="authors">
@@ -42,7 +43,8 @@
 /* eslint-disable no-alert, no-console */
 import {
   ElButton,
-  ElIcon
+  ElIcon,
+  ElTag
 } from 'element-plus'
 
 /**
@@ -88,7 +90,8 @@ export default {
   name: "PMRDatasetCard",
   components: {
     ElButton,
-    ElIcon
+    ElIcon,
+    ElTag
   },
   props: {
     /**
@@ -157,6 +160,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-height: 17rem;
 }
 
 .el-button {
@@ -200,6 +204,14 @@ export default {
   max-width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+.source-tag {
+  margin-bottom: 0.75rem;
+  margin-right: 2rem;
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 
 .authors {

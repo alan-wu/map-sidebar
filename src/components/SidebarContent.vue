@@ -39,34 +39,28 @@
       ref="searchHistory"
       @search="searchHistorySearch"
     ></SearchHistory>
+      pmr hits: {{ pmrNumberOfHits }}
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
-      <template v-if="mode == 'Sparc Datasets'">
-        <div v-for="result in results" :key="result.doi" class="step-item">
-          <DatasetCard
-            :entry="result"
-            :envVars="envVars"
-          ></DatasetCard>
-        </div>
-      </template>
-      <template v-if="mode == 'PMR'">
-        <div v-for="(result, i) in pmrResults" :key="i" class="step-item">
-          <PMRDatasetCard
-            :entry="result"
-            :envVars="envVars"
-          ></PMRDatasetCard>
-        </div>
-      </template>
-      <template v-if="mode == 'Flatmap'">
-        <div v-for="(result, i) in allPaths" :key="i" class="step-item">
-          <flatmap-dataset-card
-            :entry="result"
-            :envVars="envVars"
-          ></flatmap-dataset-card>
-        </div>
-      </template>
+      <div v-for="(result, i) in results" :key="i" class="step-item">
+        <DatasetCard
+          v-if="result.dataSource === 'SPARC'"
+          :entry="result"
+          :envVars="envVars"
+        ></DatasetCard>
+        <PMRDatasetCard
+          v-else-if="result.dataSource === 'PMR'"
+          :entry="result"
+          :envVars="envVars"
+        ></PMRDatasetCard>
+        <flatmap-dataset-card
+          v-else-if="result.dataSource === 'Flatmap'"
+          :entry="result"
+          :envVars="envVars"
+        ></flatmap-dataset-card>
+      </div>
       <el-pagination
         class="pagination"
         v-model:current-page="page"
@@ -107,6 +101,7 @@ import FlatmapQueries from '../flatmapQueries/flatmapQueries.js'
 
 // TODO: to update API URL
 const API_URL = "/data/pmr-sample.json";
+const RatioOfPMRResults = 0.2; // Ratio of PMR results to Sparc results
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
@@ -127,6 +122,7 @@ var initial_state = {
   lastSearch: '',
   results: [],
   numberOfHits: 0,
+  pmrNumberOfHits: 0,
   filter: [],
   loadingCards: false,
   numberPerPage: 10,
@@ -199,6 +195,14 @@ export default {
         filterFacets: this.filter,
       }
     },
+    // npp_SPARC: Number per page for SPARC datasets
+    npp_SPARC: function () {
+      return Math.round(this.numberPerPage * (1 - RatioOfPMRResults))
+    },
+    // npp_PMR: Number per page for PMR datasets
+    npp_PMR: function () {
+      return Math.round(this.numberPerPage * RatioOfPMRResults)
+    },
   },
   methods: {
     hoverChanged: function (data) {
@@ -213,18 +217,19 @@ export default {
     },
     // openSearch: Resets the results, populates dataset cards and filters. Will use Algolia and SciCrunch data uness pmr mode is set
     openSearch: function(filter, search = '', mode = 'Sparc Datasets') {
-      if (!mode || mode === 'Sparc Datasets') {
-        this.openAlgoliaSearch(filter, search)
-      } else if (mode === 'PMR') {
-        this.openPMRSearch(filter, search)
-      } 
+      this.resetSearch()
+      this.openAlgoliaSearch(filter, search)
+      this.openPMRSearch(filter, search)
     },
 
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
-      this.flatmapQueries.pmrSearch(search).then((data) => {
-        this.pmrResults = data
-        this.numberOfHits = this.flatmapQueries.numberOfHits
+      console.log('filter', filter)
+      this.flatmapQueries.pmrSearch(filter, search).then((data) => {
+        data.forEach((result) => {
+          this.results.push(result)
+        })
+        this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
       })
     },
 
@@ -300,6 +305,7 @@ export default {
       this.filters = [...filters]
       this.resetPageNavigation()
       this.searchAlgolia(filters, this.searchInput)
+      this.openPMRSearch(filters, this.searchInput)
       this.$emit('search-changed', {
         value: filters,
         type: 'filter-update',
@@ -317,11 +323,15 @@ export default {
           })
         })
       this.algoliaClient
-        .search(getFilters(filters), query, this.numberPerPage, this.page)
+        .search(getFilters(filters), query, this.npp_SPARC , this.page)
         .then((searchData) => {
           this.numberOfHits = searchData.total
           this.discoverIds = searchData.discoverIds
           this._dois = searchData.dois
+          searchData.items.forEach((item) => {
+            item.detailsReady = false
+            this.results.push(item)
+          })
           this.results = searchData.items
           this.loadingCards = false
           this.scrollToTop()
@@ -341,7 +351,7 @@ export default {
     },
     numberPerPageUpdate: function (val) {
       this.numberPerPage = val
-      this.flatmapQueries.updateNumberPerPage(this.numberPerPage)
+      this.flatmapQueries.updateNumberPerPage(this.npp_PMR)
       this.pageChange(1)
     },
     pageChange: function (page) {
@@ -354,9 +364,7 @@ export default {
         this.page
       )
       this.flatmapQueries.updatePage(this.page)
-      if (this.mode === 'PMR') {
-        this.openPMRSearch(this.filter, this.search)
-      }
+      this.openPMRSearch(this.filters, this.searchInput)
     },
     handleMissingData: function (doi) {
       let i = this.results.findIndex((res) => res.doi === doi)
@@ -416,7 +424,6 @@ export default {
         Object.assign(this.results[i], element)
         // Assign the attributes that need some processing
         Object.assign(this.results[i], {
-          dataSource: 'SPARC'
           numberSamples: element.sampleSize ? parseInt(element.sampleSize) : 0,
           numberSubjects: element.subjectSize
             ? parseInt(element.subjectSize)
@@ -521,6 +528,7 @@ export default {
     // initialise flatmap queries
     this.flatmapQueries = new FlatmapQueries()
     this.flatmapQueries.initialise(this.envVars.FLATMAP_API_LOCATION)
+    this.flatmapQueries.updateNumberPerPage(this.npp_PMR)
 
     // open search
     this.openSearch(this.filter, this.searchInput, this.mode )

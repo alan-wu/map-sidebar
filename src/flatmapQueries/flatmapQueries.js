@@ -23,6 +23,9 @@ let FlatmapQueries = function () {
     this.numberPerPage = 10
     this.page = 1
     this.numberOfHits = 0
+    this.sqlPreOffset = ''
+    this.lookup = {}
+    this.createLookup()
   }
 
   this.updatePage = function (page) {
@@ -39,13 +42,29 @@ let FlatmapQueries = function () {
   }
 
   this.pmrSQL = function (terms=[]) {
-    let sql = 'select * from pmr_models left join pmr_metadata where exposure is not null '
+    let sql = 'select * from pmr_models left join pmr_metadata on pmr_models.exposure=pmr_metadata.entity where metadata is not null and exposure is not null and score > 0.98 '
     if (terms && terms.length > 0) {
       sql += 'and '
       sql += `term='${terms.join("' or term='")}'`
     } 
+    this.sqlPreOffset = sql
+
     // add the limit and offset for pagination
     sql += ' ' + this.calculateOffset() + ';'
+    console.log('SQL:', sql)
+    return sql
+  }
+
+  this.convertTermsToIds = function (terms) {
+    return terms.map(t => this.lookUpId(t))
+  }
+
+  this.labelSQL = function (){
+    return "select entity, label from labels"
+  }
+
+  this.countSQL = function (sql) {
+    sql = `select count(*) from (${sql})`
     return sql
   }
 
@@ -66,14 +85,31 @@ let FlatmapQueries = function () {
     })
   }
 
-  this.pmrSearch = function (features=[]) {
+  this.processFilters = function (filters) {
+    let featureLabels = []
+    filters.forEach((f) => {
+      if (f.facet !== 'Show all')
+        featureLabels.push(f.facet)
+    })
+    return featureLabels
+  }
+
+
+
+  this.pmrSearch = function (filters=[], search='') {
+    let features = this.processFilters(filters)
+    let featureIds = this.convertTermsToIds(features)
     return new Promise((resolve, reject) => {
-      this.flatmapQuery(this.pmrSQL(features))
+      this.flatmapQuery(this.pmrSQL(featureIds))
         .then(data => {
           const pd = this.processFlatmapData(data)
           this.setAvailableFeatures(pd)
-          this.numberOfHits = pd.length
-          resolve(pd);
+
+          // get the number of hits for pagination
+          this.flatmapQuery(this.countSQL(this.sqlPreOffset)).then(data => {
+            this.numberOfHits = data.values[0][0]
+            resolve(pd);
+          })
         })
         .catch(reject);
     });
@@ -107,6 +143,21 @@ let FlatmapQueries = function () {
     // Remove duplicates
     let uniqueResults = removeDuplicates(metadataOnly)
     return uniqueResults
+  }
+
+  this.createLookup = function () {
+    this.flatmapQuery(this.labelSQL())
+      .then(data => {
+        data.values.forEach(d => {
+          if (d[1] && (typeof d[1] === 'string' || d[1] instanceof String)) {
+            this.lookup[d[1].toLowerCase()] = d[0]
+          }
+        })
+      })
+  }
+
+  this.lookUpId = function (label) {
+    return this.lookup[label.toLowerCase()]
   }
 
 }
