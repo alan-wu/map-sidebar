@@ -22,6 +22,7 @@ let FlatmapQueries = function () {
     this.features = []
     this.numberPerPage = 10
     this.page = 1
+    this.numberOfHits = 0
   }
 
   this.updatePage = function (page) {
@@ -71,20 +72,11 @@ let FlatmapQueries = function () {
         .then(data => {
           const pd = this.processFlatmapData(data)
           this.setAvailableFeatures(pd)
-          if (features.length > 0) {
-            resolve(this.filterFlatmapData(pd, features))
-          }
+          this.numberOfHits = pd.length
           resolve(pd);
         })
         .catch(reject);
     });
-  }
-
-  // filterFlatmapData filters the flatmap data based on the filters
-  // pd is the processed data from the flatmap, filters is an array of entries to filter by
-  this.filterFlatmapData = function (pd, filters) {
-    // Line below looks for the entity of each result in the filters array
-    return pd.filter(d => filters.includes(d['term']))
   }
 
   // setAvailableFeatures returns the available features in the flatmap for filtering
@@ -106,7 +98,11 @@ let FlatmapQueries = function () {
 
     // Only use the results with metadata
     let metadataResults = dataObj.filter(d => d.metadata)
-    let metadataOnly = metadataResults.map(d => JSON.parse(d.metadata))
+    let metadataOnly = metadataResults.map(d => {
+      let md = JSON.parse(d.metadata)
+      md.dataSource = 'PMR'
+      return md
+    })
 
     // Remove duplicates
     let uniqueResults = removeDuplicates(metadataOnly)

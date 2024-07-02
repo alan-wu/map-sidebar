@@ -224,6 +224,7 @@ export default {
     openPMRSearch: function (filter, search = '') {
       this.flatmapQueries.pmrSearch(search).then((data) => {
         this.pmrResults = data
+        this.numberOfHits = this.flatmapQueries.numberOfHits
       })
     },
 
@@ -415,6 +416,7 @@ export default {
         Object.assign(this.results[i], element)
         // Assign the attributes that need some processing
         Object.assign(this.results[i], {
+          dataSource: 'SPARC'
           numberSamples: element.sampleSize ? parseInt(element.sampleSize) : 0,
           numberSubjects: element.subjectSize
             ? parseInt(element.subjectSize)
