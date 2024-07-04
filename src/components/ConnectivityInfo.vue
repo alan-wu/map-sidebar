@@ -544,6 +544,10 @@ export default {
 
   .block {
     padding-top: 0.5em;
+
+    + .block {
+      margin-top: 1rem;
+    }
   }
 
   .connectivity-info-title ~ & {
