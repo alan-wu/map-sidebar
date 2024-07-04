@@ -100,8 +100,8 @@ export default {
   },
   data: function () {
     return {
-      tabArray: [{ title: 'Flatmap', id: 1 }, { title: 'Connectivity', id: 2 }],
-      contextArray: [null, null, null],
+      contextArray: [null, null],
+      tabArray: [{ title: 'Flatmap', id: 1, type: 'search'}, { title: 'Connectivity', id: 2, type: 'connectivity' }],
       sideBarVisibility: true,
       envVars: {
         API_LOCATION: import.meta.env.VITE_APP_API_LOCATION,
