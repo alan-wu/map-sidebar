@@ -21,7 +21,7 @@
       ref="sideBar"
       :visible="sideBarVisibility"
       :tabs="tabs"
-      :activeId="activeId"
+      :activeTabId="activeId"
       :connectivityInfo="connectivityInput"
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
@@ -124,8 +124,8 @@ export default {
     searchChanged: function (data) {
       console.log(data)
     },
-    tabClicked: function (id) {
-      this.activeId = id
+    tabClicked: function (tab) {
+      this.activeId = tab.id
     },
     // For connectivity input actions
     action: function (action) {
