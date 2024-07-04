@@ -285,13 +285,13 @@ export default {
     openAll: function () {
       EventBus.emit('onConnectivityActionClick', {
         type: 'Facets',
-        labels: this.entry.componentsWithDatasets.map((a) => a.name),
+        labels: this.entry.componentsWithDatasets.map((a) => a.name.toLowerCase()),
       })
     },
     openAxons: function () {
       EventBus.emit('onConnectivityActionClick', {
         type: 'Facets',
-        labels: this.entry.destinationsWithDatasets.map((a) => a.name),
+        labels: this.entry.destinationsWithDatasets.map((a) => a.name.toLowerCase()),
       })
     },
     // shouldShowExploreButton: Checks if the feature is in the list of available anatomy facets
@@ -316,7 +316,7 @@ export default {
     openDendrites: function () {
       EventBus.emit('onConnectivityActionClick', {
         type: 'Facets',
-        labels: this.entry.originsWithDatasets.map((a) => a.name),
+        labels: this.entry.originsWithDatasets.map((a) => a.name.toLowerCase()),
       })
     },
     pubmedSearchUrlUpdate: function (val) {
