@@ -121,8 +121,9 @@ var initial_state = {
   searchInput: '',
   lastSearch: '',
   results: [],
-  numberOfHits: 0,
   pmrNumberOfHits: 0,
+  sparcNumberOfHits: 0,
+  variableRatio: RatioOfPMRResults,
   filter: [],
   loadingCards: false,
   numberPerPage: 10,
@@ -197,11 +198,14 @@ export default {
     },
     // npp_SPARC: Number per page for SPARC datasets
     npp_SPARC: function () {
-      return Math.round(this.numberPerPage * (1 - RatioOfPMRResults))
+      return Math.round(this.numberPerPage * (1 - this.variableRatio))
     },
     // npp_PMR: Number per page for PMR datasets
     npp_PMR: function () {
-      return Math.round(this.numberPerPage * RatioOfPMRResults)
+      return Math.round(this.numberPerPage * this.variableRatio)
+    },
+    numberOfHits: function () {
+      return this.sparcNumberOfHits + this.pmrNumberOfHits
     },
   },
   methods: {
@@ -209,7 +213,9 @@ export default {
       this.$emit('hover-changed', data)
     },
     resetSearch: function () {
-      this.numberOfHits = 0
+      this.variableRatio = RatioOfPMRResults
+      this.pmrNumberOfHits = 0
+      this.sparcNumberOfHits = 0
       this.discoverIds = []
       this._dois = []
       this.results = []
@@ -229,6 +235,9 @@ export default {
         data.forEach((result) => {
           this.results.push(result)
         })
+        if (this.results.length === 0) {
+          this.variableRatio = 0 // No PMR results, so no need to show only sparc results
+        }
         this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
       })
     },
@@ -325,13 +334,16 @@ export default {
       this.algoliaClient
         .search(getFilters(filters), query, this.npp_SPARC , this.page)
         .then((searchData) => {
-          this.numberOfHits = searchData.total
+          this.sparcNumberOfHits = searchData.total
           this.discoverIds = searchData.discoverIds
           this._dois = searchData.dois
           searchData.items.forEach((item) => {
             item.detailsReady = false
             this.results.push(item)
           })
+          if (searchData.items.length === 0) {
+            this.variableRatio = 1 // No SPARC results, so no need to show only PMR results
+          }
           this.results = searchData.items
           this.loadingCards = false
           this.scrollToTop()
