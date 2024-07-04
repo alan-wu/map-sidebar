@@ -33,6 +33,7 @@
             <template v-if="tab.id === 2">
               <connectivity-info
                 :entry="connectivityInfo"
+                :availableAnatomyFacets="availableAnatomyFacets"
                 v-show="tab.id === activeId"
                 :ref="tab.id"
               />
@@ -134,6 +135,7 @@ export default {
   data: function () {
     return {
       drawerOpen: false,
+
     }
   },
   methods: {
@@ -268,6 +270,12 @@ export default {
       this.tabClicked(1);
       this.$emit('actionClick', payLoad);
     })
+
+    // Get available anatomy facets for the connectivity info
+    EventBus.on('available-facets', (payLoad) => {
+        this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
+    })
+    
   },
 }
 </script>

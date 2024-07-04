@@ -22,6 +22,7 @@
       :visible="sideBarVisibility"
       :tabs="tabs"
       :activeId="activeId"
+      :connectivityInfo="connectivityInput"
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
@@ -35,6 +36,9 @@
 // optionally import default styles
 import SideBar from './components/SideBar.vue'
 import EventBus from './components/EventBus.js'
+import exampleConnectivityInput from './exampleConnectivityInput.js'
+
+const capitalise = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -96,7 +100,7 @@ export default {
   },
   data: function () {
     return {
-      tabArray: [{ title: 'Flatmap', id: 1 }],
+      tabArray: [{ title: 'Flatmap', id: 1 }, { title: 'Connectivity', id: 2 }],
       contextArray: [null, null, null],
       sideBarVisibility: true,
       envVars: {
@@ -109,6 +113,7 @@ export default {
         NL_LINK_PREFIX: import.meta.env.VITE_APP_NL_LINK_PREFIX,
         ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
       },
+      connectivityInput: exampleConnectivityInput,
       activeId: 1,
     }
   },
@@ -122,8 +127,21 @@ export default {
     tabClicked: function (id) {
       this.activeId = id
     },
-    action: function (val) {
-      console.log('action fired: ', val)
+    // For connectivity input actions
+    action: function (action) {
+      console.log('action fired: ', action)
+      let facets = [];
+      facets.push(
+        ...action.labels.map(val => ({
+          facet: capitalise(val),
+          term: "Anatomical structure",
+          facetPropPath: "anatomy.organ.category.name",
+        }))
+      );
+      if (this.$refs.sideBar) {
+        console.log('openSearch', facets)
+        this.$refs.sideBar.openSearch(facets, "");
+      }
     },
     openSearch: function () {
       this.$refs.sideBar.openSearch(
