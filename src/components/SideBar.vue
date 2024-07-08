@@ -36,6 +36,7 @@
                 :availableAnatomyFacets="availableAnatomyFacets"
                 v-show="tab.id === activeTabId"
                 :ref="'connectivityTab_' + tab.id"
+                @show-connectivity="showConnectivity"
               />
             </template>
             <template v-else>
@@ -145,6 +146,13 @@ export default {
      */
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
+    },
+    /**
+     * This event is emitted when the show connectivity button is clicked.
+     * @arg featureIds
+     */
+    showConnectivity: function (featureIds) {
+      this.$emit('show-connectivity', featureIds);
     },
     /**
      * This event is emitted when the search filters are changed.
@@ -308,7 +316,7 @@ export default {
     EventBus.on('available-facets', (payLoad) => {
         this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
     })
-    
+
   },
 }
 </script>

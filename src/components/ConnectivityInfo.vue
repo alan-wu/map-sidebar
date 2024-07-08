@@ -20,6 +20,25 @@
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
       </div>
+      <div>
+        <el-popover
+          width="200"
+          trigger="hover"
+          :teleported="false"
+          popper-class="popover-origin-help"
+        >
+          <template #reference>
+            <el-button class="button-circle" circle @click="showConnectivity(entry)">
+              <el-icon color="white">
+                <el-icon-location />
+              </el-icon>
+            </el-button>
+          </template>
+          <span>
+            Show connectivity on map
+          </span>
+        </el-popover>
+      </div>
     </div>
     <div v-if="featuresAlert" class="attribute-title-container">
       <span class="attribute-title">Alert</span>
@@ -322,6 +341,12 @@ export default {
     pubmedSearchUrlUpdate: function (val) {
       this.pubmedSearchUrl = val
     },
+    showConnectivity: function (entry) {
+      // move the map center to highlighted area
+      const featureIds = entry.featureId || [];
+      // connected to flatmapvuer > moveMap(featureIds) function
+      this.$emit('show-connectivity', featureIds);
+    },
   },
 }
 </script>
@@ -338,6 +363,7 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .title {
@@ -361,6 +387,19 @@ export default {
 
 .pub {
   width: 16rem;
+}
+
+.button-circle {
+  width: 24px !important;
+  height: 24px !important;
+
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: $app-primary-color;
+    border-color: $app-primary-color;
+  }
 }
 
 .icon {
