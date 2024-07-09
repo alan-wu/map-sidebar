@@ -47,18 +47,27 @@
       <div v-for="(result, i) in results" :key="i" class="step-item">
         <DatasetCard
           v-if="result.dataSource === 'SPARC'"
+          class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
         ></DatasetCard>
         <PMRDatasetCard
           v-else-if="result.dataSource === 'PMR'"
+          class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
         ></PMRDatasetCard>
         <flatmap-dataset-card
           v-else-if="result.dataSource === 'Flatmap'"
+          class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
         ></flatmap-dataset-card>
       </div>
       <el-pagination
