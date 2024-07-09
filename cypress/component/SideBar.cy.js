@@ -103,7 +103,7 @@ describe("<SideBar />", () => {
           },
           connectivityInfo: neuronInfo,
           openAtStart: true,
-          activeId: 2,
+          activeTabId: 2,
         },
       })
     }).as('wrapper')
@@ -133,9 +133,15 @@ describe("<SideBar />", () => {
     // Click event in Provenance card should behave correctly
     cy.get('@wrapper').then(({ wrapper, component }) => {
       // Click on tabs
-      cy.get('@Search').click() // Click on Search
-      cy.get('@Connectivity').click() // Click on Connectivity
-      cy.get('@CloseConnectivity').click() // Click on Close sign
+      cy.get('@Search').click().then(() => {
+        expect(wrapper.emitted()['tabClicked'][0]).to.deep.equal([{ id: 1, type: 'search' }]) // Switch to Search
+      })
+      cy.get('@Connectivity').click().then(() => {
+        expect(wrapper.emitted()['tabClicked'][1]).to.deep.equal([{ id: 2, type: 'connectivity' }]) // Switch to Connectivity
+      })
+      cy.get('@CloseConnectivity').click().then(() => {
+        expect(wrapper.emitted()['connectivity-info-close']).to.exist // Close Connectivity
+      })
 
       // Click on buttons
       cy.window().then((window) => {
@@ -145,19 +151,17 @@ describe("<SideBar />", () => {
       cy.get('@neuronInfo').then((neuronInfo) => {
         cy.get('@Open').should('have.been.calledOnceWithExactly', Cypress.sinon.match(neuronInfo.hyperlinks[0].url), '_blank')
       })
-      
+
+      cy.get('.connectivity-info-title > :nth-child(2) > .el-button').click()
       cy.get('#open-dendrites-button').should('exist').click()
       cy.get('.el-button').contains('Explore destination data').should('exist').click()
       cy.get('.el-button').contains('Search for data on components').should('exist').click()
 
       cy.then(() => {
         // The emit order will follow the clicked order
-        expect(wrapper.emitted()['tabClicked'][0]).to.deep.equal([1]) // Switch to Search
-        expect(wrapper.emitted()['tabClicked'][1]).to.deep.equal([2]) // Switch to Connectivity
-        expect(wrapper.emitted()['connectivity-info-close']).to.exist // Close Connectivity
-
         cy.get('@neuronInfo').then((neuronInfo) => {
-          const getName = (entries) => entries.map((entry) => entry.name)
+          expect(wrapper.emitted()['show-connectivity'][0][0]).to.deep.equal(neuronInfo.featureId)
+          const getName = (entries) => entries.map((entry) => entry.name.toLowerCase())
           expect(wrapper.emitted()['actionClick'][0][0]['labels']).to.deep.equal(getName(neuronInfo.originsWithDatasets))
           expect(wrapper.emitted()['actionClick'][1][0]['labels']).to.deep.equal(getName(neuronInfo.destinationsWithDatasets))
           expect(wrapper.emitted()['actionClick'][2][0]['labels']).to.deep.equal(getName(neuronInfo.componentsWithDatasets))
