@@ -205,16 +205,25 @@ export default {
        */
       this.$emit('actionClick', payLoad)
     })
-    EventBus.on('available-facets', (payLoad) => {
-      this.$emit('search-changed', {
-        type: 'available-facets',
-        value: payLoad,
-      })
+    EventBus.on('number-of-datasets-for-anatomies', (payLoad) => {
+      /**
+       * This emits a object with keys as anatomy and values as number of datasets for that anatomy.
+       * @arg payload
+       */
+      this.$emit('number-of-datasets-for-anatomies', payLoad)
     })
+    EventBus.on('anatomy-in-datasets', (payLoad) => {
+       /**
+       * This emits a lis of datasets, with the anatomy for each one. Used by flatmap for markers
+       * @arg payload
+       */
+      this.$emit('anatomy-in-datasets', payLoad)
+    })
+    
     EventBus.on('contextUpdate', (payLoad) => {
       /**
-       * This event is emitted when the context is updated.
-       * Example, context update on first load.
+       * This event is emitted when the context card is updated.
+       * Example, context card update on first load.
        * @arg payload
        */
       this.$emit('contextUpdate', payLoad)

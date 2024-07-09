@@ -340,14 +340,14 @@ export default {
     },
     searchAlgolia(filters, query = '') {
       // Algolia search
+      
       this.loadingCards = true
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
-        .then((anatomy) => {
-          EventBus.emit('available-facets', {
-            uberons: anatomy,
-            labels: this.algoliaClient.anatomyFacetLabels,
-          })
+        .then((r) => {
+          // Send result anatomy to the scaffold and flatmap
+          EventBus.emit('anatomy-in-datasets', r.forFlatmap)
+          EventBus.emit('number-of-datasets-for-anatomies', r.forScaffold)
         })
       this.algoliaClient
         .search(getFilters(filters), query, this.npp_SPARC , this.page)
@@ -571,10 +571,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.dataset-card:hover {
-  border-style: solid;
-  border-color: var(--el-color-primary);
-  border-radius: 5px;
+.dataset-card {
+  position: relative;
+
+  &::before {
+    content: "";
+    display: block;
+    width: calc(100% - 15px);
+    height: 100%;
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: transparent;
+  }
+
+  &:hover {
+    &::before {
+      border-color: var(--el-color-primary);
+    }
+  }
 }
 
 .content-card {
