@@ -1,0 +1,162 @@
+{
+    "destinations": [
+        "endocardium, heart left ventricle",
+        "endocardium, heart right ventricle",
+        "lamina I of gray matter of spinal cord, C7 segment of cervical spinal cord",
+        "epicardium, heart",
+        "myocardium, heart left ventricle",
+        "myocardium, heart right ventricle"
+    ],
+    "origins": [
+        "first thoracic dorsal root ganglion",
+        "fourth thoracic spinal ganglion",
+        "sixth thoracic dorsal root ganglion",
+        "second thoracic dorsal root ganglion",
+        "seventh cervical dorsal root ganglion",
+        "eighth cervical dorsal root ganglion",
+        "fifth thoracic dorsal root ganglion",
+        "sixth cervical dorsal root ganglion",
+        "third thoracic dorsal root ganglion"
+    ],
+    "components": [
+        "first thoracic spinal cord segment",
+        "C8 segment of cervical spinal cord",
+        "C7 segment of cervical spinal cord",
+        "second thoracic spinal cord segment",
+        "third thoracic spinal cord segment",
+        "fourth thoracic spinal cord segment",
+        "fifth thoracic spinal cord segment",
+        "C6 segment of cervical spinal cord",
+        "sixth thoracic spinal cord segment"
+    ],
+    "destinationsWithDatasets": [
+        {
+            "id": "UBERON:0000948",
+            "name": "heart"
+        },
+        {
+            "id": "UBERON:0002080",
+            "name": "heart right ventricle"
+        },
+        {
+            "id": "UBERON:0002084",
+            "name": "heart left ventricle"
+        },
+        {
+            "id": "UBERON:0002165",
+            "name": "endocardium"
+        },
+        {
+            "id": "UBERON:0002348",
+            "name": "epicardium"
+        },
+        {
+            "id": "UBERON:0002349",
+            "name": "myocardium"
+        },
+        {
+            "id": "UBERON:0006118",
+            "name": "lamina I of gray matter of spinal cord"
+        },
+        {
+            "id": "UBERON:0006493",
+            "name": "C7 segment of cervical spinal cord"
+        }
+    ],
+    "originsWithDatasets": [
+        {
+            "id": "UBERON:0002843",
+            "name": "seventh cervical dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0002844",
+            "name": "eighth cervical dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0002845",
+            "name": "first thoracic dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0002846",
+            "name": "second thoracic dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0002847",
+            "name": "third thoracic dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0002848",
+            "name": "fifth thoracic dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0002849",
+            "name": "sixth thoracic dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0007711",
+            "name": "sixth cervical dorsal root ganglion"
+        },
+        {
+            "id": "UBERON:0007712",
+            "name": "fourth thoracic spinal ganglion"
+        }
+    ],
+    "componentsWithDatasets": [
+        {
+            "id": "UBERON:0006452",
+            "name": "fourth thoracic spinal cord segment"
+        },
+        {
+            "id": "UBERON:0006453",
+            "name": "fifth thoracic spinal cord segment"
+        },
+        {
+            "id": "UBERON:0006454",
+            "name": "sixth thoracic spinal cord segment"
+        },
+        {
+            "id": "UBERON:0006457",
+            "name": "first thoracic spinal cord segment"
+        },
+        {
+            "id": "UBERON:0006458",
+            "name": "second thoracic spinal cord segment"
+        },
+        {
+            "id": "UBERON:0006459",
+            "name": "third thoracic spinal cord segment"
+        },
+        {
+            "id": "UBERON:0006470",
+            "name": "C8 segment of cervical spinal cord"
+        },
+        {
+            "id": "UBERON:0006492",
+            "name": "C6 segment of cervical spinal cord"
+        },
+        {
+            "id": "UBERON:0006493",
+            "name": "C7 segment of cervical spinal cord"
+        }
+    ],
+    "title": "neuron type aacar 13",
+    "featureId": [
+        "ilxtr:neuron-type-aacar-13"
+    ],
+    "hyperlinks": [
+        {
+            "url": "https://pubmed.ncbi.nlm.nih.gov/?term=%2F%2Fwww.ncbi.nlm.nih.gov%2Fpubmed%2F27783854",
+            "id": "pubmed"
+        }
+    ],
+    "provenanceTaxonomy": [
+        "NCBITaxon:9606",
+        "NCBITaxon:9615",
+        "NCBITaxon:9825"
+    ],
+    "provenanceTaxonomyLabel": [
+        "Homo sapiens",
+        "Canis lupus familiaris",
+        "Domestic Pig"
+    ]
+}

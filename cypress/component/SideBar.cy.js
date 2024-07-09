@@ -83,4 +83,86 @@ describe("<SideBar />", () => {
     cy.get(':nth-child(1) > .dataset-card-container > .dataset-card > :nth-child(2) > .card-right > .title').should('exist')
     cy.get(':nth-child(1) > .dataset-card-container > .dataset-card > :nth-child(2) > .card-right > :nth-child(2)').should('exist')
   })
+
+  it("Should test the Provenance Card functionality", () => {
+    cy.fixture('neuronInfo.json').as('neuronInfo');
+
+    // Pass provenance card data to SideBar
+    cy.get('@neuronInfo').then((neuronInfo) => {
+      cy.mount(SideBar, {
+        props: {
+          envVars: {
+            API_LOCATION: Cypress.env("API_LOCATION"),
+            ALGOLIA_KEY: Cypress.env("ALGOLIA_KEY"),
+            ALGOLIA_ID: Cypress.env("ALGOLIA_ID"),
+            ALGOLIA_INDEX: Cypress.env("ALGOLIA_INDEX"),
+            PENNSIEVE_API_LOCATION: Cypress.env("PENNSIEVE_API_LOCATION"),
+            BL_SERVER_URL: Cypress.env("BL_SERVER_URL"),
+            NL_LINK_PREFIX: Cypress.env("NL_LINK_PREFIX"),
+            ROOT_URL: Cypress.env("ROOT_URL"),
+          },
+          connectivityInfo: neuronInfo,
+          openAtStart: true,
+          activeId: 2,
+        },
+      })
+    }).as('wrapper')
+
+    // Sidebar Connectivity tab should be activated when neuron is clicked
+    cy.get('.tab-container').should('exist')
+    cy.get(':nth-child(1) > .title-text-table > .title-text').should('exist').and('contain', 'Search').as('Search')
+    cy.get('.active-tab > .title-text-table > .title-text').should('exist').and('contain', 'Connectivity').as('Connectivity')
+    cy.get('.active-tab > .el-button > :nth-child(1)').should('exist').as('CloseConnectivity')
+
+    cy.get('@neuronInfo').then((neuronInfo) => {
+      cy.get('.block > .title').contains(new RegExp(neuronInfo.name, 'i')).should('exist')
+      if ('origins' in neuronInfo) {
+        cy.get('.attribute-title-container').contains(/ORIGIN/i).should('exist').as('origins')
+        cy.get('@origins').parent().siblings('.attribute-content').should('have.length', neuronInfo.origins.length)
+      }
+      if ('components' in neuronInfo) {
+        cy.get('.attribute-title-container').contains(/COMPONENTS/i).should('exist').as('components')
+        cy.get('@components').parent().siblings('.attribute-content').should('have.length', neuronInfo.components.length)
+      }
+      if ('destinations' in neuronInfo) {
+        cy.get('.attribute-title-container').contains(/DESTINATION/i).should('exist').as('destinations')
+        cy.get('@destinations').parent().siblings('.attribute-content').should('have.length', neuronInfo.destinations.length)
+      }
+    })
+
+    // Click event in Provenance card should behave correctly
+    cy.get('@wrapper').then(({ wrapper, component }) => {
+      // Click on tabs
+      cy.get('@Search').click() // Click on Search
+      cy.get('@Connectivity').click() // Click on Connectivity
+      cy.get('@CloseConnectivity').click() // Click on Close sign
+
+      // Click on buttons
+      cy.window().then((window) => {
+        cy.stub(window, 'open').as('Open')
+      })
+      cy.get('#open-pubmed-button').should('exist').click()
+      cy.get('@neuronInfo').then((neuronInfo) => {
+        cy.get('@Open').should('have.been.calledOnceWithExactly', Cypress.sinon.match(neuronInfo.hyperlinks[0].url), '_blank')
+      })
+      
+      cy.get('#open-dendrites-button').should('exist').click()
+      cy.get('.el-button').contains('Explore destination data').should('exist').click()
+      cy.get('.el-button').contains('Search for data on components').should('exist').click()
+
+      cy.then(() => {
+        // The emit order will follow the clicked order
+        expect(wrapper.emitted()['tabClicked'][0]).to.deep.equal([1]) // Switch to Search
+        expect(wrapper.emitted()['tabClicked'][1]).to.deep.equal([2]) // Switch to Connectivity
+        expect(wrapper.emitted()['connectivity-info-close']).to.exist // Close Connectivity
+
+        cy.get('@neuronInfo').then((neuronInfo) => {
+          const getName = (entries) => entries.map((entry) => entry.name)
+          expect(wrapper.emitted()['actionClick'][0][0]['labels']).to.deep.equal(getName(neuronInfo.originsWithDatasets))
+          expect(wrapper.emitted()['actionClick'][1][0]['labels']).to.deep.equal(getName(neuronInfo.destinationsWithDatasets))
+          expect(wrapper.emitted()['actionClick'][2][0]['labels']).to.deep.equal(getName(neuronInfo.componentsWithDatasets))
+        })
+      })
+    })
+  })
 })
