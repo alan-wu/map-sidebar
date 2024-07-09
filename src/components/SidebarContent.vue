@@ -186,7 +186,6 @@ export default {
         display: 'flex',
       },
       cascaderIsReady: false,
-      isPMRSearchOnly: false,
     }
   },
   computed: {
@@ -316,7 +315,6 @@ export default {
       this.resetPageNavigation()
       const pmrSearchObject = filters.find((tmp) => tmp.term === 'PMR');
       if (pmrSearchObject) {
-        this.isPMRSearchOnly = true;
         this.searchPMR();
       } else {
       this.searchAlgolia(filters, this.searchInput)
