@@ -20,6 +20,25 @@
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
       </div>
+      <div>
+        <el-popover
+          width="200"
+          trigger="hover"
+          :teleported="false"
+          popper-class="popover-origin-help"
+        >
+          <template #reference>
+            <el-button class="button-circle" circle @click="showConnectivity(entry)">
+              <el-icon color="white">
+                <el-icon-location />
+              </el-icon>
+            </el-button>
+          </template>
+          <span>
+            Show connectivity on map
+          </span>
+        </el-popover>
+      </div>
     </div>
     <div v-if="featuresAlert" class="attribute-title-container">
       <span class="attribute-title">Alert</span>
@@ -68,7 +87,8 @@
         </div>
         <el-button
           v-show="
-            entry.originsWithDatasets && entry.originsWithDatasets.length > 0
+            entry.originsWithDatasets && entry.originsWithDatasets.length > 0 &&
+            shouldShowExploreButton(entry.originsWithDatasets)
           "
           class="button"
           id="open-dendrites-button"
@@ -132,7 +152,8 @@
         <el-button
           v-show="
             entry.destinationsWithDatasets &&
-            entry.destinationsWithDatasets.length > 0
+            entry.destinationsWithDatasets.length > 0 &&
+            shouldShowExploreButton(entry.destinationsWithDatasets)
           "
           class="button"
           @click="openAxons"
@@ -144,7 +165,8 @@
       <el-button
         v-show="
           entry.componentsWithDatasets &&
-          entry.componentsWithDatasets.length > 0
+          entry.componentsWithDatasets.length > 0 &&
+          shouldShowExploreButton(entry.componentsWithDatasets)
         "
         class="button"
         @click="openAll"
@@ -168,7 +190,7 @@ import {
   ElIcon as Icon,
 } from 'element-plus'
 import ExternalResourceCard from './ExternalResourceCard.vue'
-import EventBus from './EventBus'
+import EventBus from './EventBus.js'
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -205,6 +227,10 @@ export default {
         resource: undefined,
       }),
     },
+    availableAnatomyFacets: {
+      type: Array,
+      default: () => [],
+    },
   },
   // inject: ['getFeaturesAlert'],
   data: function () {
@@ -213,6 +239,7 @@ export default {
       activeSpecies: undefined,
       pubmedSearchUrl: '',
       loading: false,
+      facetList: [],
       showToolip: false,
       showDetails: false,
       originDescriptions: {
@@ -222,6 +249,15 @@ export default {
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
     }
+  },
+  watch: {
+    availableAnatomyFacets: {
+      handler: function (val) {
+        this.convertFacetsToList(val)
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   computed: {
     resources: function () {
@@ -268,23 +304,48 @@ export default {
     openAll: function () {
       EventBus.emit('onConnectivityActionClick', {
         type: 'Facets',
-        labels: this.entry.componentsWithDatasets.map((a) => a.name),
+        labels: this.entry.componentsWithDatasets.map((a) => a.name.toLowerCase()),
       })
     },
     openAxons: function () {
       EventBus.emit('onConnectivityActionClick', {
         type: 'Facets',
-        labels: this.entry.destinationsWithDatasets.map((a) => a.name),
+        labels: this.entry.destinationsWithDatasets.map((a) => a.name.toLowerCase()),
+      })
+    },
+    // shouldShowExploreButton: Checks if the feature is in the list of available anatomy facets
+    shouldShowExploreButton: function (features) {
+      for (let i = 0; i < features.length; i++) {
+        if (this.facetList.includes(features[i].name.toLowerCase())) {
+          return true
+        }
+      }
+      return false
+    },
+    // convertFacetsToList: Converts the available anatomy facets to a list for easy searching
+    convertFacetsToList: function (facets) {
+      facets.forEach((facet) => {
+        if(facet.children) {
+          this.convertFacetsToList(facet.children)
+        } else {
+          this.facetList.push(facet.label.toLowerCase())
+        }
       })
     },
     openDendrites: function () {
       EventBus.emit('onConnectivityActionClick', {
         type: 'Facets',
-        labels: this.entry.originsWithDatasets.map((a) => a.name),
+        labels: this.entry.originsWithDatasets.map((a) => a.name.toLowerCase()),
       })
     },
     pubmedSearchUrlUpdate: function (val) {
       this.pubmedSearchUrl = val
+    },
+    showConnectivity: function (entry) {
+      // move the map center to highlighted area
+      const featureIds = entry.featureId || [];
+      // connected to flatmapvuer > moveMap(featureIds) function
+      this.$emit('show-connectivity', featureIds);
     },
   },
 }
@@ -302,6 +363,7 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .title {
@@ -325,6 +387,19 @@ export default {
 
 .pub {
   width: 16rem;
+}
+
+.button-circle {
+  width: 24px !important;
+  height: 24px !important;
+
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: $app-primary-color;
+    border-color: $app-primary-color;
+  }
 }
 
 .icon {
@@ -508,6 +583,10 @@ export default {
 
   .block {
     padding-top: 0.5em;
+
+    + .block {
+      margin-top: 1rem;
+    }
   }
 
   .connectivity-info-title ~ & {
