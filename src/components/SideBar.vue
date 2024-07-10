@@ -22,21 +22,34 @@
         </div>
         <div class="sidebar-container">
           <Tabs
-            v-if="tabs.length > 1"
+            v-if="tabs.length > 1 && connectivityInfo"
             :tabTitles="tabs"
-            :activeId="activeId"
+            :activeId="activeTabId"
             @titleClicked="tabClicked"
+            @tab-close="tabClose"
           />
           <template v-for="tab in tabs" key="tab.id">
+            <!-- Connectivity Info -->
+            <template v-if="tab.type === 'connectivity'">
+              <connectivity-info
+                :entry="connectivityInfo"
+                :availableAnatomyFacets="availableAnatomyFacets"
+                v-show="tab.id === activeTabId"
+                :ref="'connectivityTab_' + tab.id"
+                @show-connectivity="showConnectivity"
+              />
+            </template>
+            <template v-else>
             <SidebarContent
               class="sidebar-content-container"
-              v-show="tab.id === activeId"
+              v-show="tab.id === activeTabId"
               :contextCardEntry="tab.contextCard"
               :envVars="envVars"
-              :ref="tab.id"
+              :ref="'searchTab_' + tab.id"
               @search-changed="searchChanged(tab.id, $event)"
               @hover-changed="hoverChanged($event)"
             />
+            </template>
           </template>
         </div>
       </div>
@@ -54,6 +67,7 @@ import { ElDrawer as Drawer, ElIcon as Icon } from 'element-plus'
 import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
+import ConnectivityInfo from './ConnectivityInfo.vue'
 
 /**
  * Aims to provide a sidebar for searching capability for SPARC portal.
@@ -65,7 +79,8 @@ export default {
     ElIconArrowLeft,
     ElIconArrowRight,
     Drawer,
-    Icon
+    Icon,
+    ConnectivityInfo,
   },
   name: 'SideBar',
   props: {
@@ -91,12 +106,15 @@ export default {
      */
     tabs: {
       type: Array,
-      default: () => [{ title: 'flatmap', id: 1 }],
+      default: () => [
+        { id: 1, title: 'Search', type: 'search' },
+        { id: 2, title: 'Connectivity', type: 'connectivity' }
+      ],
     },
     /**
      * The active tab id for default tab.
      */
-    activeId: {
+    activeTabId: {
       type: Number,
       default: 1,
     },
@@ -107,10 +125,18 @@ export default {
       type: Boolean,
       default: false,
     },
+    /**
+     * The connectivity info data to show in sidebar.
+     */
+    connectivityInfo: {
+      type: Object,
+      default: null,
+    },
   },
   data: function () {
     return {
       drawerOpen: false,
+      availableAnatomyFacets: []
     }
   },
   methods: {
@@ -120,6 +146,13 @@ export default {
      */
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
+    },
+    /**
+     * This event is emitted when the show connectivity button is clicked.
+     * @arg featureIds
+     */
+    showConnectivity: function (featureIds) {
+      this.$emit('show-connectivity', featureIds);
     },
     /**
      * This event is emitted when the search filters are changed.
@@ -146,8 +179,37 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        this.$refs[this.activeId][0].openSearch(facets, query)
+        const searchTabRef = this.getSearchTabRefById(1);
+        searchTabRef.openSearch(facets, query);
       })
+    },
+    /**
+     * Get the tab object by tab id and type.
+     * If not found, return the first available tab.
+     */
+    getTabByIdAndType: function (id, type) {
+      const tabId = id || this.activeTabId;
+      const tabType = type || 'search'; // default to search tab
+      const tabObj = this.tabs.find((tab) => tab.id === tabId && tab.type === tabType);
+      const firstAvailableTab = this.tabs[0];
+      return tabObj || firstAvailableTab;
+    },
+    /**
+     * Get the ref id of the tab by id and type.
+     */
+    getTabRefId: function (id, type) {
+      let refIdPrefix = 'searchTab_'; // default to search tab
+      if (type === 'connectivity') {
+        refIdPrefix = 'connectivityTab_';
+      }
+      const tabObj = this.getTabByIdAndType(id, type);
+      const tabRefId = refIdPrefix + tabObj.id;
+      return tabRefId;
+    },
+    getSearchTabRefById: function (id) {
+      const searchTabId = id || 1; // to use id when there are multiple search tabs
+      const searchTabRefId = this.getTabRefId(searchTabId, 'search');
+      return this.$refs[searchTabRefId][0];
     },
     /**
      * @vuese
@@ -160,14 +222,16 @@ export default {
 
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        this.$refs[this.activeId][0].addFilter(filter)
+        const searchTabRef = this.getSearchTabRefById(1);
+        searchTabRef.addFilter(filter)
       })
     },
     openNeuronSearch: function (neuron) {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        this.$refs[this.activeId][0].openSearch(
+        const searchTabRef = this.getSearchTabRefById(1);
+        searchTabRef.openSearch(
           '',
           undefined,
           'scicrunch-query-string/',
@@ -176,22 +240,27 @@ export default {
       })
     },
     getAlgoliaFacets: async function () {
-      return await this.$refs[this.activeId][0].getAlgoliaFacets()
+      const searchTabRef = this.getSearchTabRefById(1);
+      return await searchTabRef.getAlgoliaFacets()
     },
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
     },
     /**
      * @vuese
-     * The function to emit 'tabClicked' event with tab's `id` when user clicks the sidebar tab.
-     * @arg id
+     * The function to emit 'tabClicked' event with tab's `id` and tab's `type`
+     * when user clicks the sidebar tab.
+     * @arg {id, type}
      */
-    tabClicked: function (id) {
+    tabClicked: function ({id, type}) {
       /**
        * This event is emitted when user click sidebar's tab.
-       * @arg id
+       * @arg {id, type}
        */
-      this.$emit('tabClicked', id)
+      this.$emit('tabClicked', {id, type});
+    },
+    tabClose: function (id) {
+      this.$emit('connectivity-info-close');
     },
   },
   created: function () {
@@ -219,7 +288,7 @@ export default {
        */
       this.$emit('anatomy-in-datasets', payLoad)
     })
-    
+
     EventBus.on('contextUpdate', (payLoad) => {
       /**
        * This event is emitted when the context card is updated.
@@ -237,6 +306,17 @@ export default {
        */
       this.$emit('datalink-clicked', payLoad);
     })
+    EventBus.on('onConnectivityActionClick', (payLoad) => {
+      // switch to search tab with tab id: 1
+      this.tabClicked({id: 1, type: 'search'});
+      this.$emit('actionClick', payLoad);
+    })
+
+    // Get available anatomy facets for the connectivity info
+    EventBus.on('available-facets', (payLoad) => {
+        this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
+    })
+
   },
 }
 </script>
@@ -269,6 +349,9 @@ export default {
   height: 100%;
   flex-flow: column;
   display: flex;
+  background-color: white;
+  box-shadow: var(--el-box-shadow-light);
+  border-radius: var(--el-card-border-radius);
 }
 
 .open-tab {
@@ -326,6 +409,12 @@ export default {
 
 .sidebar-content-container {
   flex: 1 1 auto;
+
+  .tab-container ~ & {
+    border-radius: 0;
+    border: 0 none;
+    position: relative;
+  }
 }
 </style>
 

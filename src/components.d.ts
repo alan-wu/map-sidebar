@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BadgesGroup: typeof import('./components/BadgesGroup.vue')['default']
+    ConnectivityInfo: typeof import('./components/ConnectivityInfo.vue')['default']
     DatasetCard: typeof import('./components/DatasetCard.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
@@ -16,12 +17,14 @@ declare module 'vue' {
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElIconArrowLeft: typeof import('@element-plus/icons-vue')['ArrowLeft']
     ElIconArrowRight: typeof import('@element-plus/icons-vue')['ArrowRight']
+    ElIconWarning: typeof import('@element-plus/icons-vue')['Warning']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElPagination: typeof import('element-plus/es')['ElPagination']
     ElPopover: typeof import('element-plus/es')['ElPopover']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ExternalResourceCard: typeof import('./components/ExternalResourceCard.vue')['default']
     ImageGallery: typeof import('./components/ImageGallery.vue')['default']
     SearchFilters: typeof import('./components/SearchFilters.vue')['default']
     SearchHistory: typeof import('./components/SearchHistory.vue')['default']
