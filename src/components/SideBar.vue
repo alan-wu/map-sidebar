@@ -136,7 +136,7 @@ export default {
   data: function () {
     return {
       drawerOpen: false,
-
+      availableAnatomyFacets: []
     }
   },
   methods: {
