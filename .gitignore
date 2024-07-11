@@ -1,7 +1,12 @@
 .DS_Store
 dist
 node_modules
+cypress/videos/*
+cypress/screenshots/*
+cypress/results/*
+cypress/reports/*
 .env.local
 docs/.vitepress/dist
 docs/.vitepress/cache
 docs/components
+.vitepress

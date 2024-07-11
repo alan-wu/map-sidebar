@@ -47,18 +47,27 @@
       <div v-for="(result, i) in results" :key="i" class="step-item">
         <DatasetCard
           v-if="result.dataSource === 'SPARC'"
+          class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
         ></DatasetCard>
         <PMRDatasetCard
           v-else-if="result.dataSource === 'PMR'"
+          class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
         ></PMRDatasetCard>
         <flatmap-dataset-card
           v-else-if="result.dataSource === 'Flatmap'"
+          class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
         ></flatmap-dataset-card>
       </div>
       <el-pagination
@@ -314,12 +323,21 @@ export default {
     filterUpdate: function (filters) {
       this.filters = [...filters]
       this.resetSearch()
-      this.searchAlgolia(filters, this.searchInput)
-      this.openPMRSearch(filters, this.searchInput)
-      this.$emit('search-changed', {
-        value: filters,
-        type: 'filter-update',
-      })
+      const pmrSearchObject = filters.find((tmp) => tmp.term === 'PMR');
+      if (pmrSearchObject) {
+        this.searchPMR();
+      } else {
+        this.searchAlgolia(filters, this.searchInput)
+        this.openPMRSearch(filters, this.searchInput)
+        this.$emit('search-changed', {
+          value: filters,
+          type: 'filter-update',
+        })
+      }
+    },
+    searchPMR: function () {
+      this.mode = 'PMR';
+      this.openSearch(this.filter, this.searchInput, this.mode);
     },
     searchAlgolia(filters, query = '') {
       if (this.SPARCLimit() === 0) {
@@ -327,14 +345,14 @@ export default {
         return
       }
       // Algolia search
+
       this.loadingCards = true
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
-        .then((anatomy) => {
-          EventBus.emit('available-facets', {
-            uberons: anatomy,
-            labels: this.algoliaClient.anatomyFacetLabels,
-          })
+        .then((r) => {
+          // Send result anatomy to the scaffold and flatmap
+          EventBus.emit('anatomy-in-datasets', r.forFlatmap)
+          EventBus.emit('number-of-datasets-for-anatomies', r.forScaffold)
         })
       this.algoliaClient
         .search(getFilters(filters), query, this.calculateSPARCOffest(), this.SPARCLimit() )
@@ -553,10 +571,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.dataset-card:hover {
-  border-style: solid;
-  border-color: var(--el-color-primary);
-  border-radius: 5px;
+.dataset-card {
+  position: relative;
+
+  &::before {
+    content: "";
+    display: block;
+    width: calc(100% - 15px);
+    height: 100%;
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: transparent;
+  }
+
+  &:hover {
+    &::before {
+      border-color: var(--el-color-primary);
+    }
+  }
 }
 
 .content-card {
@@ -593,6 +628,15 @@ export default {
   border: solid 1px #292b66;
   background-color: #292b66;
   text-align: left;
+
+  .el-button {
+    &:hover,
+    &:focus {
+      background: $app-primary-color;
+      box-shadow: -3px 2px 4px #00000040;
+      color: #fff;
+    }
+  }
 }
 
 .pagination {
@@ -621,16 +665,17 @@ export default {
 
 .content-card :deep(.el-card__header) {
   background-color: #292b66;
-  border: solid 1px #292b66;
+  padding: 1rem;
 }
 
 .content-card :deep(.el-card__body) {
   background-color: #f7faff;
   overflow-y: hidden;
+  padding: 1rem;
 }
 
 .content {
-  width: 515px;
+  // width: 515px;
   flex: 1 1 auto;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
   border: solid 1px #e4e7ed;

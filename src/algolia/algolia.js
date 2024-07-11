@@ -198,15 +198,46 @@ export class AlgoliaClient {
           filters: filter,
           attributesToHighlight: [],
           attributesToRetrieve: [
+            'objectID',
             'item.keywords.keyword',
             'anatomy.organ.name',
             'anatomy.organ.curie'
           ],
         })
         .then(response => {
-          let anatomyAsUberons = this._processAnatomy(response.hits)
-          resolve(anatomyAsUberons)
+          // Saving the line below incase we want to starty using keywords again
+          // let anatomyAsUberons = this._processAnatomy(response.hits)
+
+          resolve({
+            forFlatmap: this.processResultsForFlatmap(response.hits),
+            forScaffold: this.processResultsForScaffold(response.hits)
+          })
         })
     })
   }
+  processResultsForFlatmap(hits) {
+    let curieForDatsets = hits.map(h=>({
+      id: h.objectID,
+      terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
+    }))
+    return curieForDatsets 
+  }
+  processResultsForScaffold(hits) {
+    let numberOfDatasetsForAnatomy = {}
+    hits.forEach(hit => {
+      if (hit.anatomy && hit.anatomy.organ ) {
+        hit.anatomy.organ.forEach(anatomy => {
+          if (anatomy.name) {
+            if (numberOfDatasetsForAnatomy[anatomy.name]) {
+              numberOfDatasetsForAnatomy[anatomy.name]++
+            } else {
+              numberOfDatasetsForAnatomy[anatomy.name] = 1
+            }
+          }
+        })
+      }
+    })
+    return numberOfDatasetsForAnatomy
+  }
+
 }
