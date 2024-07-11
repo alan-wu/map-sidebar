@@ -335,12 +335,12 @@ export default {
       }
     },
     searchPMR: function () {
-      // only show PMR search results;
-      console.log('Show PMR search results ...');
+      this.mode = 'PMR';
+      this.openSearch(this.filter, this.searchInput, this.mode);
     },
     searchAlgolia(filters, query = '') {
       // Algolia search
-      
+
       this.loadingCards = true
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
