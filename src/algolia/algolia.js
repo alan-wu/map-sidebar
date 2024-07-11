@@ -153,13 +153,13 @@ export class AlgoliaClient {
    * Get Search results
    * This is using fetch from the Algolia API
    */
-  search(filter, query = '', hitsperPage = 10, page = 1) {
+  search(filter, query = '', offset = 0, length = 8) {
     return new Promise(resolve => {
       this.index
         .search(query, {
           facets: ['*'],
-          hitsPerPage: hitsperPage,
-          page: page - 1,
+          offset: offset,
+          length: length,
           filters: filter,
           attributesToHighlight: [],
           attributesToRetrieve: [

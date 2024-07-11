@@ -98,6 +98,7 @@ import allPaths from './allPaths.js'
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
 import FlatmapQueries from '../flatmapQueries/flatmapQueries.js'
+import mixedPageCalculation from '../mixins/mixedPageCalculation.vue'
 
 // TODO: to update API URL
 const API_URL = "/data/pmr-sample.json";
@@ -128,8 +129,6 @@ var initial_state = {
   loadingCards: false,
   numberPerPage: 10,
   page: 1,
-  pageModel: 1,
-  start: 0,
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
@@ -159,6 +158,7 @@ export default {
     Pagination
   },
   name: 'SideBarContent',
+  mixins: [mixedPageCalculation],
   props: {
     visible: {
       type: Boolean,
@@ -198,24 +198,26 @@ export default {
     },
     // npp_SPARC: Number per page for SPARC datasets
     npp_SPARC: function () {
-      return Math.round(this.numberPerPage * (1 - this.variableRatio))
+      return Math.round(this.numberPerPage * (1 - RatioOfPMRResults))
     },
     // npp_PMR: Number per page for PMR datasets
     npp_PMR: function () {
-      return Math.round(this.numberPerPage * this.variableRatio)
+      return Math.round(this.numberPerPage * RatioOfPMRResults)
     },
     numberOfHits: function () {
       return this.sparcNumberOfHits + this.pmrNumberOfHits
     },
+    
   },
   methods: {
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
     },
     resetSearch: function () {
-      this.variableRatio = RatioOfPMRResults
       this.pmrNumberOfHits = 0
       this.sparcNumberOfHits = 0
+      this.page = 1
+      this.calculateVariableRatio()
       this.discoverIds = []
       this._dois = []
       this.results = []
@@ -225,19 +227,18 @@ export default {
     openSearch: function(filter, search = '', mode = 'Sparc Datasets') {
       this.resetSearch()
       this.openAlgoliaSearch(filter, search)
+      ifApprovedPMRFilter()
       this.openPMRSearch(filter, search)
     },
 
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
-      console.log('filter', filter)
+      this.flatmapQueries.updateOffset(this.calculatePMROffest())
+      this.flatmapQueries.updateLimit(this.PMRLimit())
       this.flatmapQueries.pmrSearch(filter, search).then((data) => {
         data.forEach((result) => {
           this.results.push(result)
         })
-        if (this.results.length === 0) {
-          this.variableRatio = 0 // No PMR results, so no need to show only sparc results
-        }
         this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
       })
     },
@@ -245,7 +246,7 @@ export default {
     // openAlgoliaSearch: Resets the results, populates dataset cards and filters with Algloia and SciCrunch data.
     openAlgoliaSearch: function (filter, search = '') {
       this.searchInput = search
-      this.resetPageNavigation()
+      this.resetSearch()
       //Proceed normally if cascader is ready
       if (this.cascaderIsReady) {
         this.filter =
@@ -276,7 +277,7 @@ export default {
     },
     addFilter: function (filter) {
       if (this.cascaderIsReady) {
-        this.resetPageNavigation()
+        this.resetSearch()
         if (filter) {
           if (this.$refs.filtersRef.addFilter(filter))
             this.$refs.filtersRef.initiateSearch()
@@ -295,13 +296,13 @@ export default {
     },
     clearSearchClicked: function () {
       this.searchInput = ''
-      this.resetPageNavigation()
+      this.resetSearch()
       this.searchAlgolia(this.filters, this.searchInput)
       this.$refs.searchHistory.selectValue = 'Full search history'
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.resetPageNavigation()
+        this.resetSearch()
         this.searchAlgolia(this.filters, this.searchInput)
         this.$refs.searchHistory.selectValue = 'Full search history'
         this.$refs.searchHistory.addSearchToHistory(
@@ -312,7 +313,7 @@ export default {
     },
     filterUpdate: function (filters) {
       this.filters = [...filters]
-      this.resetPageNavigation()
+      this.resetSearch()
       this.searchAlgolia(filters, this.searchInput)
       this.openPMRSearch(filters, this.searchInput)
       this.$emit('search-changed', {
@@ -321,6 +322,10 @@ export default {
       })
     },
     searchAlgolia(filters, query = '') {
+      if (this.SPARCLimit() === 0) {
+        this.loadingCards = false
+        return
+      }
       // Algolia search
       this.loadingCards = true
       this.algoliaClient
@@ -332,7 +337,7 @@ export default {
           })
         })
       this.algoliaClient
-        .search(getFilters(filters), query, this.npp_SPARC , this.page)
+        .search(getFilters(filters), query, this.calculateSPARCOffest(), this.SPARCLimit() )
         .then((searchData) => {
           this.sparcNumberOfHits = searchData.total
           this.discoverIds = searchData.discoverIds
@@ -341,10 +346,8 @@ export default {
             item.detailsReady = false
             this.results.push(item)
           })
-          if (searchData.items.length === 0) {
-            this.variableRatio = 1 // No SPARC results, so no need to show only PMR results
-          }
-          this.results = searchData.items
+          // add the items to the results
+          this.results.concat(searchData.items)
           this.loadingCards = false
           this.scrollToTop()
           this.$emit('search-changed', {
@@ -363,19 +366,18 @@ export default {
     },
     numberPerPageUpdate: function (val) {
       this.numberPerPage = val
-      this.flatmapQueries.updateNumberPerPage(this.npp_PMR)
       this.pageChange(1)
     },
     pageChange: function (page) {
-      this.start = (page - 1) * this.numberPerPage
       this.page = page
+      this.results = []
+      this.calculateVariableRatio()
       this.searchAlgolia(
         this.filters,
         this.searchInput,
         this.numberPerPage,
         this.page
       )
-      this.flatmapQueries.updatePage(this.page)
       this.openPMRSearch(this.filters, this.searchInput)
     },
     handleMissingData: function (doi) {
@@ -418,7 +420,6 @@ export default {
       }
     },
     resetPageNavigation: function () {
-      this.start = 0
       this.page = 1
     },
     resultsProcessing: function (data) {
@@ -540,7 +541,6 @@ export default {
     // initialise flatmap queries
     this.flatmapQueries = new FlatmapQueries()
     this.flatmapQueries.initialise(this.envVars.FLATMAP_API_LOCATION)
-    this.flatmapQueries.updateNumberPerPage(this.npp_PMR)
 
     // open search
     this.openSearch(this.filter, this.searchInput, this.mode )
