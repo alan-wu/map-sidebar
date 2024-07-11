@@ -107,29 +107,29 @@ $tab-height: 30px;
 }
 
 .button-tab-close {
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  padding: 0;
-  padding-right: 4px;
-  font-size: 24px;
-  color: $app-primary-color;
-  border: 0 none;
-  box-shadow: none;
-  outline: none;
-  background-color: transparent;
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  padding: 0 !important;
+  padding-right: 4px !important;
+  font-size: 24px !important;
+  color: $app-primary-color !important;
+  border: 0 none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background-color: transparent !important;
 
   :deep(> span) {
-    height: $tab-height - 2; // tab height minus border
-    font-family: Arial; // to fix font alignment on different browsers
+    height: $tab-height - 2 !important; // tab height minus border
+    font-family: Arial !important; // to fix font alignment on different browsers
   }
 
   &:hover,
   &:focus {
-    border: 0 none;
-    outline: none;
-    box-shadow: none;
-    background-color: transparent;
+    border: 0 none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
   }
 }
 
