@@ -20,25 +20,23 @@ let FlatmapQueries = function () {
   this.initialise = function (flatmapApi) {
     this.flatmapApi = flatmapApi
     this.features = []
-    this.numberPerPage = 10
-    this.page = 1
+    this.limit = 10
+    this.offset = 0
     this.numberOfHits = 0
     this.sqlPreOffset = ''
     this.lookup = {}
     this.createLookup()
   }
 
-  this.updatePage = function (page) {
-    this.page = page
+  this.updateOffset = function (offset) {
+    this.offset = offset
   }
-  this.updateNumberPerPage = function (numberPerPage) {
-    this.numberPerPage = numberPerPage
+  this.updateLimit = function (limit) {
+    this.limit = limit
   }
 
-  this.calculateOffset = function () {
-    const offset =  (this.page - 1) * this.numberPerPage
-    const limit = this.numberPerPage
-    return 'limit ' + limit + ' offset ' + offset
+  this.offsetText = function () {
+    return 'limit ' + this.limit + ' offset ' + this.offset
   }
 
   this.pmrSQL = function (terms=[]) {
@@ -50,7 +48,7 @@ let FlatmapQueries = function () {
     this.sqlPreOffset = sql
 
     // add the limit and offset for pagination
-    sql += ' ' + this.calculateOffset() + ';'
+    sql += ' ' + this.offsetText() + ';'
     console.log('SQL:', sql)
     return sql
   }
