@@ -154,34 +154,46 @@ export class AlgoliaClient {
    * This is using fetch from the Algolia API
    */
   search(filter, query = '', offset = 0, length = 8) {
-    return new Promise(resolve => {
-      this.index
-        .search(query, {
-          facets: ['*'],
-          offset: offset,
-          length: length,
-          filters: filter,
-          attributesToHighlight: [],
-          attributesToRetrieve: [
-            'pennsieve.publishDate',
-            'pennsieve.updatedAt',
-            'item.curie',
-            'item.name',
-            'item.description',
-            'objectID',
-            'anatomy.organ.curie'
-          ],
+    // If the length is 0, return an empty result
+    if (length === 0) {
+      return new Promise(resolve => {
+        resolve({
+          items: [],
+          total: 0,
+          discoverIds: [],
+          dois: []
         })
-        .then(response => {
-          let searchData = {
-            items: this._processResultsForCards(response.hits),
-            total: response.nbHits,
-            discoverIds: response.hits.map(r => r.pennsieve ? r.pennsieve.identifier : r.objectID),
-            dois: response.hits.map(r => r.item.curie.split(':')[1])
-          }
-          resolve(searchData)
-        })
-    })
+      })
+    } else {
+      return new Promise(resolve => {
+        this.index
+          .search(query, {
+            facets: ['*'],
+            offset: offset,
+            length: length,
+            filters: filter,
+            attributesToHighlight: [],
+            attributesToRetrieve: [
+              'pennsieve.publishDate',
+              'pennsieve.updatedAt',
+              'item.curie',
+              'item.name',
+              'item.description',
+              'objectID',
+              'anatomy.organ.curie'
+            ],
+          })
+          .then(response => {
+            let searchData = {
+              items: this._processResultsForCards(response.hits),
+              total: response.nbHits,
+              discoverIds: response.hits.map(r => r.pennsieve ? r.pennsieve.identifier : r.objectID),
+              dois: response.hits.map(r => r.item.curie.split(':')[1])
+            }
+            resolve(searchData)
+          })
+      })
+    }
   }
 
   /**

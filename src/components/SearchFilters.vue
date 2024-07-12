@@ -279,7 +279,7 @@ export default {
         if (option.key === 'item.types.name') {
           option.children.push({
             label: 'PMR',
-            value: 'PMR'
+            value: this.createCascaderItemValue("Data type", "PMR"),
           });
         }
       }

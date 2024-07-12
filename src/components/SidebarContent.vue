@@ -138,6 +138,7 @@ var initial_state = {
   loadingCards: false,
   numberPerPage: 10,
   page: 1,
+  pmrResultsOnlyFlag: false,
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
@@ -233,17 +234,20 @@ export default {
       this.loadingCards = false
     },
     // openSearch: Resets the results, populates dataset cards and filters. Will use Algolia and SciCrunch data uness pmr mode is set
-    openSearch: function(filter, search = '', mode = 'Sparc Datasets') {
-      this.resetSearch()
-      this.openAlgoliaSearch(filter, search)
-      ifApprovedPMRFilter()
+    openSearch: function(filter, search = '', resetSearch = true) {
+      if (resetSearch) {
+        this.resetSearch();
+        this.openAlgoliaSearch(filter, search);
+      } else {
+        this.searchAlgolia(filter, search);
+      }
       this.openPMRSearch(filter, search)
     },
 
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
       this.flatmapQueries.updateOffset(this.calculatePMROffest())
-      this.flatmapQueries.updateLimit(this.PMRLimit())
+      this.flatmapQueries.updateLimit(this.PMRLimit(this.pmrResultsOnlyFlag))
       this.flatmapQueries.pmrSearch(filter, search).then((data) => {
         data.forEach((result) => {
           this.results.push(result)
@@ -255,7 +259,6 @@ export default {
     // openAlgoliaSearch: Resets the results, populates dataset cards and filters with Algloia and SciCrunch data.
     openAlgoliaSearch: function (filter, search = '') {
       this.searchInput = search
-      this.resetSearch()
       //Proceed normally if cascader is ready
       if (this.cascaderIsReady) {
         this.filter =
@@ -306,13 +309,12 @@ export default {
     clearSearchClicked: function () {
       this.searchInput = ''
       this.resetSearch()
-      this.searchAlgolia(this.filters, this.searchInput)
+      this.openSearch(this.filter, this.searchInput)
       this.$refs.searchHistory.selectValue = 'Full search history'
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.resetSearch()
-        this.searchAlgolia(this.filters, this.searchInput)
+        this.openSearch(this.filter, this.searchInput)
         this.$refs.searchHistory.selectValue = 'Full search history'
         this.$refs.searchHistory.addSearchToHistory(
           this.filters,
@@ -320,30 +322,37 @@ export default {
         )
       }
     },
-    filterUpdate: function (filters) {
-      this.filters = [...filters]
-      this.resetSearch()
-      const pmrSearchObject = filters.find((tmp) => tmp.term === 'PMR');
+    updatePMROnlyFlag: function (filters) {
+      const pmrSearchObject = filters.find((tmp) => tmp.facet === 'PMR');
       if (pmrSearchObject) {
-        this.searchPMR();
+        this.pmrResultsOnlyFlag = true
       } else {
-        this.searchAlgolia(filters, this.searchInput)
-        this.openPMRSearch(filters, this.searchInput)
-        this.$emit('search-changed', {
-          value: filters,
-          type: 'filter-update',
-        })
+        this.pmrResultsOnlyFlag = false
       }
     },
-    searchPMR: function () {
-      this.mode = 'PMR';
-      this.openSearch(this.filter, this.searchInput, this.mode);
+    filterUpdate: function (filters) {
+      this.filters = [...filters]
+
+      // Check if PMR is in the filters
+      this.updatePMROnlyFlag(filters)
+      
+      // Note that we cannot use the openSearch function as that modifies filters
+      this.resetSearch()
+      this.searchAlgolia(filters, this.searchInput)
+      this.openPMRSearch(filters, this.searchInput)
+      this.$emit('search-changed', {
+        value: filters,
+        type: 'filter-update',
+      })
     },
     searchAlgolia(filters, query = '') {
+      
+      // Remove loading if we dont expect any results
       if (this.SPARCLimit() === 0) {
         this.loadingCards = false
         return
       }
+      
       // Algolia search
 
       this.loadingCards = true
@@ -355,7 +364,7 @@ export default {
           EventBus.emit('number-of-datasets-for-anatomies', r.forScaffold)
         })
       this.algoliaClient
-        .search(getFilters(filters), query, this.calculateSPARCOffest(), this.SPARCLimit() )
+        .search(getFilters(filters), query, this.calculateSPARCOffest(), this.SPARCLimit(this.pmrResultsOnlyFlag) )
         .then((searchData) => {
           this.sparcNumberOfHits = searchData.total
           this.discoverIds = searchData.discoverIds
@@ -390,13 +399,7 @@ export default {
       this.page = page
       this.results = []
       this.calculateVariableRatio()
-      this.searchAlgolia(
-        this.filters,
-        this.searchInput,
-        this.numberPerPage,
-        this.page
-      )
-      this.openPMRSearch(this.filters, this.searchInput)
+      this.openSearch(this.filter, this.searchInput, false)
     },
     handleMissingData: function (doi) {
       let i = this.results.findIndex((res) => res.doi === doi)

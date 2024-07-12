@@ -39,17 +39,24 @@ let FlatmapQueries = function () {
     return 'limit ' + this.limit + ' offset ' + this.offset
   }
 
-  this.pmrSQL = function (terms=[]) {
-    let sql = 'select * from pmr_models left join pmr_metadata on pmr_models.exposure=pmr_metadata.entity where metadata is not null and exposure is not null and score > 0.98 '
+  this.pmrSQL = function (terms=[], search='') {
+    let sql = 'select distinct term, score, workspace, entity, metadata from pmr_models left join pmr_metadata on pmr_models.exposure=pmr_metadata.entity where metadata is not null and exposure is not null and score > 0.99 '
+
+    // filters for the terms
     if (terms && terms.length > 0) {
       sql += 'and '
       sql += `term='${terms.join("' or term='")}'`
-    } 
+    }
+    
+    // set a search if there is one and no terms to filter on
+    if (search && search !== '' && terms.length == 0) {
+      sql = `select * from pmr_metadata where JSON_EXTRACT(metadata, '$.title') like '%${search}%'`
+    }
+
     this.sqlPreOffset = sql
 
     // add the limit and offset for pagination
     sql += ' ' + this.offsetText() + ';'
-    console.log('SQL:', sql)
     return sql
   }
 
@@ -69,7 +76,6 @@ let FlatmapQueries = function () {
 
   this.flatmapQuery = function (sql) {
     const data = { sql: sql }
-    console.log('Fetching data from flatmap', sql)
     return fetch(`${this.flatmapApi}knowledge/query/`, {
       method: 'POST',
       headers: {
@@ -86,7 +92,7 @@ let FlatmapQueries = function () {
   this.processFilters = function (filters) {
     let featureLabels = []
     filters.forEach((f) => {
-      if (f.facet !== 'Show all')
+      if (f.label !== 'Show all' && f.label !== 'PMR')
         featureLabels.push(f.facet)
     })
     return featureLabels
@@ -98,7 +104,7 @@ let FlatmapQueries = function () {
     let features = this.processFilters(filters)
     let featureIds = this.convertTermsToIds(features)
     return new Promise((resolve, reject) => {
-      this.flatmapQuery(this.pmrSQL(featureIds))
+      this.flatmapQuery(this.pmrSQL(featureIds, search))
         .then(data => {
           const pd = this.processFlatmapData(data)
           this.setAvailableFeatures(pd)

@@ -21,7 +21,6 @@ export default {
       } else {
         this.variableRatio = RatioOfPMRResults
       }
-      console.log(this.variableRatio)
     },
     calculatePMROffest: function() {
       if (this.variableRatio === RatioOfPMRResults) {
@@ -48,7 +47,10 @@ export default {
         return offset
       }
     },
-    PMRLimit: function() {
+    PMRLimit: function(pmrResultsOnlyFlag=false) {
+      if (pmrResultsOnlyFlag) {
+        return this.numberPerPage
+      }
       if (this.variableRatio === RatioOfPMRResults) {
         return this.npp_PMR
       } else if (this.variableRatio === 1) {
@@ -57,7 +59,10 @@ export default {
         return 0
       }
     },
-    SPARCLimit: function() {
+    SPARCLimit: function(pmrResultsOnlyFlag=false) {
+      if(pmrResultsOnlyFlag) {
+        return 0
+      }
       if (this.variableRatio === RatioOfPMRResults) {
         return this.npp_SPARC
       } else if (this.variableRatio === 0) {

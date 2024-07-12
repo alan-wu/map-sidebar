@@ -120,7 +120,7 @@ export default {
   },
   methods: {
     hoverChanged: function (data) {
-      console.log('hoverChanged', data)
+      // console.log('hoverChanged', data)
     },
     searchChanged: function (data) {
       console.log(data)
