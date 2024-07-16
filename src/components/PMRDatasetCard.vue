@@ -19,16 +19,27 @@
           <el-tag type="primary" class="source-tag">PMR</el-tag>
           <div>
             <h4 class="title">{{ entry.title }}</h4>
-            <div class="authors">
-              <em>{{ entry.authors }}</em>
+            <div class="details">
+              {{ entry.authors }}
             </div>
           </div>
-          <p v-if="entry.description">{{ entry.description }}</p>
+          <div class="details" v-if="entry.description">
+            {{ entry.description }}
+          </div>
           <div>
-            <a :href="entry.exposure" target="_blank" class="el-button button">
+            <a
+              :href="entry.exposure"
+              target="_blank"
+              class="el-button el-button--small button"
+            >
               Exposure
             </a>
-            <a v-if="entry.omex" :href="entry.omex" target="_blank" class="el-button">
+            <a
+              v-if="entry.omex"
+              :href="entry.omex"
+              target="_blank"
+              class="el-button el-button--small"
+            >
               OMEX archive
             </a>
           </div>
@@ -129,6 +140,7 @@ export default {
 }
 
 .title {
+  padding-bottom: 0.75rem;
   font-family: Asap;
   font-size: 14px;
   font-weight: bold;
@@ -143,7 +155,6 @@ export default {
   padding-top: 18px;
   position: relative;
   display: flex;
-  gap: 1rem;
 
   h4,
   p {
@@ -163,6 +174,17 @@ export default {
   min-height: 17rem;
 }
 
+.details {
+  font-family: Asap;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 1.05px;
+  color: #484848;
+}
+
 .el-button {
   font-family: Asap;
   font-size: 14px;
@@ -178,7 +200,6 @@ export default {
   background-color: $app-primary-color;
   border: $app-primary-color;
   color: white;
-  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
 
   &:hover,
@@ -186,18 +207,12 @@ export default {
     color: white;
     background-color: $app-primary-color;
     outline: none;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
   }
 }
 
 .card-image-container {
   display: block;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-  }
+  width: 244px; // gallery image full-size width
 }
 
 .card-image {
@@ -212,12 +227,6 @@ export default {
   position: absolute;
   bottom: 0;
   right: 0;
-}
-
-.authors {
-  margin-top: 0.5rem;
-  font-size: 12px;
-  color: #444;
 }
 
 .loading-icon {
