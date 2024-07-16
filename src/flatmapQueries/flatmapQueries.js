@@ -39,24 +39,59 @@ let FlatmapQueries = function () {
     return 'limit ' + this.limit + ' offset ' + this.offset
   }
 
-  this.pmrSQL = function (terms=[], search='') {
-    let sql = 'select distinct term, score, workspace, entity, metadata from pmr_models left join pmr_metadata on pmr_models.exposure=pmr_metadata.entity where metadata is not null and exposure is not null and score > 0.99 '
-
-    // filters for the terms
+  this.createTermSQL = function (terms) {
+    let sql = ''
+    let validFilter = false
+    
+    
     if (terms && terms.length > 0) {
       sql += 'and '
-      sql += `term='${terms.join("' or term='")}'`
+      terms.forEach((t, i) => {
+        if (i == 0) {
+          sql += '('
+        }
+        if (t !== '') {
+          sql += `m.term='${t}'`
+          validFilter = true
+          if (i < terms.length - 1) {
+            sql += ' or '
+          }
+        }
+        if (i == terms.length - 1) {
+          sql += ') '
+        }
+      })
     }
+    if (!validFilter) {
+      sql = ''
+    }
+    return sql
+  }
+
+
+  this.pmrSQL = function (terms=[], search='') {
+    let sql = 'select distinct m.term, m.exposure, m.score, m.workspace, d.metadata from pmr_text '
+    sql += 'as t left join pmr_metadata as d on t.entity=d.entity left join pmr_models as m on m.exposure=t.entity '
+    sql += 'where d.metadata is not null and m.exposure is not null and score > 0.99 '
+
+    // add filters for the terms
+    const termsSql = this.createTermSQL(terms)
+    sql += termsSql
     
-    // set a search if there is one and no terms to filter on
-    if (search && search !== '' && terms.length == 0) {
-      sql = `select * from pmr_metadata where JSON_EXTRACT(metadata, '$.title') like '%${search}%'`
+    // Add the text search
+    if (search && search !== '') {
+      sql += `and (t.pmr_text match '${search}')`
     }
+
+    // group by exposure
+    sql += ' group by m.exposure'
 
     this.sqlPreOffset = sql
 
     // add the limit and offset for pagination
     sql += ' ' + this.offsetText() + ';'
+
+    console.log(sql)
     return sql
   }
 

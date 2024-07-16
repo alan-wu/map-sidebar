@@ -317,7 +317,7 @@ export default {
         this.openSearch(this.filter, this.searchInput)
         this.$refs.searchHistory.selectValue = 'Full search history'
         this.$refs.searchHistory.addSearchToHistory(
-          this.filters,
+          this.filter,
           this.searchInput
         )
       }
@@ -331,7 +331,7 @@ export default {
       }
     },
     filterUpdate: function (filters) {
-      this.filters = [...filters]
+      this.filter = [...filters]
 
       // Check if PMR is in the filters
       this.updatePMROnlyFlag(filters)
