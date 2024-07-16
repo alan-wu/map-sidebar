@@ -154,6 +154,7 @@ export class AlgoliaClient {
    * This is using fetch from the Algolia API
    */
   search(filter, query = '', offset = 0, length = 8) {
+    console.log('searching', filter, query, offset, length)
     // If the length is 0, return an empty result
     if (length === 0) {
       return new Promise(resolve => {
