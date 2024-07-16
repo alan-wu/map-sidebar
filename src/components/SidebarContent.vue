@@ -93,8 +93,6 @@ import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
 import FlatmapQueries from '../flatmapQueries/flatmapQueries.js'
 import mixedPageCalculation from '../mixins/mixedPageCalculation.vue'
 
-// TODO: to update API URL
-const API_URL = "/data/pmr-sample.json";
 const RatioOfPMRResults = 0.2; // Ratio of PMR results to Sparc results
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
@@ -125,6 +123,7 @@ var initial_state = {
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
+  RatioOfPMRResults: RatioOfPMRResults,
 };
 
 
@@ -198,6 +197,8 @@ export default {
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
     },
+    // resetSearch: Resets the results, and page, and variable results ratio 
+    //     Does not: reset filters, search input, or search history
     resetSearch: function () {
       this.pmrNumberOfHits = 0
       this.sparcNumberOfHits = 0

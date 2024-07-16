@@ -1,8 +1,9 @@
 <script>
-const RatioOfPMRResults = 0.2; // Ratio of PMR results to Sparc results
-
 // The functions below are needed because the number of results shown on the page is dependent what is available from each index.
 // We fix this by calcuting how many results we have shown before the requested page and then calculating the offset based on that.
+
+// Note that this.RatioOfPMRResults is a number that determines how many PMR results are shown compared to SPARC results. It is grabbed from a constant in 
+//  SidebarContent.vue.
 
 export default {
   methods: {
@@ -11,19 +12,19 @@ export default {
     //   will be shown on the page. 1 means only PMR results, 0 means only SPARC results. 
     calculateVariableRatio: function () {
       if (this.page === 1) {
-        this.variableRatio = RatioOfPMRResults
+        this.variableRatio = this.RatioOfPMRResults
       } else if( this.npp_SPARC * (this.page -1) >= this.sparcNumberOfHits) {
         this.variableRatio = 1
         // calculate offset
-        let mixedOffest = this.page*RatioOfPMRResults
+        let mixedOffest = this.page*this.RatioOfPMRResults
       } else if(this.npp_PMR * (this.page - 1) >= this.pmrNumberOfHits) {
         this.variableRatio = 0
       } else {
-        this.variableRatio = RatioOfPMRResults
+        this.variableRatio = this.RatioOfPMRResults
       }
     },
     calculatePMROffest: function() {
-      if (this.variableRatio === RatioOfPMRResults) {
+      if (this.variableRatio === this.RatioOfPMRResults) {
         return (this.page-1)*this.npp_PMR
       } else if (this.variableRatio === 1) {
 
@@ -35,7 +36,7 @@ export default {
       }
     },
     calculateSPARCOffest: function() {
-      if(this.variableRatio === RatioOfPMRResults) {
+      if(this.variableRatio === this.RatioOfPMRResults) {
         return (this.page-1)*this.npp_SPARC
       } else if (this.variableRatio === 0) {
         
@@ -51,7 +52,7 @@ export default {
       if (pmrResultsOnlyFlag) {
         return this.numberPerPage
       }
-      if (this.variableRatio === RatioOfPMRResults) {
+      if (this.variableRatio === this.RatioOfPMRResults) {
         return this.npp_PMR
       } else if (this.variableRatio === 1) {
         return this.numberPerPage
@@ -63,7 +64,7 @@ export default {
       if(pmrResultsOnlyFlag) {
         return 0
       }
-      if (this.variableRatio === RatioOfPMRResults) {
+      if (this.variableRatio === this.RatioOfPMRResults) {
         return this.npp_SPARC
       } else if (this.variableRatio === 0) {
         return this.numberPerPage
