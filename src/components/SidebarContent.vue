@@ -10,19 +10,14 @@
           clearable
           @clear="clearSearchClicked"
         ></el-input>
-        <el-select
-          v-model="mode"
-          class="data-type-select"
-          placeholder="Search over..."
-          @change="onSelectValueChange"
+        <el-button
+          type="primary"
+          class="button"
+          @click="searchEvent"
+          size="large"
         >
-          <el-option
-            v-for="item in selectOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+          Search
+        </el-button>
       </div>
     </template>
     <SearchFilters
@@ -61,14 +56,6 @@
           @mouseenter="hoverChanged(result)"
           @mouseleave="hoverChanged(undefined)"
         ></PMRDatasetCard>
-        <flatmap-dataset-card
-          v-else-if="result.dataSource === 'Flatmap'"
-          class="dataset-card"
-          :entry="result"
-          :envVars="envVars"
-          @mouseenter="hoverChanged(result)"
-          @mouseleave="hoverChanged(undefined)"
-        ></flatmap-dataset-card>
       </div>
       <el-pagination
         class="pagination"
@@ -100,9 +87,6 @@ import EventBus from './EventBus.js'
 
 import DatasetCard from "./DatasetCard.vue";
 import PMRDatasetCard from "./PMRDatasetCard.vue";
-import FlatmapDatasetCard from './FlatmapDatasetCard.vue';
-
-import allPaths from './allPaths.js'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
@@ -133,7 +117,6 @@ var initial_state = {
   results: [],
   pmrNumberOfHits: 0,
   sparcNumberOfHits: 0,
-  variableRatio: RatioOfPMRResults,
   filter: [],
   loadingCards: false,
   numberPerPage: 10,
@@ -142,13 +125,6 @@ var initial_state = {
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
-  mode: 'Sparc Datasets',
-  allPaths: allPaths.values,
-  selectOptions: [
-    { value: "Sparc Datasets", label: "Sparc Datasets" },
-    { value: "PMR", label: "PMR" },
-    { value: "Flatmap", label: "Flatmap"}
-  ],
 };
 
 
@@ -158,7 +134,6 @@ export default {
     SearchFilters,
     DatasetCard,
     PMRDatasetCard,
-    FlatmapDatasetCard,
     SearchHistory,
     Button,
     Card,
@@ -544,10 +519,6 @@ export default {
       this.searchInput = item.search
       this.filters = item.filters
       this.openSearch(item.filters, item.search)
-    },
-    onSelectValueChange: function (val) {
-      this.mode = val
-      this.openSearch(this.filter, this.searchInput, val)
     },
   },
   mounted: function () {
