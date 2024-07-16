@@ -44,7 +44,7 @@
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
-      <div v-for="(result, i) in results" :key="i" class="step-item">
+      <div v-for="(result, i) in results" :key="result.doi || i" class="step-item">
         <DatasetCard
           v-if="result.dataSource === 'SPARC'"
           class="dataset-card"
@@ -217,7 +217,7 @@ export default {
     numberOfHits: function () {
       return this.sparcNumberOfHits + this.pmrNumberOfHits
     },
-    
+
   },
   methods: {
     hoverChanged: function (data) {
@@ -335,7 +335,7 @@ export default {
 
       // Check if PMR is in the filters
       this.updatePMROnlyFlag(filters)
-      
+
       // Note that we cannot use the openSearch function as that modifies filters
       this.resetSearch()
       this.searchAlgolia(filters, this.searchInput)
@@ -346,13 +346,13 @@ export default {
       })
     },
     searchAlgolia(filters, query = '') {
-      
+
       // Remove loading if we dont expect any results
       if (this.SPARCLimit() === 0) {
         this.loadingCards = false
         return
       }
-      
+
       // Algolia search
 
       this.loadingCards = true
