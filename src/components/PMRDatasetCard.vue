@@ -144,7 +144,7 @@ export default {
   },
   methods: {
     onFlatmapClick: function (payload) {
-      this.$emit('flatmap-clicked', payload)
+      this.$emit('flatmap-clicked', payload);
     },
     onSimulationClick: function (payload) {
       const simulationData = {
@@ -152,7 +152,7 @@ export default {
         description: this.entry.description,
         resource: payload,
       };
-      this.$emit('simulation-clicked', simulationData)
+      this.$emit('simulation-clicked', simulationData);
     },
   }
 };
