@@ -46,6 +46,7 @@
               :contextCardEntry="tab.contextCard"
               :envVars="envVars"
               :ref="'searchTab_' + tab.id"
+              @flatmap-clicked="onFlatmapClicked"
               @search-changed="searchChanged(tab.id, $event)"
               @hover-changed="hoverChanged($event)"
             />
@@ -245,6 +246,9 @@ export default {
     },
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
+    },
+    onFlatmapClicked: function (data) {
+      this.$emit('flatmap-clicked', data);
     },
     /**
      * @vuese
