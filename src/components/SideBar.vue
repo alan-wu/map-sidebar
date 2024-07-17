@@ -251,8 +251,8 @@ export default {
       const payload = {
         type: 'Flatmap',
         data: data
-      }
-      this.$emit('actionClick', payload)
+      };
+      this.$emit('actionClick', payload);
     },
     /**
      * @vuese
