@@ -79,7 +79,7 @@ let FlatmapQueries = function () {
   this.pmrSQL = function (terms=[], search='') {
     let sql = 'select distinct m.term, m.exposure, m.score, m.workspace, d.metadata from pmr_text '
     sql += 'as t left join pmr_metadata as d on t.entity=d.entity left join pmr_models as m on m.exposure=t.entity '
-    sql += 'where d.metadata is not null and m.exposure is not null and score > 0.69 '
+    sql += 'where d.metadata is not null '
 
     // add filters for the terms
     const termsSql = this.createTermSQL(terms)
@@ -88,6 +88,11 @@ let FlatmapQueries = function () {
     // Add the text search
     if (search && search !== '') {
       sql += `and (t.pmr_text match '${search}')`
+    }
+
+    // Add exposure and score filters if we aren't text searching
+    if (!search || search === '') {
+      sql += 'and m.exposure is not null and score > 0.69'
     }
 
     // group by exposure
