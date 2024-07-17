@@ -49,6 +49,13 @@
             >
               Flatmap
             </el-button>
+            <el-button v-if="entry.simulation"
+              size="small"
+              class="button"
+              @click="onSimulationClick(entry.simulation)"
+            >
+              Simulation
+            </el-button>
           </div>
         </div>
       </div>
@@ -138,6 +145,14 @@ export default {
   methods: {
     onFlatmapClick: function (payload) {
       this.$emit('flatmap-clicked', payload)
+    },
+    onSimulationClick: function (payload) {
+      const simulationData = {
+        title: this.entry.title,
+        description: this.entry.description,
+        resource: payload,
+      };
+      this.$emit('simulation-clicked', simulationData)
     },
   }
 };

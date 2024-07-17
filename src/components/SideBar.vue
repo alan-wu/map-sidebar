@@ -47,6 +47,7 @@
               :envVars="envVars"
               :ref="'searchTab_' + tab.id"
               @flatmap-clicked="onFlatmapClicked"
+              @simulation-clicked="onSimulationClicked"
               @search-changed="searchChanged(tab.id, $event)"
               @hover-changed="hoverChanged($event)"
             />
@@ -251,6 +252,17 @@ export default {
       const payload = {
         type: 'Flatmap',
         data: data
+      };
+      this.$emit('actionClick', payload);
+    },
+    onSimulationClicked: function (data) {
+      const payload = {
+        type: 'Simulation',
+        title: 'View simulation',
+        apiLocation: this.envVars.API_LOCATION,
+        name: data.title,
+        description: data.description,
+        resource: data.resource,
       };
       this.$emit('actionClick', payload);
     },
