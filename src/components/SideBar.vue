@@ -248,7 +248,11 @@ export default {
       this.drawerOpen = value
     },
     onFlatmapClicked: function (data) {
-      this.$emit('flatmap-clicked', data);
+      const payload = {
+        type: 'Flatmap',
+        data: data
+      }
+      this.$emit('actionClick', payload)
     },
     /**
      * @vuese
