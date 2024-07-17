@@ -53,6 +53,7 @@
           class="dataset-card"
           :entry="result"
           :envVars="envVars"
+          @flatmap-clicked="onFlatmapClicked"
           @mouseenter="hoverChanged(result)"
           @mouseleave="hoverChanged(undefined)"
         ></PMRDatasetCard>
@@ -197,7 +198,10 @@ export default {
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
     },
-    // resetSearch: Resets the results, and page, and variable results ratio 
+    onFlatmapClicked: function (data) {
+      this.$emit('flatmap-clicked', data);
+    },
+    // resetSearch: Resets the results, and page, and variable results ratio
     //     Does not: reset filters, search input, or search history
     resetSearch: function () {
       this.pmrNumberOfHits = 0

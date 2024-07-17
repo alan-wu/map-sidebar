@@ -26,7 +26,7 @@
           <div class="details" v-if="entry.description">
             {{ entry.description }}
           </div>
-          <div>
+          <div class="buttons-group">
             <a
               :href="entry.exposure"
               target="_blank"
@@ -38,10 +38,17 @@
               v-if="entry.omex"
               :href="entry.omex"
               target="_blank"
-              class="el-button el-button--small"
+              class="el-button el-button--small button"
             >
               OMEX archive
             </a>
+            <el-button v-if="entry.flatmap"
+              size="small"
+              class="button"
+              @click="onFlatmapClick(entry.flatmap)"
+            >
+              Flatmap
+            </el-button>
           </div>
         </div>
       </div>
@@ -92,6 +99,10 @@ import {
 "description"
     type: String
     description: The description
+
+"flatmap"
+    type: String
+    descriptin: (Optional) to link to flatmap
  * ---------------------------------------
  */
 
@@ -124,6 +135,11 @@ export default {
       loading: false,
     };
   },
+  methods: {
+    onFlatmapClick: function (payload) {
+      this.$emit('flatmap-clicked', payload)
+    },
+  }
 };
 </script>
 
@@ -219,6 +235,32 @@ export default {
   max-width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+.buttons-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .el-button {
+    border-radius: 4px!important;
+    font-size: 0.75rem!important;
+    padding: 0.2rem 0.2rem!important;
+    background: #f9f2fc!important;
+    border: 1px solid $app-primary-color!important;
+    color: $app-primary-color!important;
+
+    &.active {
+      background: $app-primary-color!important;
+      border: 1px solid $app-primary-color!important;
+      color: #fff!important;
+    }
+  }
+
+  .el-button + .el-button {
+    margin: 0;
+  }
 }
 
 .source-tag {
