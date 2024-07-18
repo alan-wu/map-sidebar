@@ -110,6 +110,10 @@ import {
 "flatmap"
     type: String
     descriptin: (Optional) to link to flatmap
+
+"simulation"
+    type: String
+    descriptin: (Optional) simulation resource
  * ---------------------------------------
  */
 
