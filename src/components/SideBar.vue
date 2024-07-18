@@ -46,8 +46,7 @@
               :contextCardEntry="tab.contextCard"
               :envVars="envVars"
               :ref="'searchTab_' + tab.id"
-              @flatmap-clicked="onFlatmapClicked"
-              @simulation-clicked="onSimulationClicked"
+              @pmr-action-click="onPmrActionClick"
               @search-changed="searchChanged(tab.id, $event)"
               @hover-changed="hoverChanged($event)"
             />
@@ -248,24 +247,7 @@ export default {
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
     },
-    onFlatmapClicked: function (data) {
-      const payload = {
-        type: 'Flatmap',
-        name: data.title,
-        description: data.description,
-        resource: data.resource,
-      };
-      this.$emit('actionClick', payload);
-    },
-    onSimulationClicked: function (data) {
-      const payload = {
-        type: 'Simulation',
-        title: 'View simulation',
-        apiLocation: this.envVars.API_LOCATION,
-        name: data.title,
-        description: data.description,
-        resource: data.resource,
-      };
+    onPmrActionClick: function (payload) {
       this.$emit('actionClick', payload);
     },
     /**
