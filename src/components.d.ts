@@ -26,7 +26,6 @@ declare module 'vue' {
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTag: typeof import('element-plus/es')['ElTag']
     ExternalResourceCard: typeof import('./components/ExternalResourceCard.vue')['default']
-    FlatmapDatasetCard: typeof import('./components/FlatmapDatasetCard.vue')['default']
     ImageGallery: typeof import('./components/ImageGallery.vue')['default']
     PMRDatasetCard: typeof import('./components/PMRDatasetCard.vue')['default']
     SearchFilters: typeof import('./components/SearchFilters.vue')['default']
