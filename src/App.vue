@@ -131,6 +131,9 @@ export default {
     // For connectivity input actions
     action: function (action) {
       console.log('action fired: ', action)
+      if (action.type === 'Flatmap' || action.type === 'Simulation') {
+        return;
+      }
       let facets = [];
       facets.push(
         ...action.labels.map(val => ({

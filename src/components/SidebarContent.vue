@@ -54,6 +54,7 @@
           :entry="result"
           :envVars="envVars"
           @flatmap-clicked="onFlatmapClicked"
+          @simulation-clicked="onSimulationClicked"
           @mouseenter="hoverChanged(result)"
           @mouseleave="hoverChanged(undefined)"
         ></PMRDatasetCard>
@@ -200,6 +201,9 @@ export default {
     },
     onFlatmapClicked: function (data) {
       this.$emit('flatmap-clicked', data);
+    },
+    onSimulationClicked: function (payload) {
+      this.$emit('simulation-clicked', payload)
     },
     // resetSearch: Resets the results, and page, and variable results ratio
     //     Does not: reset filters, search input, or search history
