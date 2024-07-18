@@ -110,6 +110,10 @@ import {
 "flatmap"
     type: String
     descriptin: (Optional) to link to flatmap
+
+"simulation"
+    type: String
+    descriptin: (Optional) simulation resource
  * ---------------------------------------
  */
 
@@ -143,16 +147,26 @@ export default {
     };
   },
   methods: {
-    onFlatmapClick: function (payload) {
-      this.$emit('flatmap-clicked', payload)
+    onFlatmapClick: function (data) {
+      this.emitPMRActionClick({
+        type: 'Flatmap',
+        resource: data
+      });
     },
-    onSimulationClick: function (payload) {
-      const simulationData = {
-        title: this.entry.title,
+    onSimulationClick: function (data) {
+      this.emitPMRActionClick({
+        type: 'Simulation',
+        resource: data,
+      });
+    },
+    emitPMRActionClick: function (data) {
+      const payload = {
+        ...data,
+        name: this.entry.title,
         description: this.entry.description,
-        resource: payload,
+        apiLocation: this.envVars.API_LOCATION,
       };
-      this.$emit('simulation-clicked', simulationData)
+      this.$emit('pmr-action-click', payload);
     },
   }
 };
