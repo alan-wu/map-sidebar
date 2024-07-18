@@ -144,7 +144,12 @@ export default {
   },
   methods: {
     onFlatmapClick: function (payload) {
-      this.$emit('flatmap-clicked', payload);
+      const flatmapData = {
+        title: this.entry.title,
+        description: this.entry.description,
+        resource: payload,
+      };
+      this.$emit('flatmap-clicked', flatmapData);
     },
     onSimulationClick: function (payload) {
       const simulationData = {

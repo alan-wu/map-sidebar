@@ -251,7 +251,9 @@ export default {
     onFlatmapClicked: function (data) {
       const payload = {
         type: 'Flatmap',
-        data: data
+        name: data.title,
+        description: data.description,
+        resource: data.resource,
       };
       this.$emit('actionClick', payload);
     },
