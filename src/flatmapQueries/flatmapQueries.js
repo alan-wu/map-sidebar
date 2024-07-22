@@ -1,10 +1,17 @@
 function transformKeyValueArrayToObject(data) {
-  return data.values.map(valueArray => 
-    data.keys.reduce((acc, key, index) => {
-      acc[key] = valueArray[index];
-      return acc;
-    }, {})
-  );
+  try {
+    let result = data.values.map(valueArray => 
+      data.keys.reduce((acc, key, index) => {
+        acc[key] = valueArray[index];
+        return acc;
+      }, {})
+    )
+    return result
+  } catch (error) { 
+    console.error(`Error occured during conversion of Key Value Array to Object: ${error}`)
+    return {}
+  }
+
 }
 
 // remove duplicates by stringifying the objects
@@ -72,7 +79,7 @@ let FlatmapQueries = function () {
   this.pmrSQL = function (terms=[], search='') {
     let sql = 'select distinct m.term, m.exposure, m.score, m.workspace, d.metadata from pmr_text '
     sql += 'as t left join pmr_metadata as d on t.entity=d.entity left join pmr_models as m on m.exposure=t.entity '
-    sql += 'where d.metadata is not null and m.exposure is not null and score > 0.99 '
+    sql += 'where d.metadata is not null '
 
     // add filters for the terms
     const termsSql = this.createTermSQL(terms)
@@ -81,6 +88,11 @@ let FlatmapQueries = function () {
     // Add the text search
     if (search && search !== '') {
       sql += `and (t.pmr_text match '${search}')`
+    }
+
+    // Add exposure and score filters if we aren't text searching
+    if (!search || search === '') {
+      sql += 'and m.exposure is not null and score > 0.69'
     }
 
     // group by exposure
@@ -141,7 +153,7 @@ let FlatmapQueries = function () {
     return new Promise((resolve, reject) => {
       this.flatmapQuery(this.pmrSQL(featureIds, search))
         .then(data => {
-          const pd = this.processFlatmapData(data)
+          const pd = this.processPMRData(data, featureIds)
           this.setAvailableFeatures(pd)
 
           // get the number of hits for pagination
@@ -167,7 +179,7 @@ let FlatmapQueries = function () {
   }
 
 
-  this.processFlatmapData = function (data) {
+  this.processPMRData = function (data, featureIds=[]) {
     // Convert the flatmap data into an array of objects
     let dataObj = transformKeyValueArrayToObject(data)
 
@@ -178,6 +190,11 @@ let FlatmapQueries = function () {
       md.dataSource = 'PMR'
       return md
     })
+
+    // If there are featureIds, filter the results
+    if (featureIds.length > 0) {
+      metadataOnly = metadataOnly.filter(d => featureIds.includes(d.term))
+    }
 
     // Remove duplicates
     let uniqueResults = removeDuplicates(metadataOnly)
