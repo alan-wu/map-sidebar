@@ -1,13 +1,13 @@
 function transformKeyValueArrayToObject(data) {
   try {
-    let result = data.values.map(valueArray => 
+    let result = data.values.map(valueArray =>
       data.keys.reduce((acc, key, index) => {
         acc[key] = valueArray[index];
         return acc;
       }, {})
     )
     return result
-  } catch (error) { 
+  } catch (error) {
     console.error(`Error occured during conversion of Key Value Array to Object: ${error}`)
     return {}
   }
@@ -49,8 +49,8 @@ let FlatmapQueries = function () {
   this.createTermSQL = function (terms) {
     let sql = ''
     let validFilter = false
-    
-    
+
+
     if (terms && terms.length > 0) {
       sql += 'and '
       terms.forEach((t, i) => {
@@ -84,7 +84,7 @@ let FlatmapQueries = function () {
     // add filters for the terms
     const termsSql = this.createTermSQL(terms)
     sql += termsSql
-    
+
     // Add the text search
     if (search && search !== '') {
       sql += `and (t.pmr_text match '${search}')`
@@ -137,12 +137,12 @@ let FlatmapQueries = function () {
   }
 
   this.processFilters = function (filters) {
-    let featureLabels = []
+    let featureFacets = []
     filters.forEach((f) => {
-      if (f.label !== 'Show all' && f.label !== 'PMR')
-        featureLabels.push(f.facet)
+      if (f.facet !== 'Show all' && f.facet !== 'PMR')
+        featureFacets.push(f.facet)
     })
-    return featureLabels
+    return featureFacets
   }
 
 

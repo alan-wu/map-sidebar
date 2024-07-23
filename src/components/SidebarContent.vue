@@ -215,13 +215,15 @@ export default {
     },
     // openSearch: Resets the results, populates dataset cards and filters. Will use Algolia and SciCrunch data uness pmr mode is set
     openSearch: function(filter, search = '', resetSearch = true) {
+      this.updatePMROnlyFlag(filter);
+
       if (resetSearch) {
         this.resetSearch();
-        this.openAlgoliaSearch(filter, search);
+        this.openFilterSearch(filter, search);
       } else {
         this.searchAlgolia(filter, search);
+        this.openPMRSearch(filter, search);
       }
-      this.openPMRSearch(filter, search)
     },
 
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
@@ -236,8 +238,9 @@ export default {
       })
     },
 
-    // openAlgoliaSearch: Resets the results, populates dataset cards and filters with Algloia and SciCrunch data.
-    openAlgoliaSearch: function (filter, search = '') {
+    // previously openAlgoliaSearch:
+    // Resets the results, populates dataset cards and filters with Algloia and SciCrunch data.
+    openFilterSearch: function (filter, search = '') {
       this.searchInput = search
       //Proceed normally if cascader is ready
       if (this.cascaderIsReady) {
@@ -255,7 +258,11 @@ export default {
           this.$refs.filtersRef.checkShowAllBoxes()
           this.resetSearch()
         } else if (this.filter) {
-          this.searchAlgolia(this.filter, search)
+          if (this.pmrResultsOnlyFlag) {
+            this.openPMRSearch(this.filter, search);
+          } else {
+            this.searchAlgolia(this.filter, search)
+          }
           this.$refs.filtersRef.setCascader(this.filter)
         }
       } else {
@@ -263,7 +270,11 @@ export default {
         //otherwise waith for cascader to be ready
         this.filter = filter
         if (!filter || filter.length == 0) {
-          this.searchAlgolia(this.filter, search)
+          if (this.pmrResultsOnlyFlag) {
+            this.openPMRSearch(this.filter, search);
+          } else {
+            this.searchAlgolia(this.filter, search)
+          }
         }
       }
     },
@@ -302,9 +313,18 @@ export default {
         )
       }
     },
+    // TODO: 3 conditions: PMR only, No PMR, Mixed
+    isPMROnly: function (filters) {
+      const dataTypeFilters = filters.filter((item) => item.facetPropPath === 'item.types.name');
+      const pmrFilter = dataTypeFilters.filter((item) => item.facet === 'PMR');
+
+      if (dataTypeFilters.length === 1 && pmrFilter.length === 1) {
+        return true;
+      }
+      return false;
+    },
     updatePMROnlyFlag: function (filters) {
-      const pmrSearchObject = filters.find((tmp) => tmp.facet === 'PMR');
-      if (pmrSearchObject) {
+      if (this.isPMROnly(filters)) {
         this.pmrResultsOnlyFlag = true
       } else {
         this.pmrResultsOnlyFlag = false

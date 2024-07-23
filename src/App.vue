@@ -6,6 +6,7 @@
     />
     <div class="options-container">
       <div>Click arrow to open sidebar</div>
+      <el-button @click="openPMRSearch">PMR Search</el-button>
       <el-button @click="openSearch">search Uberon from refs</el-button>
       <el-button @click="singleFacets">Add heart to Filter</el-button>
       <el-button @click="addStomach">Add stomach to Filter</el-button>
@@ -145,6 +146,18 @@ export default {
           this.$refs.sideBar.openSearch(facets, "");
         }
       }
+    },
+    openPMRSearch: function () {
+      this.$refs.sideBar.openSearch(
+        [
+          {
+            facet: "PMR",
+            term: "Data type",
+            facetPropPath: "item.types.name",
+          }
+        ],
+        'cardiovascular multiscale model'
+      );
     },
     openSearch: function () {
       this.$refs.sideBar.openSearch(
