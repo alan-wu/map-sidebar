@@ -78,6 +78,7 @@ import EventBus from './EventBus.js'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
+import { markRaw } from 'vue'
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
@@ -142,6 +143,7 @@ export default {
   data: function () {
     return {
       ...this.entry,
+      algoliaClient: undefined,
       bodyStyle: {
         flex: '1 1 auto',
         'flex-flow': 'column',
@@ -442,11 +444,11 @@ export default {
   },
   mounted: function () {
     // initialise algolia
-    this.algoliaClient = new AlgoliaClient(
+    this.algoliaClient = markRaw(new AlgoliaClient(
       this.envVars.ALGOLIA_ID,
       this.envVars.ALGOLIA_KEY,
       this.envVars.PENNSIEVE_API_LOCATION
-    )
+    ))
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
     this.openSearch(this.filter, this.searchInput)
   },
