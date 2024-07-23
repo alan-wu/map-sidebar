@@ -121,6 +121,7 @@ var initial_state = {
   numberPerPage: 10,
   page: 1,
   pmrResultsOnlyFlag: false,
+  noPMRResultsFlag: false,
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
@@ -157,6 +158,13 @@ export default {
       type: Object,
       default: () => initial_state,
     },
+    initFilters: {
+      type: Object,
+      default: {
+        filter: [],
+        searchInput: '',
+      }
+    },
     envVars: {
       type: Object,
       default: () => {},
@@ -165,6 +173,7 @@ export default {
   data: function () {
     return {
       ...this.entry,
+      ...this.initFilters,
       bodyStyle: {
         flex: '1 1 auto',
         'flex-flow': 'column',
@@ -260,8 +269,11 @@ export default {
         } else if (this.filter) {
           if (this.pmrResultsOnlyFlag) {
             this.openPMRSearch(this.filter, search);
+          } else if (this.noPMRResultsFlag) {
+            this.searchAlgolia(this.filter, search);
           } else {
-            this.searchAlgolia(this.filter, search)
+            this.searchAlgolia(this.filter, search);
+            this.openPMRSearch(this.filter, search);
           }
           this.$refs.filtersRef.setCascader(this.filter)
         }
@@ -272,8 +284,11 @@ export default {
         if (!filter || filter.length == 0) {
           if (this.pmrResultsOnlyFlag) {
             this.openPMRSearch(this.filter, search);
+          } else if (this.noPMRResultsFlag) {
+            this.searchAlgolia(this.filter, search);
           } else {
-            this.searchAlgolia(this.filter, search)
+            this.searchAlgolia(this.filter, search);
+            this.openPMRSearch(this.filter, search);
           }
         }
       }
@@ -313,21 +328,19 @@ export default {
         )
       }
     },
-    // TODO: 3 conditions: PMR only, No PMR, Mixed
-    isPMROnly: function (filters) {
+    updatePMROnlyFlag: function (filters) {
       const dataTypeFilters = filters.filter((item) => item.facetPropPath === 'item.types.name');
       const pmrFilter = dataTypeFilters.filter((item) => item.facet === 'PMR');
 
+      this.pmrResultsOnlyFlag = false;
+      this.noPMRResultsFlag = false;
+
       if (dataTypeFilters.length === 1 && pmrFilter.length === 1) {
-        return true;
+        this.pmrResultsOnlyFlag = true;
       }
-      return false;
-    },
-    updatePMROnlyFlag: function (filters) {
-      if (this.isPMROnly(filters)) {
-        this.pmrResultsOnlyFlag = true
-      } else {
-        this.pmrResultsOnlyFlag = false
+
+      if (dataTypeFilters.length > 0 && pmrFilter.length === 0) {
+        this.noPMRResultsFlag = true;
       }
     },
     filterUpdate: function (filters) {
