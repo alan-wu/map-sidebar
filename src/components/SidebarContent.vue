@@ -331,6 +331,7 @@ export default {
     updatePMROnlyFlag: function (filters) {
       const dataTypeFilters = filters.filter((item) => item.facetPropPath === 'item.types.name');
       const pmrFilter = dataTypeFilters.filter((item) => item.facet === 'PMR');
+      const showAllFilter = dataTypeFilters.filter((item) => item.facet === 'Show all');
 
       this.pmrResultsOnlyFlag = false;
       this.noPMRResultsFlag = false;
@@ -339,7 +340,7 @@ export default {
         this.pmrResultsOnlyFlag = true;
       }
 
-      if (dataTypeFilters.length > 0 && pmrFilter.length === 0) {
+      if (dataTypeFilters.length > 0 && pmrFilter.length === 0 && showAllFilter.length === 0) {
         this.noPMRResultsFlag = true;
       }
     },
@@ -351,8 +352,15 @@ export default {
 
       // Note that we cannot use the openSearch function as that modifies filters
       this.resetSearch()
-      this.searchAlgolia(filters, this.searchInput)
-      this.openPMRSearch(filters, this.searchInput)
+      if (this.pmrResultsOnlyFlag) {
+        this.openPMRSearch(filters, this.searchInput)
+      } else if (this.noPMRResultsFlag) {
+        this.searchAlgolia(filters, this.searchInput)
+      } else {
+        this.searchAlgolia(filters, this.searchInput)
+        this.openPMRSearch(filters, this.searchInput)
+      }
+
       this.$emit('search-changed', {
         value: filters,
         type: 'filter-update',
