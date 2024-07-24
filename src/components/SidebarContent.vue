@@ -237,6 +237,7 @@ export default {
 
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
+      this.loadingCards = true;
       this.flatmapQueries.updateOffset(this.calculatePMROffest())
       this.flatmapQueries.updateLimit(this.PMRLimit(this.pmrResultsOnlyFlag))
       this.flatmapQueries.pmrSearch(filter, search).then((data) => {
@@ -244,6 +245,7 @@ export default {
           this.results.push(result)
         })
         this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
+        this.loadingCards = false;
       })
     },
 
