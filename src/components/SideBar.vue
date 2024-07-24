@@ -45,6 +45,7 @@
               v-show="tab.id === activeTabId"
               :contextCardEntry="tab.contextCard"
               :envVars="envVars"
+              :initFilters="initFilters"
               :ref="'searchTab_' + tab.id"
               @pmr-action-click="onPmrActionClick"
               @search-changed="searchChanged(tab.id, $event)"
@@ -137,6 +138,7 @@ export default {
   data: function () {
     return {
       drawerOpen: false,
+      initFilters: { filter: [], searchInput: '' },
       availableAnatomyFacets: []
     }
   },
@@ -177,7 +179,9 @@ export default {
       this.drawerOpen = !this.drawerOpen
     },
     openSearch: function (facets, query) {
-      this.drawerOpen = true
+      this.initFilters.filter = facets;
+      this.initFilters.searchInput = query;
+      this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
         const searchTabRef = this.getSearchTabRefById(1);

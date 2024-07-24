@@ -121,6 +121,7 @@ var initial_state = {
   numberPerPage: 10,
   page: 1,
   pmrResultsOnlyFlag: false,
+  noPMRResultsFlag: false,
   hasSearched: false,
   contextCardEnabled: false,
   pmrResults: [],
@@ -157,6 +158,13 @@ export default {
       type: Object,
       default: () => initial_state,
     },
+    initFilters: {
+      type: Object,
+      default: {
+        filter: [],
+        searchInput: '',
+      }
+    },
     envVars: {
       type: Object,
       default: () => {},
@@ -165,6 +173,7 @@ export default {
   data: function () {
     return {
       ...this.entry,
+      ...this.initFilters,
       bodyStyle: {
         flex: '1 1 auto',
         'flex-flow': 'column',
@@ -228,6 +237,7 @@ export default {
 
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
+      this.loadingCards = true;
       this.flatmapQueries.updateOffset(this.calculatePMROffest())
       this.flatmapQueries.updateLimit(this.PMRLimit(this.pmrResultsOnlyFlag))
       this.flatmapQueries.pmrSearch(filter, search).then((data) => {
@@ -235,6 +245,7 @@ export default {
           this.results.push(result)
         })
         this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
+        this.loadingCards = false;
       })
     },
 
@@ -260,8 +271,11 @@ export default {
         } else if (this.filter) {
           if (this.pmrResultsOnlyFlag) {
             this.openPMRSearch(this.filter, search);
+          } else if (this.noPMRResultsFlag) {
+            this.searchAlgolia(this.filter, search);
           } else {
-            this.searchAlgolia(this.filter, search)
+            this.searchAlgolia(this.filter, search);
+            this.openPMRSearch(this.filter, search);
           }
           this.$refs.filtersRef.setCascader(this.filter)
         }
@@ -272,8 +286,11 @@ export default {
         if (!filter || filter.length == 0) {
           if (this.pmrResultsOnlyFlag) {
             this.openPMRSearch(this.filter, search);
+          } else if (this.noPMRResultsFlag) {
+            this.searchAlgolia(this.filter, search);
           } else {
-            this.searchAlgolia(this.filter, search)
+            this.searchAlgolia(this.filter, search);
+            this.openPMRSearch(this.filter, search);
           }
         }
       }
@@ -313,21 +330,20 @@ export default {
         )
       }
     },
-    // TODO: 3 conditions: PMR only, No PMR, Mixed
-    isPMROnly: function (filters) {
+    updatePMROnlyFlag: function (filters) {
       const dataTypeFilters = filters.filter((item) => item.facetPropPath === 'item.types.name');
       const pmrFilter = dataTypeFilters.filter((item) => item.facet === 'PMR');
+      const showAllFilter = dataTypeFilters.filter((item) => item.facet === 'Show all');
+
+      this.pmrResultsOnlyFlag = false;
+      this.noPMRResultsFlag = false;
 
       if (dataTypeFilters.length === 1 && pmrFilter.length === 1) {
-        return true;
+        this.pmrResultsOnlyFlag = true;
       }
-      return false;
-    },
-    updatePMROnlyFlag: function (filters) {
-      if (this.isPMROnly(filters)) {
-        this.pmrResultsOnlyFlag = true
-      } else {
-        this.pmrResultsOnlyFlag = false
+
+      if (dataTypeFilters.length > 0 && pmrFilter.length === 0 && showAllFilter.length === 0) {
+        this.noPMRResultsFlag = true;
       }
     },
     filterUpdate: function (filters) {
@@ -338,8 +354,15 @@ export default {
 
       // Note that we cannot use the openSearch function as that modifies filters
       this.resetSearch()
-      this.searchAlgolia(filters, this.searchInput)
-      this.openPMRSearch(filters, this.searchInput)
+      if (this.pmrResultsOnlyFlag) {
+        this.openPMRSearch(filters, this.searchInput)
+      } else if (this.noPMRResultsFlag) {
+        this.searchAlgolia(filters, this.searchInput)
+      } else {
+        this.searchAlgolia(filters, this.searchInput)
+        this.openPMRSearch(filters, this.searchInput)
+      }
+
       this.$emit('search-changed', {
         value: filters,
         type: 'filter-update',

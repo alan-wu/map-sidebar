@@ -108,7 +108,7 @@ let FlatmapQueries = function () {
   }
 
   this.convertTermsToIds = function (terms) {
-    return terms.map(t => this.lookUpId(t))
+    return terms.filter(t => this.lookUpId(t))
   }
 
   this.labelSQL = function (){
