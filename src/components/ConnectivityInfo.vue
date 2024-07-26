@@ -40,7 +40,7 @@
         </el-popover>
       </div>
     </div>
-    <div v-if="entry.featuresAlert" class="attribute-title-container">
+    <div v-if="entry.featuresAlert" class="content-container attribute-title-container">
       <span class="attribute-title">Alert</span>
       <el-popover
         width="250"
