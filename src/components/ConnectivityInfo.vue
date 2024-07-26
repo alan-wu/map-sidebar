@@ -40,7 +40,7 @@
         </el-popover>
       </div>
     </div>
-    <div v-if="featuresAlert" class="attribute-title-container">
+    <div v-if="entry.featuresAlert" class="attribute-title-container">
       <span class="attribute-title">Alert</span>
       <el-popover
         width="250"
@@ -52,7 +52,7 @@
           <el-icon class="info"><el-icon-warning /></el-icon>
         </template>
         <span style="word-break: keep-all">
-          {{ featuresAlert }}
+          {{ entry.featuresAlert }}
         </span>
       </el-popover>
     </div>
@@ -225,6 +225,7 @@ export default {
         originsWithDatasets: [],
         componentsWithDatasets: [],
         resource: undefined,
+        featuresAlert: undefined,
       }),
     },
     availableAnatomyFacets: {
@@ -232,7 +233,6 @@ export default {
       default: () => [],
     },
   },
-  // inject: ['getFeaturesAlert'],
   data: function () {
     return {
       controller: undefined,
@@ -266,9 +266,6 @@ export default {
         resources = this.entry.hyperlinks;
       }
       return resources;
-    },
-    featuresAlert() {
-      // return this.getFeaturesAlert()
     },
     originDescription: function () {
       if (
