@@ -18,6 +18,24 @@
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
         </div>
+        <div class="block" v-if="entry.featuresAlert">
+          <div class="attribute-title-container flex">
+            <span class="attribute-title">Alert</span>
+            <el-popover
+              width="250"
+              trigger="hover"
+              :teleported="false"
+              popper-class="popover-origin-help"
+            >
+              <template #reference>
+                <el-icon class="alert"><el-icon-warn-triangle-filled /></el-icon>
+              </template>
+              <span style="word-break: keep-all">
+                {{ entry.featuresAlert }}
+              </span>
+            </el-popover>
+          </div>
+        </div>
         <external-resource-card :resources="resources"></external-resource-card>
       </div>
       <div>
@@ -39,22 +57,6 @@
           </span>
         </el-popover>
       </div>
-    </div>
-    <div v-if="entry.featuresAlert" class="content-container attribute-title-container">
-      <span class="attribute-title">Alert</span>
-      <el-popover
-        width="250"
-        trigger="hover"
-        :teleported="false"
-        popper-class="popover-origin-help"
-      >
-        <template #reference>
-          <el-icon class="info"><el-icon-warning /></el-icon>
-        </template>
-        <span style="word-break: keep-all">
-          {{ entry.featuresAlert }}
-        </span>
-      </el-popover>
     </div>
     <div class="content-container scrollbar">
       {{ entry.paths }}
@@ -420,10 +422,23 @@ export default {
   }
 }
 
-.info {
-  transform: rotate(180deg);
+.info,
+.alert {
   color: #8300bf;
   margin-left: 8px;
+}
+
+.info {
+  transform: rotate(180deg);
+}
+
+.alert {
+  &,
+  > svg {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
 .seperator {
@@ -468,6 +483,10 @@ export default {
 
 .attribute-title-container {
   margin-bottom: 0.5em;
+}
+
+.flex {
+  display: flex;
 }
 
 .attribute-title {
