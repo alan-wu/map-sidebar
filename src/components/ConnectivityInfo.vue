@@ -4,7 +4,24 @@
     <div class="connectivity-info-title">
       <div>
         <div class="block" v-if="entry.title">
-          <div class="title">{{ capitalise(entry.title) }}</div>
+          <div class="title">
+            {{ capitalise(entry.title) }}
+            <template v-if="entry.featuresAlert">
+              <el-popover
+                width="250"
+                trigger="hover"
+                :teleported="false"
+                popper-class="popover-origin-help"
+              >
+                <template #reference>
+                  <el-icon class="alert"><el-icon-warn-triangle-filled /></el-icon>
+                </template>
+                <span style="word-break: keep-all">
+                  {{ entry.featuresAlert }}
+                </span>
+              </el-popover>
+            </template>
+          </div>
           <div
             v-if="
               entry.provenanceTaxonomyLabel &&
@@ -17,24 +34,6 @@
         </div>
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
-        </div>
-        <div class="block" v-if="entry.featuresAlert">
-          <div class="attribute-title-container flex">
-            <span class="attribute-title">Alert</span>
-            <el-popover
-              width="250"
-              trigger="hover"
-              :teleported="false"
-              popper-class="popover-origin-help"
-            >
-              <template #reference>
-                <el-icon class="alert"><el-icon-warn-triangle-filled /></el-icon>
-              </template>
-              <span style="word-break: keep-all">
-                {{ entry.featuresAlert }}
-              </span>
-            </el-popover>
-          </div>
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
       </div>
@@ -414,6 +413,9 @@ export default {
 :deep(.popover-origin-help.el-popover) {
   text-transform: none !important; // need to overide the tooltip text transform
   border: 1px solid $app-primary-color;
+  font-weight: 400;
+  font-family: Asap, sans-serif, Helvetica;
+
   .el-popper__arrow {
     &:before {
       border-color: $app-primary-color;
@@ -425,17 +427,19 @@ export default {
 .info,
 .alert {
   color: #8300bf;
-  margin-left: 8px;
 }
 
 .info {
   transform: rotate(180deg);
+  margin-left: 8px;
 }
 
 .alert {
+  margin-left: 5px;
+  vertical-align: text-bottom;
+
   &,
   > svg {
-    display: block;
     width: 1.25rem;
     height: 1.25rem;
   }
@@ -483,10 +487,6 @@ export default {
 
 .attribute-title-container {
   margin-bottom: 0.5em;
-}
-
-.flex {
-  display: flex;
 }
 
 .attribute-title {
