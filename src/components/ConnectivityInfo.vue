@@ -19,6 +19,8 @@
           <div class="title">{{ entry.featureId }}</div>
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
+        <!-- TODO: move to another place -->
+        <CopyToClipboard :content="copyContent" />
       </div>
       <div>
         <el-popover
@@ -191,6 +193,7 @@ import {
 } from 'element-plus'
 import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
+import CopyToClipboard from './CopyToClipboard.vue'
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -213,6 +216,7 @@ export default {
     ElIconArrowDown,
     ElIconWarning,
     ExternalResourceCard,
+    CopyToClipboard,
   },
   props: {
     entry: {
@@ -248,6 +252,7 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
+      copyContent: 'Test copy content',
     }
   },
   watch: {
