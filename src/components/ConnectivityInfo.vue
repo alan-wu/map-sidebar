@@ -19,8 +19,6 @@
           <div class="title">{{ entry.featureId }}</div>
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
-        <!-- TODO: move to another place -->
-        <CopyToClipboard :content="copyContent" />
       </div>
       <div>
         <el-popover
@@ -175,6 +173,11 @@
       >
         Search for data on components
       </el-button>
+    </div>
+
+    <!-- Copy to clipboard button container -->
+    <div class="float-button-container">
+      <CopyToClipboard :content="copyContent" />
     </div>
   </div>
 </template>
@@ -673,5 +676,18 @@ export default {
 .selector:not(*:root),
 .tooltip-container::after {
   top: 99.4%;
+}
+
+.float-button-container {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  opacity: 0;
+  visibility: hidden;
+
+  .main:hover & {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 </style>

@@ -46,10 +46,11 @@
               @categoryChanged="categoryChanged"
             />
           </div>
-          <!-- TODO: move to another place -->
-           <div class="badges-container">
-             <CopyToClipboard :content="copyContent" />
-           </div>
+
+          <!-- Copy to clipboard button container -->
+          <div class="float-button-container">
+            <CopyToClipboard :content="copyContent" />
+          </div>
         </div>
       </div>
     </div>
@@ -389,5 +390,18 @@ export default {
 
 .loading-icon :deep(.el-loading-spinner .path) {
   stroke: $app-primary-color;
+}
+
+.float-button-container {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  opacity: 0;
+  visibility: hidden;
+
+  .card:hover & {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 </style>
