@@ -68,7 +68,8 @@ import EventBus from './EventBus.js'
 import speciesMap from './species-map.js'
 import ImageGallery from './ImageGallery.vue'
 import MissingImage from '@/../assets/missing-image.svg'
-import CopyToClipboard from './CopyToClipboard.vue'
+import { CopyToClipboard } from '@abi-software/map-utilities';
+import '@abi-software/map-utilities/dist/style.css'
 
 export default {
   data() {
