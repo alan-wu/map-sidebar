@@ -46,6 +46,10 @@
               @categoryChanged="categoryChanged"
             />
           </div>
+          <!-- TODO: move to another place -->
+           <div class="badges-container">
+             <CopyToClipboard :content="copyContent" />
+           </div>
         </div>
       </div>
     </div>
@@ -64,6 +68,7 @@ import EventBus from './EventBus.js'
 import speciesMap from './species-map.js'
 import ImageGallery from './ImageGallery.vue'
 import MissingImage from '@/../assets/missing-image.svg'
+import CopyToClipboard from './CopyToClipboard.vue'
 
 export default {
   data() {
@@ -76,7 +81,8 @@ export default {
     BadgesGroup,
     ImageGallery,
     Button,
-    Icon
+    Icon,
+    CopyToClipboard,
   },
   props: {
     /**
@@ -102,6 +108,7 @@ export default {
       lastDoi: undefined,
       biolucidaData: undefined,
       currentCategory: 'All',
+      copyContent: '',
     }
   },
   computed: {
@@ -153,6 +160,9 @@ export default {
     publishYear: function () {
       return this.entry.publishDate.split('-')[0]
     },
+  },
+  mounted: function () {
+    this.updateCopyContent();
   },
   methods: {
     cardClicked: function () {
@@ -247,6 +257,31 @@ export default {
         .then((data) => {
           if (data.status == 'success') this.biolucidaData = data
         })
+    },
+    updateCopyContent: function () {
+      const contentArray = [];
+
+      // Title
+      if (this.entry.name) {
+        contentArray.push(this.entry.name);
+      }
+
+      // Contributors and Publish Date
+      if (this.contributors) {
+        let details = this.contributors;
+
+        if (this.entry.publishDate) {
+          details += ` (${this.publishYear})`;
+        }
+        contentArray.push(details);
+      }
+
+      // samples
+      if (this.samples) {
+        contentArray.push(this.samples);
+      }
+
+      this.copyContent = contentArray.join('\n\n');
     },
   },
   created: function () {
