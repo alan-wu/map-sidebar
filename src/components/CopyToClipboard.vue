@@ -1,6 +1,6 @@
 <template>
   <el-tooltip :content="textLabel" placement="bottom" effect="clipboard-tooltip">
-    <el-button class="button"
+    <el-button class="copy-clipboard-button"
       size="small"
       @click="copyToClipboard"
     >
@@ -69,7 +69,7 @@ export default {
     }
   }
 
-  .button {
+  .copy-clipboard-button {
     margin-left: 0px !important;
     margin-top: 0px !important;
     font-size: 14px !important;
