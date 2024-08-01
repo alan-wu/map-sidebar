@@ -13,6 +13,9 @@
 </template>
 
 <script>
+const labelBefore = 'Copy to clipboard';
+const labelAfter = 'Copied!';
+
 export default {
   name: 'CopyToClipboard',
   props: {
@@ -23,7 +26,7 @@ export default {
   },
   data: function () {
     return {
-      textLabel: 'Copy to clipboard'
+      textLabel: labelBefore,
     };
   },
   methods: {
@@ -38,12 +41,23 @@ export default {
         );
         copiedSuccessfully = false;
       }
+
+      if (copiedSuccessfully) {
+        this.textLabel = labelAfter;
+      } else {
+        this.textLabel = 'Error trying to copy to clipboard!';
+      }
+
+      // Back to default text label after 3 seconds.
+      setTimeout(() => {
+        this.textLabel = labelBefore;
+      }, 3000);
     },
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   .el-popper.is-clipboard-tooltip {
     padding: 4px 10px;
     font-family: Asap;
