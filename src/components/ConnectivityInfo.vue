@@ -252,8 +252,11 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
-      copyContent: 'Test copy content',
+      copyContent: '',
     }
+  },
+  mounted: function () {
+    this.updateCopyContent();
   },
   watch: {
     availableAnatomyFacets: {
@@ -351,6 +354,55 @@ export default {
       const featureIds = entry.featureId || [];
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
+    },
+    updateCopyContent: function () {
+      const contentArray = [];
+
+      // Title
+      if (this.entry.title) {
+        contentArray.push(capitalise(this.entry.title));
+      } else {
+        contentArray.push(this.entry.featureId);
+      }
+
+      // Description
+      if (this.entry.provenanceTaxonomyLabel?.length) {
+        contentArray.push(this.provSpeciesDescription);
+      }
+
+      // entry.paths
+      if (this.entry.paths) {
+        contentArray.push(this.entry.paths);
+      }
+
+      // Origins
+      if (this.entry.origins?.length) {
+        contentArray.push('Origin');
+        const origins = this.entry.origins
+          .map((item) => capitalise(item))
+          .join('\n');
+        contentArray.push(origins);
+      }
+
+      // Components
+      if (this.entry.components?.length) {
+        contentArray.push('Components');
+        const components = this.entry.components
+          .map((item) => capitalise(item))
+          .join('\n');
+        contentArray.push(components);
+      }
+
+      // Destination
+      if (this.entry.destinations?.length) {
+        contentArray.push('Destination');
+        const destinations = this.entry.destinations
+          .map((item) => capitalise(item))
+          .join('\n');
+        contentArray.push(destinations);
+      }
+
+      this.copyContent = contentArray.join('\n\n');
     },
   },
 }
