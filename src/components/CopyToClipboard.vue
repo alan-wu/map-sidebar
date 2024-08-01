@@ -51,7 +51,7 @@ export default {
       // Back to default text label after 3 seconds.
       setTimeout(() => {
         this.textLabel = labelBefore;
-      }, 3000);
+      }, copiedSuccessfully ? 1000 : 3000);
     },
   }
 }
