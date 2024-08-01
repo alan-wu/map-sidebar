@@ -43,7 +43,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .el-popper.is-clipboard-tooltip {
     padding: 4px 10px;
     font-family: Asap;
@@ -54,22 +54,27 @@ export default {
       background: white;
     }
   }
-  /* TODO: to combine common styles */
+
   .button {
     margin-left: 0px !important;
     margin-top: 0px !important;
     font-size: 14px !important;
-    background-color: $app-primary-color;
-    color: #fff;
-    & + .button {
-      margin-top: 10px !important;
-    }
-    &:hover {
+    transition: all 0.25s ease;
+
+    &,
+    &:focus,
+    &:active {
       color: #fff !important;
+      background: $app-primary-color;
+      border-color: $app-primary-color !important;
+    }
+
+    &:hover {
       background: #ac76c5 !important;
-      border: 1px solid #ac76c5 !important;
+      border-color: #ac76c5 !important;
     }
   }
+
   .visually-hidden {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
