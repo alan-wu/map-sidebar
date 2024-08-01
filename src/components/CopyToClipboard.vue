@@ -57,18 +57,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
-  .el-popper.is-clipboard-tooltip {
-    padding: 4px 10px;
-    font-family: Asap;
-    color: #333;
-    background: white;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-    & .el-popper__arrow::before {
-      background: white;
-    }
-  }
-
+<style lang="scss" scoped>
   .copy-clipboard-button {
     margin-left: 0px !important;
     margin-top: 0px !important;
@@ -97,5 +86,19 @@ export default {
     position: absolute;
     white-space: nowrap;
     width: 1px;
+  }
+</style>
+
+<style lang="scss">
+  .el-popper.is-clipboard-tooltip {
+    padding: 4px 10px;
+    font-family: Asap;
+    color: #333;
+    background: white !important;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+
+    & .el-popper__arrow::before {
+      background: white !important;
+    }
   }
 </style>
