@@ -177,7 +177,7 @@
 
     <!-- Copy to clipboard button container -->
     <div class="float-button-container">
-      <CopyToClipboard :content="copyContent" />
+      <CopyToClipboard :content="updatedCopyContent" />
     </div>
   </div>
 </template>
@@ -256,11 +256,7 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
-      copyContent: '',
     }
-  },
-  mounted: function () {
-    this.updateCopyContent();
   },
   watch: {
     availableAnatomyFacets: {
@@ -272,6 +268,9 @@ export default {
     },
   },
   computed: {
+    updatedCopyContent: function () {
+      return this.getUpdateCopyContent();
+    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
@@ -359,7 +358,11 @@ export default {
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
     },
-    updateCopyContent: function () {
+    getUpdateCopyContent: function () {
+      if (!this.entry) {
+        return '';
+      }
+
       const contentArray = [];
 
       // Title
@@ -406,7 +409,7 @@ export default {
         contentArray.push(destinations);
       }
 
-      this.copyContent = contentArray.join('\n\n');
+      return contentArray.join('\n\n');
     },
   },
 }
