@@ -377,6 +377,21 @@ export default {
         contentArray.push(this.provSpeciesDescription);
       }
 
+      // PubMed URL
+      if (this.resources?.length) {
+        const pubmedContents = [];
+        this.resources.forEach((resource) => {
+          let pubmedContent = '';
+          if (resource.id === 'pubmed') {
+            pubmedContent += 'PubMed URL:';
+            pubmedContent += '\n';
+            pubmedContent += resource.url;
+          }
+          pubmedContents.push(pubmedContent);
+        });
+        contentArray.push(pubmedContents.join('\n\n'));
+      }
+
       // entry.paths
       if (this.entry.paths) {
         contentArray.push(this.entry.paths);
