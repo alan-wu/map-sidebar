@@ -70,7 +70,7 @@ import speciesMap from './species-map.js'
 import ImageGallery from './ImageGallery.vue'
 import MissingImage from '@/../assets/missing-image.svg'
 import { CopyToClipboard } from '@abi-software/map-utilities';
-import '@abi-software/map-utilities/dist/style.css'
+import '@abi-software/map-utilities/dist/style.css';
 
 export default {
   data() {

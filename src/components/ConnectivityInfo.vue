@@ -197,7 +197,7 @@ import {
 import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
 import { CopyToClipboard } from '@abi-software/map-utilities';
-import '@abi-software/map-utilities/dist/style.css'
+import '@abi-software/map-utilities/dist/style.css';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
