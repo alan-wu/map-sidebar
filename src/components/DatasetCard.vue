@@ -238,6 +238,7 @@ export default {
             this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
             this.getBiolucidaInfo(this.discoverId)
             this.loading = false
+            this.updateCopyContent();
           })
           .catch(() => {
             //set defaults if we hit an error
@@ -281,6 +282,26 @@ export default {
       // samples
       if (this.samples) {
         contentArray.push(this.samples);
+      }
+
+      // DOI
+      if (this.entry.doi) {
+        contentArray.push('DOI: ' + this.entry.doi);
+      }
+
+      // Dataset ID
+      if (this.entry.datasetId) {
+        contentArray.push('Dataset ID: ' + this.entry.datasetId);
+      }
+
+      // Dataset URL
+      if (this.dataLocation) {
+        contentArray.push('Dataset URL: ' + this.dataLocation);
+      }
+
+      // Dataset version
+      if (this.version) {
+        contentArray.push('Dataset version: ' + this.version);
       }
 
       this.copyContent = contentArray.join('\n\n');
