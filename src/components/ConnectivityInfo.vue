@@ -367,14 +367,14 @@ export default {
 
       // Title
       if (this.entry.title) {
-        contentArray.push(capitalise(this.entry.title));
+        contentArray.push(`<h4>${capitalise(this.entry.title)}</h4>`);
       } else {
-        contentArray.push(this.entry.featureId);
+        contentArray.push(`<h4>${this.entry.featureId}</h4>`);
       }
 
       // Description
       if (this.entry.provenanceTaxonomyLabel?.length) {
-        contentArray.push(this.provSpeciesDescription);
+        contentArray.push(`<p>${this.provSpeciesDescription}</p>`);
       }
 
       // PubMed URL
@@ -383,48 +383,48 @@ export default {
         this.resources.forEach((resource) => {
           let pubmedContent = '';
           if (resource.id === 'pubmed') {
-            pubmedContent += 'PubMed URL:';
+            pubmedContent += `<h6>PubMed URL:</h6>`;
             pubmedContent += '\n';
-            pubmedContent += resource.url;
+            pubmedContent += `<p><a href="${resource.url}">${resource.url}</a></p>`;
           }
           pubmedContents.push(pubmedContent);
         });
-        contentArray.push(pubmedContents.join('\n\n'));
+        contentArray.push(pubmedContents.join('\n\n<br>'));
       }
 
       // entry.paths
       if (this.entry.paths) {
-        contentArray.push(this.entry.paths);
+        contentArray.push(`<div>${this.entry.paths}</div>`);
       }
 
       // Origins
       if (this.entry.origins?.length) {
-        contentArray.push('Origin');
+        contentArray.push('<h6>Origin</h6>');
         const origins = this.entry.origins
-          .map((item) => capitalise(item))
+          .map((item) => `<li>${capitalise(item)}</li>`)
           .join('\n');
-        contentArray.push(origins);
+        contentArray.push(`<ul>${origins}</ul>`);
       }
 
       // Components
       if (this.entry.components?.length) {
-        contentArray.push('Components');
+        contentArray.push('<h6>Components</h6>');
         const components = this.entry.components
-          .map((item) => capitalise(item))
+          .map((item) => `<li>${capitalise(item)}</li>`)
           .join('\n');
-        contentArray.push(components);
+        contentArray.push(`<ul>${components}</ul>`);
       }
 
       // Destination
       if (this.entry.destinations?.length) {
-        contentArray.push('Destination');
+        contentArray.push('<h6>Destination</h6>');
         const destinations = this.entry.destinations
-          .map((item) => capitalise(item))
+          .map((item) => `<li>${capitalise(item)}</li>`)
           .join('\n');
-        contentArray.push(destinations);
+        contentArray.push(`<ul>${destinations}</ul>`);
       }
 
-      return contentArray.join('\n\n');
+      return contentArray.join('\n\n<br>');
     },
   },
 }
