@@ -264,9 +264,12 @@ export default {
     updateCopyContent: function () {
       const contentArray = [];
 
+      // Use <div> instead of <h1>..<h6> or <p>
+      // to avoid default formatting on font size and margin
+
       // Title
       if (this.entry.name) {
-        contentArray.push(`<h4>${this.entry.name}</h4>`);
+        contentArray.push(`<div><strong>${this.entry.name}</strong></div>`);
       }
 
       // Contributors and Publish Date
@@ -276,44 +279,44 @@ export default {
         if (this.entry.publishDate) {
           details += ` (${this.publishYear})`;
         }
-        contentArray.push(`<p>${details}</p>`);
+        contentArray.push(`<div>${details}</div>`);
       }
 
       // samples
       if (this.samples) {
-        contentArray.push(`<p>${this.samples}</p>`);
+        contentArray.push(`<div>${this.samples}</div>`);
       }
 
       // DOI
       if (this.entry.doi) {
-        let doiContent = `<strong>DOI:</strong>`;
-        doiContent += `\n<br>`;
+        let doiContent = `<div><strong>DOI:</strong></div>`;
+        doiContent += `\n`;
         doiContent += `<a href="${this.entry.doi}">${this.entry.doi}</a>`;
-        contentArray.push(`<p>${doiContent}</p>`);
+        contentArray.push(`<div>${doiContent}</div>`);
       }
 
       // Dataset ID
       if (this.entry.datasetId) {
-        let datasetIdContent = `<strong>Dataset ID:</strong>`;
-        datasetIdContent += `\n<br>`;
+        let datasetIdContent = `<div><strong>Dataset ID:</strong></div>`;
+        datasetIdContent += `\n`;
         datasetIdContent += `${this.entry.datasetId}`;
-        contentArray.push(`<p>${datasetIdContent}</p>`);
+        contentArray.push(`<div>${datasetIdContent}</div>`);
       }
 
       // Dataset URL
       if (this.dataLocation) {
-        let dataLocationContent = `<strong>Dataset URL:</strong>`;
-        dataLocationContent += `\n<br>`;
+        let dataLocationContent = `<div><strong>Dataset URL:</strong></div>`;
+        dataLocationContent += `\n`;
         dataLocationContent += `<a href="${this.dataLocation}">${this.dataLocation}</a>`;
-        contentArray.push(`<p>${dataLocationContent}</p>`);
+        contentArray.push(`<div>${dataLocationContent}</div>`);
       }
 
       // Dataset version
       if (this.version) {
-        let versionContent = `<strong>Dataset version:</strong>`;
-        versionContent += `\n<br>`;
+        let versionContent = `<div><strong>Dataset version:</strong></div>`;
+        versionContent += `\n`;
         versionContent += `${this.version}`;
-        contentArray.push(`<p>${versionContent}</p>`);
+        contentArray.push(`<div>${versionContent}</div>`);
       }
 
       this.copyContent = contentArray.join('\n\n<br>');
