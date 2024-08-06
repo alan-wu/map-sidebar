@@ -266,7 +266,7 @@ export default {
 
       // Title
       if (this.entry.name) {
-        contentArray.push(this.entry.name);
+        contentArray.push(`<h4>${this.entry.name}</h4>`);
       }
 
       // Contributors and Publish Date
@@ -276,35 +276,47 @@ export default {
         if (this.entry.publishDate) {
           details += ` (${this.publishYear})`;
         }
-        contentArray.push(details);
+        contentArray.push(`<p>${details}</p>`);
       }
 
       // samples
       if (this.samples) {
-        contentArray.push(this.samples);
+        contentArray.push(`<p>${this.samples}</p>`);
       }
 
       // DOI
       if (this.entry.doi) {
-        contentArray.push('DOI: ' + this.entry.doi);
+        let doiContent = `<strong>DOI:</strong>`;
+        doiContent += `\n<br>`;
+        doiContent += `<a href="${this.entry.doi}">${this.entry.doi}</a>`;
+        contentArray.push(`<p>${doiContent}</p>`);
       }
 
       // Dataset ID
       if (this.entry.datasetId) {
-        contentArray.push('Dataset ID: ' + this.entry.datasetId);
+        let datasetIdContent = `<strong>Dataset ID:</strong>`;
+        datasetIdContent += `\n<br>`;
+        datasetIdContent += `${this.entry.datasetId}`;
+        contentArray.push(`<p>${datasetIdContent}</p>`);
       }
 
       // Dataset URL
       if (this.dataLocation) {
-        contentArray.push('Dataset URL: ' + this.dataLocation);
+        let dataLocationContent = `<strong>Dataset URL:</strong>`;
+        dataLocationContent += `\n<br>`;
+        dataLocationContent += `<a href="${this.dataLocation}">${this.dataLocation}</a>`;
+        contentArray.push(`<p>${dataLocationContent}</p>`);
       }
 
       // Dataset version
       if (this.version) {
-        contentArray.push('Dataset version: ' + this.version);
+        let versionContent = `<strong>Dataset version:</strong>`;
+        versionContent += `\n<br>`;
+        versionContent += `${this.version}`;
+        contentArray.push(`<p>${versionContent}</p>`);
       }
 
-      this.copyContent = contentArray.join('\n\n');
+      this.copyContent = contentArray.join('\n\n<br>');
     },
   },
   created: function () {
