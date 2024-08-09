@@ -20,12 +20,12 @@
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
       </div>
-      <div>
+      <div class="title-buttons">
         <el-popover
-          width="200"
+          width="auto"
           trigger="hover"
           :teleported="false"
-          popper-class="popover-origin-help"
+          popper-class="popover-map-pin"
         >
           <template #reference>
             <el-button class="button-circle" circle @click="showConnectivity(entry)">
@@ -38,6 +38,7 @@
             Show connectivity on map
           </span>
         </el-popover>
+        <CopyToClipboard :content="updatedCopyContent" />
       </div>
     </div>
     <div v-if="featuresAlert" class="attribute-title-container">
@@ -173,11 +174,6 @@
       >
         Search for data on components
       </el-button>
-    </div>
-
-    <!-- Copy to clipboard button container -->
-    <div class="float-button-container">
-      <CopyToClipboard :content="updatedCopyContent" />
     </div>
   </div>
 </template>
@@ -479,6 +475,7 @@ export default {
 }
 
 .button-circle {
+  margin: 0;
   width: 24px !important;
   height: 24px !important;
 
@@ -706,16 +703,35 @@ export default {
   top: 99.4%;
 }
 
-.float-button-container {
-  position: absolute;
-  bottom: 8px;
-  right: 16px;
-  opacity: 0;
-  visibility: hidden;
+.title-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
 
-  .main:hover & {
-    opacity: 1;
-    visibility: visible;
+  :deep(.copy-clipboard-button) {
+    &,
+    &:hover,
+    &:focus {
+      border-color: $app-primary-color !important;
+      border-radius: 50%;
+    }
+  }
+}
+
+:deep(.el-popper.popover-map-pin) {
+  padding: 4px 10px;
+  min-width: max-content;
+  font-family: Asap;
+  font-size: 12px;
+  line-height: inherit;
+  color: inherit;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color;
+
+  & .el-popper__arrow::before {
+    border: 1px solid;
+    border-color: $app-primary-color;
+    background: #f3ecf6;
   }
 }
 </style>
