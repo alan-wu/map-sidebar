@@ -396,7 +396,8 @@ export default {
         contentArray.push(`<div>${this.entry.paths}</div>`);
       }
 
-      function transformData(items, itemsWithDatasets) {
+      function transformData(title, items, itemsWithDatasets = []) {
+        let contentString = `<div><strong>${title}</strong></div>`;
         const transformedItems = [];
         items.forEach((item) => {
           let itemNames = [];
@@ -410,50 +411,39 @@ export default {
           });
           transformedItems.push(itemNames.join(','));
         });
-        return transformedItems;
+        const contentList = transformedItems
+          .map((item) => `<li>${item}</li>`)
+          .join('\n');
+        contentString += '\n';
+        contentString += `<ul>${contentList}</ul>`;
+        return contentString;
       }
 
       // Origins
       if (this.entry.origins?.length) {
-        let originsContent = '<div><strong>Origin</strong></div>';
+        const title = 'Origin';
         const origins = this.entry.origins;
         const originsWithDatasets = this.entry.originsWithDatasets;
-        const transformedOrigins = transformData(origins, originsWithDatasets);
-        const originsList = transformedOrigins
-          .map((item) => `<li>${item}</li>`)
-          .join('\n');
-        originsContent += '\n';
-        originsContent += `<ul>${originsList}</ul>`;
-        contentArray.push(originsContent);
+        const transformedOrigins = transformData(title, origins, originsWithDatasets);
+        contentArray.push(transformedOrigins);
       }
 
       // Components
       if (this.entry.components?.length) {
-        contentArray.push();
-        let componentsContent = '<div><strong>Components</strong></div>';
+        const title = 'Components';
         const components = this.entry.components;
         const componentsWithDatasets = this.entry.componentsWithDatasets;
-        const transformedComponents = transformData(components, componentsWithDatasets);
-        const componentsList = transformedComponents
-          .map((item) => `<li>${item}</li>`)
-          .join('\n');
-        componentsContent += '\n';
-        componentsContent += `<ul>${componentsList}</ul>`;
-        contentArray.push(componentsContent);
+        const transformedComponents = transformData(title, components, componentsWithDatasets);
+        contentArray.push(transformedComponents);
       }
 
       // Destination
       if (this.entry.destinations?.length) {
-        let destinationsContent = '<div><strong>Destination</strong></div>';
+        const title = 'Destination';
         const destinations = this.entry.destinations;
         const destinationsWithDatasets = this.entry.destinationsWithDatasets;
-        const transformedDestinations = transformData(destinations, destinationsWithDatasets);
-        const destinationsList = transformedDestinations
-          .map((item) => `<li>${item}</li>`)
-          .join('\n');
-        destinationsContent += '\n';
-        destinationsContent += `<ul>${destinationsList}</ul>`;
-        contentArray.push(destinationsContent);
+        const transformedDestinations = transformData(title, destinations, destinationsWithDatasets);
+        contentArray.push(transformedDestinations);
       }
 
       return contentArray.join('\n\n<br>');
