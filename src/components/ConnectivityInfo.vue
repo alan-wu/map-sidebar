@@ -396,14 +396,34 @@ export default {
         contentArray.push(`<div>${this.entry.paths}</div>`);
       }
 
+      function transformData(items, itemsWithDatasets) {
+        const transformedItems = [];
+        items.forEach((item) => {
+          let itemNames = [];
+          item.split(',').forEach((name) => {
+            const match = itemsWithDatasets.find((a) => a.name === name.trim());
+            if (match) {
+              itemNames.push(`${capitalise(name)} (${match.id})`);
+            } else {
+              itemNames.push(`${capitalise(name)}`);
+            }
+          });
+          transformedItems.push(itemNames.join(','));
+        });
+        return transformedItems;
+      }
+
       // Origins
       if (this.entry.origins?.length) {
         let originsContent = '<div><strong>Origin</strong></div>';
-        const origins = this.entry.origins
-          .map((item) => `<li>${capitalise(item)}</li>`)
+        const origins = this.entry.origins;
+        const originsWithDatasets = this.entry.originsWithDatasets;
+        const transformedOrigins = transformData(origins, originsWithDatasets);
+        const originsList = transformedOrigins
+          .map((item) => `<li>${item}</li>`)
           .join('\n');
         originsContent += '\n';
-        originsContent += `<ul>${origins}</ul>`;
+        originsContent += `<ul>${originsList}</ul>`;
         contentArray.push(originsContent);
       }
 
@@ -411,22 +431,28 @@ export default {
       if (this.entry.components?.length) {
         contentArray.push();
         let componentsContent = '<div><strong>Components</strong></div>';
-        const components = this.entry.components
-          .map((item) => `<li>${capitalise(item)}</li>`)
+        const components = this.entry.components;
+        const componentsWithDatasets = this.entry.componentsWithDatasets;
+        const transformedComponents = transformData(components, componentsWithDatasets);
+        const componentsList = transformedComponents
+          .map((item) => `<li>${item}</li>`)
           .join('\n');
         componentsContent += '\n';
-        componentsContent += `<ul>${components}</ul>`;
+        componentsContent += `<ul>${componentsList}</ul>`;
         contentArray.push(componentsContent);
       }
 
       // Destination
       if (this.entry.destinations?.length) {
         let destinationsContent = '<div><strong>Destination</strong></div>';
-        const destinations = this.entry.destinations
-          .map((item) => `<li>${capitalise(item)}</li>`)
+        const destinations = this.entry.destinations;
+        const destinationsWithDatasets = this.entry.destinationsWithDatasets;
+        const transformedDestinations = transformData(destinations, destinationsWithDatasets);
+        const destinationsList = transformedDestinations
+          .map((item) => `<li>${item}</li>`)
           .join('\n');
         destinationsContent += '\n';
-        destinationsContent += `<ul>${destinations}</ul>`;
+        destinationsContent += `<ul>${destinationsList}</ul>`;
         contentArray.push(destinationsContent);
       }
 
