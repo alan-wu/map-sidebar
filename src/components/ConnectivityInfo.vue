@@ -20,12 +20,12 @@
         </div>
         <external-resource-card :resources="resources"></external-resource-card>
       </div>
-      <div>
+      <div class="title-buttons">
         <el-popover
-          width="200"
+          width="auto"
           trigger="hover"
           :teleported="false"
-          popper-class="popover-origin-help"
+          popper-class="popover-map-pin"
         >
           <template #reference>
             <el-button class="button-circle" circle @click="showConnectivity(entry)">
@@ -38,6 +38,7 @@
             Show connectivity on map
           </span>
         </el-popover>
+        <CopyToClipboard :content="updatedCopyContent" />
       </div>
     </div>
     <div v-if="featuresAlert" class="attribute-title-container">
@@ -191,6 +192,8 @@ import {
 } from 'element-plus'
 import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
+import { CopyToClipboard } from '@abi-software/map-utilities';
+import '@abi-software/map-utilities/dist/style.css';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -213,6 +216,7 @@ export default {
     ElIconArrowDown,
     ElIconWarning,
     ExternalResourceCard,
+    CopyToClipboard,
   },
   props: {
     entry: {
@@ -260,6 +264,9 @@ export default {
     },
   },
   computed: {
+    updatedCopyContent: function () {
+      return this.getUpdateCopyContent();
+    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
@@ -347,6 +354,100 @@ export default {
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
     },
+    getUpdateCopyContent: function () {
+      if (!this.entry) {
+        return '';
+      }
+
+      const contentArray = [];
+
+      // Use <div> instead of <h1>..<h6> or <p>
+      // to avoid default formatting on font size and margin
+
+      // Title
+      if (this.entry.title) {
+        contentArray.push(`<div><strong>${capitalise(this.entry.title)}</strong></div>`);
+      } else {
+        contentArray.push(`<div><strong>${this.entry.featureId}</strong></div>`);
+      }
+
+      // Description
+      if (this.entry.provenanceTaxonomyLabel?.length) {
+        contentArray.push(`<div>${this.provSpeciesDescription}</div>`);
+      }
+
+      // PubMed URL
+      if (this.resources?.length) {
+        const pubmedContents = [];
+        this.resources.forEach((resource) => {
+          let pubmedContent = '';
+          if (resource.id === 'pubmed') {
+            pubmedContent += `<div><strong>PubMed URL:</strong></div>`;
+            pubmedContent += '\n';
+            pubmedContent += `<div><a href="${resource.url}">${resource.url}</a></div>`;
+          }
+          pubmedContents.push(pubmedContent);
+        });
+        contentArray.push(pubmedContents.join('\n\n<br>'));
+      }
+
+      // entry.paths
+      if (this.entry.paths) {
+        contentArray.push(`<div>${this.entry.paths}</div>`);
+      }
+
+      function transformData(title, items, itemsWithDatasets = []) {
+        let contentString = `<div><strong>${title}</strong></div>`;
+        const transformedItems = [];
+        items.forEach((item) => {
+          let itemNames = [];
+          item.split(',').forEach((name) => {
+            const match = itemsWithDatasets.find((a) => a.name === name.trim());
+            if (match) {
+              itemNames.push(`${capitalise(name)} (${match.id})`);
+            } else {
+              itemNames.push(`${capitalise(name)}`);
+            }
+          });
+          transformedItems.push(itemNames.join(','));
+        });
+        const contentList = transformedItems
+          .map((item) => `<li>${item}</li>`)
+          .join('\n');
+        contentString += '\n';
+        contentString += `<ul>${contentList}</ul>`;
+        return contentString;
+      }
+
+      // Origins
+      if (this.entry.origins?.length) {
+        const title = 'Origin';
+        const origins = this.entry.origins;
+        const originsWithDatasets = this.entry.originsWithDatasets;
+        const transformedOrigins = transformData(title, origins, originsWithDatasets);
+        contentArray.push(transformedOrigins);
+      }
+
+      // Components
+      if (this.entry.components?.length) {
+        const title = 'Components';
+        const components = this.entry.components;
+        const componentsWithDatasets = this.entry.componentsWithDatasets;
+        const transformedComponents = transformData(title, components, componentsWithDatasets);
+        contentArray.push(transformedComponents);
+      }
+
+      // Destination
+      if (this.entry.destinations?.length) {
+        const title = 'Destination';
+        const destinations = this.entry.destinations;
+        const destinationsWithDatasets = this.entry.destinationsWithDatasets;
+        const transformedDestinations = transformData(title, destinations, destinationsWithDatasets);
+        contentArray.push(transformedDestinations);
+      }
+
+      return contentArray.join('\n\n<br>');
+    },
   },
 }
 </script>
@@ -390,6 +491,7 @@ export default {
 }
 
 .button-circle {
+  margin: 0;
   width: 24px !important;
   height: 24px !important;
 
@@ -615,5 +717,37 @@ export default {
 .selector:not(*:root),
 .tooltip-container::after {
   top: 99.4%;
+}
+
+.title-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+
+  :deep(.copy-clipboard-button) {
+    &,
+    &:hover,
+    &:focus {
+      border-color: $app-primary-color !important;
+      border-radius: 50%;
+    }
+  }
+}
+
+:deep(.el-popper.popover-map-pin) {
+  padding: 4px 10px;
+  min-width: max-content;
+  font-family: Asap;
+  font-size: 12px;
+  line-height: inherit;
+  color: inherit;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color;
+
+  & .el-popper__arrow::before {
+    border: 1px solid;
+    border-color: $app-primary-color;
+    background: #f3ecf6;
+  }
 }
 </style>
