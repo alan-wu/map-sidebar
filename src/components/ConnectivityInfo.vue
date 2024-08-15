@@ -4,7 +4,24 @@
     <div class="connectivity-info-title">
       <div>
         <div class="block" v-if="entry.title">
-          <div class="title">{{ capitalise(entry.title) }}</div>
+          <div class="title">
+            {{ capitalise(entry.title) }}
+            <template v-if="entry.featuresAlert">
+              <el-popover
+                width="250"
+                trigger="hover"
+                :teleported="false"
+                popper-class="popover-origin-help"
+              >
+                <template #reference>
+                  <el-icon class="alert"><el-icon-warn-triangle-filled /></el-icon>
+                </template>
+                <span style="word-break: keep-all">
+                  {{ entry.featuresAlert }}
+                </span>
+              </el-popover>
+            </template>
+          </div>
           <div
             v-if="
               entry.provenanceTaxonomyLabel &&
@@ -40,22 +57,6 @@
         </el-popover>
         <CopyToClipboard :content="updatedCopyContent" />
       </div>
-    </div>
-    <div v-if="featuresAlert" class="attribute-title-container">
-      <span class="attribute-title">Alert</span>
-      <el-popover
-        width="250"
-        trigger="hover"
-        :teleported="false"
-        popper-class="popover-origin-help"
-      >
-        <template #reference>
-          <el-icon class="info"><el-icon-warning /></el-icon>
-        </template>
-        <span style="word-break: keep-all">
-          {{ featuresAlert }}
-        </span>
-      </el-popover>
     </div>
     <div class="content-container scrollbar">
       {{ entry.paths }}
@@ -229,6 +230,7 @@ export default {
         originsWithDatasets: [],
         componentsWithDatasets: [],
         resource: undefined,
+        featuresAlert: undefined,
       }),
     },
     availableAnatomyFacets: {
@@ -236,7 +238,6 @@ export default {
       default: () => [],
     },
   },
-  // inject: ['getFeaturesAlert'],
   data: function () {
     return {
       controller: undefined,
@@ -273,9 +274,6 @@ export default {
         resources = this.entry.hyperlinks;
       }
       return resources;
-    },
-    featuresAlert() {
-      // return this.getFeaturesAlert()
     },
     originDescription: function () {
       if (
@@ -517,6 +515,9 @@ export default {
 :deep(.popover-origin-help.el-popover) {
   text-transform: none !important; // need to overide the tooltip text transform
   border: 1px solid $app-primary-color;
+  font-weight: 400;
+  font-family: Asap, sans-serif, Helvetica;
+
   .el-popper__arrow {
     &:before {
       border-color: $app-primary-color;
@@ -525,10 +526,25 @@ export default {
   }
 }
 
+.info,
+.alert {
+  color: #8300bf;
+}
+
 .info {
   transform: rotate(180deg);
-  color: #8300bf;
   margin-left: 8px;
+}
+
+.alert {
+  margin-left: 5px;
+  vertical-align: text-bottom;
+
+  &,
+  > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
 .seperator {
