@@ -73,6 +73,7 @@
     "vite": "^5.0.10",
     "vitepress": "^1.0.2",
     "vue-custom-element": "^3.3.0",
+    "vue-docgen-api": "^4.79.2",
     "webpack-node-externals": "^2.5.2"
   }
 }
