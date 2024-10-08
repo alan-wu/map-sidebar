@@ -162,15 +162,15 @@ export default {
       this.$emit('search-changed', { ...data, id: id })
     },
     /**
-     * @vuese
      * The function to close sidebar.
+     * @public
      */
     close: function () {
       this.drawerOpen = false
     },
     /**
-     * @vuese
      * The function to toggle (open and close) sidebar.
+     * @public
      */
     toggleDrawer: function () {
       this.drawerOpen = !this.drawerOpen
@@ -212,9 +212,10 @@ export default {
       return this.$refs[searchTabRefId][0];
     },
     /**
-     * @vuese
      * The function to add filters to sidebar search.
-     * @arg filter `object`
+     *
+     * @param {Object} filter
+     * @public
      */
     addFilter: function (filter) {
       this.drawerOpen = true
@@ -247,15 +248,15 @@ export default {
       this.drawerOpen = value
     },
     /**
-     * @vuese
      * The function to emit 'tabClicked' event with tab's `id` and tab's `type`
      * when user clicks the sidebar tab.
-     * @arg {id, type}
+     * @param {Object} {id, type}
+     * @public
      */
     tabClicked: function ({id, type}) {
       /**
        * This event is emitted when user click sidebar's tab.
-       * @arg {id, type}
+       * @arg {Object} {id, type}
        */
       this.$emit('tabClicked', {id, type});
     },
