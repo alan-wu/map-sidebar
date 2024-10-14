@@ -35,7 +35,17 @@
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
         </div>
-        <external-resource-card :resources="resources"></external-resource-card>
+        <div class="block" v-if="resources.length">
+          <external-resource-card :resources="resources"></external-resource-card>
+        </div>
+        <div class="block">
+          <el-button
+            class="button"
+            @click="goToConnectivityGraph()"
+          >
+            Show connectivity graph
+          </el-button>
+        </div>
       </div>
       <div class="title-buttons">
         <el-popover
@@ -60,6 +70,7 @@
     </div>
     <div class="content-container scrollbar">
       {{ entry.paths }}
+      <div class="content-block">
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
           <span class="attribute-title">Origin</span>
@@ -175,6 +186,10 @@
       >
         Search for data on components
       </el-button>
+      </div>
+      <div class="content-block content-block-graph">
+        <connectivity-graph :entry="entry.featureId[0]" ref="connectivityGraphRef" />
+      </div>
     </div>
   </div>
 </template>
@@ -195,6 +210,7 @@ import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
 import { CopyToClipboard } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
+import ConnectivityGraph from './ConnectivityGraph.vue';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -218,6 +234,7 @@ export default {
     ElIconWarning,
     ExternalResourceCard,
     CopyToClipboard,
+    ConnectivityGraph,
   },
   props: {
     entry: {
@@ -351,6 +368,14 @@ export default {
       const featureIds = entry.featureId || [];
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
+    },
+    goToConnectivityGraph: function () {
+      const connectivityGraphRef = this.$refs.connectivityGraphRef;
+      if (connectivityGraphRef && connectivityGraphRef.$el) {
+        connectivityGraphRef.$el.scrollIntoView({
+          behavior: 'smooth',
+        });
+      }
     },
     getUpdateCopyContent: function () {
       if (!this.entry) {
@@ -698,6 +723,14 @@ export default {
   flex: 1 1 100%;
   padding: 1rem;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .content-block-graph {
+    height: 600px;
+    background-color: white;
+  }
 
   .block {
     padding-top: 0.5em;

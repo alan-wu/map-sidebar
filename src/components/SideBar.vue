@@ -30,11 +30,11 @@
           />
           <template v-for="tab in tabs" key="tab.id">
             <!-- Connectivity Info -->
-            <template v-if="tab.type === 'connectivity'">
+            <template v-if="tab.type === 'connectivity' && connectivityInfo">
               <connectivity-info
                 :entry="connectivityInfo"
                 :availableAnatomyFacets="availableAnatomyFacets"
-                v-show="tab.id === activeTabId"
+                v-if="tab.id === activeTabId"
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
               />

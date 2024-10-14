@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BadgesGroup: typeof import('./components/BadgesGroup.vue')['default']
+    ConnectivityGraph: typeof import('./components/ConnectivityGraph.vue')['default']
     ConnectivityInfo: typeof import('./components/ConnectivityInfo.vue')['default']
     DatasetCard: typeof import('./components/DatasetCard.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
@@ -19,6 +20,7 @@ declare module 'vue' {
     ElIconArrowRight: typeof import('@element-plus/icons-vue')['ArrowRight']
     ElIconLocation: typeof import('@element-plus/icons-vue')['Location']
     ElIconWarning: typeof import('@element-plus/icons-vue')['Warning']
+    ElIconWarnTriangleFilled: typeof import('@element-plus/icons-vue')['WarnTriangleFilled']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElPagination: typeof import('element-plus/es')['ElPagination']
