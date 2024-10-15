@@ -68,9 +68,8 @@
         <CopyToClipboard :content="updatedCopyContent" />
       </div>
     </div>
-    <div class="content-container scrollbar">
+    <div class="content-container">
       {{ entry.paths }}
-      <div class="content-block">
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
           <span class="attribute-title">Origin</span>
@@ -186,14 +185,16 @@
       >
         Search for data on components
       </el-button>
+    </div>
+    <div class="content-container">
+      <div class="attribute-title-container">
+        <span class="attribute-title">Connectivity Graph</span>
       </div>
-      <div class="content-block content-block-graph">
-        <connectivity-graph
-          :entry="entry.featureId[0]"
-          :mapServer="envVars.FLATMAPAPI_LOCATION"
-          ref="connectivityGraphRef"
-        />
-      </div>
+      <connectivity-graph
+        :entry="entry.featureId[0]"
+        :mapServer="envVars.FLATMAPAPI_LOCATION"
+        ref="connectivityGraphRef"
+      />
     </div>
   </div>
 </template>
@@ -490,7 +491,7 @@ export default {
 }
 
 .connectivity-info-title {
-  padding: 1rem;
+  padding: 0;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -508,16 +509,8 @@ export default {
   color: $app-primary-color;
 }
 
-.block {
-  margin-bottom: 0.5em;
-
-  .main > &:first-of-type {
-    margin-right: 1em;
-  }
-}
-
-.pub {
-  width: 16rem;
+.block + .block {
+  margin-top: 0.5em;
 }
 
 .button-circle {
@@ -617,6 +610,10 @@ export default {
   height: 100%;
   border-left: 1px solid var(--el-border-color);
   border-top: 1px solid var(--el-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1rem;
 }
 
 .attribute-title-container {
@@ -728,45 +725,16 @@ export default {
 
 .content-container {
   flex: 1 1 100%;
-  padding: 1rem;
+  padding: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 
-  .content-block-graph {
-    height: 600px;
-    background-color: white;
+  > div,
+  > .block + .block {
+    margin: 0;
   }
-
-  .block {
-    padding-top: 0.5em;
-
-    + .block {
-      margin-top: 1rem;
-    }
-  }
-
-  .connectivity-info-title ~ & {
-    padding-top: 0;
-  }
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar {
-  width: 12px;
-  right: -12px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  background-color: #979797;
 }
 
 /* Fix for chrome bug where under triangle pops up above one on top of it  */
