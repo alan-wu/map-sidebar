@@ -35,6 +35,7 @@
                 :entry="connectivityInfo"
                 :availableAnatomyFacets="availableAnatomyFacets"
                 v-if="tab.id === activeTabId"
+                :envVars="envVars"
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
               />

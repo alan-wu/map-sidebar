@@ -188,7 +188,11 @@
       </el-button>
       </div>
       <div class="content-block content-block-graph">
-        <connectivity-graph :entry="entry.featureId[0]" ref="connectivityGraphRef" />
+        <connectivity-graph
+          :entry="entry.featureId[0]"
+          :mapServer="envVars.FLATMAPAPI_LOCATION"
+          ref="connectivityGraphRef"
+        />
       </div>
     </div>
   </div>
@@ -208,9 +212,8 @@ import {
 } from 'element-plus'
 import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
-import { CopyToClipboard } from '@abi-software/map-utilities';
+import { CopyToClipboard, ConnectivityGraph } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
-import ConnectivityGraph from './ConnectivityGraph.vue';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -249,6 +252,10 @@ export default {
         resource: undefined,
         featuresAlert: undefined,
       }),
+    },
+    envVars: {
+      type: Object,
+      default: () => {},
     },
     availableAnatomyFacets: {
       type: Array,

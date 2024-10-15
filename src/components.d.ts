@@ -8,7 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BadgesGroup: typeof import('./components/BadgesGroup.vue')['default']
-    ConnectivityGraph: typeof import('./components/ConnectivityGraph.vue')['default']
     ConnectivityInfo: typeof import('./components/ConnectivityInfo.vue')['default']
     DatasetCard: typeof import('./components/DatasetCard.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
