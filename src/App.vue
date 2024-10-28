@@ -22,6 +22,7 @@
       :visible="sideBarVisibility"
       :tabs="tabs"
       :activeTabId="activeId"
+      :annotationEntry="annotationEntry"
       :connectivityInfo="connectivityInput"
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
@@ -100,8 +101,16 @@ export default {
   },
   data: function () {
     return {
+      annotationEntry: {
+        featureId :"epicardium",
+        resourceId: "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json","resource":"https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json"
+      },
       contextArray: [null, null],
-      tabArray: [{ title: 'Flatmap', id: 1, type: 'search'}, { title: 'Connectivity', id: 2, type: 'connectivity' }],
+      tabArray: [
+        { title: 'Flatmap', id: 1, type: 'search'},
+        { title: 'Connectivity', id: 2, type: 'connectivity' },
+        { title: 'Annotation', id: 3, type: 'annotation' },
+      ],
       sideBarVisibility: true,
       envVars: {
         API_LOCATION: import.meta.env.VITE_APP_API_LOCATION,
