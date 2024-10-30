@@ -14,6 +14,7 @@
       <el-button @click="neuronSearch">open neuron search</el-button>
       <el-button @click="keywordSearch">keyword search</el-button>
       <el-button @click="getFacets">Get facets</el-button>
+      <el-button @click="toggleCreateData">Create Data/Annotation</el-button>
     </div>
     <SideBar
       :envVars="envVars"
@@ -23,6 +24,7 @@
       :tabs="tabs"
       :activeTabId="activeId"
       :annotationEntry="annotationEntry"
+      :createData="createData"
       :connectivityInfo="connectivityInput"
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
@@ -124,6 +126,7 @@ export default {
       },
       connectivityInput: exampleConnectivityInput,
       activeId: 1,
+      createData: null,
     }
   },
   methods: {
@@ -233,6 +236,23 @@ export default {
       let facets = await this.$refs.sideBar.getAlgoliaFacets()
       console.log('Algolia facets:', facets)
     },
+    toggleCreateData : function() {
+      if (!this.createData) {
+        this.createData = {
+          drawingBox: false,
+          toBeConfirmed: true,
+          points: [[1.0, 1.0, 1.0]],
+          shape: "Lines",
+          x: 0,
+          y: 0,
+          editingIndex: -1,
+          faceIndex: -1,
+          toBeDeleted: false,
+        }
+      } else {
+        this.createData = null
+      }
+    }
   },
   mounted: function () {
     console.log('mounted app')

@@ -44,6 +44,7 @@
                 :ref="'annotationTab_' + tab.id"
                 v-show="tab.id === activeTabId"
                 :annotationEntry="annotationEntry"
+                :createData="createData"
                 @annotation="$emit('annotation-submitted', $event)"
                 @confirm-create="$emit('confirm-create', $event)"
                 @cancel-create="$emit('cancel-create')"
@@ -150,6 +151,10 @@ export default {
      * The annotation data to show in sidebar.
      */
     annotationEntry: {
+      type: Object,
+      default: null,
+    },
+    createData: {
       type: Object,
       default: null,
     }
