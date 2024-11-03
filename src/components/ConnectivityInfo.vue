@@ -714,6 +714,7 @@ export default {
 
 .population-display {
   display: flex;
+  flex: 1 1 auto !important;
   flex-direction: row !important;
   align-items: center;
   justify-content: space-between;
