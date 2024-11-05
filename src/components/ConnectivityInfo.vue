@@ -711,6 +711,16 @@ export default {
 .buttons-row {
   text-align: right;
 
+  .button {
+    cursor: default;
+    border-color: transparent;
+
+    &:hover {
+      background-color: $app-primary-color !important;
+      border-color: transparent !important;
+    }
+  }
+
   .el-button + .el-button {
     margin-top: 0 !important;
     margin-left: 10px !important;
