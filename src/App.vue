@@ -26,6 +26,7 @@
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
+      @connectivity-component-click="onConnectivityComponentClick"
       @actionClick="action"
     />
   </div>
@@ -225,6 +226,9 @@ export default {
       let facets = await this.$refs.sideBar.getAlgoliaFacets()
       console.log('Algolia facets:', facets)
     },
+    onConnectivityComponentClick: function(data) {
+      console.log("onConnectivityComponentClick" , data)
+    }
   },
   mounted: function () {
     console.log('mounted app')
