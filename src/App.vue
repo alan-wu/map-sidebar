@@ -128,7 +128,14 @@ export default {
       },
       connectivityInput: exampleConnectivityInput,
       activeId: 1,
-      createData: null,
+      createData: {
+        toBeConfirmed: false,
+        points: [],
+        shape: "",
+        x: 0,
+        y: 0,
+      },
+      createDataSet: false,
     }
   },
   methods: {
@@ -239,7 +246,7 @@ export default {
       console.log('Algolia facets:', facets)
     },
     toggleCreateData : function() {
-      if (!this.createData) {
+      if (!this.createDataSet) {
         this.createData = {
           drawingBox: false,
           toBeConfirmed: true,
@@ -251,8 +258,16 @@ export default {
           faceIndex: -1,
           toBeDeleted: false,
         }
+        this.createDataSet = true
       } else {
-        this.createData = null
+        this.createData = {
+          toBeConfirmed: false,
+          points: [],
+          shape: "",
+          x: 0,
+          y: 0,
+        }
+        this.createDataSet = false
       }
     },
     onConnectivityComponentClick: function(data) {
