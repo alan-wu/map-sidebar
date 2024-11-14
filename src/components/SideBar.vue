@@ -158,7 +158,13 @@ export default {
     },
     createData: {
       type: Object,
-      default: null,
+      default: {
+        toBeConfirmed: false,
+        points: [],
+        shape: "",
+        x: 0,
+        y: 0,
+      },
     }
   },
   data: function () {
