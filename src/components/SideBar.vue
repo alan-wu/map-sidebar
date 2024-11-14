@@ -30,13 +30,15 @@
           />
           <template v-for="tab in tabs" key="tab.id">
             <!-- Connectivity Info -->
-            <template v-if="tab.type === 'connectivity'">
+            <template v-if="tab.type === 'connectivity' && connectivityInfo">
               <connectivity-info
                 :entry="connectivityInfo"
                 :availableAnatomyFacets="availableAnatomyFacets"
-                v-show="tab.id === activeTabId"
+                v-if="tab.id === activeTabId"
+                :envVars="envVars"
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
+                @connectivity-component-click="onConnectivityComponentClick"
               />
             </template>
             <template v-else-if="tab.type === 'annotation'">
@@ -181,6 +183,13 @@ export default {
       this.$emit('show-connectivity', featureIds);
     },
     /**
+     * This function is triggered after a connectivity component is clicked.
+     * @arg data
+     */
+    onConnectivityComponentClick: function (data) {
+      this.$emit('connectivity-component-click', data);
+    },
+    /**
      * This event is emitted when the search filters are changed.
      * @arg `obj` {data, id}
      */
@@ -304,6 +313,13 @@ export default {
         tabs.push({ id: 3, title: 'Annotation', type: 'annotation' });
       }
       return tabs;
+    },
+    /**
+     * To receive error message for connectivity graph
+     * @param {String} errorMessage
+     */
+    updateConnectivityGraphError: function (errorMessage) {
+      EventBus.emit('connectivity-graph-error', errorMessage);
     },
   },
   created: function () {

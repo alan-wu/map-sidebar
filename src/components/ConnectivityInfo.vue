@@ -35,7 +35,9 @@
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
         </div>
-        <external-resource-card :resources="resources"></external-resource-card>
+        <div class="block" v-if="resources.length">
+          <external-resource-card :resources="resources"></external-resource-card>
+        </div>
       </div>
       <div class="title-buttons">
         <el-popover
@@ -58,7 +60,28 @@
         <CopyToClipboard :content="updatedCopyContent" />
       </div>
     </div>
-    <div class="content-container scrollbar">
+
+    <div class="content-container population-display">
+      <div class="block attribute-title-container">
+        <span class="attribute-title">Population Display</span>
+      </div>
+      <div class="block buttons-row">
+        <el-button
+          :class="activeView === 'listView' ? 'button' : 'el-button-secondary'"
+          @click="switchConnectivityView('listView')"
+        >
+          List view
+        </el-button>
+        <el-button
+          :class="activeView === 'graphView' ? 'button' : 'el-button-secondary'"
+          @click="switchConnectivityView('graphView')"
+        >
+          Graph view
+        </el-button>
+      </div>
+    </div>
+
+    <div class="content-container" v-if="activeView === 'listView'">
       {{ entry.paths }}
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
@@ -83,9 +106,15 @@
           class="attribute-content"
           :origin-item-label="origin"
           :key="origin"
+          @mouseenter="toggleConnectivityTooltip(origin, true)"
+          @mouseleave="toggleConnectivityTooltip(origin, false)"
         >
           {{ capitalise(origin) }}
-          <div v-if="i != entry.origins.length - 1" class="seperator"></div>
+          <!-- <el-checkbox
+            :label="capitalise(origin)"
+            size="small"
+            @change="toggleConnectivityHighlight"
+          /> -->
         </div>
         <el-button
           v-show="
@@ -111,12 +140,15 @@
           class="attribute-content"
           :component-item-label="component"
           :key="component"
+          @mouseenter="toggleConnectivityTooltip(component, true)"
+          @mouseleave="toggleConnectivityTooltip(component, false)"
         >
           {{ capitalise(component) }}
-          <div
-            v-if="i != entry.components.length - 1"
-            class="seperator"
-          ></div>
+          <!-- <el-checkbox
+            :label="capitalise(component)"
+            size="small"
+            @change="toggleConnectivityHighlight"
+          /> -->
         </div>
       </div>
       <div
@@ -144,12 +176,15 @@
           class="attribute-content"
           :destination-item-label="destination"
           :key="destination"
+          @mouseenter="toggleConnectivityTooltip(destination, true)"
+          @mouseleave="toggleConnectivityTooltip(destination, false)"
         >
           {{ capitalise(destination) }}
-          <div
-            v-if="i != entry.destinations.length - 1"
-            class="seperator"
-          ></div>
+          <!-- <el-checkbox
+            :label="capitalise(destination)"
+            size="small"
+            @change="toggleConnectivityHighlight"
+          /> -->
         </div>
         <el-button
           v-show="
@@ -163,18 +198,30 @@
           Explore destination data
         </el-button>
       </div>
-
-      <el-button
+      <div
         v-show="
           entry.componentsWithDatasets &&
           entry.componentsWithDatasets.length > 0 &&
           shouldShowExploreButton(entry.componentsWithDatasets)
         "
-        class="button"
-        @click="openAll"
+        class="block"
       >
-        Search for data on components
-      </el-button>
+        <el-button
+          class="button"
+          @click="openAll"
+        >
+          Search for data on components
+        </el-button>
+      </div>
+    </div>
+
+    <div class="content-container" v-if="activeView === 'graphView'">
+      <connectivity-graph
+        :entry="entry.featureId[0]"
+        :mapServer="envVars.FLATMAPAPI_LOCATION"
+        @tap-node="onTapNode"
+        ref="connectivityGraphRef"
+      />
     </div>
   </div>
 </template>
@@ -193,7 +240,7 @@ import {
 } from 'element-plus'
 import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
-import { CopyToClipboard } from '@abi-software/map-utilities';
+import { CopyToClipboard, ConnectivityGraph } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
 
 const titleCase = (str) => {
@@ -218,6 +265,7 @@ export default {
     ElIconWarning,
     ExternalResourceCard,
     CopyToClipboard,
+    ConnectivityGraph,
   },
   props: {
     entry: {
@@ -233,6 +281,10 @@ export default {
         featuresAlert: undefined,
       }),
     },
+    envVars: {
+      type: Object,
+      default: () => {},
+    },
     availableAnatomyFacets: {
       type: Array,
       default: () => [],
@@ -244,6 +296,7 @@ export default {
       activeSpecies: undefined,
       pubmedSearchUrl: '',
       loading: false,
+      activeView: 'listView',
       facetList: [],
       showToolip: false,
       showDetails: false,
@@ -352,6 +405,24 @@ export default {
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
     },
+    switchConnectivityView: function (val) {
+      this.activeView = val;
+
+      if (val === 'graphView') {
+        const connectivityGraphRef = this.$refs.connectivityGraphRef;
+        if (connectivityGraphRef && connectivityGraphRef.$el) {
+          connectivityGraphRef.$el.scrollIntoView({
+            behavior: 'smooth',
+          });
+        }
+      }
+    },
+    onTapNode: function (data) {
+      /**
+       * This event is triggered by connectivity-graph's `tap-node` event.
+       */
+      this.$emit('connectivity-component-click', data);
+    },
     getUpdateCopyContent: function () {
       if (!this.entry) {
         return '';
@@ -446,6 +517,34 @@ export default {
 
       return contentArray.join('\n\n<br>');
     },
+    toggleConnectivityTooltip: function (name, option) {
+      const allWithDatasets = [
+        ...this.entry.componentsWithDatasets,
+        ...this.entry.destinationsWithDatasets,
+        ...this.entry.originsWithDatasets,
+      ];
+      const names = name.split(','); // some features have more than one value
+      const data = [];
+      if (option) {
+        names.forEach((n) => {
+          data.push(allWithDatasets.find((a) => a.name.trim() === n.trim()));
+        });
+      }
+      this.$emit('connectivity-component-click', data);
+    },
+    // TODO: to keep the connection on the flatmap when the checkbox is ticked.
+    // toggleConnectivityHighlight: function (value) {
+    //   // value = true/false
+    // },
+  },
+  mounted: function () {
+    EventBus.on('connectivity-graph-error', (errorMessage) => {
+      const connectivityGraphRef = this.$refs.connectivityGraphRef;
+
+      if (connectivityGraphRef) {
+        connectivityGraphRef.showErrorMessage(errorMessage);
+      }
+    });
   },
 }
 </script>
@@ -458,7 +557,7 @@ export default {
 }
 
 .connectivity-info-title {
-  padding: 1rem;
+  padding: 0;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -476,16 +575,8 @@ export default {
   color: $app-primary-color;
 }
 
-.block {
-  margin-bottom: 0.5em;
-
-  .main > &:first-of-type {
-    margin-right: 1em;
-  }
-}
-
-.pub {
-  width: 16rem;
+.block + .block {
+  margin-top: 0.5em;
 }
 
 .button-circle {
@@ -547,12 +638,6 @@ export default {
   }
 }
 
-.seperator {
-  width: 90%;
-  height: 1px;
-  background-color: #bfbec2;
-}
-
 .hide {
   color: $app-primary-color;
   cursor: pointer;
@@ -585,6 +670,10 @@ export default {
   height: 100%;
   border-left: 1px solid var(--el-border-color);
   border-top: 1px solid var(--el-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1rem;
 }
 
 .attribute-title-container {
@@ -601,10 +690,46 @@ export default {
 .attribute-content {
   font-size: 14px;
   font-weight: 500;
+  transition: color 0.25s ease;
+  cursor: default;
+
+  &:hover {
+    color: $app-primary-color;
+  }
+
+  + .attribute-content {
+    position: relative;
+
+    &::before {
+      content: "";
+      width: 90%;
+      height: 1px;
+      background-color: var(--el-border-color);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
 
   &:last-of-type {
     margin-bottom: 0.5em;
   }
+
+  // TODO: if we have checkboxes
+  // :deep(.el-checkbox),
+  // :deep(.el-checkbox.el-checkbox--small .el-checkbox__label) {
+  //   font-size: inherit;
+  //   font-weight: inherit;
+  //   color: inherit;
+  // }
+
+  // :deep(.el-checkbox) {
+  //   gap: 8px;
+  // }
+
+  // :deep(.el-checkbox.el-checkbox--small .el-checkbox__label) {
+  //   padding: 0;
+  // }
 }
 
 .popover-container {
@@ -627,14 +752,50 @@ export default {
   font-size: 14px !important;
   background-color: $app-primary-color;
   color: #fff;
+
+  &:hover {
+    color: #fff !important;
+    background-color: #ac76c5 !important;
+    border: 1px solid #ac76c5 !important;
+  }
+
   & + .button {
     margin-top: 10px !important;
   }
-  &:hover {
-    color: #fff !important;
-    background: #ac76c5 !important;
-    border: 1px solid #ac76c5 !important;
+}
+
+.el-button-secondary {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.buttons-row {
+  text-align: right;
+
+  .button {
+    cursor: default;
+    border-color: transparent;
+
+    &:hover {
+      background-color: $app-primary-color !important;
+      border-color: transparent !important;
+    }
   }
+
+  .el-button + .el-button {
+    margin-top: 0 !important;
+    margin-left: 10px !important;
+  }
+}
+
+.population-display {
+  display: flex;
+  flex: 1 1 auto !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $app-primary-color;
+  padding-bottom: 0.5rem !important;
 }
 
 .tooltip-container {
@@ -696,37 +857,16 @@ export default {
 
 .content-container {
   flex: 1 1 100%;
-  padding: 1rem;
+  padding: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 
-  .block {
-    padding-top: 0.5em;
-
-    + .block {
-      margin-top: 1rem;
-    }
+  > div,
+  > .block + .block {
+    margin: 0;
   }
-
-  .connectivity-info-title ~ & {
-    padding-top: 0;
-  }
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar {
-  width: 12px;
-  right: -12px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  background-color: #979797;
 }
 
 /* Fix for chrome bug where under triangle pops up above one on top of it  */
