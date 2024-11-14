@@ -765,8 +765,15 @@ export default {
 }
 
 .el-button-secondary {
-  border-color: transparent;
-  background-color: transparent;
+  border-color: transparent !important;
+  background-color: transparent !important;
+  color: inherit !important;
+
+  &:hover {
+    color: $app-primary-color !important;
+    border-color: $app-primary-color !important;
+    background-color: #f9f2fc !important;
+  }
 }
 
 .buttons-row {
