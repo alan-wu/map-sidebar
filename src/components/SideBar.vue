@@ -306,6 +306,13 @@ export default {
     tabClose: function (id) {
       this.$emit('tab-close', id);
     },
+    /**
+     * To receive error message for connectivity graph
+     * @param {String} errorMessage
+     */
+    updateConnectivityGraphError: function (errorMessage) {
+      EventBus.emit('connectivity-graph-error', errorMessage);
+    },
   },
   computed: {
     activeTabs: function() {
@@ -319,13 +326,6 @@ export default {
         tabs.push({ id: 3, title: 'Annotation', type: 'annotation' });
       }
       return tabs;
-    },
-    /**
-     * To receive error message for connectivity graph
-     * @param {String} errorMessage
-     */
-    updateConnectivityGraphError: function (errorMessage) {
-      EventBus.emit('connectivity-graph-error', errorMessage);
     },
   },
   created: function () {
