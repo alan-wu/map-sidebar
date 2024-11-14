@@ -22,8 +22,8 @@
         </div>
         <div class="sidebar-container">
           <Tabs
-            v-if="tabs.length > 1 && connectivityInfo"
-            :tabTitles="tabs"
+            v-if="activeTabs.length > 1"
+            :tabTitles="activeTabs"
             :activeId="activeTabId"
             @titleClicked="tabClicked"
             @tab-close="tabClose"
@@ -39,6 +39,18 @@
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
                 @connectivity-component-click="onConnectivityComponentClick"
+              />
+            </template>
+            <template v-else-if="tab.type === 'annotation'">
+              <annotation-tool
+                :ref="'annotationTab_' + tab.id"
+                v-show="tab.id === activeTabId"
+                :annotationEntry="annotationEntry"
+                :createData="createData"
+                @annotation="$emit('annotation-submitted', $event)"
+                @confirm-create="$emit('confirm-create', $event)"
+                @cancel-create="$emit('cancel-create')"
+                @confirm-delete="$emit('confirm-delete', $event)"
               />
             </template>
             <template v-else>
@@ -69,6 +81,7 @@ import { ElDrawer as Drawer, ElIcon as Icon } from 'element-plus'
 import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
+import AnnotationTool from './AnnotationTool.vue'
 import ConnectivityInfo from './ConnectivityInfo.vue'
 
 /**
@@ -83,6 +96,7 @@ export default {
     Drawer,
     Icon,
     ConnectivityInfo,
+    AnnotationTool,
   },
   name: 'SideBar',
   props: {
@@ -110,7 +124,8 @@ export default {
       type: Array,
       default: () => [
         { id: 1, title: 'Search', type: 'search' },
-        { id: 2, title: 'Connectivity', type: 'connectivity' }
+        { id: 2, title: 'Connectivity', type: 'connectivity' },
+        { id: 3, title: 'Annotation', type: 'annotation' }
       ],
     },
     /**
@@ -134,6 +149,17 @@ export default {
       type: Object,
       default: null,
     },
+    /**
+     * The annotation data to show in sidebar.
+     */
+    annotationEntry: {
+      type: Object,
+      default: null,
+    },
+    createData: {
+      type: Object,
+      default: null,
+    }
   },
   data: function () {
     return {
@@ -210,6 +236,8 @@ export default {
       let refIdPrefix = 'searchTab_'; // default to search tab
       if (type === 'connectivity') {
         refIdPrefix = 'connectivityTab_';
+      } else if (type === 'annotation') {
+        refIdPrefix = 'annotationTab_';
       }
       const tabObj = this.getTabByIdAndType(id, type);
       const tabRefId = refIdPrefix + tabObj.id;
@@ -270,7 +298,21 @@ export default {
       this.$emit('tabClicked', {id, type});
     },
     tabClose: function (id) {
-      this.$emit('connectivity-info-close');
+      this.$emit('tab-close', id);
+    },
+  },
+  computed: {
+    activeTabs: function() {
+      const tabs = [
+        { id: 1, title: 'Search', type: 'search' }
+      ];
+      if (this.connectivityInfo) {
+        tabs.push({ id: 2, title: 'Connectivity', type: 'connectivity' });
+      }
+      if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
+        tabs.push({ id: 3, title: 'Annotation', type: 'annotation' });
+      }
+      return tabs;
     },
     /**
      * To receive error message for connectivity graph
