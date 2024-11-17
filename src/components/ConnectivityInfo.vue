@@ -527,7 +527,13 @@ export default {
       const data = [];
       if (option) {
         names.forEach((n) => {
-          data.push(allWithDatasets.find((a) => a.name.trim() === n.trim()));
+          const foundData = allWithDatasets.find((a) => a.name.trim() === n.trim());
+          if (foundData) {
+            data.push({
+              id: foundData.id,
+              label: foundData.name
+            });
+          }
         });
       }
       this.$emit('connectivity-component-click', data);
