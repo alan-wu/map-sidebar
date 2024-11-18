@@ -544,11 +544,11 @@ export default {
     // },
   },
   mounted: function () {
-    EventBus.on('connectivity-graph-error', (errorMessage) => {
+    EventBus.on('connectivity-graph-error', (errorInfo) => {
       const connectivityGraphRef = this.$refs.connectivityGraphRef;
 
       if (connectivityGraphRef) {
-        connectivityGraphRef.showErrorMessage(errorMessage);
+        connectivityGraphRef.showErrorMessage(errorInfo);
       }
     });
   },
