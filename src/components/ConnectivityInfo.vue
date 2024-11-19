@@ -104,17 +104,14 @@
         <div
           v-for="(origin, i) in entry.origins"
           class="attribute-content"
+          :class="{'active': origin === selectedConnectivity}"
           :origin-item-label="origin"
           :key="origin"
           @mouseenter="toggleConnectivityTooltip(origin, true)"
           @mouseleave="toggleConnectivityTooltip(origin, false)"
+          @click="selectConnectivity(origin)"
         >
           {{ capitalise(origin) }}
-          <!-- <el-checkbox
-            :label="capitalise(origin)"
-            size="small"
-            @change="toggleConnectivityHighlight"
-          /> -->
         </div>
         <el-button
           v-show="
@@ -138,17 +135,14 @@
         <div
           v-for="(component, i) in entry.components"
           class="attribute-content"
+          :class="{'active': component === selectedConnectivity}"
           :component-item-label="component"
           :key="component"
           @mouseenter="toggleConnectivityTooltip(component, true)"
           @mouseleave="toggleConnectivityTooltip(component, false)"
+          @click="selectConnectivity(component)"
         >
           {{ capitalise(component) }}
-          <!-- <el-checkbox
-            :label="capitalise(component)"
-            size="small"
-            @change="toggleConnectivityHighlight"
-          /> -->
         </div>
       </div>
       <div
@@ -174,17 +168,14 @@
         <div
           v-for="(destination, i) in entry.destinations"
           class="attribute-content"
+          :class="{'active': destination === selectedConnectivity}"
           :destination-item-label="destination"
           :key="destination"
           @mouseenter="toggleConnectivityTooltip(destination, true)"
           @mouseleave="toggleConnectivityTooltip(destination, false)"
+          @click="selectConnectivity(destination)"
         >
           {{ capitalise(destination) }}
-          <!-- <el-checkbox
-            :label="capitalise(destination)"
-            size="small"
-            @change="toggleConnectivityHighlight"
-          /> -->
         </div>
         <el-button
           v-show="
@@ -306,6 +297,7 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
+      selectedConnectivity: '',
     }
   },
   watch: {
@@ -518,6 +510,12 @@ export default {
       return contentArray.join('\n\n<br>');
     },
     toggleConnectivityTooltip: function (name, option) {
+      // if there has selected item
+      if (!option && this.selectedConnectivity) {
+        name = this.selectedConnectivity;
+        option = true;
+      }
+
       const allWithDatasets = [
         ...this.entry.componentsWithDatasets,
         ...this.entry.destinationsWithDatasets,
@@ -538,10 +536,16 @@ export default {
       }
       this.$emit('connectivity-component-click', data);
     },
-    // TODO: to keep the connection on the flatmap when the checkbox is ticked.
-    // toggleConnectivityHighlight: function (value) {
-    //   // value = true/false
-    // },
+    selectConnectivity: function (name) {
+      // clicking on the same item will unselect it
+      if (this.selectedConnectivity === name) {
+        this.selectedConnectivity = '';
+        this.toggleConnectivityTooltip(name, false);
+      } else {
+        this.selectedConnectivity = name;
+        this.toggleConnectivityTooltip(name, true);
+      }
+    },
   },
   mounted: function () {
     EventBus.on('connectivity-graph-error', (errorInfo) => {
@@ -695,17 +699,29 @@ export default {
 
 .attribute-content {
   font-size: 14px;
-  font-weight: 500;
   transition: color 0.25s ease;
-  cursor: default;
+  position: relative;
+  cursor: pointer;
 
+  &.active,
   &:hover {
+    font-weight: 500;
     color: $app-primary-color;
   }
 
-  + .attribute-content {
-    position: relative;
+  &.active {
+    font-weight: 600;
 
+    &::after {
+      content: "📌";
+      display: inline-block;
+      width: 1em;
+      font-size: 0.75em;
+      padding-left: 4px;
+    }
+  }
+
+  + .attribute-content {
     &::before {
       content: "";
       width: 90%;
@@ -720,22 +736,6 @@ export default {
   &:last-of-type {
     margin-bottom: 0.5em;
   }
-
-  // TODO: if we have checkboxes
-  // :deep(.el-checkbox),
-  // :deep(.el-checkbox.el-checkbox--small .el-checkbox__label) {
-  //   font-size: inherit;
-  //   font-weight: inherit;
-  //   color: inherit;
-  // }
-
-  // :deep(.el-checkbox) {
-  //   gap: 8px;
-  // }
-
-  // :deep(.el-checkbox.el-checkbox--small .el-checkbox__label) {
-  //   padding: 0;
-  // }
 }
 
 .popover-container {
