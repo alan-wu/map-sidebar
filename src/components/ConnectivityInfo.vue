@@ -210,6 +210,7 @@
       <connectivity-graph
         :entry="entry.featureId[0]"
         :mapServer="envVars.FLATMAPAPI_LOCATION"
+        :selectedConnectivityData="selectedConnectivityData"
         @tap-node="onTapNode"
         ref="connectivityGraphRef"
       />
@@ -298,6 +299,7 @@ export default {
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
       selectedConnectivity: '',
+      selectedConnectivityData: [],
     }
   },
   watch: {
@@ -410,6 +412,11 @@ export default {
       }
     },
     onTapNode: function (data) {
+      // save selected state for list view
+      const name = data.map(t => t.label).join(', ');
+      this.selectedConnectivity = name;
+      this.toggleConnectivityTooltip(name, true);
+
       /**
        * This event is triggered by connectivity-graph's `tap-node` event.
        */
@@ -525,7 +532,10 @@ export default {
       const data = [];
       if (option) {
         names.forEach((n) => {
-          const foundData = allWithDatasets.find((a) => a.name.trim() === n.trim());
+          const foundData = allWithDatasets.find((a) =>
+            a.name.toLowerCase().trim() === n.toLowerCase().trim()
+          );
+
           if (foundData) {
             data.push({
               id: foundData.id,
@@ -534,6 +544,9 @@ export default {
           }
         });
       }
+
+      // saved state for graph view
+      this.selectedConnectivityData = data;
       this.$emit('connectivity-component-click', data);
     },
     selectConnectivity: function (name) {
