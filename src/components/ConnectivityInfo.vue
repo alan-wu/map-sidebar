@@ -620,7 +620,14 @@ export default {
     },
     pushConnectivityError: function (errorInfo) {
       const connectivityError = this.getConnectivityError(errorInfo);
+      const connectivityGraphRef = this.$refs.connectivityGraphRef;
 
+      // error for graph view
+      if (connectivityGraphRef) {
+        connectivityGraphRef.showErrorMessage(connectivityError);
+      }
+
+      // error for list view
       if (!this.isExistingError(connectivityError)) {
         this.connectivityError = {...connectivityError};
 
@@ -632,13 +639,6 @@ export default {
   },
   mounted: function () {
     EventBus.on('connectivity-graph-error', (errorInfo) => {
-      const connectivityGraphRef = this.$refs.connectivityGraphRef;
-      // error for graph view
-      if (connectivityGraphRef) {
-        connectivityGraphRef.showErrorMessage(errorInfo);
-      }
-
-      // error for list view
       this.pushConnectivityError(errorInfo);
     });
   },
