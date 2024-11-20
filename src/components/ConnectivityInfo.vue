@@ -81,7 +81,7 @@
       </div>
     </div>
 
-    <div class="content-container" v-if="activeView === 'listView'">
+    <div class="content-container content-container-connectivity" v-if="activeView === 'listView'">
       {{ entry.paths }}
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
@@ -107,8 +107,8 @@
           :class="{'active': origin === selectedConnectivity}"
           :origin-item-label="origin"
           :key="origin"
-          @mouseenter="toggleConnectivityTooltip(origin, true)"
-          @mouseleave="toggleConnectivityTooltip(origin, false)"
+          @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
           @click="selectConnectivity(origin)"
         >
           {{ capitalise(origin) }}
@@ -138,8 +138,8 @@
           :class="{'active': component === selectedConnectivity}"
           :component-item-label="component"
           :key="component"
-          @mouseenter="toggleConnectivityTooltip(component, true)"
-          @mouseleave="toggleConnectivityTooltip(component, false)"
+          @mouseenter="toggleConnectivityTooltip(component, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(component, {show: false})"
           @click="selectConnectivity(component)"
         >
           {{ capitalise(component) }}
@@ -171,8 +171,8 @@
           :class="{'active': destination === selectedConnectivity}"
           :destination-item-label="destination"
           :key="destination"
-          @mouseenter="toggleConnectivityTooltip(destination, true)"
-          @mouseleave="toggleConnectivityTooltip(destination, false)"
+          @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
           @click="selectConnectivity(destination)"
         >
           {{ capitalise(destination) }}
@@ -203,6 +203,15 @@
         >
           Search for data on components
         </el-button>
+      </div>
+
+      <div v-if="connectivityError" class="connectivity-error-container">
+        <div class="connectivity-error">
+          <strong v-if="connectivityError.errorConnectivities">
+            {{ connectivityError.errorConnectivities }}
+          </strong>
+          {{ connectivityError.errorMessage }}
+        </div>
       </div>
     </div>
 
@@ -245,6 +254,8 @@ const capitalise = function (str) {
   if (str) return str.charAt(0).toUpperCase() + str.slice(1)
   return ''
 }
+
+const ERROR_TIMEOUT = 3000; // 3 seconds
 
 export default {
   name: 'ConnectivityInfo',
@@ -300,6 +311,7 @@ export default {
       uberons: [{ id: undefined, name: undefined }],
       selectedConnectivity: '',
       selectedConnectivityData: [],
+      connectivityError: null,
     }
   },
   watch: {
@@ -415,7 +427,7 @@ export default {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
       this.selectedConnectivity = name;
-      this.toggleConnectivityTooltip(name, true);
+      this.toggleConnectivityTooltip(name, {show: true, type: 'click'});
 
       /**
        * This event is triggered by connectivity-graph's `tap-node` event.
@@ -518,9 +530,9 @@ export default {
     },
     toggleConnectivityTooltip: function (name, option) {
       // if there has selected item
-      if (!option && this.selectedConnectivity) {
+      if (!option.show && this.selectedConnectivity) {
         name = this.selectedConnectivity;
-        option = true;
+        option.show = true;
       }
 
       const allWithDatasets = [
@@ -530,7 +542,7 @@ export default {
       ];
       const names = name.split(','); // some features have more than one value
       const data = [];
-      if (option) {
+      if (option.show) {
         names.forEach((n) => {
           const foundData = allWithDatasets.find((a) =>
             a.name.toLowerCase().trim() === n.toLowerCase().trim()
@@ -547,26 +559,87 @@ export default {
 
       // saved state for graph view
       this.selectedConnectivityData = data;
-      this.$emit('connectivity-component-click', data);
+      // type: to show error only for click event
+      this.$emit('connectivity-component-click', {
+        data,
+        type: option.type
+      });
     },
     selectConnectivity: function (name) {
       // clicking on the same item will unselect it
       if (this.selectedConnectivity === name) {
         this.selectedConnectivity = '';
-        this.toggleConnectivityTooltip(name, false);
+        this.toggleConnectivityTooltip(name, {show: false});
       } else {
         this.selectedConnectivity = name;
-        this.toggleConnectivityTooltip(name, true);
+        this.toggleConnectivityTooltip(name, {show: true, type: 'click'});
+      }
+    },
+    getErrorConnectivities: function (errorData) {
+      const errorDataToEmit = [...new Set(errorData)];
+      let errorConnectivities = '';
+
+      errorDataToEmit.forEach((connectivity, i) => {
+        const { label } = connectivity;
+        errorConnectivities += (i === 0) ? capitalise(label) : label;
+
+        if (errorDataToEmit.length > 1) {
+          if ((i + 2) === errorDataToEmit.length) {
+            errorConnectivities += ' and ';
+          } else if ((i + 1) < errorDataToEmit.length) {
+            errorConnectivities += ', ';
+          }
+        }
+      });
+
+      return errorConnectivities;
+    },
+    /**
+     * Function to show error message.
+     * `errorInfo` includes `errorData` array (optional) for error connectivities
+     * and `errorMessage` for error message.
+     * @arg `errorInfo`
+     */
+    getConnectivityError: function (errorInfo) {
+      const { errorData, errorMessage } = errorInfo;
+      const errorConnectivities = this.getErrorConnectivities(errorData);
+
+      return {
+        errorConnectivities,
+        errorMessage,
+      };
+    },
+    isExistingError: function (connectivityError) {
+      if (
+        this.connectivityError &&
+        connectivityError.errorConnectivities !== this.connectivityError.errorConnectivities
+      ) {
+        return true;
+      }
+      return false;
+    },
+    pushConnectivityError: function (errorInfo) {
+      const connectivityError = this.getConnectivityError(errorInfo);
+
+      if (!this.isExistingError(connectivityError)) {
+        this.connectivityError = {...connectivityError};
+
+        setTimeout(() => {
+          this.connectivityError = null;
+        }, ERROR_TIMEOUT);
       }
     },
   },
   mounted: function () {
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       const connectivityGraphRef = this.$refs.connectivityGraphRef;
-
+      // error for graph view
       if (connectivityGraphRef) {
         connectivityGraphRef.showErrorMessage(errorInfo);
       }
+
+      // error for list view
+      this.pushConnectivityError(errorInfo);
     });
   },
 }
@@ -931,5 +1004,28 @@ export default {
     border-color: $app-primary-color;
     background: #f3ecf6;
   }
+}
+
+.content-container-connectivity {
+  position: relative;
+}
+
+.connectivity-error-container {
+  position: sticky;
+  bottom: 0.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.connectivity-error {
+  width: fit-content;
+  font-size: 12px;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--el-color-error-light-9);
+  border-radius: var(--el-border-radius-small);
+  border: 1px solid var(--el-color-error);
 }
 </style>
