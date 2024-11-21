@@ -104,12 +104,10 @@
         <div
           v-for="(origin, i) in entry.origins"
           class="attribute-content"
-          :class="{'active': origin === selectedConnectivity}"
           :origin-item-label="origin"
           :key="origin"
           @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
           @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
-          @click="selectConnectivity(origin)"
         >
           {{ capitalise(origin) }}
         </div>
@@ -135,12 +133,10 @@
         <div
           v-for="(component, i) in entry.components"
           class="attribute-content"
-          :class="{'active': component === selectedConnectivity}"
           :component-item-label="component"
           :key="component"
           @mouseenter="toggleConnectivityTooltip(component, {show: true})"
           @mouseleave="toggleConnectivityTooltip(component, {show: false})"
-          @click="selectConnectivity(component)"
         >
           {{ capitalise(component) }}
         </div>
@@ -168,12 +164,10 @@
         <div
           v-for="(destination, i) in entry.destinations"
           class="attribute-content"
-          :class="{'active': destination === selectedConnectivity}"
           :destination-item-label="destination"
           :key="destination"
           @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
           @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
-          @click="selectConnectivity(destination)"
         >
           {{ capitalise(destination) }}
         </div>
@@ -219,7 +213,6 @@
       <connectivity-graph
         :entry="entry.featureId[0]"
         :mapServer="envVars.FLATMAPAPI_LOCATION"
-        :selectedConnectivityData="selectedConnectivityData"
         @tap-node="onTapNode"
         ref="connectivityGraphRef"
       />
@@ -309,8 +302,6 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
-      selectedConnectivity: '',
-      selectedConnectivityData: [],
       connectivityError: null,
     }
   },
@@ -426,7 +417,6 @@ export default {
     onTapNode: function (data) {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
-      this.selectedConnectivity = name;
       this.toggleConnectivityTooltip(name, {show: true, type: 'click'});
     },
     getUpdateCopyContent: function () {
@@ -524,12 +514,6 @@ export default {
       return contentArray.join('\n\n<br>');
     },
     toggleConnectivityTooltip: function (name, option) {
-      // if there has selected item
-      if (!option.show && this.selectedConnectivity) {
-        name = this.selectedConnectivity;
-        option.show = true;
-      }
-
       const allWithDatasets = [
         ...this.entry.componentsWithDatasets,
         ...this.entry.destinationsWithDatasets,
@@ -552,23 +536,11 @@ export default {
         });
       }
 
-      // saved state for graph view
-      this.selectedConnectivityData = data;
       // type: to show error only for click event
       this.$emit('connectivity-component-click', {
         data,
         type: option.type
       });
-    },
-    selectConnectivity: function (name) {
-      // clicking on the same item will unselect it
-      if (this.selectedConnectivity === name) {
-        this.selectedConnectivity = '';
-        this.toggleConnectivityTooltip(name, {show: false});
-      } else {
-        this.selectedConnectivity = name;
-        this.toggleConnectivityTooltip(name, {show: true, type: 'click'});
-      }
     },
     getErrorConnectivities: function (errorData) {
       const errorDataToEmit = [...new Set(errorData)];
@@ -769,26 +741,12 @@ export default {
 
 .attribute-content {
   font-size: 14px;
+  font-weight: 500;
   transition: color 0.25s ease;
   position: relative;
-  cursor: pointer;
 
-  &.active,
   &:hover {
-    font-weight: 500;
     color: $app-primary-color;
-  }
-
-  &.active {
-    font-weight: 600;
-
-    &::after {
-      content: "📌";
-      display: inline-block;
-      width: 1em;
-      font-size: 0.75em;
-      padding-left: 4px;
-    }
   }
 
   + .attribute-content {
