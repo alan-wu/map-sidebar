@@ -428,11 +428,6 @@ export default {
       const name = data.map(t => t.label).join(', ');
       this.selectedConnectivity = name;
       this.toggleConnectivityTooltip(name, {show: true, type: 'click'});
-
-      /**
-       * This event is triggered by connectivity-graph's `tap-node` event.
-       */
-      this.$emit('connectivity-component-click', data);
     },
     getUpdateCopyContent: function () {
       if (!this.entry) {
