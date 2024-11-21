@@ -609,15 +609,6 @@ export default {
         errorMessage,
       };
     },
-    isExistingError: function (connectivityError) {
-      if (
-        this.connectivityError &&
-        connectivityError.errorConnectivities !== this.connectivityError.errorConnectivities
-      ) {
-        return true;
-      }
-      return false;
-    },
     pushConnectivityError: function (errorInfo) {
       const connectivityError = this.getConnectivityError(errorInfo);
       const connectivityGraphRef = this.$refs.connectivityGraphRef;
@@ -628,13 +619,11 @@ export default {
       }
 
       // error for list view
-      if (!this.isExistingError(connectivityError)) {
-        this.connectivityError = {...connectivityError};
+      this.connectivityError = {...connectivityError};
 
-        setTimeout(() => {
-          this.connectivityError = null;
-        }, ERROR_TIMEOUT);
-      }
+      setTimeout(() => {
+        this.connectivityError = null;
+      }, ERROR_TIMEOUT);
     },
   },
   mounted: function () {
