@@ -81,7 +81,7 @@
       </div>
     </div>
 
-    <div class="content-container" v-if="activeView === 'listView'">
+    <div class="content-container content-container-connectivity" v-if="activeView === 'listView'">
       {{ entry.paths }}
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
@@ -106,15 +106,10 @@
           class="attribute-content"
           :origin-item-label="origin"
           :key="origin"
-          @mouseenter="toggleConnectivityTooltip(origin, true)"
-          @mouseleave="toggleConnectivityTooltip(origin, false)"
+          @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
         >
           {{ capitalise(origin) }}
-          <!-- <el-checkbox
-            :label="capitalise(origin)"
-            size="small"
-            @change="toggleConnectivityHighlight"
-          /> -->
         </div>
         <el-button
           v-show="
@@ -140,15 +135,10 @@
           class="attribute-content"
           :component-item-label="component"
           :key="component"
-          @mouseenter="toggleConnectivityTooltip(component, true)"
-          @mouseleave="toggleConnectivityTooltip(component, false)"
+          @mouseenter="toggleConnectivityTooltip(component, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(component, {show: false})"
         >
           {{ capitalise(component) }}
-          <!-- <el-checkbox
-            :label="capitalise(component)"
-            size="small"
-            @change="toggleConnectivityHighlight"
-          /> -->
         </div>
       </div>
       <div
@@ -176,15 +166,10 @@
           class="attribute-content"
           :destination-item-label="destination"
           :key="destination"
-          @mouseenter="toggleConnectivityTooltip(destination, true)"
-          @mouseleave="toggleConnectivityTooltip(destination, false)"
+          @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
         >
           {{ capitalise(destination) }}
-          <!-- <el-checkbox
-            :label="capitalise(destination)"
-            size="small"
-            @change="toggleConnectivityHighlight"
-          /> -->
         </div>
         <el-button
           v-show="
@@ -212,6 +197,15 @@
         >
           Search for data on components
         </el-button>
+      </div>
+
+      <div v-if="connectivityError" class="connectivity-error-container">
+        <div class="connectivity-error">
+          <strong v-if="connectivityError.errorConnectivities">
+            {{ connectivityError.errorConnectivities }}
+          </strong>
+          {{ connectivityError.errorMessage }}
+        </div>
       </div>
     </div>
 
@@ -253,6 +247,8 @@ const capitalise = function (str) {
   if (str) return str.charAt(0).toUpperCase() + str.slice(1)
   return ''
 }
+
+const ERROR_TIMEOUT = 3000; // 3 seconds
 
 export default {
   name: 'ConnectivityInfo',
@@ -306,6 +302,8 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
+      connectivityError: null,
+      timeoutID: undefined,
     }
   },
   watch: {
@@ -418,10 +416,9 @@ export default {
       }
     },
     onTapNode: function (data) {
-      /**
-       * This event is triggered by connectivity-graph's `tap-node` event.
-       */
-      this.$emit('connectivity-component-click', data);
+      // save selected state for list view
+      const name = data.map(t => t.label).join(', ');
+      this.toggleConnectivityTooltip(name, {show: true});
     },
     getUpdateCopyContent: function () {
       if (!this.entry) {
@@ -525,25 +522,82 @@ export default {
       ];
       const names = name.split(','); // some features have more than one value
       const data = [];
-      if (option) {
+      if (option.show) {
         names.forEach((n) => {
-          data.push(allWithDatasets.find((a) => a.name.trim() === n.trim()));
+          const foundData = allWithDatasets.find((a) =>
+            a.name.toLowerCase().trim() === n.toLowerCase().trim()
+          );
+
+          if (foundData) {
+            data.push({
+              id: foundData.id,
+              label: foundData.name
+            });
+          }
         });
       }
+
+      // type: to show error only for click event
       this.$emit('connectivity-component-click', data);
     },
-    // TODO: to keep the connection on the flatmap when the checkbox is ticked.
-    // toggleConnectivityHighlight: function (value) {
-    //   // value = true/false
-    // },
-  },
-  mounted: function () {
-    EventBus.on('connectivity-graph-error', (errorMessage) => {
+    getErrorConnectivities: function (errorData) {
+      const errorDataToEmit = [...new Set(errorData)];
+      let errorConnectivities = '';
+
+      errorDataToEmit.forEach((connectivity, i) => {
+        const { label } = connectivity;
+        errorConnectivities += (i === 0) ? capitalise(label) : label;
+
+        if (errorDataToEmit.length > 1) {
+          if ((i + 2) === errorDataToEmit.length) {
+            errorConnectivities += ' and ';
+          } else if ((i + 1) < errorDataToEmit.length) {
+            errorConnectivities += ', ';
+          }
+        }
+      });
+
+      return errorConnectivities;
+    },
+    /**
+     * Function to show error message.
+     * `errorInfo` includes `errorData` array (optional) for error connectivities
+     * and `errorMessage` for error message.
+     * @arg `errorInfo`
+     */
+    getConnectivityError: function (errorInfo) {
+      const { errorData, errorMessage } = errorInfo;
+      const errorConnectivities = this.getErrorConnectivities(errorData);
+
+      return {
+        errorConnectivities,
+        errorMessage,
+      };
+    },
+    pushConnectivityError: function (errorInfo) {
+      const connectivityError = this.getConnectivityError(errorInfo);
       const connectivityGraphRef = this.$refs.connectivityGraphRef;
 
+      // error for graph view
       if (connectivityGraphRef) {
-        connectivityGraphRef.showErrorMessage(errorMessage);
+        connectivityGraphRef.showErrorMessage(connectivityError);
       }
+
+      // error for list view
+      this.connectivityError = {...connectivityError};
+
+      if (this.timeoutID) {
+        clearTimeout(this.timeoutID);
+      }
+
+      this.timeoutID = setTimeout(() => {
+        this.connectivityError = null;
+      }, ERROR_TIMEOUT);
+    },
+  },
+  mounted: function () {
+    EventBus.on('connectivity-graph-error', (errorInfo) => {
+      this.pushConnectivityError(errorInfo);
     });
   },
 }
@@ -691,6 +745,7 @@ export default {
   font-size: 14px;
   font-weight: 500;
   transition: color 0.25s ease;
+  position: relative;
   cursor: default;
 
   &:hover {
@@ -698,8 +753,6 @@ export default {
   }
 
   + .attribute-content {
-    position: relative;
-
     &::before {
       content: "";
       width: 90%;
@@ -714,22 +767,6 @@ export default {
   &:last-of-type {
     margin-bottom: 0.5em;
   }
-
-  // TODO: if we have checkboxes
-  // :deep(.el-checkbox),
-  // :deep(.el-checkbox.el-checkbox--small .el-checkbox__label) {
-  //   font-size: inherit;
-  //   font-weight: inherit;
-  //   color: inherit;
-  // }
-
-  // :deep(.el-checkbox) {
-  //   gap: 8px;
-  // }
-
-  // :deep(.el-checkbox.el-checkbox--small .el-checkbox__label) {
-  //   padding: 0;
-  // }
 }
 
 .popover-container {
@@ -912,5 +949,28 @@ export default {
     border-color: $app-primary-color;
     background: #f3ecf6;
   }
+}
+
+.content-container-connectivity {
+  position: relative;
+}
+
+.connectivity-error-container {
+  position: sticky;
+  bottom: 0.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.connectivity-error {
+  width: fit-content;
+  font-size: 12px;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--el-color-error-light-9);
+  border-radius: var(--el-border-radius-small);
+  border: 1px solid var(--el-color-error);
 }
 </style>
