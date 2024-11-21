@@ -303,6 +303,7 @@ export default {
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
+      timeoutID: undefined,
     }
   },
   watch: {
@@ -417,7 +418,7 @@ export default {
     onTapNode: function (data) {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
-      this.toggleConnectivityTooltip(name, {show: true, type: 'click'});
+      this.toggleConnectivityTooltip(name, {show: true});
     },
     getUpdateCopyContent: function () {
       if (!this.entry) {
@@ -537,10 +538,7 @@ export default {
       }
 
       // type: to show error only for click event
-      this.$emit('connectivity-component-click', {
-        data,
-        type: option.type
-      });
+      this.$emit('connectivity-component-click', data);
     },
     getErrorConnectivities: function (errorData) {
       const errorDataToEmit = [...new Set(errorData)];
@@ -588,7 +586,11 @@ export default {
       // error for list view
       this.connectivityError = {...connectivityError};
 
-      setTimeout(() => {
+      if (this.timeoutID) {
+        clearTimeout(this.timeoutID);
+      }
+
+      this.timeoutID = setTimeout(() => {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
     },
@@ -744,6 +746,7 @@ export default {
   font-weight: 500;
   transition: color 0.25s ease;
   position: relative;
+  cursor: default;
 
   &:hover {
     color: $app-primary-color;
