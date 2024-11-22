@@ -310,8 +310,8 @@ export default {
      * To receive error message for connectivity graph
      * @param {String} errorMessage
      */
-    updateConnectivityGraphError: function (errorMessage) {
-      EventBus.emit('connectivity-graph-error', errorMessage);
+    updateConnectivityGraphError: function (errorInfo) {
+      EventBus.emit('connectivity-graph-error', errorInfo);
     },
   },
   computed: {
