@@ -22,21 +22,35 @@
         </div>
         <div class="sidebar-container">
           <Tabs
-            v-if="tabs.length > 1 && connectivityInfo"
-            :tabTitles="tabs"
+            v-if="activeTabs.length > 1"
+            :tabTitles="activeTabs"
             :activeId="activeTabId"
             @titleClicked="tabClicked"
             @tab-close="tabClose"
           />
           <template v-for="tab in tabs" key="tab.id">
             <!-- Connectivity Info -->
-            <template v-if="tab.type === 'connectivity'">
+            <template v-if="tab.type === 'connectivity' && connectivityInfo">
               <connectivity-info
                 :entry="connectivityInfo"
                 :availableAnatomyFacets="availableAnatomyFacets"
-                v-show="tab.id === activeTabId"
+                v-if="tab.id === activeTabId"
+                :envVars="envVars"
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
+                @connectivity-component-click="onConnectivityComponentClick"
+              />
+            </template>
+            <template v-else-if="tab.type === 'annotation'">
+              <annotation-tool
+                :ref="'annotationTab_' + tab.id"
+                v-show="tab.id === activeTabId"
+                :annotationEntry="annotationEntry"
+                :createData="createData"
+                @annotation="$emit('annotation-submitted', $event)"
+                @confirm-create="$emit('confirm-create', $event)"
+                @cancel-create="$emit('cancel-create')"
+                @confirm-delete="$emit('confirm-delete', $event)"
               />
             </template>
             <template v-else>
@@ -69,6 +83,7 @@ import { ElDrawer as Drawer, ElIcon as Icon } from 'element-plus'
 import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
+import AnnotationTool from './AnnotationTool.vue'
 import ConnectivityInfo from './ConnectivityInfo.vue'
 
 /**
@@ -83,6 +98,7 @@ export default {
     Drawer,
     Icon,
     ConnectivityInfo,
+    AnnotationTool,
   },
   name: 'SideBar',
   props: {
@@ -110,7 +126,8 @@ export default {
       type: Array,
       default: () => [
         { id: 1, title: 'Search', type: 'search' },
-        { id: 2, title: 'Connectivity', type: 'connectivity' }
+        { id: 2, title: 'Connectivity', type: 'connectivity' },
+        { id: 3, title: 'Annotation', type: 'annotation' }
       ],
     },
     /**
@@ -134,6 +151,23 @@ export default {
       type: Object,
       default: null,
     },
+    /**
+     * The annotation data to show in sidebar.
+     */
+    annotationEntry: {
+      type: Object,
+      default: null,
+    },
+    createData: {
+      type: Object,
+      default: {
+        toBeConfirmed: false,
+        points: [],
+        shape: "",
+        x: 0,
+        y: 0,
+      },
+    }
   },
   data: function () {
     return {
@@ -158,6 +192,13 @@ export default {
       this.$emit('show-connectivity', featureIds);
     },
     /**
+     * This function is triggered after a connectivity component is clicked.
+     * @arg data
+     */
+    onConnectivityComponentClick: function (data) {
+      this.$emit('connectivity-component-click', data);
+    },
+    /**
      * This event is emitted when the search filters are changed.
      * @arg `obj` {data, id}
      */
@@ -165,15 +206,15 @@ export default {
       this.$emit('search-changed', { ...data, id: id })
     },
     /**
-     * @vuese
      * The function to close sidebar.
+     * @public
      */
     close: function () {
       this.drawerOpen = false
     },
     /**
-     * @vuese
      * The function to toggle (open and close) sidebar.
+     * @public
      */
     toggleDrawer: function () {
       this.drawerOpen = !this.drawerOpen
@@ -206,6 +247,8 @@ export default {
       let refIdPrefix = 'searchTab_'; // default to search tab
       if (type === 'connectivity') {
         refIdPrefix = 'connectivityTab_';
+      } else if (type === 'annotation') {
+        refIdPrefix = 'annotationTab_';
       }
       const tabObj = this.getTabByIdAndType(id, type);
       const tabRefId = refIdPrefix + tabObj.id;
@@ -217,9 +260,10 @@ export default {
       return this.$refs[searchTabRefId][0];
     },
     /**
-     * @vuese
      * The function to add filters to sidebar search.
-     * @arg filter `object`
+     *
+     * @param {Object} filter
+     * @public
      */
     addFilter: function (filter) {
       this.drawerOpen = true
@@ -255,20 +299,41 @@ export default {
       this.$emit('actionClick', payload);
     },
     /**
-     * @vuese
      * The function to emit 'tabClicked' event with tab's `id` and tab's `type`
      * when user clicks the sidebar tab.
-     * @arg {id, type}
+     * @param {Object} {id, type}
+     * @public
      */
     tabClicked: function ({id, type}) {
       /**
        * This event is emitted when user click sidebar's tab.
-       * @arg {id, type}
+       * @arg {Object} {id, type}
        */
       this.$emit('tabClicked', {id, type});
     },
     tabClose: function (id) {
-      this.$emit('connectivity-info-close');
+      this.$emit('tab-close', id);
+    },
+    /**
+     * To receive error message for connectivity graph
+     * @param {String} errorMessage
+     */
+    updateConnectivityGraphError: function (errorInfo) {
+      EventBus.emit('connectivity-graph-error', errorInfo);
+    },
+  },
+  computed: {
+    activeTabs: function() {
+      const tabs = [
+        { id: 1, title: 'Search', type: 'search' }
+      ];
+      if (this.connectivityInfo) {
+        tabs.push({ id: 2, title: 'Connectivity', type: 'connectivity' });
+      }
+      if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
+        tabs.push({ id: 3, title: 'Annotation', type: 'annotation' });
+      }
+      return tabs;
     },
   },
   created: function () {

@@ -4,7 +4,24 @@
     <div class="connectivity-info-title">
       <div>
         <div class="block" v-if="entry.title">
-          <div class="title">{{ capitalise(entry.title) }}</div>
+          <div class="title">
+            {{ capitalise(entry.title) }}
+            <template v-if="entry.featuresAlert">
+              <el-popover
+                width="250"
+                trigger="hover"
+                :teleported="false"
+                popper-class="popover-origin-help"
+              >
+                <template #reference>
+                  <el-icon class="alert"><el-icon-warn-triangle-filled /></el-icon>
+                </template>
+                <span style="word-break: keep-all">
+                  {{ entry.featuresAlert }}
+                </span>
+              </el-popover>
+            </template>
+          </div>
           <div
             v-if="
               entry.provenanceTaxonomyLabel &&
@@ -18,14 +35,16 @@
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
         </div>
-        <external-resource-card :resources="resources"></external-resource-card>
+        <div class="block" v-if="resources.length">
+          <external-resource-card :resources="resources"></external-resource-card>
+        </div>
       </div>
-      <div>
+      <div class="title-buttons">
         <el-popover
-          width="200"
+          width="auto"
           trigger="hover"
           :teleported="false"
-          popper-class="popover-origin-help"
+          popper-class="popover-map-pin"
         >
           <template #reference>
             <el-button class="button-circle" circle @click="showConnectivity(entry)">
@@ -38,25 +57,31 @@
             Show connectivity on map
           </span>
         </el-popover>
+        <CopyToClipboard :content="updatedCopyContent" />
       </div>
     </div>
-    <div v-if="featuresAlert" class="attribute-title-container">
-      <span class="attribute-title">Alert</span>
-      <el-popover
-        width="250"
-        trigger="hover"
-        :teleported="false"
-        popper-class="popover-origin-help"
-      >
-        <template #reference>
-          <el-icon class="info"><el-icon-warning /></el-icon>
-        </template>
-        <span style="word-break: keep-all">
-          {{ featuresAlert }}
-        </span>
-      </el-popover>
+
+    <div class="content-container population-display">
+      <div class="block attribute-title-container">
+        <span class="attribute-title">Population Display</span>
+      </div>
+      <div class="block buttons-row">
+        <el-button
+          :class="activeView === 'listView' ? 'button' : 'el-button-secondary'"
+          @click="switchConnectivityView('listView')"
+        >
+          List view
+        </el-button>
+        <el-button
+          :class="activeView === 'graphView' ? 'button' : 'el-button-secondary'"
+          @click="switchConnectivityView('graphView')"
+        >
+          Graph view
+        </el-button>
+      </div>
     </div>
-    <div class="content-container scrollbar">
+
+    <div class="content-container content-container-connectivity" v-if="activeView === 'listView'">
       {{ entry.paths }}
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
@@ -81,9 +106,10 @@
           class="attribute-content"
           :origin-item-label="origin"
           :key="origin"
+          @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
         >
           {{ capitalise(origin) }}
-          <div v-if="i != entry.origins.length - 1" class="seperator"></div>
         </div>
         <el-button
           v-show="
@@ -109,12 +135,10 @@
           class="attribute-content"
           :component-item-label="component"
           :key="component"
+          @mouseenter="toggleConnectivityTooltip(component, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(component, {show: false})"
         >
           {{ capitalise(component) }}
-          <div
-            v-if="i != entry.components.length - 1"
-            class="seperator"
-          ></div>
         </div>
       </div>
       <div
@@ -142,12 +166,10 @@
           class="attribute-content"
           :destination-item-label="destination"
           :key="destination"
+          @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
+          @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
         >
           {{ capitalise(destination) }}
-          <div
-            v-if="i != entry.destinations.length - 1"
-            class="seperator"
-          ></div>
         </div>
         <el-button
           v-show="
@@ -161,18 +183,39 @@
           Explore destination data
         </el-button>
       </div>
-
-      <el-button
+      <div
         v-show="
           entry.componentsWithDatasets &&
           entry.componentsWithDatasets.length > 0 &&
           shouldShowExploreButton(entry.componentsWithDatasets)
         "
-        class="button"
-        @click="openAll"
+        class="block"
       >
-        Search for data on components
-      </el-button>
+        <el-button
+          class="button"
+          @click="openAll"
+        >
+          Search for data on components
+        </el-button>
+      </div>
+
+      <div v-if="connectivityError" class="connectivity-error-container">
+        <div class="connectivity-error">
+          <strong v-if="connectivityError.errorConnectivities">
+            {{ connectivityError.errorConnectivities }}
+          </strong>
+          {{ connectivityError.errorMessage }}
+        </div>
+      </div>
+    </div>
+
+    <div class="content-container" v-if="activeView === 'graphView'">
+      <connectivity-graph
+        :entry="entry.featureId[0]"
+        :mapServer="envVars.FLATMAPAPI_LOCATION"
+        @tap-node="onTapNode"
+        ref="connectivityGraphRef"
+      />
     </div>
   </div>
 </template>
@@ -191,6 +234,8 @@ import {
 } from 'element-plus'
 import ExternalResourceCard from './ExternalResourceCard.vue'
 import EventBus from './EventBus.js'
+import { CopyToClipboard, ConnectivityGraph } from '@abi-software/map-utilities';
+import '@abi-software/map-utilities/dist/style.css';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -203,6 +248,8 @@ const capitalise = function (str) {
   return ''
 }
 
+const ERROR_TIMEOUT = 3000; // 3 seconds
+
 export default {
   name: 'ConnectivityInfo',
   components: {
@@ -213,6 +260,8 @@ export default {
     ElIconArrowDown,
     ElIconWarning,
     ExternalResourceCard,
+    CopyToClipboard,
+    ConnectivityGraph,
   },
   props: {
     entry: {
@@ -225,20 +274,25 @@ export default {
         originsWithDatasets: [],
         componentsWithDatasets: [],
         resource: undefined,
+        featuresAlert: undefined,
       }),
+    },
+    envVars: {
+      type: Object,
+      default: () => {},
     },
     availableAnatomyFacets: {
       type: Array,
       default: () => [],
     },
   },
-  // inject: ['getFeaturesAlert'],
   data: function () {
     return {
       controller: undefined,
       activeSpecies: undefined,
       pubmedSearchUrl: '',
       loading: false,
+      activeView: 'listView',
       facetList: [],
       showToolip: false,
       showDetails: false,
@@ -248,6 +302,8 @@ export default {
       },
       componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
+      connectivityError: null,
+      timeoutID: undefined,
     }
   },
   watch: {
@@ -260,15 +316,15 @@ export default {
     },
   },
   computed: {
+    updatedCopyContent: function () {
+      return this.getUpdateCopyContent();
+    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
         resources = this.entry.hyperlinks;
       }
       return resources;
-    },
-    featuresAlert() {
-      // return this.getFeaturesAlert()
     },
     originDescription: function () {
       if (
@@ -347,6 +403,202 @@ export default {
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
     },
+    switchConnectivityView: function (val) {
+      this.activeView = val;
+
+      if (val === 'graphView') {
+        const connectivityGraphRef = this.$refs.connectivityGraphRef;
+        if (connectivityGraphRef && connectivityGraphRef.$el) {
+          connectivityGraphRef.$el.scrollIntoView({
+            behavior: 'smooth',
+          });
+        }
+      }
+    },
+    onTapNode: function (data) {
+      // save selected state for list view
+      const name = data.map(t => t.label).join(', ');
+      this.toggleConnectivityTooltip(name, {show: true});
+    },
+    getUpdateCopyContent: function () {
+      if (!this.entry) {
+        return '';
+      }
+
+      const contentArray = [];
+
+      // Use <div> instead of <h1>..<h6> or <p>
+      // to avoid default formatting on font size and margin
+
+      // Title
+      if (this.entry.title) {
+        contentArray.push(`<div><strong>${capitalise(this.entry.title)}</strong></div>`);
+      } else {
+        contentArray.push(`<div><strong>${this.entry.featureId}</strong></div>`);
+      }
+
+      // Description
+      if (this.entry.provenanceTaxonomyLabel?.length) {
+        contentArray.push(`<div>${this.provSpeciesDescription}</div>`);
+      }
+
+      // PubMed URL
+      if (this.resources?.length) {
+        const pubmedContents = [];
+        this.resources.forEach((resource) => {
+          let pubmedContent = '';
+          if (resource.id === 'pubmed') {
+            pubmedContent += `<div><strong>PubMed URL:</strong></div>`;
+            pubmedContent += '\n';
+            pubmedContent += `<div><a href="${resource.url}">${resource.url}</a></div>`;
+          }
+          pubmedContents.push(pubmedContent);
+        });
+        contentArray.push(pubmedContents.join('\n\n<br>'));
+      }
+
+      // entry.paths
+      if (this.entry.paths) {
+        contentArray.push(`<div>${this.entry.paths}</div>`);
+      }
+
+      function transformData(title, items, itemsWithDatasets = []) {
+        let contentString = `<div><strong>${title}</strong></div>`;
+        const transformedItems = [];
+        items.forEach((item) => {
+          let itemNames = [];
+          item.split(',').forEach((name) => {
+            const match = itemsWithDatasets.find((a) => a.name === name.trim());
+            if (match) {
+              itemNames.push(`${capitalise(name)} (${match.id})`);
+            } else {
+              itemNames.push(`${capitalise(name)}`);
+            }
+          });
+          transformedItems.push(itemNames.join(','));
+        });
+        const contentList = transformedItems
+          .map((item) => `<li>${item}</li>`)
+          .join('\n');
+        contentString += '\n';
+        contentString += `<ul>${contentList}</ul>`;
+        return contentString;
+      }
+
+      // Origins
+      if (this.entry.origins?.length) {
+        const title = 'Origin';
+        const origins = this.entry.origins;
+        const originsWithDatasets = this.entry.originsWithDatasets;
+        const transformedOrigins = transformData(title, origins, originsWithDatasets);
+        contentArray.push(transformedOrigins);
+      }
+
+      // Components
+      if (this.entry.components?.length) {
+        const title = 'Components';
+        const components = this.entry.components;
+        const componentsWithDatasets = this.entry.componentsWithDatasets;
+        const transformedComponents = transformData(title, components, componentsWithDatasets);
+        contentArray.push(transformedComponents);
+      }
+
+      // Destination
+      if (this.entry.destinations?.length) {
+        const title = 'Destination';
+        const destinations = this.entry.destinations;
+        const destinationsWithDatasets = this.entry.destinationsWithDatasets;
+        const transformedDestinations = transformData(title, destinations, destinationsWithDatasets);
+        contentArray.push(transformedDestinations);
+      }
+
+      return contentArray.join('\n\n<br>');
+    },
+    toggleConnectivityTooltip: function (name, option) {
+      const allWithDatasets = [
+        ...this.entry.componentsWithDatasets,
+        ...this.entry.destinationsWithDatasets,
+        ...this.entry.originsWithDatasets,
+      ];
+      const names = name.split(','); // some features have more than one value
+      const data = [];
+      if (option.show) {
+        names.forEach((n) => {
+          const foundData = allWithDatasets.find((a) =>
+            a.name.toLowerCase().trim() === n.toLowerCase().trim()
+          );
+
+          if (foundData) {
+            data.push({
+              id: foundData.id,
+              label: foundData.name
+            });
+          }
+        });
+      }
+
+      // type: to show error only for click event
+      this.$emit('connectivity-component-click', data);
+    },
+    getErrorConnectivities: function (errorData) {
+      const errorDataToEmit = [...new Set(errorData)];
+      let errorConnectivities = '';
+
+      errorDataToEmit.forEach((connectivity, i) => {
+        const { label } = connectivity;
+        errorConnectivities += (i === 0) ? capitalise(label) : label;
+
+        if (errorDataToEmit.length > 1) {
+          if ((i + 2) === errorDataToEmit.length) {
+            errorConnectivities += ' and ';
+          } else if ((i + 1) < errorDataToEmit.length) {
+            errorConnectivities += ', ';
+          }
+        }
+      });
+
+      return errorConnectivities;
+    },
+    /**
+     * Function to show error message.
+     * `errorInfo` includes `errorData` array (optional) for error connectivities
+     * and `errorMessage` for error message.
+     * @arg `errorInfo`
+     */
+    getConnectivityError: function (errorInfo) {
+      const { errorData, errorMessage } = errorInfo;
+      const errorConnectivities = this.getErrorConnectivities(errorData);
+
+      return {
+        errorConnectivities,
+        errorMessage,
+      };
+    },
+    pushConnectivityError: function (errorInfo) {
+      const connectivityError = this.getConnectivityError(errorInfo);
+      const connectivityGraphRef = this.$refs.connectivityGraphRef;
+
+      // error for graph view
+      if (connectivityGraphRef) {
+        connectivityGraphRef.showErrorMessage(connectivityError);
+      }
+
+      // error for list view
+      this.connectivityError = {...connectivityError};
+
+      if (this.timeoutID) {
+        clearTimeout(this.timeoutID);
+      }
+
+      this.timeoutID = setTimeout(() => {
+        this.connectivityError = null;
+      }, ERROR_TIMEOUT);
+    },
+  },
+  mounted: function () {
+    EventBus.on('connectivity-graph-error', (errorInfo) => {
+      this.pushConnectivityError(errorInfo);
+    });
   },
 }
 </script>
@@ -359,7 +611,7 @@ export default {
 }
 
 .connectivity-info-title {
-  padding: 1rem;
+  padding: 0;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -377,19 +629,12 @@ export default {
   color: $app-primary-color;
 }
 
-.block {
-  margin-bottom: 0.5em;
-
-  .main > &:first-of-type {
-    margin-right: 1em;
-  }
-}
-
-.pub {
-  width: 16rem;
+.block + .block {
+  margin-top: 0.5em;
 }
 
 .button-circle {
+  margin: 0;
   width: 24px !important;
   height: 24px !important;
 
@@ -415,6 +660,9 @@ export default {
 :deep(.popover-origin-help.el-popover) {
   text-transform: none !important; // need to overide the tooltip text transform
   border: 1px solid $app-primary-color;
+  font-weight: 400;
+  font-family: Asap, sans-serif, Helvetica;
+
   .el-popper__arrow {
     &:before {
       border-color: $app-primary-color;
@@ -423,16 +671,25 @@ export default {
   }
 }
 
+.info,
+.alert {
+  color: #8300bf;
+}
+
 .info {
   transform: rotate(180deg);
-  color: #8300bf;
   margin-left: 8px;
 }
 
-.seperator {
-  width: 90%;
-  height: 1px;
-  background-color: #bfbec2;
+.alert {
+  margin-left: 5px;
+  vertical-align: text-bottom;
+
+  &,
+  > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
 .hide {
@@ -467,6 +724,10 @@ export default {
   height: 100%;
   border-left: 1px solid var(--el-border-color);
   border-top: 1px solid var(--el-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1rem;
 }
 
 .attribute-title-container {
@@ -483,6 +744,25 @@ export default {
 .attribute-content {
   font-size: 14px;
   font-weight: 500;
+  transition: color 0.25s ease;
+  position: relative;
+  cursor: default;
+
+  &:hover {
+    color: $app-primary-color;
+  }
+
+  + .attribute-content {
+    &::before {
+      content: "";
+      width: 90%;
+      height: 1px;
+      background-color: var(--el-border-color);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
 
   &:last-of-type {
     margin-bottom: 0.5em;
@@ -509,14 +789,57 @@ export default {
   font-size: 14px !important;
   background-color: $app-primary-color;
   color: #fff;
+
+  &:hover {
+    color: #fff !important;
+    background-color: #ac76c5 !important;
+    border: 1px solid #ac76c5 !important;
+  }
+
   & + .button {
     margin-top: 10px !important;
   }
+}
+
+.el-button-secondary {
+  border-color: transparent !important;
+  background-color: transparent !important;
+  color: inherit !important;
+
   &:hover {
-    color: #fff !important;
-    background: #ac76c5 !important;
-    border: 1px solid #ac76c5 !important;
+    color: $app-primary-color !important;
+    border-color: $app-primary-color !important;
+    background-color: #f9f2fc !important;
   }
+}
+
+.buttons-row {
+  text-align: right;
+
+  .button {
+    cursor: default;
+    border-color: transparent;
+
+    &:hover {
+      background-color: $app-primary-color !important;
+      border-color: transparent !important;
+    }
+  }
+
+  .el-button + .el-button {
+    margin-top: 0 !important;
+    margin-left: 10px !important;
+  }
+}
+
+.population-display {
+  display: flex;
+  flex: 1 1 auto !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $app-primary-color;
+  padding-bottom: 0.5rem !important;
 }
 
 .tooltip-container {
@@ -578,42 +901,76 @@ export default {
 
 .content-container {
   flex: 1 1 100%;
-  padding: 1rem;
+  padding: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 
-  .block {
-    padding-top: 0.5em;
-
-    + .block {
-      margin-top: 1rem;
-    }
+  > div,
+  > .block + .block {
+    margin: 0;
   }
-
-  .connectivity-info-title ~ & {
-    padding-top: 0;
-  }
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar {
-  width: 12px;
-  right: -12px;
-  background-color: #f5f5f5;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  background-color: #979797;
 }
 
 /* Fix for chrome bug where under triangle pops up above one on top of it  */
 .selector:not(*:root),
 .tooltip-container::after {
   top: 99.4%;
+}
+
+.title-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+
+  :deep(.copy-clipboard-button) {
+    &,
+    &:hover,
+    &:focus {
+      border-color: $app-primary-color !important;
+      border-radius: 50%;
+    }
+  }
+}
+
+:deep(.el-popper.popover-map-pin) {
+  padding: 4px 10px;
+  min-width: max-content;
+  font-family: Asap;
+  font-size: 12px;
+  line-height: inherit;
+  color: inherit;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color;
+
+  & .el-popper__arrow::before {
+    border: 1px solid;
+    border-color: $app-primary-color;
+    background: #f3ecf6;
+  }
+}
+
+.content-container-connectivity {
+  position: relative;
+}
+
+.connectivity-error-container {
+  position: sticky;
+  bottom: 0.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.connectivity-error {
+  width: fit-content;
+  font-size: 12px;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--el-color-error-light-9);
+  border-radius: var(--el-border-radius-small);
+  border: 1px solid var(--el-color-error);
 }
 </style>
