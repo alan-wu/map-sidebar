@@ -40,7 +40,7 @@
               target="_blank"
               class="el-button el-button--small button"
             >
-              OMEX archive
+              COMBINE archive
             </a>
             <el-button v-if="entry.flatmap"
               size="small"
