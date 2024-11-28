@@ -469,7 +469,14 @@ export default {
               facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
             }
           })
-        
+
+        // if all checkboxes are checked
+        // there has no filter values
+        const filtersLength = filters.filter((item) => item.facet !== 'Show all');
+        if (!filtersLength.length) {
+          filters = [];
+        }
+
         this.$emit('loading', true) // let sidebarcontent wait for the requests
         this.$emit('filterResults', filters) // emit filters for apps above sidebar
         this.setCascader(filterKeys) //update our cascader v-model if we modified the event
@@ -631,7 +638,7 @@ export default {
           let filters = createFilter(e)
           return filters
         })
-        
+
         // Unforttunately the cascader is very particular about it's v-model
         //   to get around this we create a clone of it and use this clone for adding our boolean information
         this.cascadeSelectedWithBoolean = filterFacets.map((e) => {
