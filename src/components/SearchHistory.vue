@@ -1,20 +1,22 @@
 <template>
-  <div class="history-container">
+  <div class="history-container" v-if="searchHistory.length">
     <!-- <span v-if="reversedSearchHistory.length > 0" class="title"> Search History </span> -->
-    <template v-for="(item, i) in savedSearchHistory" v-if="savedSearchHistory.length">
-      <el-tag
-        class="search-tag"
-        v-if="i < 2"
-        v-bind:key="i"
-        @click="search(item)"
-        size="large"
-      >
-        {{ searchHistoryItemLabel(item) }}
-      </el-tag>
-    </template>
-    <template v-else>
+    <div class="saved-search-history" v-if="savedSearchHistory.length">
+      <template v-for="(item, i) in savedSearchHistory">
+        <el-tag
+          class="search-tag"
+          v-if="i < 2"
+          v-bind:key="i"
+          @click="search(item)"
+          size="large"
+        >
+          {{ searchHistoryItemLabel(item) }}
+        </el-tag>
+      </template>
+    </div>
+    <div v-else>
       <span class="empty-saved-search">No Saved Searches</span>
-    </template>
+    </div>
     <el-select
       v-if="reversedSearchHistory.length > 0"
       :model-value="selectValue"
@@ -165,16 +167,24 @@ export default {
   color: var(--el-text-color-secondary);
 }
 
+.saved-search-history {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .search-tag.el-tag {
-  margin: 0 5px 5px 0;
+  margin: 0;
   cursor: pointer;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  float: left;
   background: #f9f2fc!important;
   border-color: $app-primary-color!important;
   color:$app-primary-color!important;
+
+  .el-tag__content {
+    max-width: 15ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .title {
