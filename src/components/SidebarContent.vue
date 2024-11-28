@@ -226,7 +226,7 @@ export default {
       this.searchInput = ''
       this.resetPageNavigation()
       this.searchAlgolia(this.filters, this.searchInput)
-      this.$refs.searchHistory.selectValue = 'Full search history'
+      this.$refs.searchHistory.selectValue = 'Search history'
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
@@ -244,7 +244,7 @@ export default {
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
       this.searchAlgolia(this.filters, this.searchInput);
-      this.$refs.searchHistory.selectValue = 'Full search history';
+      this.$refs.searchHistory.selectValue = 'Search history';
       // save history only if there has value
       if (this.filters.length || this.searchInput?.trim()) {
         this.$refs.searchHistory.addSearchToHistory(

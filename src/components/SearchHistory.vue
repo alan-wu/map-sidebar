@@ -16,7 +16,7 @@
       v-if="reversedSearchHistory.length > 0"
       :model-value="selectValue"
       class="m-2 search-select"
-      placeholder="Full search History"
+      placeholder="Search history"
       popper-class="sidebar-search-select-popper"
       @change="selectChange"
       :teleported="false"
@@ -56,7 +56,7 @@ export default {
   data() {
     return {
       searchHistory: [],
-      selectValue: 'Full search history',
+      selectValue: 'Search history',
     }
   },
   computed: {
