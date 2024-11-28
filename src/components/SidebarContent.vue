@@ -230,23 +230,28 @@ export default {
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.resetPageNavigation()
-        this.searchAlgolia(this.filters, this.searchInput)
-        this.$refs.searchHistory.selectValue = 'Full search history'
-        this.$refs.searchHistory.addSearchToHistory(
-          this.filters,
-          this.searchInput
-        )
+        this.searchAndFilterUpdate();
       }
     },
     filterUpdate: function (filters) {
       this.filters = [...filters]
-      this.resetPageNavigation()
-      this.searchAlgolia(filters, this.searchInput)
+      this.searchAndFilterUpdate();
       this.$emit('search-changed', {
         value: filters,
         type: 'filter-update',
       })
+    },
+    searchAndFilterUpdate: function () {
+      this.resetPageNavigation();
+      this.searchAlgolia(this.filters, this.searchInput);
+      this.$refs.searchHistory.selectValue = 'Full search history';
+      // save history only if there has value
+      if (this.filters.length || this.searchInput?.trim()) {
+        this.$refs.searchHistory.addSearchToHistory(
+          this.filters,
+          this.searchInput
+        );
+      }
     },
     searchAlgolia(filters, query = '') {
       // Algolia search
