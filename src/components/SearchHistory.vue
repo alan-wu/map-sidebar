@@ -17,7 +17,7 @@
     <div v-else>
       <span class="empty-saved-search">No Saved Searches</span>
     </div>
-    <el-dropdown trigger="click">
+    <el-dropdown trigger="click" :max-height="350">
       <span class="el-dropdown-select">
         Search history
         <el-icon class="el-icon--right">
@@ -56,7 +56,7 @@
               >
                 <template #reference>
                   <el-button circle text size="small" @click="removeFromSavedSearch(item)">
-                    <el-icon>
+                    <el-icon color="#8300BF">
                       <el-icon-delete />
                     </el-icon>
                   </el-button>
@@ -274,9 +274,29 @@ export default {
 
 :deep(.el-dropdown-menu__item) {
   justify-content: space-between;
+  gap: 0.5rem;
   cursor: default;
+  position: relative;
+
+  > div:first-child {
+    max-width: 148px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  + .el-dropdown-menu__item {
+    &::before {
+      content: "";
+      display: block;
+      width: calc(100% - 32px);
+      border-top: 1px solid var(--el-border-color);
+      position: absolute;
+      top: 0;
+    }
+  }
 
   &:hover,
+  &:focus,
   &:active {
     color: inherit;
     background-color: var(--el-bg-color-page);
@@ -298,8 +318,8 @@ export default {
   line-height: normal;
   letter-spacing: normal;
   color: #292b66;
-  width: 180px;
-  max-width: 200px;
+  min-width: 180px;
+  width: fit-content;
 
   .el-button + .el-button {
     margin: 0;
