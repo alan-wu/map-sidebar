@@ -17,22 +17,21 @@
     <div v-else>
       <span class="empty-saved-search">No Saved Searches</span>
     </div>
-    <el-select
-      v-if="reversedSearchHistory.length > 0"
-      :model-value="selectValue"
-      class="m-2 search-select"
-      placeholder="Search history"
-      popper-class="sidebar-search-select-popper"
-      @change="selectChange"
-      :teleported="false"
-    >
-      <el-option
-        v-for="(item, i) in cascaderOptions"
-        :key="i"
-        :label="item.label"
-        :value="item.value"
-      />
-    </el-select>
+    <el-dropdown trigger="click">
+      <span class="el-dropdown-select">
+        Search history
+        <el-icon class="el-icon--right">
+          <el-icon-arrow-down />
+        </el-icon>
+      </span>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item v-for="(item, i) in cascaderOptions">
+            {{ item.label }}
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
   </div>
 </template>
 
@@ -40,7 +39,9 @@
 /* eslint-disable no-alert, no-console */
 import {
   ElTag as Tag,
-  ElSelect as Select
+  ElSelect as Select,
+  ElDropdown as Dropdown,
+  ElIcon as Icon,
 } from 'element-plus'
 
 import EventBus from './EventBus.js'
@@ -61,7 +62,6 @@ export default {
   data() {
     return {
       searchHistory: [],
-      selectValue: 'Search history',
     }
   },
   computed: {
@@ -129,11 +129,6 @@ export default {
     search: function (item) {
       this.$emit('search', item)
     },
-    selectChange: function (value) {
-      this.selectValue = value
-      const selectedOption = this.cascaderOptions.find((option) => option.value === value);
-      this.search(selectedOption.item);
-    },
     searchHistoryItemLabel: function (item) {
       let label = item.search;
       const filterItems = item.filters.filter((filterItem) => filterItem.facet !== 'Show all');
@@ -196,22 +191,55 @@ export default {
   align-items: center;
 }
 
-.search-select {
-  float: right;
+.el-dropdown {
   width: 180px;
+  position: relative;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  padding: 4px 12px;
+  min-height: 32px;
+  line-height: 24px;
+  border-radius: var(--el-border-radius-base);
+  background-color: var(--el-fill-color-blank);
+  transition: var(--el-transition-duration);
+  transform: translateZ(0);
+  box-shadow: 0 0 0 1px var(--el-border-color) inset;
+  cursor: pointer;
+}
+
+.el-dropdown-select {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  .el-icon {
+    transform: rotate(0deg);
+    transition: transform 0.25s linear;
+  }
+
+  &[aria-expanded="true"] {
+    .el-icon {
+      transform: rotate(180deg);
+    }
+  }
 }
 </style>
 
 <style lang="scss">
-.sidebar-search-select-popper {
+.el-dropdown__popper {
   font-family: Asap;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   font-stretch: normal;
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
   color: #292b66;
+  width: 180px;
   max-width: 200px;
 }
 </style>
