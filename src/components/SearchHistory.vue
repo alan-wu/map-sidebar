@@ -27,7 +27,45 @@
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item v-for="(item, i) in cascaderOptions">
-            {{ item.label }}
+            <div>{{ item.label }}</div>
+            <div>
+              <el-popover
+                width="auto"
+                trigger="hover"
+                :teleported="true"
+                :show-after="100"
+                popper-class="popover-dropdown"
+              >
+                <template #reference>
+                  <el-button circle text size="small" @click="addToSavedSearch(item)">
+                    <el-icon color="#8300BF">
+                      <el-icon-star />
+                    </el-icon>
+                  </el-button>
+                </template>
+                <span>
+                  Add up to two saved searches.
+                </span>
+              </el-popover>
+              <el-popover
+                width="auto"
+                trigger="hover"
+                :teleported="true"
+                :show-after="100"
+                popper-class="popover-dropdown"
+              >
+                <template #reference>
+                  <el-button circle text size="small" @click="removeFromSavedSearch(item)">
+                    <el-icon>
+                      <el-icon-delete />
+                    </el-icon>
+                  </el-button>
+                </template>
+                <span>
+                  Remove from search history.
+                </span>
+              </el-popover>
+            </div>
           </el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -137,6 +175,12 @@ export default {
       }
       return label;
     },
+    addToSavedSearch: function (item) {
+      item.saved = true;
+    },
+    removeFromSavedSearch: function (item) {
+      // remove
+    },
   },
   mounted: function () {
     this.getSearchHistory()
@@ -227,6 +271,21 @@ export default {
     }
   }
 }
+
+:deep(.el-dropdown-menu__item) {
+  justify-content: space-between;
+  cursor: default;
+
+  &:hover,
+  &:active {
+    color: inherit;
+    background-color: var(--el-bg-color-page);
+  }
+
+  i {
+    margin: 0;
+  }
+}
 </style>
 
 <style lang="scss">
@@ -241,5 +300,25 @@ export default {
   color: #292b66;
   width: 180px;
   max-width: 200px;
+
+  .el-button + .el-button {
+    margin: 0;
+  }
+}
+
+.el-popper.popover-dropdown {
+  padding: 4px 10px;
+  min-width: max-content;
+  font-family: Asap;
+  font-size: 12px;
+  color: inherit;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color;
+
+  & .el-popper__arrow::before {
+    border: 1px solid;
+    border-color: $app-primary-color;
+    background: #f3ecf6;
+  }
 }
 </style>
