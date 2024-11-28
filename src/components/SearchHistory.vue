@@ -102,7 +102,7 @@ export default {
         this.searchHistory = removeDuplicates(searchHistory)
         localStorage.setItem(
           'sparc.science-sidebar-search-history',
-          JSON.stringify(searchHistory)
+          JSON.stringify(this.searchHistory)
         )
       } else {
         localStorage.setItem(
