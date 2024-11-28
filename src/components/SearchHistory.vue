@@ -4,7 +4,7 @@
     <template v-for="(item, i) in reversedSearchHistory">
       <el-tag
         class="search-tag"
-        v-if="i < 3"
+        v-if="i < 2"
         v-bind:key="i"
         @click="search(item)"
         size="large"
