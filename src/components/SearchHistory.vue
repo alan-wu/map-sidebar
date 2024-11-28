@@ -91,8 +91,7 @@ export default {
       localStorage.removeItem('sparc.science-sidebar-search-history')
       this.searchHistory = []
     },
-    addSearchToHistory(filters, search) {
-      filters = [] // disable filters for now
+    addSearchToHistory(filters = [], search) {
       search = search.trim() // remove whitespace
       let searchHistory = JSON.parse(
         localStorage.getItem('sparc.science-sidebar-search-history')
