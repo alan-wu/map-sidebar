@@ -95,6 +95,7 @@ var handleErrors = async function (response) {
 }
 
 var initial_state = {
+  filters: [],
   searchInput: '',
   lastSearch: '',
   results: [],
