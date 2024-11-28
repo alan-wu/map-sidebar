@@ -9,7 +9,7 @@
         @click="search(item)"
         size="large"
       >
-        {{ item.search }}
+        {{ searchHistoryItemLabel(item) }}
       </el-tag>
     </template>
     <el-select
@@ -65,14 +65,14 @@ export default {
         this.searchHistory
           .slice()
           .reverse()
-          .filter((item) => item.search !== '')
       )
     },
     cascaderOptions: function () {
       return this.reversedSearchHistory.map((item) => {
         return {
           value: item.search,
-          label: item.search,
+          label: this.searchHistoryItemLabel(item),
+          item: item
         }
       })
     },
@@ -115,7 +115,16 @@ export default {
     },
     selectChange: function (value) {
       this.selectValue = value
-      this.search({ search: value })
+      const selectedOption = this.cascaderOptions.find((option) => option.value === value);
+      this.search(selectedOption.item);
+    },
+    searchHistoryItemLabel: function (item) {
+      let label = item.search;
+      const filterItems = item.filters.filter((filterItem) => filterItem.facet !== 'Show all');
+      if (!label) {
+        label = filterItems.length ? filterItems[0].facet : 'Unknown search';
+      }
+      return label;
     },
   },
   mounted: function () {
