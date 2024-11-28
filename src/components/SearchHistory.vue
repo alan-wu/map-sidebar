@@ -1,7 +1,7 @@
 <template>
   <div class="history-container">
     <!-- <span v-if="reversedSearchHistory.length > 0" class="title"> Search History </span> -->
-    <template v-for="(item, i) in reversedSearchHistory">
+    <template v-for="(item, i) in savedSearchHistory" v-if="savedSearchHistory.length">
       <el-tag
         class="search-tag"
         v-if="i < 2"
@@ -11,6 +11,9 @@
       >
         {{ searchHistoryItemLabel(item) }}
       </el-tag>
+    </template>
+    <template v-else>
+      <span class="empty-saved-search">No Saved Searches</span>
     </template>
     <el-select
       v-if="reversedSearchHistory.length > 0"
@@ -67,6 +70,9 @@ export default {
           .reverse()
       )
     },
+    savedSearchHistory: function () {
+      return this.reversedSearchHistory.filter((item) => item.saved);
+    },
     cascaderOptions: function () {
       return this.reversedSearchHistory.map((item) => {
         return {
@@ -97,7 +103,11 @@ export default {
         localStorage.getItem('sparc.science-sidebar-search-history')
       )
       if (searchHistory) {
-        searchHistory.push({ filters: filters, search: search })
+        searchHistory.push({
+          filters: filters,
+          search: search,
+          saved: false,
+        });
         this.searchHistory = removeDuplicates(searchHistory)
         localStorage.setItem(
           'sparc.science-sidebar-search-history',
@@ -106,7 +116,11 @@ export default {
       } else {
         localStorage.setItem(
           'sparc.science-sidebar-search-history',
-          JSON.stringify([{ filters: filters, search: search }])
+          JSON.stringify([{
+            filters: filters,
+            search: search,
+            saved: false,
+          }])
         )
       }
     },
@@ -138,7 +152,17 @@ export default {
 
 <style lang="scss" scoped>
 .history-container {
-  padding-bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+}
+
+.empty-saved-search {
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--el-text-color-secondary);
 }
 
 .search-tag.el-tag {
