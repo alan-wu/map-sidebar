@@ -10,7 +10,7 @@
           @click="search(item)"
           size="large"
         >
-          {{ searchHistoryItemLabel(item) }}
+          {{ item.label }}
         </el-tag>
       </template>
     </div>
@@ -26,7 +26,7 @@
       </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-for="(item, i) in cascaderOptions">
+          <el-dropdown-item v-for="(item, i) in reversedSearchHistory">
             <div>{{ item.label }}</div>
             <div>
               <el-popover
@@ -100,28 +100,22 @@ export default {
   data() {
     return {
       searchHistory: [],
+      reversedSearchHistory: [],
+      savedSearchHistory: [],
     }
   },
-  computed: {
-    reversedSearchHistory: function () {
-      return removeDuplicates(
-        this.searchHistory
-          .slice()
-          .reverse()
-      )
-    },
-    savedSearchHistory: function () {
-      return this.reversedSearchHistory.filter((item) => item.saved);
-    },
-    cascaderOptions: function () {
-      return this.reversedSearchHistory.map((item) => {
-        return {
-          value: item.search,
-          label: this.searchHistoryItemLabel(item),
-          item: item
-        }
-      })
-    },
+  mounted: function () {
+    this.getSearchHistory()
+    EventBus.on('search-changed', (data) => {
+      this.setSearchHistory(data)
+    });
+    this.reversedSearchHistory = this.searchHistory.map((item) => {
+      return {
+        ...item,
+        label: this.searchHistoryItemLabel(item.search, item.filters),
+      }
+    }).reverse();
+    this.savedSearchHistory = this.reversedSearchHistory.filter((item) => item.saved);
   },
   methods: {
     getSearchHistory() {
@@ -147,6 +141,7 @@ export default {
           filters: filters,
           search: search,
           saved: false,
+          label: this.searchHistoryItemLabel(search, filters),
         });
         this.searchHistory = removeDuplicates(searchHistory)
         localStorage.setItem(
@@ -160,6 +155,7 @@ export default {
             filters: filters,
             search: search,
             saved: false,
+            label: this.searchHistoryItemLabel(search, filters),
           }])
         )
       }
@@ -167,26 +163,27 @@ export default {
     search: function (item) {
       this.$emit('search', item)
     },
-    searchHistoryItemLabel: function (item) {
-      let label = item.search;
-      const filterItems = item.filters.filter((filterItem) => filterItem.facet !== 'Show all');
+    searchHistoryItemLabel: function (search, filters) {
+      let label = search;
+      let filterItems = [];
+
+      if (filters) {
+        filterItems = filters.filter((filterItem) => filterItem.facet !== 'Show all');
+      }
+
       if (!label) {
         label = filterItems.length ? filterItems[0].facet : 'Unknown search';
       }
+
       return label;
     },
     addToSavedSearch: function (item) {
       item.saved = true;
+      this.savedSearchHistory = this.reversedSearchHistory.filter((item) => item.saved);
     },
     removeFromSavedSearch: function (item) {
       // remove
     },
-  },
-  mounted: function () {
-    this.getSearchHistory()
-    EventBus.on('search-changed', (data) => {
-      this.setSearchHistory(data)
-    })
   },
 }
 </script>
