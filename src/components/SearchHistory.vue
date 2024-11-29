@@ -160,6 +160,7 @@ export default {
           saved: false,
           label: this.searchHistoryItemLabel(search, filters),
           id: generateUUID(),
+          updated: (new Date()).getTime(),
         });
         this.searchHistory = removeDuplicates(searchHistory)
         localStorage.setItem(
@@ -175,11 +176,13 @@ export default {
             saved: false,
             label: this.searchHistoryItemLabel(search, filters),
             id: generateUUID(),
+            updated: (new Date()).getTime(),
           }])
         )
       }
     },
     updateSearchHistory: function () {
+      // Update for missing attributes
       this.searchHistory.forEach((item) => {
         if (!item.id) {
           item['id'] = generateUUID();
@@ -190,16 +193,23 @@ export default {
         if (!item.saved) {
           item['saved'] = false;
         }
-      });
-      this.searchHistory = this.searchHistory.sort((a, b) => {
-        if (a.saved > b.saved) {
-          return -1;
+        if (!item.updated) {
+          item['updated'] = (new Date()).getTime();
         }
-        if (a.saved < b.saved) {
-          return 1;
+      });
+
+      // Sort by saved and updated
+      this.searchHistory = this.searchHistory.sort((a, b) => {
+        if (a.saved !== b.saved) {
+          return b.saved - a.saved;
+        }
+        if (a.updated !== b.updated) {
+          return a.updated - b.updated;
         }
         return 0;
       });
+
+      // Save updated data
       localStorage.setItem(
         'sparc.science-sidebar-search-history',
         JSON.stringify(this.searchHistory)
