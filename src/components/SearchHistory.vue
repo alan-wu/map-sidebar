@@ -36,14 +36,20 @@
                 popper-class="popover-dropdown"
               >
                 <template #reference>
-                  <el-button circle text size="small" @click="toggleSavedSearch(item)">
+                  <el-button circle text size="small"
+                    @click="toggleSavedSearch(item)"
+                    :disabled="savedSearchHistory.length > 1 && !item.saved"
+                  >
                     <el-icon color="#8300BF">
                       <el-icon-star-filled v-if="item.saved" />
                       <el-icon-star v-else />
                     </el-icon>
                   </el-button>
                 </template>
-                <span v-if="item.saved">
+                <span v-if="savedSearchHistory.length > 1 && !item.saved">
+                  Please unsave one before adding another.
+                </span>
+                <span v-else-if="item.saved">
                   Remove from saved searches.
                 </span>
                 <span v-else>
