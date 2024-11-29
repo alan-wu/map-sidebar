@@ -269,7 +269,7 @@ export default {
   border-color: $app-primary-color!important;
   color:$app-primary-color!important;
 
-  .el-tag__content {
+  :deep(.el-tag__content) {
     max-width: 15ch;
     overflow: hidden;
     text-overflow: ellipsis;
