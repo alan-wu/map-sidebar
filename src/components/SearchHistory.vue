@@ -95,9 +95,15 @@ import EventBus from './EventBus.js'
 
 // remove duplicates by stringifying the objects
 const removeDuplicates = function (arrayOfAnything) {
-  return [...new Set(arrayOfAnything.map((e) => JSON.stringify(e)))].map((e) =>
+  return [
+    ...new Set(
+      arrayOfAnything.map((e) =>
+        JSON.stringify(e)
+      )
+    )
+  ].map((e) =>
     JSON.parse(e)
-  )
+  );
 }
 
 function generateUUID() {
@@ -219,15 +225,27 @@ export default {
       this.$emit('search', item)
     },
     searchHistoryItemLabel: function (search, filters) {
-      let label = search;
+      let label = search ? `"${search.trim()}"` : '';
       let filterItems = [];
 
       if (filters) {
         filterItems = filters.filter((filterItem) => filterItem.facet !== 'Show all');
       }
 
+      if (label && filterItems.length) {
+        label += ` (+${filterItems.length})`;
+      }
+
+      if (!label && filterItems.length) {
+        label = filterItems[0].facet;
+
+        if (filterItems.length > 1) {
+          label += ` (+${filterItems.length - 1})`;
+        }
+      }
+
       if (!label) {
-        label = filterItems.length ? filterItems[0].facet : 'Unknown search';
+        label = 'Unknown search';
       }
 
       return label;
