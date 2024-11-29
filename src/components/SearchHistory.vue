@@ -385,7 +385,7 @@ export default {
   }
 }
 
-.el-popper.popover-dropdown {
+.el-popover.el-popper.popover-dropdown {
   padding: 4px 10px;
   min-width: max-content;
   font-family: Asap;
