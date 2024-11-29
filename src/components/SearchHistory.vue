@@ -9,7 +9,7 @@
           @click="search(item)"
           size="large"
         >
-          <template v-if="item.label.length > 15">
+          <template v-if="item.longLabel">
             <el-popover
               width="auto"
               trigger="hover"
@@ -18,7 +18,7 @@
               <template #reference>
                 {{ item.label }}
               </template>
-              {{ item.label }}
+              {{ item.longLabel }}
             </el-popover>
           </template>
           <template v-else>
@@ -41,7 +41,7 @@
         <el-dropdown-menu>
           <el-dropdown-item v-for="(item, i) in searchHistory">
             <div>
-              <template v-if="item.label.length > 23">
+              <template v-if="item.longLabel">
                 <el-popover
                   width="auto"
                   trigger="hover"
@@ -50,7 +50,7 @@
                   <template #reference>
                     {{ item.label }}
                   </template>
-                  {{ item.label }}
+                  {{ item.longLabel }}
                 </el-popover>
               </template>
               <template v-else>
@@ -180,11 +180,13 @@ export default {
       ));
 
       if (!isExistingItem) {
+        const {label, longLabel} = this.searchHistoryItemLabel(search, filters);
         const newItem = {
           filters: filters,
           search: search,
           saved: false,
-          label: this.searchHistoryItemLabel(search, filters),
+          label: label,
+          longLabel: longLabel,
           id: generateUUID(),
           updated: (new Date()).getTime(),
         };
@@ -205,7 +207,9 @@ export default {
           item['id'] = generateUUID();
         }
         if (!item.label) {
-          item['label'] = this.searchHistoryItemLabel(item.search, item.filters);
+          const {label, longLabel} = this.searchHistoryItemLabel(item.search, item.filters);
+          item['label'] = label;
+          item['longLabel'] = longLabel;
         }
         if (!item.saved) {
           item['saved'] = false;
@@ -237,13 +241,18 @@ export default {
     },
     searchHistoryItemLabel: function (search, filters) {
       let label = search ? `"${search.trim()}"` : '';
+      let longLabel = '';
       let filterItems = [];
+      let filterLabels = [];
 
       if (filters) {
         filterItems = filters.filter((filterItem) => filterItem.facet !== 'Show all');
+        filterLabels = filterItems.map((item) => item.facet2 || item.facet);
       }
 
       if (label && filterItems.length) {
+        longLabel += label;
+        longLabel += `, ${filterLabels.join(', ')}`;
         label += ` (+${filterItems.length})`;
       }
 
@@ -251,15 +260,18 @@ export default {
         label = filterItems[0].facet;
 
         if (filterItems.length > 1) {
+          longLabel += `${filterLabels.join(', ')}`;
           label += ` (+${filterItems.length - 1})`;
         }
       }
 
       if (!label) {
         label = 'Unknown search';
+      } else if (label.length > 15 && !longLabel) {
+        longLabel = label;
       }
 
-      return label;
+      return {label, longLabel};
     },
     toggleSavedSearch: function (item) {
       this.searchHistory.forEach((_item) => {
@@ -417,7 +429,8 @@ export default {
 
 .el-popover.el-popper.popover-dropdown {
   padding: 4px 10px;
-  min-width: max-content;
+  width: max-content;
+  max-width: 240px;
   font-family: Asap;
   font-size: 12px;
   color: inherit;
