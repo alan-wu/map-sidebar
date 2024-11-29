@@ -16,7 +16,7 @@
     <div v-else>
       <span class="empty-saved-search">No Saved Searches</span>
     </div>
-    <el-dropdown trigger="click" :max-height="350">
+    <el-dropdown trigger="click" :max-height="350" :hide-on-click="false">
       <span class="el-dropdown-select">
         Search history
         <el-icon class="el-icon--right">
@@ -36,13 +36,17 @@
                 popper-class="popover-dropdown"
               >
                 <template #reference>
-                  <el-button circle text size="small" @click="addToSavedSearch(item)">
+                  <el-button circle text size="small" @click="toggleSavedSearch(item)">
                     <el-icon color="#8300BF">
-                      <el-icon-star />
+                      <el-icon-star-filled v-if="item.saved" />
+                      <el-icon-star v-else />
                     </el-icon>
                   </el-button>
                 </template>
-                <span>
+                <span v-if="item.saved">
+                  Remove from saved searches.
+                </span>
+                <span v-else>
                   Add up to two saved searches.
                 </span>
               </el-popover>
@@ -177,7 +181,11 @@ export default {
         if (!item.label) {
           item['label'] = this.searchHistoryItemLabel(item.search, item.filters);
         }
+        if (!item.saved) {
+          item['saved'] = false;
+        }
       });
+      this.searchHistory.sort((a, b) => a.saved > b.saved);
       localStorage.setItem(
         'sparc.science-sidebar-search-history',
         JSON.stringify(this.searchHistory)
@@ -200,14 +208,13 @@ export default {
 
       return label;
     },
-    addToSavedSearch: function (item) {
-      item.saved = true;
-      this.savedSearchHistory = this.searchHistory.filter((item) => item.saved);
+    toggleSavedSearch: function (item) {
       this.searchHistory.forEach((_item) => {
         if (_item.id === item.id) {
-          _item.saved = true;
+          _item.saved = !_item.saved;
         }
       });
+      this.savedSearchHistory = this.searchHistory.filter((item) => item.saved);
       this.updateSearchHistory();
     },
     removeFromSavedSearch: function (item) {
