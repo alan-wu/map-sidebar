@@ -9,7 +9,21 @@
           @click="search(item)"
           size="large"
         >
-          {{ item.label }}
+          <template v-if="item.label.length > 15">
+            <el-popover
+              width="auto"
+              trigger="hover"
+              popper-class="popover-dropdown"
+            >
+              <template #reference>
+                {{ item.label }}
+              </template>
+              {{ item.label }}
+            </el-popover>
+          </template>
+          <template v-else>
+            {{ item.label }}
+          </template>
         </el-tag>
       </template>
     </div>
@@ -26,7 +40,23 @@
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item v-for="(item, i) in searchHistory">
-            <div>{{ item.label }}</div>
+            <div>
+              <template v-if="item.label.length > 23">
+                <el-popover
+                  width="auto"
+                  trigger="hover"
+                  popper-class="popover-dropdown"
+                >
+                  <template #reference>
+                    {{ item.label }}
+                  </template>
+                  {{ item.label }}
+                </el-popover>
+              </template>
+              <template v-else>
+                {{ item.label }}
+              </template>
+            </div>
             <div>
               <el-popover
                 width="auto"
