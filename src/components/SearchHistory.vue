@@ -1,6 +1,5 @@
 <template>
   <div class="history-container" v-if="searchHistory.length">
-    <!-- <span v-if="reversedSearchHistory.length > 0" class="title"> Search History </span> -->
     <div class="saved-search-history" v-if="savedSearchHistory.length">
       <template v-for="(item, i) in savedSearchHistory">
         <el-tag
@@ -26,7 +25,7 @@
       </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-for="(item, i) in reversedSearchHistory">
+          <el-dropdown-item v-for="(item, i) in searchHistory">
             <div>{{ item.label }}</div>
             <div>
               <el-popover
@@ -91,6 +90,20 @@ const removeDuplicates = function (arrayOfAnything) {
   )
 }
 
+function generateUUID() {
+  const arr = new Uint8Array(16);
+  window.crypto.getRandomValues(arr);
+
+  arr[6] = (arr[6] & 0x0f) | 0x40;
+  arr[8] = (arr[8] & 0x3f) | 0x80;
+
+  const hex = Array.from(arr)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export default {
   name: 'SearchHistory',
   components: {
@@ -100,7 +113,6 @@ export default {
   data() {
     return {
       searchHistory: [],
-      reversedSearchHistory: [],
       savedSearchHistory: [],
     }
   },
@@ -109,13 +121,8 @@ export default {
     EventBus.on('search-changed', (data) => {
       this.setSearchHistory(data)
     });
-    this.reversedSearchHistory = this.searchHistory.map((item) => {
-      return {
-        ...item,
-        label: this.searchHistoryItemLabel(item.search, item.filters),
-      }
-    }).reverse();
-    this.savedSearchHistory = this.reversedSearchHistory.filter((item) => item.saved);
+    this.updateSearchHistory();
+    this.savedSearchHistory = this.searchHistory.filter((item) => item.saved);
   },
   methods: {
     getSearchHistory() {
@@ -142,6 +149,7 @@ export default {
           search: search,
           saved: false,
           label: this.searchHistoryItemLabel(search, filters),
+          id: generateUUID(),
         });
         this.searchHistory = removeDuplicates(searchHistory)
         localStorage.setItem(
@@ -156,9 +164,24 @@ export default {
             search: search,
             saved: false,
             label: this.searchHistoryItemLabel(search, filters),
+            id: generateUUID(),
           }])
         )
       }
+    },
+    updateSearchHistory: function () {
+      this.searchHistory.forEach((item) => {
+        if (!item.id) {
+          item['id'] = generateUUID();
+        }
+        if (!item.label) {
+          item['label'] = this.searchHistoryItemLabel(item.search, item.filters);
+        }
+      });
+      localStorage.setItem(
+        'sparc.science-sidebar-search-history',
+        JSON.stringify(this.searchHistory)
+      )
     },
     search: function (item) {
       this.$emit('search', item)
@@ -179,10 +202,19 @@ export default {
     },
     addToSavedSearch: function (item) {
       item.saved = true;
-      this.savedSearchHistory = this.reversedSearchHistory.filter((item) => item.saved);
+      this.savedSearchHistory = this.searchHistory.filter((item) => item.saved);
+      this.searchHistory.forEach((_item) => {
+        if (_item.id === item.id) {
+          _item.saved = true;
+        }
+      });
+      this.updateSearchHistory();
     },
     removeFromSavedSearch: function (item) {
-      // remove
+      const itemIndex = this.searchHistory.findIndex((_item) => _item.id === item.id);
+      this.searchHistory.splice(itemIndex, 1);
+      this.savedSearchHistory = this.searchHistory.filter((item) => item.saved);
+      this.updateSearchHistory();
     },
   },
 }
