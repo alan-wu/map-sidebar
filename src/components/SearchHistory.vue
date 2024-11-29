@@ -93,19 +93,6 @@ import {
 
 import EventBus from './EventBus.js'
 
-// remove duplicates by stringifying the objects
-const removeDuplicates = function (arrayOfAnything) {
-  return [
-    ...new Set(
-      arrayOfAnything.map((e) =>
-        JSON.stringify(e)
-      )
-    )
-  ].map((e) =>
-    JSON.parse(e)
-  );
-}
-
 function generateUUID() {
   const arr = new Uint8Array(16);
   window.crypto.getRandomValues(arr);
@@ -154,37 +141,31 @@ export default {
       localStorage.removeItem('sparc.science-sidebar-search-history')
       this.searchHistory = []
     },
-    addSearchToHistory(filters = [], search) {
+    addSearchToHistory(filters = [], search = '') {
       search = search.trim() // remove whitespace
-      let searchHistory = JSON.parse(
-        localStorage.getItem('sparc.science-sidebar-search-history')
-      )
-      if (searchHistory) {
-        searchHistory.push({
+
+      const isExistingItem = this.searchHistory.some((item) => (
+        item.search === search &&
+        JSON.stringify(item.filters) === JSON.stringify(filters)
+      ));
+
+      if (!isExistingItem) {
+        const newItem = {
           filters: filters,
           search: search,
           saved: false,
           label: this.searchHistoryItemLabel(search, filters),
           id: generateUUID(),
           updated: (new Date()).getTime(),
-        });
-        this.searchHistory = removeDuplicates(searchHistory)
+        };
+
+        this.searchHistory.push(newItem);
+
+        // Save new data
         localStorage.setItem(
           'sparc.science-sidebar-search-history',
           JSON.stringify(this.searchHistory)
-        )
-      } else {
-        localStorage.setItem(
-          'sparc.science-sidebar-search-history',
-          JSON.stringify([{
-            filters: filters,
-            search: search,
-            saved: false,
-            label: this.searchHistoryItemLabel(search, filters),
-            id: generateUUID(),
-            updated: (new Date()).getTime(),
-          }])
-        )
+        );
       }
     },
     updateSearchHistory: function () {
