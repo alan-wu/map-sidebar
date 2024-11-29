@@ -191,7 +191,15 @@ export default {
           item['saved'] = false;
         }
       });
-      this.searchHistory.sort((a, b) => a.saved > b.saved);
+      this.searchHistory = this.searchHistory.sort((a, b) => {
+        if (a.saved > b.saved) {
+          return -1;
+        }
+        if (a.saved < b.saved) {
+          return 1;
+        }
+        return 0;
+      });
       localStorage.setItem(
         'sparc.science-sidebar-search-history',
         JSON.stringify(this.searchHistory)
