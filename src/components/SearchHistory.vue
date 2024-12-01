@@ -171,12 +171,15 @@ export default {
       localStorage.removeItem('sparc.science-sidebar-search-history')
       this.searchHistory = []
     },
+    sortFilters(a, b) {
+      return a.facetPropPath.localeCompare(b.facetPropPath);
+    },
     addSearchToHistory(filters = [], search = '') {
       search = search.trim() // remove whitespace
 
       const isExistingItem = this.searchHistory.some((item) => (
         item.search === search &&
-        JSON.stringify(item.filters) === JSON.stringify(filters)
+        JSON.stringify(item.filters.sort(this.sortFilters)) === JSON.stringify(filters.sort(this.sortFilters))
       ));
 
       if (!isExistingItem) {
