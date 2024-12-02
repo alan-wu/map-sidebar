@@ -110,7 +110,9 @@
                 popper-class="popover-dropdown"
               >
                 <template #reference>
-                  <el-button circle text size="small" @click="removeFromSavedSearch(item)">
+                  <el-button circle text size="small"
+                    @click="removeFromSavedSearch(item)"
+                  >
                     <el-icon color="#8300BF">
                       <el-icon-delete />
                     </el-icon>
