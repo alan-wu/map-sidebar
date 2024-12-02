@@ -48,13 +48,17 @@
                   popper-class="popover-dropdown"
                 >
                   <template #reference>
-                    {{ item.label }}
+                    <span class="dropdown-clickable-item" @click="search(item)">
+                      {{ item.label }}
+                    </span>
                   </template>
                   {{ item.longLabel }}
                 </el-popover>
               </template>
               <template v-else>
-                {{ item.label }}
+                <span class="dropdown-clickable-item" @click="search(item)">
+                  {{ item.label }}
+                </span>
               </template>
             </div>
             <div>
@@ -354,7 +358,6 @@ export default {
   transition: var(--el-transition-duration);
   transform: translateZ(0);
   box-shadow: 0 0 0 1px var(--el-border-color) inset;
-  cursor: pointer;
 }
 
 .el-dropdown-select {
@@ -386,6 +389,14 @@ export default {
     max-width: 148px;
     text-overflow: ellipsis;
     overflow: hidden;
+  }
+
+  .dropdown-clickable-item {
+    cursor: pointer;
+
+    &:hover {
+      color: $app-primary-color;
+    }
   }
 
   + .el-dropdown-menu__item {
