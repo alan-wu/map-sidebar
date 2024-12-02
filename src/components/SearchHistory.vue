@@ -13,6 +13,8 @@
             <el-popover
               width="auto"
               trigger="hover"
+              :show-after="200"
+              :persistent="false"
               popper-class="popover-dropdown"
             >
               <template #reference>
@@ -45,6 +47,8 @@
                 <el-popover
                   width="auto"
                   trigger="hover"
+                  :show-after="200"
+                  :persistent="false"
                   popper-class="popover-dropdown"
                 >
                   <template #reference>
@@ -66,7 +70,8 @@
                 width="auto"
                 trigger="hover"
                 :teleported="true"
-                :show-after="100"
+                :show-after="200"
+                :persistent="false"
                 popper-class="popover-dropdown"
               >
                 <template #reference>
@@ -106,7 +111,8 @@
                 width="auto"
                 trigger="hover"
                 :teleported="true"
-                :show-after="100"
+                :show-after="200"
+                :persistent="false"
                 popper-class="popover-dropdown"
               >
                 <template #reference>
