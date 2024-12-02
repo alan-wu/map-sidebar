@@ -449,7 +449,7 @@ export default {
 </style>
 
 <style lang="scss">
-.el-dropdown__popper {
+.el-popper.el-dropdown__popper {
   font-family: Asap;
   font-size: 14px;
   font-weight: 400;
