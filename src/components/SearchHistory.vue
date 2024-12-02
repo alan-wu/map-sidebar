@@ -254,6 +254,9 @@ export default {
 
         this.searchHistory.push(newItem);
 
+        // trim search history to 12 items
+        this.trimSearchHistory();
+
         // Save new data
         localStorage.setItem(
           'sparc.science-sidebar-search-history',
