@@ -198,6 +198,16 @@ export default {
     sortFilters(a, b) {
       return a.facetPropPath.localeCompare(b.facetPropPath);
     },
+    // Sort by saved and updated
+    sortSearchHistory(a, b) {
+      if (a.saved !== b.saved) {
+        return b.saved - a.saved;
+      }
+      if (a.updated !== b.updated) {
+        return a.updated - b.updated;
+      }
+      return 0;
+    },
     formatFilters(filterItem) {
       // because filters do not work correctly with facet2
       if (filterItem.facet2) {
@@ -282,6 +292,24 @@ export default {
         this.searchHistory = this.searchHistory.filter((item) => !duplicateItemIDs.includes(item.id));
       }
     },
+    /**
+     * Function to trim search history to maximum 12 items,
+     * 2 saved items plus 10 unsaved.
+     */
+    trimSearchHistory: function () {
+      // since saved has max 2
+      // remove extra from unsaved
+      if (this.searchHistory.length > 12) {
+        const savedItems = this.searchHistory.filter((item) => item.saved);
+        const unsavedItems = this.searchHistory.filter((item) => !item.saved);
+        const extra = unsavedItems.length - 10;
+
+        this.searchHistory = [
+          ...savedItems,
+          ...unsavedItems.slice(extra),
+        ];
+      }
+    },
     updateSearchHistory: function () {
       // Update for missing attributes
       this.searchHistory.forEach((item) => {
@@ -312,19 +340,13 @@ export default {
         }
       });
 
-      // Sort by saved and updated
-      this.searchHistory = this.searchHistory.sort((a, b) => {
-        if (a.saved !== b.saved) {
-          return b.saved - a.saved;
-        }
-        if (a.updated !== b.updated) {
-          return a.updated - b.updated;
-        }
-        return 0;
-      });
+      this.searchHistory = this.searchHistory.sort(this.sortSearchHistory);
 
       // check and remove duplicates
       this.removeDuplicateSearchHistory();
+
+      // trim search history to 12 items
+      this.trimSearchHistory();
 
       // Save updated data
       localStorage.setItem(
