@@ -192,13 +192,37 @@ export default {
     sortFilters(a, b) {
       return a.facetPropPath.localeCompare(b.facetPropPath);
     },
+    formatFilters(filterItem) {
+      // because filters do not work correctly with facet2
+      if (filterItem.facet2) {
+        filterItem.facet = filterItem.facet2;
+        delete filterItem.facet2;
+      }
+      return filterItem;
+    },
     addSearchToHistory(filters = [], search = '') {
       search = search.trim() // remove whitespace
 
-      const isExistingItem = this.searchHistory.some((item) => (
-        item.search === search &&
-        JSON.stringify(item.filters.sort(this.sortFilters)) === JSON.stringify(filters.sort(this.sortFilters))
-      ));
+      const isExistingItem = this.searchHistory.some((item) => {
+        let historyFilters = item.filters;
+        let newFilters = filters;
+
+        // make all filters same format
+        historyFilters.forEach((filter) => this.formatFilters(filter));
+        newFilters.forEach((filter) => this.formatFilters(filter));
+
+        // sort filters (to check duplicates in string format)
+        historyFilters = historyFilters.sort(this.sortFilters);
+        newFilters = newFilters.sort(this.sortFilters);
+
+        const historyFiltersString = JSON.stringify(historyFilters);
+        const newFiltersString = JSON.stringify(newFilters);
+
+        return (
+          item.search === search &&
+          historyFiltersString === newFiltersString
+        );
+      });
 
       if (!isExistingItem) {
         const {label, longLabel} = this.searchHistoryItemLabel(search, filters);
@@ -234,13 +258,13 @@ export default {
           item['longLabel'] = longLabel;
         }
 
-        // filters won't work correctly with facet2
-        item.filters.forEach((filter) => {
-          if (filter.facet2) {
-            filter['facet'] = filter.facet2;
-            delete filter.facet2;
-          }
-        });
+        // make all filters same format
+        item.filters.forEach((filter) =>
+          this.formatFilters(filter)
+        );
+
+        // sort filters (to check duplicates in string format)
+        item.filters = item.filters.sort(this.sortFilters);
 
         if (!item.saved) {
           item['saved'] = false;
