@@ -227,14 +227,25 @@ export default {
         if (!item.id) {
           item['id'] = generateUUID();
         }
+
         if (!item.label) {
           const {label, longLabel} = this.searchHistoryItemLabel(item.search, item.filters);
           item['label'] = label;
           item['longLabel'] = longLabel;
         }
+
+        // filters won't work correctly with facet2
+        item.filters.forEach((filter) => {
+          if (filter.facet2) {
+            filter['facet'] = filter.facet2;
+            delete filter.facet2;
+          }
+        });
+
         if (!item.saved) {
           item['saved'] = false;
         }
+
         if (!item.updated) {
           item['updated'] = (new Date()).getTime();
         }

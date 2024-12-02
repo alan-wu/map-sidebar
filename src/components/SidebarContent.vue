@@ -173,7 +173,7 @@ export default {
       this.results = []
       this.loadingCards = false
     },
-    openSearch: function (filter, search = '') {
+    openSearch: function (filter, search = '', option = { withSearch: true }) {
       this.searchInput = search
       this.resetPageNavigation()
       //Proceed normally if cascader is ready
@@ -192,14 +192,16 @@ export default {
           this.$refs.filtersRef.checkShowAllBoxes()
           this.resetSearch()
         } else if (this.filter) {
-          this.searchAlgolia(this.filter, search)
+          if (option.withSearch) {
+            this.searchAlgolia(this.filter, search)
+          }
           this.$refs.filtersRef.setCascader(this.filter)
         }
       } else {
         //cascader is not ready, perform search if no filter is set,
         //otherwise waith for cascader to be ready
         this.filter = filter
-        if (!filter || filter.length == 0) {
+        if ((!filter || filter.length == 0) && option.withSearch) {
           this.searchAlgolia(this.filter, search)
         }
       }
@@ -242,9 +244,23 @@ export default {
         type: 'filter-update',
       })
     },
+    /**
+     * Transform filters for third level items to perform search
+     * because cascader keeps adding it back.
+     */
+    transformFiltersBeforeSearch: function (filters) {
+      return filters.map((filter) => {
+        if (filter.facet2) {
+          filter.facet = filter.facet2;
+          delete filter.facet2;
+        }
+        return filter;
+      });
+    },
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
-      this.searchAlgolia(this.filters, this.searchInput);
+      const transformedFilters = this.transformFiltersBeforeSearch(this.filters);
+      this.searchAlgolia(transformedFilters, this.searchInput);
       this.$refs.searchHistory.selectValue = 'Search history';
       // save history only if there has value
       if (this.filters.length || this.searchInput?.trim()) {
@@ -445,7 +461,9 @@ export default {
     searchHistorySearch: function (item) {
       this.searchInput = item.search
       this.filters = item.filters
-      this.openSearch(item.filters, item.search)
+      this.searchAndFilterUpdate();
+      // withSearch: false to prevent algoliaSearch in openSearch
+      this.openSearch([...item.filters], item.search, { withSearch: false });
     },
   },
   mounted: function () {
