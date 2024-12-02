@@ -15,6 +15,7 @@
           class="button"
           @click="searchEvent"
           size="large"
+          :disabled="!searchInput.trim()"
         >
           Search
         </el-button>
@@ -527,16 +528,19 @@ export default {
 }
 
 .header {
-  border: solid 1px #292b66;
-  background-color: #292b66;
-  text-align: left;
-
   .el-button {
     &:hover,
     &:focus {
       background: $app-primary-color;
       box-shadow: -3px 2px 4px #00000040;
       color: #fff;
+    }
+
+    &:disabled {
+      color: #fff;
+      background: $app-primary-color;
+      border-color: transparent;
+      cursor: default;
     }
   }
 }
@@ -584,6 +588,7 @@ export default {
   background-color: #ffffff;
   overflow-y: scroll;
   scrollbar-width: thin;
+  border-radius: var(--el-border-radius-base);
 }
 
 .content :deep(.el-loading-spinner .path) {
