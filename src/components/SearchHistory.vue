@@ -1,7 +1,7 @@
 <template>
   <div class="history-container" v-if="searchHistory.length">
     <div class="saved-search-history" v-if="savedSearchHistory.length">
-      <template v-for="(item, i) in savedSearchHistory">
+      <template v-for="(item, i) in savedSearchHistory" :key="item.id">
         <el-tag
           class="search-tag"
           v-if="i < 2"
@@ -39,7 +39,7 @@
       </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-for="(item, i) in searchHistory">
+          <el-dropdown-item v-for="item in searchHistory" :key="item.id">
             <div>
               <template v-if="item.longLabel">
                 <el-popover
@@ -135,8 +135,8 @@
 import {
   ElTag as Tag,
   ElSelect as Select,
-  ElDropdown as Dropdown,
-  ElIcon as Icon,
+  ElDropdown,
+  ElIcon,
 } from 'element-plus'
 
 import EventBus from './EventBus.js'
