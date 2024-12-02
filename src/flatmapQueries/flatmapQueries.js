@@ -48,6 +48,7 @@ let FlatmapQueries = function () {
 
   this.createTermSQL = function (terms) {
     let sql = ''
+    let params = []
     let validFilter = false
 
 
@@ -58,7 +59,8 @@ let FlatmapQueries = function () {
           sql += '('
         }
         if (t !== '') {
-          sql += `m.term='${t}'`
+          params.push(terms)
+          sql += `m.term=?`
           validFilter = true
           if (i < terms.length - 1) {
             sql += ' or '
@@ -71,8 +73,9 @@ let FlatmapQueries = function () {
     }
     if (!validFilter) {
       sql = ''
+      params = []
     }
-    return sql
+    return {sql, params}
   }
 
 
@@ -82,12 +85,14 @@ let FlatmapQueries = function () {
     sql += 'where d.metadata is not null '
 
     // add filters for the terms
-    const termsSql = this.createTermSQL(terms)
-    sql += termsSql
+    const requestDetails = this.createTermSQL(terms)
+    sql += requestDetails.sql
+    const params = [...requestDetails.params]
 
     // Add the text search
     if (search && search !== '') {
-      sql += `and (t.pmr_text match '${search}')`
+      sql += `and (t.pmr_text match ?)`
+      params.push(search)
     }
 
     // Add exposure and score filters if we aren't text searching
@@ -104,7 +109,7 @@ let FlatmapQueries = function () {
     sql += ' ' + this.offsetText() + ';'
 
     console.log(sql)
-    return sql
+    return {sql, params}
   }
 
   this.convertTermsToIds = function (terms) {
@@ -121,8 +126,8 @@ let FlatmapQueries = function () {
   }
 
 
-  this.flatmapQuery = function (sql) {
-    const data = { sql: sql }
+  this.flatmapQuery = function (sql, params = [] ) {
+    const data = { sql, params }
     return fetch(`${this.flatmapApi}knowledge/query/`, {
       method: 'POST',
       headers: {
@@ -151,13 +156,14 @@ let FlatmapQueries = function () {
     let features = this.processFilters(filters)
     let featureIds = this.convertTermsToIds(features)
     return new Promise((resolve, reject) => {
-      this.flatmapQuery(this.pmrSQL(featureIds, search))
+      const {sql, params} = this.pmrSQL(featureIds, search)
+      this.flatmapQuery(sql, params)
         .then(data => {
           const pd = this.processPMRData(data, featureIds)
           this.setAvailableFeatures(pd)
 
           // get the number of hits for pagination
-          this.flatmapQuery(this.countSQL(this.sqlPreOffset)).then(data => {
+          this.flatmapQuery(this.countSQL(this.sqlPreOffset), params).then(data => {
             this.numberOfHits = data.values[0][0]
             resolve(pd);
           })
