@@ -245,6 +245,37 @@ export default {
         );
       }
     },
+    /**
+     * Remove the duplicate items in search history.
+     */
+    removeDuplicateSearchHistory: function () {
+      const keys = [];
+      const duplicateItemIDs = [];
+
+      this.searchHistory.forEach((item) => {
+        const key = `${item.search}-${JSON.stringify(item.filters)}`;
+        const existingItem = keys.find(k => k.key === key);
+        // duplicate item
+        if (existingItem) {
+          // if current item is saved item
+          // add the other item into duplicates
+          if (item.saved) {
+            duplicateItemIDs.push(existingItem.id);
+          } else {
+            duplicateItemIDs.push(item.id);
+          }
+        } else {
+          keys.push({
+            id: item.id,
+            key: key
+          });
+        }
+      });
+
+      if (duplicateItemIDs.length) {
+        this.searchHistory = this.searchHistory.filter((item) => !duplicateItemIDs.includes(item.id));
+      }
+    },
     updateSearchHistory: function () {
       // Update for missing attributes
       this.searchHistory.forEach((item) => {
@@ -285,6 +316,9 @@ export default {
         }
         return 0;
       });
+
+      // check and remove duplicates
+      this.removeDuplicateSearchHistory();
 
       // Save updated data
       localStorage.setItem(
