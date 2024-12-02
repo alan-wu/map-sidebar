@@ -227,13 +227,12 @@ export default {
       this.openSearch(this.filter, this.searchInput)
     },
     clearSearchClicked: function () {
-      this.searchInput = ''
-      this.resetPageNavigation()
-      this.searchAlgolia(this.filters, this.searchInput)
-      this.$refs.searchHistory.selectValue = 'Search history'
+      this.searchInput = '';
+      this.searchAndFilterUpdate();
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
+        this.searchInput = this.searchInput.trim();
         this.searchAndFilterUpdate();
       }
     },
