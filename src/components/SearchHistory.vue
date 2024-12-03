@@ -555,6 +555,10 @@ export default {
   .el-button {
     background-color: transparent !important;
 
+    > span {
+      pointer-events: none;
+    }
+
     &:hover,
     &:focus {
       background-color: transparent !important;
