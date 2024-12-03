@@ -554,6 +554,7 @@ export default {
 
   .el-button {
     background-color: transparent !important;
+    transition: all .25s ease;
 
     > span {
       pointer-events: none;
@@ -564,6 +565,13 @@ export default {
       background-color: transparent !important;
       box-shadow: none !important;
       border: 0 none !important;
+    }
+
+    &:not([disabled]) {
+      &:hover,
+      &:focus {
+        background-color: #f3e6f9 !important;
+      }
     }
 
     + .el-button {
