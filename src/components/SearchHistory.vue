@@ -32,7 +32,7 @@
     <div v-else>
       <span class="empty-saved-search">No Saved Searches</span>
     </div>
-    <el-dropdown trigger="click" :max-height="350" :hide-on-click="false">
+    <el-dropdown trigger="click" :hide-on-click="false">
       <span class="el-dropdown-select">
         Search history
         <el-icon class="el-icon--right">
@@ -553,6 +553,13 @@ export default {
 
   .el-button + .el-button {
     margin: 0;
+  }
+
+  // element plus's dropdown max-height has problem
+  .el-dropdown__list {
+    max-height: 350px;
+    overflow-y: auto;
+    scrollbar-width: thin;
   }
 }
 
