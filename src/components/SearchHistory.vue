@@ -147,6 +147,8 @@ import {
 
 import EventBus from './EventBus.js'
 
+const MAX_SEARCH_HISTORY = 12;
+
 function generateUUID() {
   const arr = new Uint8Array(16);
   window.crypto.getRandomValues(arr);
@@ -296,16 +298,15 @@ export default {
       }
     },
     /**
-     * Function to trim search history to maximum 12 items,
-     * 2 saved items plus 10 unsaved.
+     * Function to trim search history to maximum items,
      */
     trimSearchHistory: function () {
       // since saved has max 2
       // remove extra from unsaved
-      if (this.searchHistory.length > 12) {
+      if (this.searchHistory.length > MAX_SEARCH_HISTORY) {
         const savedItems = this.searchHistory.filter((item) => item.saved);
         const unsavedItems = this.searchHistory.filter((item) => !item.saved);
-        const extra = unsavedItems.length - 10;
+        const extra = this.searchHistory.length - MAX_SEARCH_HISTORY;
 
         this.searchHistory = [
           ...savedItems,
