@@ -1008,8 +1008,8 @@ export default {
 
 .sidebar-cascader-popper .el-checkbox__input.is-checked .el-checkbox__inner,
 .el-checkbox__input.is-indeterminate .el-checkbox__inner {
-  --el-checkbox-checked-bg-color: $app-primary-color;
-  --el-checkbox-checked-input-border-color: $app-primary-color;
+  --el-checkbox-checked-bg-color: #{$app-primary-color};
+  --el-checkbox-checked-input-border-color: #{$app-primary-color};
   background-color: $app-primary-color;
   border-color: $app-primary-color;
 }

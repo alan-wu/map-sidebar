@@ -529,8 +529,8 @@ export default {
   &:hover,
   &:focus,
   &:active {
-    color: inherit;
-    background-color: var(--el-bg-color-page);
+    color: inherit !important;
+    background-color: var(--el-fill-color-light) !important;
   }
 
   i {
@@ -553,15 +553,13 @@ export default {
   width: fit-content;
 
   .el-button {
-    &,
-    &[disabled] {
-      &:hover,
-      &:focus,
-      &:active {
-        background-color: transparent !important;
-        box-shadow: none !important;
-        border: 0 none !important;
-      }
+    background-color: transparent !important;
+
+    &:hover,
+    &:focus {
+      background-color: transparent !important;
+      box-shadow: none !important;
+      border: 0 none !important;
     }
 
     + .el-button {

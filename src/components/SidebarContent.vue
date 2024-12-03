@@ -511,6 +511,9 @@ export default {
   height: 100%;
   flex-flow: column;
   display: flex;
+  border: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .step-item {
