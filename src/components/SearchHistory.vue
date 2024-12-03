@@ -437,7 +437,7 @@ export default {
 
 .search-tag.el-tag {
   margin: 0;
-  cursor: pointer;
+  cursor: pointer !important;
   background: #f9f2fc!important;
   border-color: $app-primary-color!important;
   color:$app-primary-color!important;
@@ -446,6 +446,7 @@ export default {
     max-width: 15ch;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 24px;
   }
 }
 
@@ -551,8 +552,21 @@ export default {
   min-width: 180px;
   width: fit-content;
 
-  .el-button + .el-button {
-    margin: 0;
+  .el-button {
+    &,
+    &[disabled] {
+      &:hover,
+      &:focus,
+      &:active {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: 0 none !important;
+      }
+    }
+
+    + .el-button {
+      margin: 0;
+    }
   }
 
   // element plus's dropdown max-height has problem
@@ -569,6 +583,8 @@ export default {
   max-width: 240px;
   font-family: Asap;
   font-size: 12px;
+  word-break: break-word;
+  text-align: left;
   color: inherit;
   background: #f3ecf6 !important;
   border: 1px solid $app-primary-color;

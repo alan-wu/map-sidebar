@@ -523,11 +523,16 @@ export default {
   width: 298px !important;
   height: 40px;
   padding-right: 14px;
-  align-items: left;
+
+  :deep(.el-input__inner) {
+    font-family: inherit;
+  }
 }
 
 .header {
   .el-button {
+    font-family: inherit;
+
     &:hover,
     &:focus {
       background: $app-primary-color;
@@ -540,6 +545,7 @@ export default {
       background: $app-primary-color;
       border-color: transparent;
       cursor: default;
+      opacity: 0.9 !important;
     }
   }
 }
