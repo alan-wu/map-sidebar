@@ -206,7 +206,7 @@ export default {
         return b.saved - a.saved;
       }
       if (a.updated !== b.updated) {
-        return a.updated - b.updated;
+        return b.updated - a.updated;
       }
       return 0;
     },
@@ -255,6 +255,8 @@ export default {
         };
 
         this.searchHistory.push(newItem);
+
+        this.searchHistory = this.searchHistory.sort(this.sortSearchHistory);
 
         // trim search history to 12 items
         this.trimSearchHistory();
