@@ -15,7 +15,6 @@
           class="button"
           @click="searchEvent"
           size="large"
-          :disabled="!searchInput.trim()"
         >
           Search
         </el-button>
@@ -541,14 +540,6 @@ export default {
       background: $app-primary-color;
       box-shadow: -3px 2px 4px #00000040;
       color: #fff;
-    }
-
-    &:disabled {
-      color: #fff;
-      background: $app-primary-color;
-      border-color: transparent;
-      cursor: default;
-      opacity: 0.9 !important;
     }
   }
 }
