@@ -308,11 +308,11 @@ export default {
       if (this.searchHistory.length > MAX_SEARCH_HISTORY) {
         const savedItems = this.searchHistory.filter((item) => item.saved);
         const unsavedItems = this.searchHistory.filter((item) => !item.saved);
-        const extra = this.searchHistory.length - MAX_SEARCH_HISTORY;
+        const extra = MAX_SEARCH_HISTORY - this.searchHistory.length;
 
         this.searchHistory = [
           ...savedItems,
-          ...unsavedItems.slice(extra),
+          ...unsavedItems.slice(0, extra),
         ];
       }
     },
