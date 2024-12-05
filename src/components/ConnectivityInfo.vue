@@ -81,7 +81,7 @@
       </div>
     </div>
 
-    <div class="content-container content-container-connectivity" v-if="activeView === 'listView'">
+    <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       {{ entry.paths }}
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
@@ -209,13 +209,15 @@
       </div>
     </div>
 
-    <div class="content-container" v-if="activeView === 'graphView'">
-      <connectivity-graph
-        :entry="entry.featureId[0]"
-        :mapServer="envVars.FLATMAPAPI_LOCATION"
-        @tap-node="onTapNode"
-        ref="connectivityGraphRef"
-      />
+    <div class="content-container" v-show="activeView === 'graphView'">
+      <template v-if="graphViewLoaded">
+        <connectivity-graph
+          :entry="entry.featureId[0]"
+          :mapServer="envVars.FLATMAPAPI_LOCATION"
+          @tap-node="onTapNode"
+          ref="connectivityGraphRef"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -304,6 +306,7 @@ export default {
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
+      graphViewLoaded: false,
     }
   },
   watch: {
@@ -406,13 +409,11 @@ export default {
     switchConnectivityView: function (val) {
       this.activeView = val;
 
-      if (val === 'graphView') {
-        const connectivityGraphRef = this.$refs.connectivityGraphRef;
-        if (connectivityGraphRef && connectivityGraphRef.$el) {
-          connectivityGraphRef.$el.scrollIntoView({
-            behavior: 'smooth',
-          });
-        }
+      if (val === 'graphView' && !this.graphViewLoaded) {
+        // to load the connectivity graph only after the container is in view
+        this.$nextTick(() => {
+          this.graphViewLoaded = true;
+        });
       }
     },
     onTapNode: function (data) {
