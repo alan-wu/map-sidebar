@@ -2,7 +2,7 @@
   <div v-if="entry" class="main" v-loading="loading">
     <!-- Connectivity Info Title -->
     <div class="connectivity-info-title">
-      <div>
+      <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
             {{ capitalise(entry.title) }}
@@ -234,9 +234,13 @@ import {
   ElContainer as Container,
   ElIcon as Icon,
 } from 'element-plus'
-import ExternalResourceCard from './ExternalResourceCard.vue'
+
 import EventBus from './EventBus.js'
-import { CopyToClipboard, ConnectivityGraph } from '@abi-software/map-utilities';
+import {
+  CopyToClipboard,
+  ConnectivityGraph,
+  ExternalResourceCard,
+} from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
 
 const titleCase = (str) => {
@@ -617,6 +621,11 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   gap: 1rem;
+
+  .title-content {
+    flex: 1 0 0%;
+    max-width: 85%;
+  }
 }
 
 .title {
@@ -922,7 +931,10 @@ export default {
 
 .title-buttons {
   display: flex;
+  flex: 1 0 0%;
+  max-width: 15%;
   flex-direction: row;
+  justify-content: end;
   gap: 0.5rem;
 
   :deep(.copy-clipboard-button) {
