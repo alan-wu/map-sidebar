@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div class="content-container neuron-connection">
+    <div class="content-container neuron-connection" v-if="entry.neuronCuration">
       <div class="block attribute-title-container">
         <span class="attribute-title">Neuron Connection</span>
       </div>
@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <div class="content-container population-display">
+    <div class="content-container population-display" v-if="entry.neuronCuration">
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
       </div>
