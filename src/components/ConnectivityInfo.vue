@@ -35,9 +35,6 @@
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
         </div>
-        <div class="block" v-if="resources.length">
-          <external-resource-card :resources="resources"></external-resource-card>
-        </div>
       </div>
       <div class="title-buttons">
         <el-popover
@@ -218,6 +215,10 @@
           ref="connectivityGraphRef"
         />
       </template>
+    </div>
+
+    <div class="content-container" v-if="resources.length">
+      <external-resource-card :resources="resources"></external-resource-card>
     </div>
   </div>
 </template>
