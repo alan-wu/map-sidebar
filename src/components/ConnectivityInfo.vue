@@ -448,21 +448,6 @@ export default {
         contentArray.push(`<div>${this.provSpeciesDescription}</div>`);
       }
 
-      // PubMed URL
-      if (this.resources?.length) {
-        const pubmedContents = [];
-        this.resources.forEach((resource) => {
-          let pubmedContent = '';
-          if (resource.id === 'pubmed') {
-            pubmedContent += `<div><strong>PubMed URL:</strong></div>`;
-            pubmedContent += '\n';
-            pubmedContent += `<div><a href="${resource.url}">${resource.url}</a></div>`;
-          }
-          pubmedContents.push(pubmedContent);
-        });
-        contentArray.push(pubmedContents.join('\n\n<br>'));
-      }
-
       // entry.paths
       if (this.entry.paths) {
         contentArray.push(`<div>${this.entry.paths}</div>`);
@@ -516,6 +501,14 @@ export default {
         const destinationsWithDatasets = this.entry.destinationsWithDatasets;
         const transformedDestinations = transformData(title, destinations, destinationsWithDatasets);
         contentArray.push(transformedDestinations);
+      }
+
+      // References
+      if (this.resources?.length) {
+        const referenceContents = [];
+        referenceContents.push(`<div><strong>References</strong></div>`);
+        // TODO: to get references after contents are loaded.
+        contentArray.push(referenceContents.join('\n\n<br>'));
       }
 
       return contentArray.join('\n\n<br>');
