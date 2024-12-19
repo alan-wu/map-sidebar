@@ -22,13 +22,7 @@
               </el-popover>
             </template>
           </div>
-          <div
-            v-if="
-              entry.provenanceTaxonomyLabel &&
-              entry.provenanceTaxonomyLabel.length > 0
-            "
-            class="subtitle"
-          >
+          <div v-if="hasProvenanceTaxonomyLabel" class="subtitle">
             {{ provSpeciesDescription }}
           </div>
         </div>
@@ -66,9 +60,30 @@
         <span class="attribute-title">Neuron Connection</span>
       </div>
       <div class="block">
-        <el-button class="button" type="primary" @click="showNeuronConnection('origins')">Origins</el-button>
-        <el-button class="button" type="primary" @click="showNeuronConnection('destinations')">Destinations</el-button>
-        <el-button class="button" type="primary" @click="showNeuronConnection('others')">Others</el-button>
+        <el-button 
+          v-if="hasOrigins" 
+          class="button" 
+          type="primary"
+          @click="showNeuronConnection('origins')"
+        >
+          Origins
+        </el-button>
+        <el-button
+          v-if="hasComponents" 
+          class="button" 
+          type="primary"
+          @click="showNeuronConnection('components')"
+        >
+          Components
+        </el-button>
+        <el-button 
+          v-if="hasDestinations" 
+          class="button" 
+          type="primary"
+          @click="showNeuronConnection('destinations')"
+        >
+          Destinations
+        </el-button>
       </div>
     </div>
 
@@ -94,7 +109,7 @@
 
     <div class="content-container content-container-connectivity" v-if="activeView === 'listView'">
       {{ entry.paths }}
-      <div v-if="entry.origins && entry.origins.length > 0" class="block">
+      <div v-if="hasOrigins" class="block">
         <div class="attribute-title-container">
           <span class="attribute-title">Origin</span>
           <el-popover
@@ -123,10 +138,7 @@
           {{ capitalise(origin) }}
         </div>
         <el-button
-          v-show="
-            entry.originsWithDatasets && entry.originsWithDatasets.length > 0 &&
-            shouldShowExploreButton(entry.originsWithDatasets)
-          "
+          v-show="hasOriginsWithDatasets"
           class="button"
           id="open-dendrites-button"
           @click="openDendrites"
@@ -134,10 +146,7 @@
           Explore origin data
         </el-button>
       </div>
-      <div
-        v-if="entry.components && entry.components.length > 0"
-        class="block"
-      >
+      <div v-if="hasComponents" class="block">
         <div class="attribute-title-container">
           <div class="attribute-title">Components</div>
         </div>
@@ -152,10 +161,7 @@
           {{ capitalise(component) }}
         </div>
       </div>
-      <div
-        v-if="entry.destinations && entry.destinations.length > 0"
-        class="block"
-      >
+      <div v-if="hasDestinations" class="block">
         <div class="attribute-title-container">
           <span class="attribute-title">Destination</span>
           <el-popover
@@ -182,30 +188,13 @@
         >
           {{ capitalise(destination) }}
         </div>
-        <el-button
-          v-show="
-            entry.destinationsWithDatasets &&
-            entry.destinationsWithDatasets.length > 0 &&
-            shouldShowExploreButton(entry.destinationsWithDatasets)
-          "
-          class="button"
-          @click="openAxons"
+        <el-button v-show="hasDestinationsWithDatasets" class="button" @click="openAxons"
         >
           Explore destination data
         </el-button>
       </div>
-      <div
-        v-show="
-          entry.componentsWithDatasets &&
-          entry.componentsWithDatasets.length > 0 &&
-          shouldShowExploreButton(entry.componentsWithDatasets)
-        "
-        class="block"
-      >
-        <el-button
-          class="button"
-          @click="openAll"
-        >
+      <div v-show="hasComponentsWithDatasets" class="block">
+        <el-button class="button" @click="openAll">
           Search for data on components
         </el-button>
       </div>
@@ -327,6 +316,42 @@ export default {
     },
   },
   computed: {
+    hasProvenanceTaxonomyLabel: function () {
+      return (
+        this.entry.provenanceTaxonomyLabel &&
+        this.entry.provenanceTaxonomyLabel.length > 0
+      );
+    },
+    hasOrigins: function () {
+      return this.entry.origins && this.entry.origins.length > 0;
+    },
+    hasOriginsWithDatasets: function () {
+      return (
+        this.entry.originsWithDatasets &&
+        this.entry.originsWithDatasets.length > 0 &&
+        this.shouldShowExploreButton(this.entry.originsWithDatasets)
+      );
+    },
+    hasComponents: function () {
+      return this.entry.components && this.entry.components.length > 0;
+    },
+    hasComponentsWithDatasets: function () {
+      return (
+        this.entry.componentsWithDatasets &&
+        this.entry.componentsWithDatasets.length > 0 &&
+        this.shouldShowExploreButton(this.entry.componentsWithDatasets)
+      );
+    },
+    hasDestinations: function () {
+      return this.entry.destinations && this.entry.destinations.length > 0;
+    },
+    hasDestinationsWithDatasets: function () {
+      return (
+        this.entry.destinationsWithDatasets &&
+        this.entry.destinationsWithDatasets.length > 0 &&
+        this.shouldShowExploreButton(this.entry.destinationsWithDatasets)
+      );
+    },
     updatedCopyContent: function () {
       return this.getUpdateCopyContent();
     },
