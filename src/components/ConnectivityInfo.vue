@@ -218,7 +218,7 @@
     </div>
 
     <div class="content-container" v-if="resources.length">
-      <external-resource-card :resources="resources"></external-resource-card>
+      <external-resource-card :resources="resources" @references-loaded="onReferencesLoaded"></external-resource-card>
     </div>
   </div>
 </template>
@@ -312,6 +312,7 @@ export default {
       connectivityError: null,
       timeoutID: undefined,
       graphViewLoaded: false,
+      updatedCopyContent: '',
     }
   },
   watch: {
@@ -324,9 +325,6 @@ export default {
     },
   },
   computed: {
-    updatedCopyContent: function () {
-      return this.getUpdateCopyContent();
-    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
@@ -426,7 +424,10 @@ export default {
       const name = data.map(t => t.label).join(', ');
       this.toggleConnectivityTooltip(name, {show: true});
     },
-    getUpdateCopyContent: function () {
+    onReferencesLoaded: function (references) {
+      this.updatedCopyContent = this.getUpdateCopyContent(references);
+    },
+    getUpdateCopyContent: function (references) {
       if (!this.entry) {
         return '';
       }
@@ -504,11 +505,18 @@ export default {
       }
 
       // References
-      if (this.resources?.length) {
-        const referenceContents = [];
-        referenceContents.push(`<div><strong>References</strong></div>`);
-        // TODO: to get references after contents are loaded.
-        contentArray.push(referenceContents.join('\n\n<br>'));
+      if (references) {
+        let contentString = `<div><strong>References</strong></div>`;
+        contentString += '\n';
+        if (references.style) {
+          contentString += `<div>Formatting Style: ${references.style}</div>`;
+          contentString += '\n';
+        }
+        const contentList = references.list
+          .map((item) => `<li>${item}</li>`)
+          .join('\n');
+        contentString += `<ul>${contentList}</ul>`;
+        contentArray.push(contentString);
       }
 
       return contentArray.join('\n\n<br>');
@@ -595,6 +603,7 @@ export default {
     },
   },
   mounted: function () {
+    this.updatedCopyContent = this.getUpdateCopyContent();
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
     });
