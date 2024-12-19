@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <div class="content-container neuron-connection" v-if="entry.neuronCuration">
+    <div class="content-container neuron-connection-button" v-if="entry.neuronCuration">
       <div class="block attribute-title-container">
         <span class="attribute-title">Neuron Connection</span>
       </div>
@@ -124,7 +124,6 @@
             <span style="word-break: keep-all">
               <i>Origin</i> {{ originDescription }}
             </span>
-
           </el-popover>
         </div>
         <div
@@ -135,7 +134,14 @@
           @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
           @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
         >
-          {{ capitalise(origin) }}
+          <span>{{ capitalise(origin) }}</span>
+          <el-icon 
+            v-if="entry.neuronCuration"
+            class="neuron-connection-icon" 
+            @click="showNeuronConnection('origins', origin)"
+          >
+            <el-icon-connection />
+          </el-icon>
         </div>
         <el-button
           v-show="hasOriginsWithDatasets"
@@ -158,7 +164,14 @@
           @mouseenter="toggleConnectivityTooltip(component, {show: true})"
           @mouseleave="toggleConnectivityTooltip(component, {show: false})"
         >
-          {{ capitalise(component) }}
+          <span>{{ capitalise(component) }}</span>
+          <el-icon 
+            v-if="entry.neuronCuration"
+            class="neuron-connection-icon" 
+            @click="showNeuronConnection('components', component)"
+          >
+            <el-icon-connection />
+          </el-icon>
         </div>
       </div>
       <div v-if="hasDestinations" class="block">
@@ -186,7 +199,14 @@
           @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
           @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
         >
-          {{ capitalise(destination) }}
+          <span>{{ capitalise(destination) }}</span>
+          <el-icon 
+            v-if="entry.neuronCuration"
+            class="neuron-connection-icon" 
+            @click="showNeuronConnection('destinations', destination)"
+          >
+            <el-icon-connection />
+          </el-icon>
         </div>
         <el-button v-show="hasDestinationsWithDatasets" class="button" @click="openAxons"
         >
@@ -225,6 +245,7 @@ import {
   ArrowUp as ElIconArrowUp,
   ArrowDown as ElIconArrowDown,
   Warning as ElIconWarning,
+  Connection as ElIconConnection,
 } from '@element-plus/icons-vue'
 /* eslint-disable no-alert, no-console */
 import {
@@ -384,9 +405,11 @@ export default {
     },
   },
   methods: {
-    showNeuronConnection: function (data) {
+    showNeuronConnection: function (type, label = undefined) {
+      const data = label ? this.findConnectivityDatasets(label) : []
       this.$emit('neuron-connection-change', {
-        type: data
+        type: type,
+        data: data
       });
     },
     titleCase: function (title) {
@@ -555,29 +578,29 @@ export default {
 
       return contentArray.join('\n\n<br>');
     },
-    toggleConnectivityTooltip: function (name, option) {
+    findConnectivityDatasets: function (label) {
       const allWithDatasets = [
         ...this.entry.componentsWithDatasets,
         ...this.entry.destinationsWithDatasets,
         ...this.entry.originsWithDatasets,
       ];
-      const names = name.split(','); // some features have more than one value
-      const data = [];
-      if (option.show) {
-        names.forEach((n) => {
-          const foundData = allWithDatasets.find((a) =>
-            a.name.toLowerCase().trim() === n.toLowerCase().trim()
-          );
-
-          if (foundData) {
-            data.push({
-              id: foundData.id,
-              label: foundData.name
-            });
-          }
-        });
-      }
-
+      const names = label.split(','); // some features have more than one value
+      let data = [];
+      names.forEach((n) => {
+        const foundData = allWithDatasets.find((a) =>
+          a.name.toLowerCase().trim() === n.toLowerCase().trim()
+        );
+        if (foundData) {
+          data.push({
+            id: foundData.id,
+            label: foundData.name
+          });
+        }
+      });
+      return data
+    },
+    toggleConnectivityTooltip: function (label, option) {
+      const data = option.show ? this.findConnectivityDatasets(label) : []
       // type: to show error only for click event
       this.$emit('connectivity-component-click', data);
     },
@@ -783,6 +806,8 @@ export default {
 }
 
 .attribute-content {
+  display: flex;
+  justify-content: space-between;
   font-size: 14px;
   font-weight: 500;
   transition: color 0.25s ease;
@@ -807,6 +832,11 @@ export default {
 
   &:last-of-type {
     margin-bottom: 0.5em;
+  }
+
+  .neuron-connection-icon {
+    padding: 4px;
+    cursor: pointer;
   }
 }
 
@@ -873,7 +903,7 @@ export default {
   }
 }
 
-.neuron-connection {
+.neuron-connection-button {
   display: flex;
   flex: 1 1 auto !important;
   flex-direction: row !important;
