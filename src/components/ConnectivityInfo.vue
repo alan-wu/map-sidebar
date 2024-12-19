@@ -508,10 +508,6 @@ export default {
       if (references) {
         let contentString = `<div><strong>References</strong></div>`;
         contentString += '\n';
-        if (references.style) {
-          contentString += `<div>Formatting Style: ${references.style}</div>`;
-          contentString += '\n';
-        }
         const contentList = references.list
           .map((item) => `<li>${item}</li>`)
           .join('\n');
