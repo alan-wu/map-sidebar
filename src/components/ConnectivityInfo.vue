@@ -196,8 +196,8 @@
         </el-button>
       </div>
 
-      <div v-if="connectivityError" class="connectivity-error-container">
-        <div class="connectivity-error">
+      <div class="connectivity-error-container">
+        <div class="connectivity-error" v-if="connectivityError">
           <strong v-if="connectivityError.errorConnectivities">
             {{ connectivityError.errorConnectivities }}
           </strong>
@@ -217,7 +217,7 @@
       </template>
     </div>
 
-    <div class="content-container" v-if="resources.length">
+    <div class="content-container content-container-references" v-if="resources.length">
       <external-resource-card :resources="resources" @references-loaded="onReferencesLoaded"></external-resource-card>
     </div>
   </div>
@@ -965,12 +965,18 @@ export default {
 
 .content-container-connectivity {
   position: relative;
+
+  &:not([style*="display: none"]) ~ .content-container-references {
+    margin-top: -1.25rem;
+  }
 }
 
 .connectivity-error-container {
   position: sticky;
   bottom: 0.5rem;
   width: 100%;
+  min-height: 31px; // placeholder
+  margin-top: -10px !important;
   display: flex;
   flex-direction: row;
   align-items: center;
