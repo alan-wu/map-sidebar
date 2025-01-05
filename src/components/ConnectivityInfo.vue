@@ -131,12 +131,15 @@
           class="attribute-content"
           :origin-item-label="origin"
           :key="origin"
-          @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
         >
-          <span>{{ capitalise(origin) }}</span>
+          <span
+            @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
+            @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
+          >
+            {{ capitalise(origin) }}
+          </span>
           <el-icon 
-            v-if="entry.neuronCuration"
+
             class="neuron-connection-icon" 
             @click="showNeuronConnection('origins', origin)"
           >
@@ -161,12 +164,15 @@
           class="attribute-content"
           :component-item-label="component"
           :key="component"
-          @mouseenter="toggleConnectivityTooltip(component, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(component, {show: false})"
         >
-          <span>{{ capitalise(component) }}</span>
+          <span
+            @mouseenter="toggleConnectivityTooltip(component, {show: true})"
+            @mouseleave="toggleConnectivityTooltip(component, {show: false})"
+          >
+            {{ capitalise(component) }}
+          </span>
           <el-icon 
-            v-if="entry.neuronCuration"
+
             class="neuron-connection-icon" 
             @click="showNeuronConnection('components', component)"
           >
@@ -196,12 +202,15 @@
           class="attribute-content"
           :destination-item-label="destination"
           :key="destination"
-          @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
         >
-          <span>{{ capitalise(destination) }}</span>
+          <span
+            @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
+            @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
+          >
+            {{ capitalise(destination) }}
+          </span>
           <el-icon 
-            v-if="entry.neuronCuration"
+
             class="neuron-connection-icon" 
             @click="showNeuronConnection('destinations', destination)"
           >
