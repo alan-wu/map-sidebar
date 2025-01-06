@@ -288,5 +288,6 @@ export default {
         "Homo sapiens",
         "Canis lupus familiaris",
         "Domestic Pig"
-    ]
+    ],
+    neuronCuration: true
 }
