@@ -174,6 +174,7 @@ export default {
       showFiltersText: true,
       cascadeSelected: [],
       cascadeSelectedWithBoolean: [],
+      filterTimeout: null,
       numberShown: 10,
       filters: [],
       facets: ['Species', 'Gender', 'Organ', 'Datasets'],
@@ -476,10 +477,25 @@ export default {
             }
           })
 
+        // if all checkboxes are checked
+        // there has no filter values
+        const filtersLength = filters.filter((item) => item.facet !== 'Show all');
+        if (!filtersLength.length) {
+          filters = [];
+        }
+
+        // timeout: add delay for filter checkboxes
+        if (this.filterTimeout) {
+          clearTimeout(this.filterTimeout);
+        }
+
         this.$emit('loading', true) // let sidebarcontent wait for the requests
-        this.$emit('filterResults', filters) // emit filters for apps above sidebar
         this.setCascader(filterKeys) //update our cascader v-model if we modified the event
-        this.cssMods() // update css for the cascader
+
+        this.filterTimeout = setTimeout(() => {
+          this.$emit('filterResults', filters) // emit filters for apps above sidebar
+          this.cssMods() // update css for the cascader
+        }, 600);
       }
     },
     //this fucntion is needed as we previously stored booleans in the array of event that
@@ -1003,6 +1019,8 @@ export default {
 
 .sidebar-cascader-popper .el-checkbox__input.is-checked .el-checkbox__inner,
 .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  --el-checkbox-checked-bg-color: #{$app-primary-color};
+  --el-checkbox-checked-input-border-color: #{$app-primary-color};
   background-color: $app-primary-color;
   border-color: $app-primary-color;
 }
