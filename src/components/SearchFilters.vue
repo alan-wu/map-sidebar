@@ -15,6 +15,10 @@
         placement="bottom-start"
         :width="200"
         trigger="hover"
+        :teleported="false"
+        popper-class="cascade-tags-popover"
+        ref="cascadeTagsPopover"
+        @show="onCascadeTagsPopoverShown"
       >
         <template #default>
           <div class="el-tags-container">
@@ -59,14 +63,15 @@
           @expand-change="cascadeExpandChange"
           :show-all-levels="true"
           popper-class="sidebar-cascader-popper"
+          :teleported="false"
         />
         <div v-if="showFiltersText" class="filter-default-value">Filters</div>
         <el-popover
           title="How do filters work?"
           width="250"
           trigger="hover"
-          :append-to-body="false"
           popper-class="popover"
+          :teleported="false"
         >
           <template #reference>
             <MapSvgIcon icon="help" class="help" />
@@ -91,6 +96,7 @@
         v-model="numberShown"
         placeholder="10"
         @change="numberShownChanged($event)"
+        :teleported="false"
       >
         <el-option
           v-for="item in numberDatasetsShown"
@@ -469,7 +475,7 @@ export default {
               facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
             }
           })
-        
+
         this.$emit('loading', true) // let sidebarcontent wait for the requests
         this.$emit('filterResults', filters) // emit filters for apps above sidebar
         this.setCascader(filterKeys) //update our cascader v-model if we modified the event
@@ -631,7 +637,7 @@ export default {
           let filters = createFilter(e)
           return filters
         })
-        
+
         // Unforttunately the cascader is very particular about it's v-model
         //   to get around this we create a clone of it and use this clone for adding our boolean information
         this.cascadeSelectedWithBoolean = filterFacets.map((e) => {
@@ -775,6 +781,22 @@ export default {
       }
       return []
     },
+    onCascadeTagsPopoverShown: function () {
+      const cascadeTagsPopover = this.$refs.cascadeTagsPopover;
+      const cascader = this.$refs.cascader;
+
+      if (cascader && cascadeTagsPopover) {
+        const cascaderZIndex = cascader.contentRef?.style.zIndex;
+        const cascaderTagZIndex = (cascaderZIndex * 1) + 1;
+        const cascadeTagsPopoverContentRef = cascadeTagsPopover.popperRef?.contentRef;
+
+        if (cascadeTagsPopoverContentRef) {
+          const cascaderTag = cascadeTagsPopoverContentRef.closest('.cascader-tag');
+          cascadeTagsPopoverContentRef.style.zIndex = cascaderTagZIndex;
+          cascaderTag.style.zIndex = cascaderTagZIndex;
+        }
+      }
+    },
   },
   mounted: function () {
     this.algoliaClient = markRaw(new AlgoliaClient(
@@ -916,40 +938,13 @@ export default {
   line-height: 18px;
 }
 
-.filters :deep(.el-popover[x-placement^='top'] .popper__arrow) {
-  border-top-color: $app-primary-color;
-  border-bottom-width: 0;
-}
-.filters :deep(.el-popover[x-placement^='top'] .popper__arrow::after) {
-  border-top-color: #f3ecf6;
-  border-bottom-width: 0;
+.filters :deep(.el-popover .el-popper__arrow::before) {
+  background: #f3ecf6;
+  border-color: $app-primary-color;
 }
 
-.filters :deep(.el-popover[x-placement^='bottom'] .popper__arrow) {
-  border-top-width: 0;
-  border-bottom-color: $app-primary-color;
-}
-.filters :deep(.el-popover[x-placement^='bottom'] .popper__arrow::after) {
-  border-top-width: 0;
-  border-bottom-color: #f3ecf6;
-}
-
-.filters :deep(.el-popover[x-placement^='right'] .popper__arrow) {
-  border-right-color: $app-primary-color;
-  border-left-width: 0;
-}
-.filters :deep(.el-popover[x-placement^='right'] .popper__arrow::after) {
-  border-right-color: #f3ecf6;
-  border-left-width: 0;
-}
-
-.filters :deep(.el-popover[x-placement^='left'] .popper__arrow) {
-  border-right-width: 0;
-  border-left-color: $app-primary-color;
-}
-.filters :deep(.el-popover[x-placement^='left'] .popper__arrow::after) {
-  border-right-width: 0;
-  border-left-color: #f3ecf6;
+:deep(.cascade-tags-popover) {
+  position: fixed !important;
 }
 </style>
 
@@ -965,6 +960,7 @@ export default {
   color: #292b66;
   text-align: center;
   padding-bottom: 6px;
+  position: fixed !important;
 }
 
 .sidebar-cascader-popper .el-cascader-node.is-active {
