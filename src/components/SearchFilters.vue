@@ -728,21 +728,27 @@ export default {
     /*
      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
      */
-    validateAndConvertFilterToHierarchical: function (filter) {
+    validateAndConvertFilterToHierarchical: function (filter) {    
       if (filter && filter.facet && filter.term) {
+        // Convert terms to lower case.
+        // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
+        // is Inferior vagus x ganglion (there are other cases as well)
+        const lowercase = filter.facet.toLowerCase()
         if (filter.facet2) {
           return filter // if it has a second term we will assume it is hierarchical and return it as is
         } else {
           for (const firstLayer of this.options) {
             if (firstLayer.value === filter.facetPropPath) {
               for (const secondLayer of firstLayer.children) {
-                if (secondLayer.label === filter.facet) {
+                if (secondLayer.label?.toLowerCase() === lowercase) {
                   // if we find a match on the second level, the filter will already be correct
+                  // Make sure the case matches the one from Algolia
+                  filter.facet = secondLayer.label
                   return filter
                 } else {
                   if (secondLayer.children && secondLayer.children.length > 0) {
                     for (const thirdLayer of secondLayer.children) {
-                      if (thirdLayer.label === filter.facet) {
+                      if (thirdLayer.label?.toLowerCase() === lowercase) {
                         // If we find a match on the third level, we need to switch facet1 to facet2
                         //   and populate facet1 with its parents label.
                         filter.facet2 = thirdLayer.label
