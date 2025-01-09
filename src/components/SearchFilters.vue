@@ -66,7 +66,7 @@
           title="How do filters work?"
           width="250"
           trigger="hover"
-          popper-class="popover"
+          popper-class="filter-help-popover"
         >
           <template #reference>
             <MapSvgIcon icon="help" class="help" />
@@ -998,6 +998,13 @@ export default {
   border-color: $app-primary-color;
 }
 
+.filter-help-popover {
+  color: rgb(48, 49, 51);
+  font-family: Asap;
+  margin: 12px;
+}
+
+.filter-help-popover,
 .cascade-tags-popover {
   background: #f3ecf6 !important;
   border: 1px solid $app-primary-color !important;
@@ -1005,15 +1012,17 @@ export default {
   color: #303133 !important;
   font-size: 12px !important;
   line-height: 18px !important;
+
+  .el-popper__arrow::before {
+    background: #f3ecf6 !important;
+    border-color: $app-primary-color !important;
+  }
+
+  &[data-popper-placement^=bottom] .el-popper__arrow:before {
+    border-bottom-color: transparent !important;
+    border-right-color: transparent !important;
+  }
 }
 
-.cascade-tags-popover .el-popper__arrow::before {
-  background: #f3ecf6 !important;
-  border-color: $app-primary-color !important;
-}
 
-.cascade-tags-popover[data-popper-placement^=bottom] .el-popper__arrow:before {
-  border-bottom-color: transparent !important;
-  border-right-color: transparent !important;
-}
 </style>
