@@ -15,6 +15,7 @@
         placement="bottom-start"
         :width="200"
         trigger="hover"
+        popper-class="cascade-tags-popover"
       >
         <template #default>
           <div class="el-tags-container">
@@ -995,5 +996,24 @@ export default {
   --el-checkbox-checked-input-border-color: #{$app-primary-color};
   background-color: $app-primary-color;
   border-color: $app-primary-color;
+}
+
+.cascade-tags-popover {
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color !important;
+  border-radius: 4px !important;
+  color: #303133 !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+
+.cascade-tags-popover .el-popper__arrow::before {
+  background: #f3ecf6 !important;
+  border-color: $app-primary-color !important;
+}
+
+.cascade-tags-popover[data-popper-placement^=bottom] .el-popper__arrow:before {
+  border-bottom-color: transparent !important;
+  border-right-color: transparent !important;
 }
 </style>
