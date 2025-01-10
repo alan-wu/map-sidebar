@@ -15,10 +15,7 @@
         placement="bottom-start"
         :width="200"
         trigger="hover"
-        :teleported="false"
         popper-class="cascade-tags-popover"
-        ref="cascadeTagsPopover"
-        @show="onCascadeTagsPopoverShown"
       >
         <template #default>
           <div class="el-tags-container">
@@ -63,15 +60,13 @@
           @expand-change="cascadeExpandChange"
           :show-all-levels="true"
           popper-class="sidebar-cascader-popper"
-          :teleported="false"
         />
         <div v-if="showFiltersText" class="filter-default-value">Filters</div>
         <el-popover
           title="How do filters work?"
           width="250"
           trigger="hover"
-          popper-class="popover"
-          :teleported="false"
+          popper-class="filter-help-popover"
         >
           <template #reference>
             <MapSvgIcon icon="help" class="help" />
@@ -96,7 +91,6 @@
         v-model="numberShown"
         placeholder="10"
         @change="numberShownChanged($event)"
-        :teleported="false"
       >
         <el-option
           v-for="item in numberDatasetsShown"
@@ -750,7 +744,7 @@ export default {
     /*
      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
      */
-    validateAndConvertFilterToHierarchical: function (filter) {    
+    validateAndConvertFilterToHierarchical: function (filter) {
       if (filter && filter.facet && filter.term) {
         // Convert terms to lower case.
         // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
@@ -802,22 +796,6 @@ export default {
         } else return filters
       }
       return []
-    },
-    onCascadeTagsPopoverShown: function () {
-      const cascadeTagsPopover = this.$refs.cascadeTagsPopover;
-      const cascader = this.$refs.cascader;
-
-      if (cascader && cascadeTagsPopover) {
-        const cascaderZIndex = cascader.contentRef?.style.zIndex;
-        const cascaderTagZIndex = (cascaderZIndex * 1) + 1;
-        const cascadeTagsPopoverContentRef = cascadeTagsPopover.popperRef?.contentRef;
-
-        if (cascadeTagsPopoverContentRef) {
-          const cascaderTag = cascadeTagsPopoverContentRef.closest('.cascader-tag');
-          cascadeTagsPopoverContentRef.style.zIndex = cascaderTagZIndex;
-          cascaderTag.style.zIndex = cascaderTagZIndex;
-        }
-      }
     },
   },
   mounted: function () {
@@ -964,10 +942,6 @@ export default {
   background: #f3ecf6;
   border-color: $app-primary-color;
 }
-
-:deep(.cascade-tags-popover) {
-  position: fixed !important;
-}
 </style>
 
 <style lang="scss">
@@ -982,7 +956,6 @@ export default {
   color: #292b66;
   text-align: center;
   padding-bottom: 6px;
-  position: fixed !important;
 }
 
 .sidebar-cascader-popper .el-cascader-node.is-active {
@@ -1023,5 +996,26 @@ export default {
   --el-checkbox-checked-input-border-color: #{$app-primary-color};
   background-color: $app-primary-color;
   border-color: $app-primary-color;
+}
+
+.filter-help-popover,
+.cascade-tags-popover {
+  font-family: 'Asap', sans-serif;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color !important;
+  border-radius: 4px !important;
+  color: #303133 !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+
+  .el-popper__arrow::before {
+    background: #f3ecf6 !important;
+    border-color: $app-primary-color !important;
+  }
+
+  &[data-popper-placement^=bottom] .el-popper__arrow:before {
+    border-bottom-color: transparent !important;
+    border-right-color: transparent !important;
+  }
 }
 </style>

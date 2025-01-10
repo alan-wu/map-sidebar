@@ -13,7 +13,6 @@
             <el-popover
               width="auto"
               trigger="hover"
-              :teleported="false"
               :show-after="200"
               :persistent="false"
               popper-class="popover-dropdown"
@@ -36,9 +35,6 @@
     <el-dropdown
       trigger="click"
       :hide-on-click="false"
-      :teleported="false"
-      class="search-history-dropdown"
-      popper-class="search-history-dropdown__popper"
     >
       <span class="el-dropdown-select">
         Search history
@@ -54,7 +50,6 @@
                 <el-popover
                   width="auto"
                   trigger="hover"
-                  :teleported="false"
                   :show-after="200"
                   :persistent="false"
                   popper-class="popover-dropdown"
@@ -77,7 +72,6 @@
               <el-popover
                 width="auto"
                 trigger="hover"
-                :teleported="false"
                 :show-after="200"
                 :persistent="false"
                 popper-class="popover-dropdown"
@@ -118,7 +112,6 @@
               <el-popover
                 width="auto"
                 trigger="hover"
-                :teleported="false"
                 :show-after="200"
                 :persistent="false"
                 popper-class="popover-dropdown"
@@ -430,7 +423,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 6px;
-  z-index: 2;
 }
 
 .empty-saved-search {
@@ -497,6 +489,7 @@ export default {
   .el-icon {
     transform: rotate(0deg);
     transition: transform 0.25s linear;
+    color: var(--el-text-color-placeholder);
   }
 
   &[aria-expanded="true"] {
@@ -547,10 +540,6 @@ export default {
   i {
     margin: 0;
   }
-}
-
-:deep(.search-history-dropdown__popper) {
-  position: fixed !important;
 }
 </style>
 
@@ -608,11 +597,9 @@ export default {
   max-width: 240px;
   font-family: Asap;
   font-size: 12px;
-  white-space: normal;
   word-break: break-word;
   text-align: left;
   color: inherit;
-  position: fixed !important;
   background: #f3ecf6 !important;
   border: 1px solid $app-primary-color;
 
