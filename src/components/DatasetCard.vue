@@ -60,6 +60,7 @@
 <script>
 /* eslint-disable no-alert, no-console */
 import { View as ElIconView } from '@element-plus/icons-vue'
+import { Base64  } from 'js-base64';
 import BadgesGroup from './BadgesGroup.vue'
 import {
   ElButton as Button,
@@ -236,7 +237,7 @@ export default {
             this.discoverId = data.id
             this.version = data.version
             this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
-            this.getBiolucidaInfo(this.discoverId)
+            this.getBiolucidaInfo()
             this.loading = false
             this.updateCopyContent();
           })
@@ -251,15 +252,29 @@ export default {
     lastName: function (fullName) {
       return fullName.split(',')[0]
     },
-    getBiolucidaInfo: function (id) {
-      let apiLocation = this.envVars.API_LOCATION
-      let endpoint = apiLocation + 'image_search/' + id
-      // Add parameters if we are sent them
-      fetch(endpoint)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status == 'success') this.biolucidaData = data
-        })
+    getBiolucidaInfo: function () {
+      const dataset_images = [];
+      const biolucida2DItems = 'biolucida-2d' in this.entry ? this.entry['biolucida-2d'] :[];
+      const biolucida3DItems = 'biolucida-3d' in this.entry ? this.entry['biolucida-3d'] :[];
+      // Images need to exist in both Scicrunch and Biolucida
+      biolucida2DItems.concat(biolucida3DItems).forEach((bObject) => {
+        const image_id = bObject.biolucida?.identifier;
+        if (image_id) {
+          const sourcepkg_id = 'identifier' in bObject ? bObject['identifier'] : "";
+          // The encoded string is in the following format -
+          // ${image_id}-col-${collection_id}, collection id can be any valid collection id
+          // and we using 260 for now.
+          const share_link = encodeURIComponent(Base64.encode(`${image_id}-col-260`));
+          dataset_images.push({
+            share_link,
+            image_id,
+            sourcepkg_id,
+          });
+        }
+      });
+      if (dataset_images.length > 0) {
+        this.biolucidaData = { dataset_images };
+      }
     },
     updateCopyContent: function () {
       const contentArray = [];
