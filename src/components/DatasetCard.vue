@@ -256,14 +256,14 @@ export default {
       const dataset_images = [];
       const biolucida2DItems = 'biolucida-2d' in this.entry ? this.entry['biolucida-2d'] :[];
       const biolucida3DItems = 'biolucida-3d' in this.entry ? this.entry['biolucida-3d'] :[];
-      // Images need to exist in both Scicrunch and Biolucida
+      // We use information form SciCrunch to create the sharelink
       biolucida2DItems.concat(biolucida3DItems).forEach((bObject) => {
         const image_id = bObject.biolucida?.identifier;
         if (image_id) {
           const sourcepkg_id = 'identifier' in bObject ? bObject['identifier'] : "";
           // The encoded string is in the following format -
           // ${image_id}-col-${collection_id}, collection id can be any valid collection id
-          // and we using 260 for now.
+          // and 260 is used for now.
           const share_link = encodeURIComponent(Base64.encode(`${image_id}-col-260`));
           dataset_images.push({
             share_link,
