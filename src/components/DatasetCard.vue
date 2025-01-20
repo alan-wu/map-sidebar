@@ -264,7 +264,8 @@ export default {
           // The encoded string is in the following format -
           // ${image_id}-col-${collection_id}, collection id can be any valid collection id
           // and 260 is used for now.
-          const share_link = encodeURIComponent(Base64.encode(`${image_id}-col-260`));
+          const code = encodeURIComponent(Base64.encode(`${image_id}-col-260`));
+          const share_link = `https://sparc.biolucida.net/image?c=${code}`
           dataset_images.push({
             share_link,
             image_id,
