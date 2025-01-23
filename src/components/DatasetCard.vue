@@ -256,7 +256,7 @@ export default {
       const dataset_images = [];
       const biolucida2DItems = 'biolucida-2d' in this.entry ? this.entry['biolucida-2d'] :[];
       const biolucida3DItems = 'biolucida-3d' in this.entry ? this.entry['biolucida-3d'] :[];
-      // We use information form SciCrunch to create the sharelink
+      // We use information from SciCrunch to create the sharelink
       biolucida2DItems.concat(biolucida3DItems).forEach((bObject) => {
         const image_id = bObject.biolucida?.identifier;
         if (image_id) {
