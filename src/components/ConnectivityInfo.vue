@@ -211,6 +211,7 @@
         <connectivity-graph
           :entry="entry.featureId[0]"
           :mapServer="envVars.FLATMAPAPI_LOCATION"
+          :sckanVersion="sckanVersion"
           @tap-node="onTapNode"
           ref="connectivityGraphRef"
         />
@@ -313,6 +314,7 @@ export default {
       timeoutID: undefined,
       graphViewLoaded: false,
       updatedCopyContent: '',
+      sckanVersion: '',
     }
   },
   watch: {
@@ -599,6 +601,7 @@ export default {
     },
   },
   mounted: function () {
+    this.sckanVersion = this.entry['knowledge-source'];
     this.updatedCopyContent = this.getUpdateCopyContent();
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
