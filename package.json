@@ -1,6 +1,6 @@
 {
   "name": "@abi-software/map-side-bar",
-  "version": "2.6.3",
+  "version": "2.6.3-acupoints.0",
   "files": [
     "dist/*",
     "src/*",
