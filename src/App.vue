@@ -16,6 +16,7 @@
       <el-button @click="keywordSearch">keyword search</el-button>
       <el-button @click="getFacets">Get facets</el-button>
       <el-button @click="toggleCreateData">Create Data/Annotation</el-button>
+      <el-button @click="searchAcupoints">Search Acupoints</el-button>
     </div>
     <SideBar
       :envVars="envVars"
@@ -25,6 +26,7 @@
       :tabs="tabs"
       :activeTabId="activeId"
       :annotationEntry="annotationEntry"
+      :acupointsInfoList="acupoints"
       :createData="createData"
       :connectivityInfo="connectivityInput"
       @tabClicked="tabClicked"
@@ -32,6 +34,8 @@
       @hover-changed="hoverChanged($event)"
       @connectivity-component-click="onConnectivityComponentClick"
       @actionClick="action"
+      @acupoints-clicked="onAcupointsClicked"
+      @acupoints-hovered="onAcupointsHovered"
     />
   </div>
 </template>
@@ -39,11 +43,13 @@
 <script>
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
+import { acupointEntries } from './acupoints.js'
 import SideBar from './components/SideBar.vue'
 import EventBus from './components/EventBus.js'
 import exampleConnectivityInput from './exampleConnectivityInput.js'
 
 const capitalise = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -105,6 +111,7 @@ export default {
   },
   data: function () {
     return {
+      acupoints: acupointEntries,
       annotationEntry: {
         featureId :"epicardium",
         resourceId: "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json","resource":"https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json"
@@ -114,6 +121,7 @@ export default {
         { title: 'Flatmap', id: 1, type: 'search'},
         { title: 'Connectivity', id: 2, type: 'connectivity' },
         { title: 'Annotation', id: 3, type: 'annotation' },
+        {title: 'Acupoints', id: 4, type: 'acupoints' },
       ],
       sideBarVisibility: true,
       envVars: {
@@ -140,6 +148,12 @@ export default {
     }
   },
   methods: {
+    onAcupointsClicked: function (data) {
+      console.log("acupoints-clicked", data)
+    },
+    onAcupointsHovered: function (data) {
+      console.log("acupoints-hovered", data)
+    },
     hoverChanged: function (data) {
       console.log('hoverChanged', data)
     },
@@ -170,6 +184,9 @@ export default {
         [],
         'http://purl.obolibrary.org/obo/UBERON_0001103'
       )
+    },
+    searchAcupoints: function() {
+      this.$refs.sideBar.openAcupointsSearch("GB 6")
     },
     singleFacets: function () {
       this.$refs.sideBar.addFilter({
@@ -320,4 +337,4 @@ body {
   align-items: center;
   gap: 0.5rem;
 }
-</style>
+</style>./acupoints.js

@@ -53,16 +53,24 @@
                 @confirm-delete="$emit('confirm-delete', $event)"
               />
             </template>
+            <template v-else-if="tab.type === 'acupoints' && acupointsInfoList">
+              <acupoints-info-search
+                :ref="'acupointsTab_' + tab.id"
+                :entry="acupointsInfoList"
+                @on-acupoints-click="acupointClicked"
+                v-show="tab.id === activeTabId"
+              />
+            </template>
             <template v-else>
-            <SidebarContent
-              class="sidebar-content-container"
-              v-show="tab.id === activeTabId"
-              :contextCardEntry="tab.contextCard"
-              :envVars="envVars"
-              :ref="'searchTab_' + tab.id"
-              @search-changed="searchChanged(tab.id, $event)"
-              @hover-changed="hoverChanged($event)"
-            />
+              <SidebarContent
+                class="sidebar-content-container"
+                v-show="tab.id === activeTabId"
+                :contextCardEntry="tab.contextCard"
+                :envVars="envVars"
+                :ref="'searchTab_' + tab.id"
+                @search-changed="searchChanged(tab.id, $event)"
+                @hover-changed="hoverChanged($event)"
+              />
             </template>
           </template>
         </div>
@@ -81,6 +89,7 @@ import { ElDrawer as Drawer, ElIcon as Icon } from 'element-plus'
 import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
+import AcupointsInfoSearch from './AcupointsInfoSearch.vue'
 import AnnotationTool from './AnnotationTool.vue'
 import ConnectivityInfo from './ConnectivityInfo.vue'
 
@@ -150,6 +159,13 @@ export default {
       default: null,
     },
     /**
+     * The acupoints info to show in sidebar.
+     */
+    acupointsInfoList: {
+      type: Object,
+      default: null,
+    },
+    /**
      * The annotation data to show in sidebar.
      */
     annotationEntry: {
@@ -174,6 +190,13 @@ export default {
     }
   },
   methods: {
+  /**
+     * This event is emitted with a mouse click on acupoint card
+     * @arg data
+     */
+    acupointClicked: function (data) {
+      this.$emit('acupoints-clicked', data)
+    },
     /**
      * This event is emitted when the mouse hover are changed.
      * @arg data
@@ -224,6 +247,22 @@ export default {
         searchTabRef.openSearch(facets, query);
       })
     },
+    getFirstTabRefIdByType: function(type) {
+      const tabObj = this.activeTabs.find((tab) => tab.type === type);
+      if (tabObj) {
+        let refIdPrefix = 'searchTab_'; // default to search tab
+        if (type === 'connectivity') {
+          refIdPrefix = 'connectivityTab_';
+        } else if (type === 'annotation') {
+          refIdPrefix = 'annotationTab_';
+        } else if (type === 'acupoints') {
+          refIdPrefix = 'acupointsTab_';
+        }
+        const tabRefId = refIdPrefix + tabObj.id;
+        return tabRefId;
+      }
+      return "";
+    },
     /**
      * Get the tab object by tab id and type.
      * If not found, return the first available tab.
@@ -244,6 +283,8 @@ export default {
         refIdPrefix = 'connectivityTab_';
       } else if (type === 'annotation') {
         refIdPrefix = 'annotationTab_';
+      } else if (type === 'acupoints') {
+        refIdPrefix = 'acupointsTab_';
       }
       const tabObj = this.getTabByIdAndType(id, type);
       const tabRefId = refIdPrefix + tabObj.id;
@@ -313,18 +354,38 @@ export default {
     updateConnectivityGraphError: function (errorInfo) {
       EventBus.emit('connectivity-graph-error', errorInfo);
     },
+    openAcupointsSearch: function (term) {
+      this.drawerOpen = true
+      // Because refs are in v-for, nextTick is needed here
+      this.$nextTick(() => {
+        const tabRefId = this.getFirstTabRefIdByType("acupoints");
+        if (tabRefId && this.$refs[tabRefId]) {
+          const tab = this.$refs[tabRefId][0];
+          tab.search(term);
+        }
+      })
+    },
   },
   computed: {
     activeTabs: function() {
-      const tabs = [
-        { id: 1, title: 'Search', type: 'search' }
-      ];
-      if (this.connectivityInfo) {
-        tabs.push({ id: 2, title: 'Connectivity', type: 'connectivity' });
-      }
-      if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
-        tabs.push({ id: 3, title: 'Annotation', type: 'annotation' });
-      }
+      const tabs = []
+      this.tabs.forEach((tab) => {
+        if (tab.type === "search") {
+          tabs.push(tab)
+        } else if (tab.type === "connectivity") {
+          if (this.connectivityInfo) {
+            tabs.push(tab);
+          }
+        } else if (tab.type === "annotation") {
+          if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
+            tabs.push(tab);
+          }
+        } else if (tab.type === "acupoints") {
+          if (this.acupointsInfoList && Object.keys(this.acupointsInfoList).length > 0) {
+            tabs.push(tab);
+          }
+        }
+      })
       return tabs;
     },
   },
@@ -377,9 +438,14 @@ export default {
       this.$emit('actionClick', payLoad);
     })
 
-    // Get available anatomy facets for the connectivity info
-    EventBus.on('available-facets', (payLoad) => {
-        this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
+    // Emit acupoints clicked event
+    EventBus.on('acupoints-clicked', (payLoad) => {
+      this.$emit('acupoints-clicked', payLoad);
+    })
+
+    // Emit acupoints hovered event
+    EventBus.on('acupoints-hovered', (payLoad) => {
+      this.$emit('acupoints-hovered', payLoad);
     })
 
   },
