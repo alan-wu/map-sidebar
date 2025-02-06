@@ -112,24 +112,25 @@ export default {
       if (input !== this.previousSearch) {
         if (input === "") {
           this.results = Object.values(this.entry)
-        }
-        const lowerCase = input.toLowerCase()
-        for (const value of Object.values(this.entry)) {
-          const searchFields = [
-            value["Acupoint"],
-            value["Synonym"],
-            value["Chinese Name"],
-            value["English Name"],
-            value["Reference"],
-            value["Indications"],
-            value["Acupuncture Method"],
-            value["Vasculature"],
-            value["Innervation"]
-          ];
-          const allstrings = searchFields.join();
-          const myJSON = allstrings.toLowerCase();
-          if (myJSON.includes(lowerCase)) {
-            this.results.push(value)
+        } else {
+          const lowerCase = input.toLowerCase()
+          for (const value of Object.values(this.entry)) {
+            const searchFields = [
+              value["Acupoint"],
+              value["Synonym"],
+              value["Chinese Name"],
+              value["English Name"],
+              value["Reference"],
+              value["Indications"],
+              value["Acupuncture Method"],
+              value["Vasculature"],
+              value["Innervation"]
+            ];
+            const allstrings = searchFields.join();
+            const myJSON = allstrings.toLowerCase();
+            if (myJSON.includes(lowerCase)) {
+              this.results.push(value)
+            }
           }
         }
       }
