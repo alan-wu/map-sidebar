@@ -136,11 +136,10 @@
             {{ capitalise(origin) }}
           </span>
           <el-icon 
-
             class="neuron-connection-icon" 
             @click="showNeuronConnection('origins', origin)"
           >
-            <el-icon-connection />
+            <el-icon-location />
           </el-icon>
         </div>
         <el-button
@@ -169,11 +168,10 @@
             {{ capitalise(component) }}
           </span>
           <el-icon 
-
             class="neuron-connection-icon" 
             @click="showNeuronConnection('components', component)"
           >
-            <el-icon-connection />
+            <el-icon-location />
           </el-icon>
         </div>
       </div>
@@ -207,11 +205,10 @@
             {{ capitalise(destination) }}
           </span>
           <el-icon 
-
             class="neuron-connection-icon" 
             @click="showNeuronConnection('destinations', destination)"
           >
-            <el-icon-connection />
+            <el-icon-location />
           </el-icon>
         </div>
         <el-button v-show="hasDestinationsWithDatasets" class="button" @click="openAxons"
@@ -340,7 +337,6 @@ export default {
       connectivityError: null,
       timeoutID: undefined,
       graphViewLoaded: false,
-      updatedCopyContent: '',
     }
   },
   watch: {
@@ -833,11 +829,21 @@ export default {
   position: relative;
   cursor: default;
 
-  &:hover {
-    color: $app-primary-color;
+  .neuron-connection-icon {
+    display: none;
   }
 
-  + .attribute-content {
+  &:hover {
+    color: $app-primary-color;
+
+    .neuron-connection-icon {
+      padding-top: 4px;
+      cursor: pointer;
+      display: block;
+    }
+  }
+
+  +.attribute-content {
     &::before {
       content: "";
       width: 90%;
@@ -851,11 +857,6 @@ export default {
 
   &:last-of-type {
     margin-bottom: 0.5em;
-  }
-
-  .neuron-connection-icon {
-    padding: 4px;
-    cursor: pointer;
   }
 }
 
