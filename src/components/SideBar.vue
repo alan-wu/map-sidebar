@@ -63,6 +63,7 @@
                 :ref="'searchTab_' + tab.id"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
+                @pmr-action-click="onPmrActionClick"
               />
             </template>
           </template>
