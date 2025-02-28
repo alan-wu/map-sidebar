@@ -6,6 +6,11 @@
 //  SidebarContent.vue.
 
 export default {
+  data: function () {
+    return {
+      variableRatio: 0.2
+    }
+  },
   methods: {
     
     // Calculate Variable Ratio is used as a number to determine how the ratio of PMR results to SPARC results
@@ -31,6 +36,7 @@ export default {
     // calculatePMROffest is used to calculate how many PMR results we have shown before the requested page
     calculatePMROffest: function() {
 
+      console.log(this.variableRatio, this.RatioOfPMRResults)
       // If variable ratio has not changed, we have not run out of results.
       //   we can use the the number per page PMR to calculate the offset
       if (this.variableRatio === this.RatioOfPMRResults) {

@@ -274,10 +274,7 @@ export default {
         "ilxtr:neuron-type-aacar-5"
     ],
     "hyperlinks": [
-        {
-            "url": "https://pubmed.ncbi.nlm.nih.gov/?term=%2F%2Fwww.ncbi.nlm.nih.gov%2Fpubmed%2F27783854",
-            "id": "pubmed"
-        }
+        "https://doi.org/10.1002/cphy.c150046"
     ],
     "provenanceTaxonomy": [
         "NCBITaxon:9606",
@@ -288,5 +285,6 @@ export default {
         "Homo sapiens",
         "Canis lupus familiaris",
         "Domestic Pig"
-    ]
+    ],
+    "knowledge-source": "sckan-2024-03-26-npo",
 }

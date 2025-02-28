@@ -38,6 +38,7 @@
                 :envVars="envVars"
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
+                @show-reference-connectivities="onShowReferenceConnectivities"
                 @connectivity-component-click="onConnectivityComponentClick"
               />
             </template>
@@ -54,17 +55,15 @@
               />
             </template>
             <template v-else>
-            <SidebarContent
-              class="sidebar-content-container"
-              v-show="tab.id === activeTabId"
-              :contextCardEntry="tab.contextCard"
-              :envVars="envVars"
-              :initFilters="initFilters"
-              :ref="'searchTab_' + tab.id"
-              @pmr-action-click="onPmrActionClick"
-              @search-changed="searchChanged(tab.id, $event)"
-              @hover-changed="hoverChanged($event)"
-            />
+              <SidebarContent
+                class="sidebar-content-container"
+                v-show="tab.id === activeTabId"
+                :contextCardEntry="tab.contextCard"
+                :envVars="envVars"
+                :ref="'searchTab_' + tab.id"
+                @search-changed="searchChanged(tab.id, $event)"
+                @hover-changed="hoverChanged($event)"
+              />
             </template>
           </template>
         </div>
@@ -192,6 +191,13 @@ export default {
       this.$emit('show-connectivity', featureIds);
     },
     /**
+     * This event is emitted when the show related connectivities button in reference is clicked.
+     * @param refSource
+     */
+    onShowReferenceConnectivities: function (refSource) {
+      this.$emit('show-reference-connectivities', refSource);
+    },
+    /**
      * This function is triggered after a connectivity component is clicked.
      * @arg data
      */
@@ -236,8 +242,8 @@ export default {
     getTabByIdAndType: function (id, type) {
       const tabId = id || this.activeTabId;
       const tabType = type || 'search'; // default to search tab
-      const tabObj = this.tabs.find((tab) => tab.id === tabId && tab.type === tabType);
-      const firstAvailableTab = this.tabs[0];
+      const tabObj = this.activeTabs.find((tab) => tab.id === tabId && tab.type === tabType);
+      const firstAvailableTab = this.activeTabs[0];
       return tabObj || firstAvailableTab;
     },
     /**
@@ -323,16 +329,22 @@ export default {
     },
   },
   computed: {
+    // This should respect the information provided by the property
     activeTabs: function() {
-      const tabs = [
-        { id: 1, title: 'Search', type: 'search' }
-      ];
-      if (this.connectivityInfo) {
-        tabs.push({ id: 2, title: 'Connectivity', type: 'connectivity' });
-      }
-      if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
-        tabs.push({ id: 3, title: 'Annotation', type: 'annotation' });
-      }
+      const tabs = []
+      this.tabs.forEach((tab) => {
+        if (tab.type === "search") {
+          tabs.push(tab)
+        } else if (tab.type === "connectivity") {
+          if (this.connectivityInfo) {
+            tabs.push(tab);
+          }
+        } else if (tab.type === "annotation") {
+          if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
+            tabs.push(tab);
+          }
+        }
+      })
       return tabs;
     },
   },

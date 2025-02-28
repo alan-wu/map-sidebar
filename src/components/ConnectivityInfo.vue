@@ -2,7 +2,7 @@
   <div v-if="entry" class="main" v-loading="loading">
     <!-- Connectivity Info Title -->
     <div class="connectivity-info-title">
-      <div>
+      <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
             {{ capitalise(entry.title) }}
@@ -34,9 +34,6 @@
         </div>
         <div class="block" v-else>
           <div class="title">{{ entry.featureId }}</div>
-        </div>
-        <div class="block" v-if="resources.length">
-          <external-resource-card :resources="resources"></external-resource-card>
         </div>
       </div>
       <div class="title-buttons">
@@ -81,7 +78,7 @@
       </div>
     </div>
 
-    <div class="content-container content-container-connectivity" v-if="activeView === 'listView'">
+    <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       {{ entry.paths }}
       <div v-if="entry.origins && entry.origins.length > 0" class="block">
         <div class="attribute-title-container">
@@ -199,8 +196,8 @@
         </el-button>
       </div>
 
-      <div v-if="connectivityError" class="connectivity-error-container">
-        <div class="connectivity-error">
+      <div class="connectivity-error-container">
+        <div class="connectivity-error" v-if="connectivityError">
           <strong v-if="connectivityError.errorConnectivities">
             {{ connectivityError.errorConnectivities }}
           </strong>
@@ -209,13 +206,25 @@
       </div>
     </div>
 
-    <div class="content-container" v-if="activeView === 'graphView'">
-      <connectivity-graph
-        :entry="entry.featureId[0]"
-        :mapServer="envVars.FLATMAPAPI_LOCATION"
-        @tap-node="onTapNode"
-        ref="connectivityGraphRef"
-      />
+    <div class="content-container" v-show="activeView === 'graphView'">
+      <template v-if="graphViewLoaded">
+        <connectivity-graph
+          :key="entry.featureId[0]"
+          :entry="entry.featureId[0]"
+          :mapServer="envVars.FLATMAPAPI_LOCATION"
+          :sckanVersion="sckanVersion"
+          @tap-node="onTapNode"
+          ref="connectivityGraphRef"
+        />
+      </template>
+    </div>
+
+    <div class="content-container content-container-references" v-if="resources.length">
+      <external-resource-card
+        :resources="resources"
+        @references-loaded="onReferencesLoaded"
+        @show-reference-connectivities="onShowReferenceConnectivities"
+      ></external-resource-card>
     </div>
   </div>
 </template>
@@ -232,9 +241,13 @@ import {
   ElContainer as Container,
   ElIcon as Icon,
 } from 'element-plus'
-import ExternalResourceCard from './ExternalResourceCard.vue'
+
 import EventBus from './EventBus.js'
-import { CopyToClipboard, ConnectivityGraph } from '@abi-software/map-utilities';
+import {
+  CopyToClipboard,
+  ConnectivityGraph,
+  ExternalResourceCard,
+} from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
 
 const titleCase = (str) => {
@@ -304,6 +317,9 @@ export default {
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
+      graphViewLoaded: false,
+      updatedCopyContent: '',
+      sckanVersion: '',
     }
   },
   watch: {
@@ -316,9 +332,6 @@ export default {
     },
   },
   computed: {
-    updatedCopyContent: function () {
-      return this.getUpdateCopyContent();
-    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
@@ -406,13 +419,11 @@ export default {
     switchConnectivityView: function (val) {
       this.activeView = val;
 
-      if (val === 'graphView') {
-        const connectivityGraphRef = this.$refs.connectivityGraphRef;
-        if (connectivityGraphRef && connectivityGraphRef.$el) {
-          connectivityGraphRef.$el.scrollIntoView({
-            behavior: 'smooth',
-          });
-        }
+      if (val === 'graphView' && !this.graphViewLoaded) {
+        // to load the connectivity graph only after the container is in view
+        this.$nextTick(() => {
+          this.graphViewLoaded = true;
+        });
       }
     },
     onTapNode: function (data) {
@@ -420,7 +431,13 @@ export default {
       const name = data.map(t => t.label).join(', ');
       this.toggleConnectivityTooltip(name, {show: true});
     },
-    getUpdateCopyContent: function () {
+    onShowReferenceConnectivities: function (refSource) {
+      this.$emit('show-reference-connectivities', refSource);
+    },
+    onReferencesLoaded: function (references) {
+      this.updatedCopyContent = this.getUpdateCopyContent(references);
+    },
+    getUpdateCopyContent: function (references) {
       if (!this.entry) {
         return '';
       }
@@ -431,30 +448,27 @@ export default {
       // to avoid default formatting on font size and margin
 
       // Title
-      if (this.entry.title) {
-        contentArray.push(`<div><strong>${capitalise(this.entry.title)}</strong></div>`);
-      } else {
-        contentArray.push(`<div><strong>${this.entry.featureId}</strong></div>`);
+      let title = this.entry.title;
+      let featureId = this.entry.featureId;
+      const titleContent = [];
+
+      if (title) {
+        titleContent.push(`<strong>${capitalise(this.entry.title)}</strong>`);
       }
+
+      if (featureId?.length) {
+        if (typeof featureId === 'object') {
+          titleContent.push(`(${featureId[0]})`);
+        } else {
+          titleContent.push(`(${featureId})`);
+        }
+      }
+
+      contentArray.push(`<div>${titleContent.join(' ')}</div>`);
 
       // Description
       if (this.entry.provenanceTaxonomyLabel?.length) {
         contentArray.push(`<div>${this.provSpeciesDescription}</div>`);
-      }
-
-      // PubMed URL
-      if (this.resources?.length) {
-        const pubmedContents = [];
-        this.resources.forEach((resource) => {
-          let pubmedContent = '';
-          if (resource.id === 'pubmed') {
-            pubmedContent += `<div><strong>PubMed URL:</strong></div>`;
-            pubmedContent += '\n';
-            pubmedContent += `<div><a href="${resource.url}">${resource.url}</a></div>`;
-          }
-          pubmedContents.push(pubmedContent);
-        });
-        contentArray.push(pubmedContents.join('\n\n<br>'));
       }
 
       // entry.paths
@@ -510,6 +524,17 @@ export default {
         const destinationsWithDatasets = this.entry.destinationsWithDatasets;
         const transformedDestinations = transformData(title, destinations, destinationsWithDatasets);
         contentArray.push(transformedDestinations);
+      }
+
+      // References
+      if (references) {
+        let contentString = `<div><strong>References</strong></div>`;
+        contentString += '\n';
+        const contentList = references.list
+          .map((item) => `<li>${item}</li>`)
+          .join('\n');
+        contentString += `<ul>${contentList}</ul>`;
+        contentArray.push(contentString);
       }
 
       return contentArray.join('\n\n<br>');
@@ -596,6 +621,8 @@ export default {
     },
   },
   mounted: function () {
+    this.sckanVersion = this.entry['knowledge-source'];
+    this.updatedCopyContent = this.getUpdateCopyContent();
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
     });
@@ -616,6 +643,11 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   gap: 1rem;
+
+  .title-content {
+    flex: 1 0 0%;
+    max-width: 85%;
+  }
 }
 
 .title {
@@ -921,7 +953,10 @@ export default {
 
 .title-buttons {
   display: flex;
+  flex: 1 0 0%;
+  max-width: 15%;
   flex-direction: row;
+  justify-content: end;
   gap: 0.5rem;
 
   :deep(.copy-clipboard-button) {
@@ -953,12 +988,18 @@ export default {
 
 .content-container-connectivity {
   position: relative;
+
+  &:not([style*="display: none"]) ~ .content-container-references {
+    margin-top: -1.25rem;
+  }
 }
 
 .connectivity-error-container {
   position: sticky;
   bottom: 0.5rem;
   width: 100%;
+  min-height: 31px; // placeholder
+  margin-top: -10px !important;
   display: flex;
   flex-direction: row;
   align-items: center;

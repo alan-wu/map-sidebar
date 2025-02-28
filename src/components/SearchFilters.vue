@@ -15,6 +15,7 @@
         placement="bottom-start"
         :width="200"
         trigger="hover"
+        popper-class="cascade-tags-popover"
       >
         <template #default>
           <div class="el-tags-container">
@@ -65,8 +66,7 @@
           title="How do filters work?"
           width="250"
           trigger="hover"
-          :append-to-body="false"
-          popper-class="popover"
+          popper-class="filter-help-popover"
         >
           <template #reference>
             <MapSvgIcon icon="help" class="help" />
@@ -168,6 +168,7 @@ export default {
       showFiltersText: true,
       cascadeSelected: [],
       cascadeSelectedWithBoolean: [],
+      filterTimeout: null,
       numberShown: 10,
       filters: [],
       facets: ['Species', 'Gender', 'Organ', 'Datasets'],
@@ -240,9 +241,12 @@ export default {
 
               // populate second level of options
               this.options[i].children.forEach((facetItem, j) => {
-                this.options[i].children[j].label = convertReadableLabel(
-                  facetItem.label
-                )
+                // Format labels except funding program
+                if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
+                  this.options[i].children[j].label = convertReadableLabel(
+                    facetItem.label
+                  )
+                }
                 this.options[i].children[j].value =
                   this.createCascaderItemValue(facet.label, facetItem.label)
                 if (
@@ -487,10 +491,25 @@ export default {
             }
           })
 
+        // if all checkboxes are checked
+        // there has no filter values
+        const filtersLength = filters.filter((item) => item.facet !== 'Show all');
+        if (!filtersLength.length) {
+          filters = [];
+        }
+
+        // timeout: add delay for filter checkboxes
+        if (this.filterTimeout) {
+          clearTimeout(this.filterTimeout);
+        }
+
         this.$emit('loading', true) // let sidebarcontent wait for the requests
-        this.$emit('filterResults', filters) // emit filters for apps above sidebar
         this.setCascader(filterKeys) //update our cascader v-model if we modified the event
-        this.cssMods() // update css for the cascader
+
+        this.filterTimeout = setTimeout(() => {
+          this.$emit('filterResults', filters) // emit filters for apps above sidebar
+          this.cssMods() // update css for the cascader
+        }, 600);
       }
     },
     //this fucntion is needed as we previously stored booleans in the array of event that
@@ -747,19 +766,25 @@ export default {
      */
     validateAndConvertFilterToHierarchical: function (filter) {
       if (filter && filter.facet && filter.term) {
+        // Convert terms to lower case.
+        // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
+        // is Inferior vagus x ganglion (there are other cases as well)
+        const lowercase = filter.facet.toLowerCase()
         if (filter.facet2) {
           return filter // if it has a second term we will assume it is hierarchical and return it as is
         } else {
           for (const firstLayer of this.options) {
             if (firstLayer.value === filter.facetPropPath) {
               for (const secondLayer of firstLayer.children) {
-                if (secondLayer.label === filter.facet) {
+                if (secondLayer.label?.toLowerCase() === lowercase) {
                   // if we find a match on the second level, the filter will already be correct
+                  // Make sure the case matches the one from Algolia
+                  filter.facet = secondLayer.label
                   return filter
                 } else {
                   if (secondLayer.children && secondLayer.children.length > 0) {
                     for (const thirdLayer of secondLayer.children) {
-                      if (thirdLayer.label === filter.facet) {
+                      if (thirdLayer.label?.toLowerCase() === lowercase) {
                         // If we find a match on the third level, we need to switch facet1 to facet2
                         //   and populate facet1 with its parents label.
                         filter.facet2 = thirdLayer.label
@@ -933,40 +958,9 @@ export default {
   line-height: 18px;
 }
 
-.filters :deep(.el-popover[x-placement^='top'] .popper__arrow) {
-  border-top-color: $app-primary-color;
-  border-bottom-width: 0;
-}
-.filters :deep(.el-popover[x-placement^='top'] .popper__arrow::after) {
-  border-top-color: #f3ecf6;
-  border-bottom-width: 0;
-}
-
-.filters :deep(.el-popover[x-placement^='bottom'] .popper__arrow) {
-  border-top-width: 0;
-  border-bottom-color: $app-primary-color;
-}
-.filters :deep(.el-popover[x-placement^='bottom'] .popper__arrow::after) {
-  border-top-width: 0;
-  border-bottom-color: #f3ecf6;
-}
-
-.filters :deep(.el-popover[x-placement^='right'] .popper__arrow) {
-  border-right-color: $app-primary-color;
-  border-left-width: 0;
-}
-.filters :deep(.el-popover[x-placement^='right'] .popper__arrow::after) {
-  border-right-color: #f3ecf6;
-  border-left-width: 0;
-}
-
-.filters :deep(.el-popover[x-placement^='left'] .popper__arrow) {
-  border-right-width: 0;
-  border-left-color: $app-primary-color;
-}
-.filters :deep(.el-popover[x-placement^='left'] .popper__arrow::after) {
-  border-right-width: 0;
-  border-left-color: #f3ecf6;
+.filters :deep(.el-popover .el-popper__arrow::before) {
+  background: #f3ecf6;
+  border-color: $app-primary-color;
 }
 </style>
 
@@ -1018,7 +1012,30 @@ export default {
 
 .sidebar-cascader-popper .el-checkbox__input.is-checked .el-checkbox__inner,
 .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  --el-checkbox-checked-bg-color: #{$app-primary-color};
+  --el-checkbox-checked-input-border-color: #{$app-primary-color};
   background-color: $app-primary-color;
   border-color: $app-primary-color;
+}
+
+.filter-help-popover,
+.cascade-tags-popover {
+  font-family: 'Asap', sans-serif;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color !important;
+  border-radius: 4px !important;
+  color: #303133 !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+
+  .el-popper__arrow::before {
+    background: #f3ecf6 !important;
+    border-color: $app-primary-color !important;
+  }
+
+  &[data-popper-placement^=bottom] .el-popper__arrow:before {
+    border-bottom-color: transparent !important;
+    border-right-color: transparent !important;
+  }
 }
 </style>

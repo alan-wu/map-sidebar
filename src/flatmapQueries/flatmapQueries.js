@@ -188,7 +188,7 @@ let FlatmapQueries = function () {
   this.processPMRData = function (data, featureIds=[]) {
     // Convert the flatmap data into an array of objects
     let dataObj = transformKeyValueArrayToObject(data)
-
+    console.log(dataObj)
     // Only use the results with metadata
     let metadataResults = dataObj.filter(d => d.metadata)
     let metadataOnly = metadataResults.map(d => {

@@ -111,6 +111,7 @@ var handleErrors = async function (response) {
 }
 
 var initial_state = {
+  filters: [],
   searchInput: '',
   lastSearch: '',
   results: [],
@@ -223,21 +224,9 @@ export default {
       this.results = []
       this.loadingCards = false
     },
-    // openSearch: Resets the results, populates dataset cards and filters. Will use Algolia and SciCrunch data uness pmr mode is set
-    openSearch: function(filter, search = '', resetSearch = true) {
-      this.updatePMROnlyFlag(filter);
-
-      if (resetSearch) {
-        this.resetSearch();
-        this.openFilterSearch(filter, search);
-      } else {
-        this.searchAlgolia(filter, search);
-        this.openPMRSearch(filter, search);
-      }
-    },
-
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
+      this.resetSearch()
       this.loadingCards = true;
       this.flatmapQueries.updateOffset(this.calculatePMROffest())
       this.flatmapQueries.updateLimit(this.PMRLimit(this.pmrResultsOnlyFlag))
@@ -249,10 +238,7 @@ export default {
         this.loadingCards = false;
       })
     },
-
-    // previously openAlgoliaSearch:
-    // Resets the results, populates dataset cards and filters with Algloia and SciCrunch data.
-    openFilterSearch: function (filter, search = '') {
+    openSearch: function (filter, search = '', option = { withSearch: true }) {
       this.searchInput = search
       //Proceed normally if cascader is ready
       if (this.cascaderIsReady) {
@@ -270,13 +256,15 @@ export default {
           this.$refs.filtersRef.checkShowAllBoxes()
           this.resetSearch()
         } else if (this.filter) {
-          if (this.pmrResultsOnlyFlag) {
-            this.openPMRSearch(this.filter, search);
-          } else if (this.noPMRResultsFlag) {
-            this.searchAlgolia(this.filter, search);
-          } else {
-            this.searchAlgolia(this.filter, search);
-            this.openPMRSearch(this.filter, search);
+          if (option.withSearch) {
+            if (this.pmrResultsOnlyFlag) {
+              this.openPMRSearch(this.filter, search);
+            } else if (this.noPMRResultsFlag) {
+              this.searchAlgolia(this.filter, search);
+            } else {
+              this.searchAlgolia(this.filter, search);
+              this.openPMRSearch(this.filter, search);
+            }
           }
           this.$refs.filtersRef.setCascader(this.filter)
         }
@@ -284,7 +272,7 @@ export default {
         //cascader is not ready, perform search if no filter is set,
         //otherwise waith for cascader to be ready
         this.filter = filter
-        if (!filter || filter.length == 0) {
+        if ((!filter || filter.length == 0) && option.withSearch) {
           if (this.pmrResultsOnlyFlag) {
             this.openPMRSearch(this.filter, search);
           } else if (this.noPMRResultsFlag) {
@@ -349,10 +337,9 @@ export default {
     },
     filterUpdate: function (filters) {
       this.filter = [...filters]
-
+      this.searchAndFilterUpdate();
       // Check if PMR is in the filters
       this.updatePMROnlyFlag(filters)
-
       // Note that we cannot use the openSearch function as that modifies filters
       this.resetSearch()
       if (this.pmrResultsOnlyFlag) {
@@ -363,11 +350,36 @@ export default {
         this.searchAlgolia(filters, this.searchInput)
         this.openPMRSearch(filters, this.searchInput)
       }
-
       this.$emit('search-changed', {
         value: filters,
         type: 'filter-update',
       })
+    },
+    /**
+     * Transform filters for third level items to perform search
+     * because cascader keeps adding it back.
+     */
+    transformFiltersBeforeSearch: function (filters) {
+      return filters.map((filter) => {
+        if (filter.facet2) {
+          filter.facet = filter.facet2;
+          delete filter.facet2;
+        }
+        return filter;
+      });
+    },
+    searchAndFilterUpdate: function () {
+      this.resetPageNavigation();
+      const transformedFilters = this.transformFiltersBeforeSearch(this.filters);
+      this.searchAlgolia(transformedFilters, this.searchInput);
+      this.$refs.searchHistory.selectValue = 'Search history';
+      // save history only if there has value
+      if (this.filters.length || this.searchInput?.trim()) {
+        this.$refs.searchHistory.addSearchToHistory(
+          this.filters,
+          this.searchInput
+        );
+      }
     },
     searchAlgolia(filters, query = '') {
 
@@ -567,7 +579,9 @@ export default {
     searchHistorySearch: function (item) {
       this.searchInput = item.search
       this.filters = item.filters
-      this.openSearch(item.filters, item.search)
+      this.searchAndFilterUpdate();
+      // withSearch: false to prevent algoliaSearch in openSearch
+      this.openSearch([...item.filters], item.search, { withSearch: false });
     },
   },
   mounted: function () {
@@ -621,6 +635,9 @@ export default {
   height: 100%;
   flex-flow: column;
   display: flex;
+  border: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .data-type-select {
@@ -644,15 +661,16 @@ export default {
   width: 298px !important;
   height: 40px;
   padding-right: 14px;
-  align-items: left;
+
+  :deep(.el-input__inner) {
+    font-family: inherit;
+  }
 }
 
 .header {
-  border: solid 1px #292b66;
-  background-color: #292b66;
-  text-align: left;
-
   .el-button {
+    font-family: inherit;
+
     &:hover,
     &:focus {
       background: $app-primary-color;
@@ -705,6 +723,7 @@ export default {
   background-color: #ffffff;
   overflow-y: scroll;
   scrollbar-width: thin;
+  border-radius: var(--el-border-radius-base);
 }
 
 .content :deep(.el-loading-spinner .path) {
