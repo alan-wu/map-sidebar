@@ -6,6 +6,7 @@
     />
     <div class="options-container">
       <div>Click arrow to open sidebar</div>
+      <el-button @click="openPMRSearch">PMR Search</el-button>
       <el-button @click="openSearch">search Uberon from refs</el-button>
       <el-button @click="singleFacets">Add heart to Filter (facet2 set)</el-button>
       <el-button @click="addStomach">Add stomach to Filter</el-button>
@@ -125,7 +126,7 @@ export default {
         BL_SERVER_URL: import.meta.env.VITE_APP_BL_SERVER_URL,
         NL_LINK_PREFIX: import.meta.env.VITE_APP_NL_LINK_PREFIX,
         ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
-        FLATMAPAPI_LOCATION: import.meta.env.VITE_FLATMAPAPI_LOCATION,
+        FLATMAP_API_LOCATION: import.meta.env.VITE_APP_FLATMAP_API_LOCATION,
       },
       connectivityInput: exampleConnectivityInput,
       activeId: 1,
@@ -141,7 +142,7 @@ export default {
   },
   methods: {
     hoverChanged: function (data) {
-      console.log('hoverChanged', data)
+      // console.log('hoverChanged', data)
     },
     searchChanged: function (data) {
       console.log(data)
@@ -153,17 +154,31 @@ export default {
     action: function (action) {
       console.log('action fired: ', action)
       let facets = [];
-      facets.push(
-        ...action.labels.map(val => ({
-          facet: capitalise(val),
-          term: "Anatomical structure",
-          facetPropPath: "anatomy.organ.category.name",
-        }))
-      );
-      if (this.$refs.sideBar) {
-        console.log('openSearch', facets)
-        this.$refs.sideBar.openSearch(facets, "");
+      if (action.labels) {
+        facets.push(
+          ...action.labels.map(val => ({
+            facet: capitalise(val),
+            term: "Anatomical structure",
+            facetPropPath: "anatomy.organ.category.name",
+          }))
+        );
+        if (this.$refs.sideBar) {
+          console.log('openSearch', facets)
+          this.$refs.sideBar.openSearch(facets, "");
+        }
       }
+    },
+    openPMRSearch: function () {
+      this.$refs.sideBar.openSearch(
+        [
+          {
+            facet: "PMR",
+            term: "Data type",
+            facetPropPath: "item.types.name",
+          }
+        ],
+        'cardiovascular multiscale model'
+      );
     },
     openSearch: function () {
       this.$refs.sideBar.openSearch(
