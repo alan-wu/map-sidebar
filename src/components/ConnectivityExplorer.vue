@@ -1,27 +1,35 @@
 <template>
-  <div v-if="flatmapKnowledge" class="main">
-    <div class="header">
-      <el-input
-        class="search-input"
-        placeholder="Search"
-        v-model="searchInput"
-        @keyup="search(searchInput)"
-        clearable
-        @clear="clearSearchClicked"
-      ></el-input>
-      <el-button
-        v-show="false"
-        type="primary"
-        class="button"
-        @click="search(searchInput)"
-        size="large"
-      >
-        Search
-      </el-button>
-    </div>
+  <el-card :body-style="bodyStyle" class="content-card">
+    <template #header>
+      <div class="header">
+        <el-input
+          class="search-input"
+          placeholder="Search"
+          v-model="searchInput"
+          @keyup="searchEvent"
+          clearable
+          @clear="clearSearchClicked"
+        ></el-input>
+        <el-button
+          type="primary"
+          class="button"
+          @click="searchEvent"
+          size="large"
+        >
+          Search
+        </el-button>
+      </div>
+    </template>
     <div class="content scrollbar" ref="content">
-      <div v-for="result in paginatedResults" :key="result.id" class="step-item">
-        <connectivity-card
+      <div class="error-feedback" v-if="results.length === 0">
+        No results found - Please change your search / filter criteria.
+      </div>
+      <div
+        v-for="result in paginatedResults"
+        :key="result.id"
+        class="step-item"
+      >
+        <ConnectivityCard
           class="dataset-card"
           :entry="result"
           @mouseenter="hoverChanged(result)"
@@ -39,67 +47,78 @@
         @current-change="pageChange"
       ></el-pagination>
     </div>
-  </div>
+  </el-card>
 </template>
 
-
-
 <script>
-
 const flatmapQuery = (flatmapApi, sql) => {
-  const data = { sql: sql }
+  const data = { sql: sql };
   return fetch(`${flatmapApi}knowledge/query/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
   })
     .then((response) => response.json())
     .catch((error) => {
-      console.error('Error:', error)
-  })
-}
+      console.error("Error:", error);
+    });
+};
 
 const filterKnowledge = (knowledge, sckanVersion) => {
   const result = knowledge.filter((item) => {
     if (item?.source && item.source === sckanVersion) {
       if ("connectivity" in item) {
-        return true
+        return true;
       }
     }
-    return false
-  })
-  return result
-}
-
+    return false;
+  });
+  return result;
+};
 
 /* eslint-disable no-alert, no-console */
 import {
   ElButton as Button,
   ElCard as Card,
-  ElDrawer as Drawer,
   ElIcon as Icon,
   ElInput as Input,
   ElPagination as Pagination,
-} from 'element-plus'
-import ConnectivityCard from './ConnectivityCard.vue'
+} from "element-plus";
+import ConnectivityCard from "./ConnectivityCard.vue";
+
+var initial_state = {
+  filters: [],
+  searchInput: "",
+  lastSearch: "",
+  results: [],
+  numberOfHits: 0,
+  filter: [],
+  loadingCards: false,
+  numberPerPage: 10,
+  page: 1,
+  start: 0,
+};
 
 export default {
   components: {
     ConnectivityCard,
     Button,
     Card,
-    Drawer,
     Icon,
     Input,
-    Pagination
+    Pagination,
   },
-  name: 'ConnectivityExplorer',
+  name: "ConnectivityExplorer",
   props: {
     sckanVersion: {
       type: String,
       default: "sckan-2024-09-21-npo",
+    },
+    entry: {
+      type: Object,
+      default: () => initial_state,
     },
     envVars: {
       type: Object,
@@ -108,86 +127,102 @@ export default {
   },
   data: function () {
     return {
+      ...this.entry,
       mapServer: "",
       flatmapKnowledge: [],
-      results: [],
       paginatedResults: [],
-      searchInput: "",
-      lastSearch: "",
-      numberOfHits: 0,
-      numberPerPage: 10,
-      page: 1,
-      previousSearch: undefined
-    }
+      bodyStyle: {
+        flex: "1 1 auto",
+        "flex-flow": "column",
+        display: "flex",
+      },
+    };
   },
   methods: {
     hoverChanged: function (data) {
-      this.$emit('hover-changed', data)
+      this.$emit("hover-changed", data);
     },
     resetSearch: function () {
-      this.numberOfHits = 0
-      this.search(this.searchInput)
+      this.numberOfHits = 0;
+      this.results = [];
+      this.loadingCards = false;
+    },
+    openSearch: function (search = "") {
+      this.searchInput = search;
+      this.resetPageNavigation();
+      this.resetSearch();
+      this.searchKnowledge(search);
     },
     clearSearchClicked: function () {
-      this.searchInput = '';
-      this.search("");
+      this.searchInput = "";
+      this.searchAndFilterUpdate();
     },
-    search: function(input) {
-      this.results = []
-      if (input !== this.previousSearch) {
-        if (input === "") {
-          this.results = this.flatmapKnowledge
-        } else {
-          for (const value of this.flatmapKnowledge) {
-            const lowerCase = input.toLowerCase()
-            const myJSON = JSON.stringify(value).toLowerCase()
-            if (myJSON.includes(lowerCase)) {
-              this.results.push(value)
-            }
+    searchEvent: function (event = false) {
+      if (event.keyCode === 13 || event instanceof MouseEvent) {
+        this.searchInput = this.searchInput.trim();
+        this.searchAndFilterUpdate();
+      }
+    },
+    searchAndFilterUpdate: function () {
+      this.resetPageNavigation();
+      this.searchKnowledge(this.searchInput);
+    },
+    searchKnowledge: function (query = "") {
+      this.resetSearch();
+      this.loadingCards = true;
+      if (query === "") {
+        this.results = this.flatmapKnowledge;
+      } else {
+        for (const value of this.flatmapKnowledge) {
+          const lowerCase = query.toLowerCase();
+          const myJSON = JSON.stringify(value).toLowerCase();
+          if (myJSON.includes(lowerCase)) {
+            this.results.push(value);
           }
         }
       }
-      console.log(this.flatmapKnowledge, this.results)
-      const start = this.numberPerPage * (this.page - 1)
-      this.paginatedResults = this.results.slice(start, start + this.numberPerPage)
-      this.numberOfHits = this.results.length
-      this.searchInput = input
-      this.lastSearch = input
-      console.log(this.numberOfHits)
+      this.numberOfHits = this.results.length;
+      this.paginatedResults = this.results.slice(
+        this.start,
+        this.start + this.numberPerPage
+      );
+      this.loadingCards = false;
+      this.scrollToTop();
+      this.lastSearch = query;
     },
     numberPerPageUpdate: function (val) {
-      this.numberPerPage = val
-      this.pageChange(1)
+      this.numberPerPage = val;
+      this.pageChange(1);
     },
     pageChange: function (page) {
-      this.page = page
-      this.search( this.searchInput)
+      this.start = (page - 1) * this.numberPerPage;
+      this.page = page;
+      this.searchKnowledge(this.searchInput);
     },
     scrollToTop: function () {
       if (this.$refs.content) {
-        this.$refs.content.scroll({ top: 0, behavior: 'smooth' })
+        this.$refs.content.scroll({ top: 0, behavior: "smooth" });
       }
     },
     resetPageNavigation: function () {
-      this.page = 1
+      this.start = 0;
+      this.page = 1;
     },
   },
   mounted: function () {
-    this.mapServer = this.envVars.FLATMAPAPI_LOCATION
-    console.log(this.mapServer)
+    this.mapServer = this.envVars.FLATMAPAPI_LOCATION;
     if (this.mapServer) {
       const sql = `select knowledge from knowledge
         where source="${this.sckanVersion}"
         order by source desc`;
       flatmapQuery(this.mapServer, sql).then((response) => {
-        const mappedData = response.values.map(x => x[0])
-        const parsedData = mappedData.map(x => JSON.parse(x))
-        this.flatmapKnowledge = filterKnowledge(parsedData, this.sckanVersion)
-        this.search("");
+        const parsedData = response.values.map((x) => JSON.parse(x[0]));
+        this.flatmapKnowledge = filterKnowledge(parsedData, this.sckanVersion);
+        this.openSearch(this.searchInput);
       });
     }
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -214,24 +249,13 @@ export default {
   }
 }
 
-.main {
-  font-size: 14px;
-  text-align: left;
-  line-height: 1.5em;
-  font-family: Asap, sans-serif, Helvetica;
-  font-weight: 400;
-  /* outline: thin red solid; */
-  overflow-y: auto;
-  scrollbar-width: thin;
-  min-width: 16rem;
-  background-color: #f7faff;
+.content-card {
   height: 100%;
-  border-left: 1px solid var(--el-border-color);
-  border-top: 1px solid var(--el-border-color);
+  flex-flow: column;
   display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-  padding: 1rem;
+  border: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .step-item {
