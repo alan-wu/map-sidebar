@@ -23,10 +23,10 @@
         <div class="sidebar-container">
           <Tabs
             v-if="activeTabs.length > 1"
-            :tabTitles="activeTabs"
+            :tabEntries="activeTabs"
             :activeId="activeTabId"
-            @titleClicked="tabClicked"
-            @tab-close="tabClose"
+            @tabClicked="tabClicked"
+            @tabClosed="tabClose"
           />
           <template v-for="tab in tabs" key="tab.id">
             <!-- Connectivity Info -->
@@ -133,10 +133,10 @@ export default {
     tabs: {
       type: Array,
       default: () => [
-        { id: 1, title: 'Search', type: 'search' },
-        { id: 2, title: 'Connectivity', type: 'connectivity' },
-        { id: 3, title: 'Annotation', type: 'annotation' },
-        { id: 4, title: 'Connectivity Explorer', type: 'connectivityExplorer' }
+        { title: 'Search', id: 1, type: 'search', closable: false},
+        { title: 'Connectivity', id: 2, type: 'connectivity', closable: true },
+        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
+        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer', closable: false },
       ],
     },
     /**

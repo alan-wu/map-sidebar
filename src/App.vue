@@ -111,10 +111,10 @@ export default {
       },
       contextArray: [null, null],
       tabArray: [
-        { title: 'Flatmap', id: 1, type: 'search'},
-        { title: 'Connectivity', id: 2, type: 'connectivity' },
-        { title: 'Annotation', id: 3, type: 'annotation' },
-        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer' }
+        { title: 'Search', id: 1, type: 'search', closable: false},
+        { title: 'Connectivity', id: 2, type: 'connectivity', closable: true },
+        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
+        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer', closable: false },
       ],
       sideBarVisibility: true,
       envVars: {
