@@ -51,23 +51,8 @@
 </template>
 
 <script>
-const flatmapQuery = (flatmapApi, sql) => {
-  const data = { sql: sql };
-  return fetch(`${flatmapApi}knowledge/query/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .catch((error) => {
-      console.error("Error:", error);
-    });
-};
-
-const filterKnowledge = (knowledge, sckanVersion) => {
-  const result = knowledge.filter((item) => {
+const filterConnectivityKnowledge = (knowledge, sckanVersion) => {
+  return knowledge.filter((item) => {
     if (item?.source && item.source === sckanVersion) {
       if ("connectivity" in item) {
         return true;
@@ -75,10 +60,10 @@ const filterKnowledge = (knowledge, sckanVersion) => {
     }
     return false;
   });
-  return result;
 };
 
 /* eslint-disable no-alert, no-console */
+import { markRaw } from "vue";
 import {
   ElButton as Button,
   ElCard as Card,
@@ -87,6 +72,17 @@ import {
   ElPagination as Pagination,
 } from "element-plus";
 import ConnectivityCard from "./ConnectivityCard.vue";
+import {
+  FlatmapQueries,
+  findTaxonomyLabels,
+} from "@abi-software/map-utilities/src/services/flatmapQueries.js";
+import {
+  getReferenceConnectivitiesFromStorage,
+  loadAndStoreKnowledge,
+  refreshFlatmapKnowledgeCache,
+  getKnowledgeSource,
+  getReferenceConnectivitiesByAPI,
+} from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
 
 var initial_state = {
   filters: [],
@@ -129,6 +125,7 @@ export default {
     return {
       ...this.entry,
       mapServer: "",
+      flatmapQueries: undefined,
       flatmapKnowledge: [],
       paginatedResults: [],
       bodyStyle: {
@@ -212,12 +209,18 @@ export default {
   mounted: function () {
     this.mapServer = this.envVars.FLATMAPAPI_LOCATION;
     if (this.mapServer) {
+      this.flatmapQueries = markRaw(new FlatmapQueries());
+      this.flatmapQueries.initialise(this.mapServer);
       const sql = `select knowledge from knowledge
         where source="${this.sckanVersion}"
         order by source desc`;
-      flatmapQuery(this.mapServer, sql).then((response) => {
-        const parsedData = response.values.map((x) => JSON.parse(x[0]));
-        this.flatmapKnowledge = filterKnowledge(parsedData, this.sckanVersion);
+      this.flatmapQueries.flatmapQuery(sql).then((response) => {
+        const mappedData = response.values.map((x) => x[0]);
+        const parsedData = mappedData.map((x) => JSON.parse(x));
+        this.flatmapKnowledge = filterConnectivityKnowledge(
+          parsedData,
+          this.sckanVersion
+        );
         this.openSearch(this.searchInput);
       });
     }
@@ -297,9 +300,11 @@ export default {
 .pagination :deep(button) {
   background-color: white !important;
 }
+
 .pagination :deep(li) {
   background-color: white !important;
 }
+
 .pagination :deep(li.is-active) {
   color: $app-primary-color;
 }
