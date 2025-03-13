@@ -10,7 +10,7 @@
       <span class="tab-title">{{ tab.title }} </span>
       <el-icon
         v-if="tab.closable"
-        @click="tabClosed(tab)"
+        @click.stop="tabClosed(tab)"
         class="tab-close-icon"
       >
         <el-icon-close />
@@ -37,6 +37,7 @@ export default {
   },
   computed: {
     tabs: function () {
+      // permanent tabs always show in the front
       const permanent = this.tabEntries.filter((t) => !t.closable);
       const temporary = this.tabEntries.filter((t) => t.closable);
       return permanent.concat(temporary);
@@ -47,7 +48,7 @@ export default {
       this.$emit("tabClicked", { id: tab.id, type: tab.type });
     },
     tabClosed: function (tab) {
-      this.$emit("tabClosed", tab.id);
+      this.$emit("tabClosed", { id: tab.id, type: tab.type });
     },
   },
 };
