@@ -22,11 +22,11 @@
         </div>
         <div class="sidebar-container">
           <Tabs
-            v-if="activeTabs.length > 1"
-            :tabEntries="activeTabs"
+            v-if="tabEntries.length > 1"
+            :tabEntries="tabEntries"
             :activeId="activeTabId"
             @tabClicked="tabClicked"
-            @tabClosed="tabClose"
+            @tabClosed="tabClosed"
           />
           <template v-for="tab in tabs" key="tab.id">
             <!-- Connectivity Info -->
@@ -249,8 +249,8 @@ export default {
     getTabByIdAndType: function (id, type) {
       const tabId = id || this.activeTabId;
       const tabType = type || 'search'; // default to search tab
-      const tabObj = this.activeTabs.find((tab) => tab.id === tabId && tab.type === tabType);
-      const firstAvailableTab = this.activeTabs[0];
+      const tabObj = this.tabEntries.find((tab) => tab.id === tabId && tab.type === tabType);
+      const firstAvailableTab = this.tabEntries[0];
       return tabObj || firstAvailableTab;
     },
     /**
@@ -323,8 +323,8 @@ export default {
        */
       this.$emit('tabClicked', {id, type});
     },
-    tabClose: function (id) {
-      this.$emit('tab-close', id);
+    tabClosed: function (tab) {
+      this.$emit('tabClosed', tab);
     },
     /**
      * To receive error message for connectivity graph
