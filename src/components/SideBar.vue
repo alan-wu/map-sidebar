@@ -128,25 +128,6 @@ export default {
       default: () => {},
     },
     /**
-     * The array of objects to show multiple sidebar contents.
-     */
-    tabs: {
-      type: Array,
-      default: () => [
-        { title: 'Search', id: 1, type: 'search', closable: false},
-        { title: 'Connectivity', id: 2, type: 'connectivity', closable: true },
-        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
-        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer', closable: false },
-      ],
-    },
-    /**
-     * The active tab id for default tab.
-     */
-    activeTabId: {
-      type: Number,
-      default: 1,
-    },
-    /**
      * The option to show or hide sidebar on page load.
      */
     openAtStart: {
@@ -181,7 +162,14 @@ export default {
   data: function () {
     return {
       drawerOpen: false,
-      availableAnatomyFacets: []
+      availableAnatomyFacets: [],
+      activeTabId: 1,
+      tabs: [
+        { title: 'Search', id: 1, type: 'search', closable: false },
+        { title: 'Connectivity', id: 2, type: 'connectivity', closable: true },
+        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
+        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer', closable: false },
+      ]
     }
   },
   methods: {
@@ -310,18 +298,8 @@ export default {
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
     },
-    /**
-     * The function to emit 'tabClicked' event with tab's `id` and tab's `type`
-     * when user clicks the sidebar tab.
-     * @param {Object} {id, type}
-     * @public
-     */
-    tabClicked: function ({id, type}) {
-      /**
-       * This event is emitted when user click sidebar's tab.
-       * @arg {Object} {id, type}
-       */
-      this.$emit('tabClicked', {id, type});
+    tabClicked: function (tab) {
+      this.activeTabId = tab.id
     },
     tabClosed: function (tab) {
       this.$emit('tabClosed', tab);
@@ -336,22 +314,13 @@ export default {
   },
   computed: {
     // This should respect the information provided by the property
-    activeTabs: function() {
-      const tabs = []
-      this.tabs.forEach((tab) => {
-        if (tab.type === "search" || tab.type === "connectivityExplorer") {
-          tabs.push(tab)
-        } else if (tab.type === "connectivity") {
-          if (this.connectivityInfo) {
-            tabs.push(tab);
-          }
-        } else if (tab.type === "annotation") {
-          if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
-            tabs.push(tab);
-          }
-        }
-      })
-      return tabs;
+    tabEntries: function () {
+      return this.tabs.filter((tab) =>
+        tab.type === "search" ||
+        tab.type === "connectivityExplorer" ||
+        (tab.type === "connectivity" && this.connectivityInfo) ||
+        (tab.type === "annotation" && this.annotationEntry && Object.keys(this.annotationEntry).length > 0)
+      );
     },
   },
   created: function () {
@@ -406,6 +375,16 @@ export default {
     // Get available anatomy facets for the connectivity info
     EventBus.on('available-facets', (payLoad) => {
         this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
+    })
+
+    // Get available anatomy facets for the connectivity info
+    EventBus.on('connectivity-clicked', (payLoad) => {
+      this.$emit('connectivity-clicked', payLoad);
+    })
+
+    // Get available anatomy facets for the connectivity info
+    EventBus.on('connectivity-hovered', (payLoad) => {
+      this.$emit('connectivity-hovered', payLoad);
     })
 
   },
