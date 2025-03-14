@@ -27,6 +27,7 @@
       :annotationEntry="annotationEntry"
       :createData="createData"
       :connectivityInfo="connectivityInput"
+      :sckanVersion="sckanVersion"
       @tabClicked="tabClicked"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
@@ -138,6 +139,7 @@ export default {
         y: 0,
       },
       createDataSet: false,
+      sckanVersion: 'sckan-2024-09-21-npo'
     }
   },
   methods: {

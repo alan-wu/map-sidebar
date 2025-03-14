@@ -110,7 +110,7 @@ export default {
   props: {
     sckanVersion: {
       type: String,
-      default: "sckan-2024-09-21-npo",
+      default: "",
     },
     entry: {
       type: Object,
@@ -134,6 +134,11 @@ export default {
         display: "flex",
       },
     };
+  },
+  watch: {
+    sckanVersion: function () {
+      this.loadFlatmapKnowledge();
+    },
   },
   methods: {
     hoverChanged: function (data) {
@@ -205,25 +210,28 @@ export default {
       this.start = 0;
       this.page = 1;
     },
+    loadFlatmapKnowledge: function () {
+      if (this.mapServer && this.sckanVersion) {
+        this.flatmapQueries = markRaw(new FlatmapQueries());
+        this.flatmapQueries.initialise(this.mapServer);
+        const sql = `select knowledge from knowledge
+        where source="${this.sckanVersion}"
+        order by source desc`;
+        this.flatmapQueries.flatmapQuery(sql).then((response) => {
+          const mappedData = response.values.map((x) => x[0]);
+          const parsedData = mappedData.map((x) => JSON.parse(x));
+          this.flatmapKnowledge = filterConnectivityKnowledge(
+            parsedData,
+            this.sckanVersion
+          );
+          this.openSearch(this.searchInput);
+        });
+      }
+    },
   },
   mounted: function () {
     this.mapServer = this.envVars.FLATMAPAPI_LOCATION;
-    if (this.mapServer) {
-      this.flatmapQueries = markRaw(new FlatmapQueries());
-      this.flatmapQueries.initialise(this.mapServer);
-      const sql = `select knowledge from knowledge
-        where source="${this.sckanVersion}"
-        order by source desc`;
-      this.flatmapQueries.flatmapQuery(sql).then((response) => {
-        const mappedData = response.values.map((x) => x[0]);
-        const parsedData = mappedData.map((x) => JSON.parse(x));
-        this.flatmapKnowledge = filterConnectivityKnowledge(
-          parsedData,
-          this.sckanVersion
-        );
-        this.openSearch(this.searchInput);
-      });
-    }
+    this.loadFlatmapKnowledge();
   },
 };
 </script>

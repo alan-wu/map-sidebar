@@ -58,6 +58,7 @@
               <connectivity-explorer
                 :ref="'connectivityExplorerTab_' + tab.id"
                 v-show="tab.id === activeTabId"
+                :sckanVersion="sckanVersion"
                 :envVars="envVars"
               />
             </template>
@@ -157,7 +158,11 @@ export default {
         x: 0,
         y: 0,
       },
-    }
+    },
+    sckanVersion: {
+      type: String,
+      default: "",
+    },
   },
   data: function () {
     return {
