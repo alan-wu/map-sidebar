@@ -213,7 +213,62 @@ export default {
         )
       return value
     },
+    processOptions: function () {
+      // create top level of options in cascader
+      this.options.forEach((facet, i) => {
+        this.options[i].total = this.countTotalFacet(facet)
+
+        this.options[i].label = convertReadableLabel(facet.label)
+        this.options[i].value = this.createCascaderItemValue(
+          facet.key,
+          undefined
+        )
+
+        // put "Show all" as first option
+        this.options[i].children.unshift({
+          value: this.createCascaderItemValue('Show all'),
+          label: 'Show all',
+        })
+
+        // populate second level of options
+        this.options[i].children.forEach((facetItem, j) => {
+          // Format labels except funding program
+          if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
+            this.options[i].children[j].label = convertReadableLabel(
+              facetItem.label
+            )
+          }
+          this.options[i].children[j].value =
+            this.createCascaderItemValue(facet.label, facetItem.label)
+          if (
+            this.options[i].children[j].children &&
+            this.options[i].children[j].children.length > 0
+          ) {
+            this.options[i].children[j].children.forEach((term, k) => {
+              this.options[i].children[j].children[k].label =
+                convertReadableLabel(term.label)
+              this.options[i].children[j].children[k].value =
+                this.createCascaderItemValue(
+                  facet.label,
+                  facetItem.label,
+                  term.label
+                )
+            })
+          }
+        })
+      })
+    },
     populateCascader: function () {
+      if (this.entry.options) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            this.facets = this.entry.options
+            this.options = this.entry.options
+            this.processOptions()
+            resolve();
+          }, 2000);
+        });
+      }
       return new Promise((resolve) => {
         // Algolia facet serach
         this.algoliaClient
@@ -222,50 +277,7 @@ export default {
             this.facets = data
             EventBus.emit('available-facets', data)
             this.options = data
-
-            // create top level of options in cascader
-            this.options.forEach((facet, i) => {
-              this.options[i].total = this.countTotalFacet(facet)
-
-              this.options[i].label = convertReadableLabel(facet.label)
-              this.options[i].value = this.createCascaderItemValue(
-                facet.key,
-                undefined
-              )
-
-              // put "Show all" as first option
-              this.options[i].children.unshift({
-                value: this.createCascaderItemValue('Show all'),
-                label: 'Show all',
-              })
-
-              // populate second level of options
-              this.options[i].children.forEach((facetItem, j) => {
-                // Format labels except funding program
-                if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
-                  this.options[i].children[j].label = convertReadableLabel(
-                    facetItem.label
-                  )
-                }
-                this.options[i].children[j].value =
-                  this.createCascaderItemValue(facet.label, facetItem.label)
-                if (
-                  this.options[i].children[j].children &&
-                  this.options[i].children[j].children.length > 0
-                ) {
-                  this.options[i].children[j].children.forEach((term, k) => {
-                    this.options[i].children[j].children[k].label =
-                      convertReadableLabel(term.label)
-                    this.options[i].children[j].children[k].value =
-                      this.createCascaderItemValue(
-                        facet.label,
-                        facetItem.label,
-                        term.label
-                      )
-                  })
-                }
-              })
-            })
+            this.processOptions()
           })
           .finally(() => {
             resolve()
