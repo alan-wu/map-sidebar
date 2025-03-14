@@ -2,11 +2,7 @@
   <div class="connectivity-card-container" ref="container">
     <div class="connectivity-card" ref="card">
       <div class="seperator-path"></div>
-      <div
-        class="card"
-        @mouseover="cardHovered(entry)"
-        @mouseleave="cardHovered(undefined)"
-      >
+      <div class="card">
         <div class="title" @click="cardClicked(entry)">{{ entry.label }}</div>
         <template v-for="field in displayFields" :key="field">
           <div class="details" v-if="entry[field]">
@@ -45,9 +41,6 @@ export default {
   methods: {
     cardClicked: function (data) {
       EventBus.emit("connectivity-clicked", data);
-    },
-    cardHovered: function (data) {
-      EventBus.emit("connectivity-hovered", data);
     },
   },
 };

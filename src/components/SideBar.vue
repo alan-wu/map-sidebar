@@ -60,6 +60,7 @@
                 v-show="tab.id === activeTabId"
                 :sckanVersion="sckanVersion"
                 :envVars="envVars"
+                @hover-changed="hoverChanged($event)"
               />
             </template>
             <template v-else>
