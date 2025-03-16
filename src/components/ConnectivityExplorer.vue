@@ -20,6 +20,17 @@
         </el-button>
       </div>
     </template>
+    <SearchFilters
+      class="filters"
+      ref="filtersRef"
+      filterType="connectivity"
+      :entry="filterEntry"
+      :envVars="envVars"
+      @filterResults="filterUpdate"
+      @numberPerPage="numberPerPageUpdate"
+      @loading="filtersLoading"
+      @cascaderReady="cascaderReady"
+    ></SearchFilters>
     <div class="content scrollbar" ref="content">
       <div class="error-feedback" v-if="results.length === 0">
         No results found - Please change your search / filter criteria.
@@ -71,6 +82,7 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
+import SearchFilters from "./SearchFilters.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
 import {
   FlatmapQueries,
@@ -99,6 +111,7 @@ var initial_state = {
 
 export default {
   components: {
+    SearchFilters,
     ConnectivityCard,
     Button,
     Card,
@@ -133,7 +146,42 @@ export default {
         "flex-flow": "column",
         display: "flex",
       },
+      filterOptions: [
+        {
+          id: 3,
+          key: "flatmap.connectivity",
+          label: "connectivity",
+          children: [
+            {
+              facetPropPath: "flatmap.connectivity",
+              id: 0,
+              label: "origin",
+            },
+            {
+              facetPropPath: "flatmap.connectivity",
+              id: 1,
+              label: "component",
+            },
+            {
+              facetPropPath: "flatmap.connectivity",
+              id: 2,
+              label: "destination",
+            },
+          ],
+        },
+      ],
+      cascaderIsReady: false,
     };
+  },
+  computed: {
+    // This computed property populates filter data's entry object with $data from this sidebar
+    filterEntry: function () {
+      return {
+        numberOfHits: this.numberOfHits,
+        filterFacets: this.filter,
+        options: this.filterOptions,
+      };
+    },
   },
   watch: {
     sckanVersion: function () {
@@ -149,11 +197,57 @@ export default {
       this.results = [];
       this.loadingCards = false;
     },
-    openSearch: function (search = "") {
+    openSearch: function (filter, search = "", option = { withSearch: true }) {
       this.searchInput = search;
       this.resetPageNavigation();
-      this.resetSearch();
-      this.searchKnowledge(search);
+      //Proceed normally if cascader is ready
+      if (this.cascaderIsReady) {
+        this.filter =
+          this.$refs.filtersRef.getHierarchicalValidatedFilters(filter);
+        //Facets provided but cannot find at least one valid
+        //facet. Tell the users the search is invalid and reset
+        //facets check boxes.
+        if (
+          filter &&
+          filter.length > 0 &&
+          this.filter &&
+          this.filter.length === 0
+        ) {
+          this.$refs.filtersRef.checkShowAllBoxes();
+          this.resetSearch();
+        } else if (this.filter) {
+          if (option.withSearch) {
+            this.searchKnowledge(this.filter, search);
+          }
+          this.$refs.filtersRef.setCascader(this.filter);
+        }
+      } else {
+        //cascader is not ready, perform search if no filter is set,
+        //otherwise waith for cascader to be ready
+        this.filter = filter;
+        if ((!filter || filter.length == 0) && option.withSearch) {
+          this.searchKnowledge(this.filter, search);
+        }
+      }
+    },
+    addFilter: function (filter) {
+      if (this.cascaderIsReady) {
+        this.resetPageNavigation();
+        if (filter) {
+          if (this.$refs.filtersRef.addFilter(filter))
+            this.$refs.filtersRef.initiateSearch();
+        }
+      } else {
+        if (Array.isArray(this.filter)) {
+          this.filter.push(filter);
+        } else {
+          this.filter = [filter];
+        }
+      }
+    },
+    cascaderReady: function () {
+      this.cascaderIsReady = true;
+      this.openSearch(this.filter, this.searchInput);
     },
     clearSearchClicked: function () {
       this.searchInput = "";
@@ -165,23 +259,55 @@ export default {
         this.searchAndFilterUpdate();
       }
     },
+    filterUpdate: function (filters) {
+      this.filters = [...filters];
+      this.searchAndFilterUpdate();
+      this.$emit("search-changed", {
+        value: filters,
+        type: "filter-update",
+      });
+    },
+    /**
+     * Transform filters for third level items to perform search
+     * because cascader keeps adding it back.
+     */
+    transformFiltersBeforeSearch: function (filters) {
+      return filters.map((filter) => {
+        if (filter.facet2) {
+          filter.facet = filter.facet2;
+          delete filter.facet2;
+        }
+        return filter;
+      });
+    },
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
-      this.searchKnowledge(this.searchInput);
+      const transformedFilters = this.transformFiltersBeforeSearch(
+        this.filters
+      );
+      this.searchKnowledge(transformedFilters, this.searchInput);
     },
-    searchKnowledge: function (query = "") {
+    searchKnowledge: function (filters, query = "") {
       this.resetSearch();
       this.loadingCards = true;
       if (query === "") {
         this.results = this.flatmapKnowledge;
       } else {
-        for (const value of this.flatmapKnowledge) {
-          const lowerCase = query.toLowerCase();
-          const myJSON = JSON.stringify(value).toLowerCase();
-          if (myJSON.includes(lowerCase)) {
-            this.results.push(value);
-          }
-        }
+        const lowerCaseWords = query.toLowerCase().split(/\s+/);
+        this.results = this.flatmapKnowledge
+          .map((value) => {
+            const itemText = JSON.stringify(value).toLowerCase();
+            let matchCount = 0;
+            for (const word of lowerCaseWords) {
+              if (itemText.includes(word)) {
+                matchCount++;
+              }
+            }
+            return { value, matchCount };
+          })
+          .filter((item) => item.matchCount > 0)
+          .sort((a, b) => b.matchCount - a.matchCount)
+          .map((item) => item.value);
       }
       this.numberOfHits = this.results.length;
       this.paginatedResults = this.results.slice(
@@ -190,7 +316,14 @@ export default {
       );
       this.loadingCards = false;
       this.scrollToTop();
+      this.$emit('search-changed', {
+        value: this.searchInput,
+        type: 'query-update',
+      })
       this.lastSearch = query;
+    },
+    filtersLoading: function (val) {
+      this.loadingCards = val;
     },
     numberPerPageUpdate: function (val) {
       this.numberPerPage = val;
@@ -199,7 +332,7 @@ export default {
     pageChange: function (page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
-      this.searchKnowledge(this.searchInput);
+      this.searchKnowledge(this.filters, this.searchInput);
     },
     scrollToTop: function () {
       if (this.$refs.content) {
@@ -224,7 +357,7 @@ export default {
             parsedData,
             this.sckanVersion
           );
-          this.openSearch(this.searchInput);
+          this.openSearch(this.filter, this.searchInput);
         });
       }
     },
