@@ -747,13 +747,15 @@ export default {
     removeTopLevelCascaderCheckboxes: function () {
       // Next tick allows the cascader menu to change
       this.$nextTick(() => {
-        let cascadePanels = document.querySelectorAll(
+        const cascadePanels = document.querySelectorAll(
           '.sidebar-cascader-popper .el-cascader-menu__list'
-        )
-        // Hide the checkboxes on the first level of the cascader
-        cascadePanels[0]
-          .querySelectorAll('.el-checkbox__input')
-          .forEach((el) => (el.style.display = 'none'))
+        );
+        for (const panel of cascadePanels) {
+          if (panel.textContent.includes('Show all')) continue; // Skip if 'Show all' is found
+          for (const checkbox of panel.querySelectorAll('.el-checkbox__input')) {
+            checkbox.style.display = 'none'; // Hide the checkboxes on the first level of the cascader
+          }
+        }
       })
     },
     /*
