@@ -27,8 +27,8 @@
       :annotationEntry="annotationEntry"
       :createData="createData"
       :connectivityInfo="connectivityInput"
-      :sckanVersion="sckanVersion"
       @tabClicked="tabClicked"
+      :flatmapKnowledge="connectivityKnowledge"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
       @connectivity-component-click="onConnectivityComponentClick"
@@ -40,11 +40,35 @@
 <script>
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
+import { markRaw } from "vue";
 import SideBar from './components/SideBar.vue'
 import EventBus from './components/EventBus.js'
 import exampleConnectivityInput from './exampleConnectivityInput.js'
+import {
+  FlatmapQueries,
+  findTaxonomyLabels,
+} from "@abi-software/map-utilities/src/services/flatmapQueries.js";
+import {
+  getReferenceConnectivitiesFromStorage,
+  loadAndStoreKnowledge,
+  refreshFlatmapKnowledgeCache,
+  getKnowledgeSource,
+  getReferenceConnectivitiesByAPI,
+} from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
+
 
 const capitalise = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+const filterConnectivityKnowledge = (knowledge, sckanVersion) => {
+  return knowledge.filter((item) => {
+    if (item?.source && item.source === sckanVersion) {
+      if ("connectivity" in item) {
+        return true;
+      }
+    }
+    return false;
+  });
+};
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -139,7 +163,11 @@ export default {
         y: 0,
       },
       createDataSet: false,
-      sckanVersion: 'sckan-2024-09-21-npo'
+      sckanVersion: 'sckan-2024-09-21-npo',
+      flatmapKnowledge: [],
+      connectivityKnowledge: [],
+      query: '',
+      filter: []
     }
   },
   methods: {
@@ -148,9 +176,37 @@ export default {
     },
     searchChanged: function (data) {
       console.log(data)
-    },
-    tabClicked: function (tab) {
-      this.activeId = tab.id
+      if (data.id === 4) {
+        if (data.type === "query-update") {
+          this.query = data.value || "";
+        }
+        if (data.type === "filter-update") {
+          this.filter = data.value.length
+            ? ['ilxtr:neuron-type-aacar-13', 'ilxtr:neuron-type-aacar-10a'] // replace with actual origin/component/destination
+            : [];
+        }
+        let results = this.flatmapKnowledge;
+        // Display based on relevance
+        if (this.query) {
+          const lowerCaseWords = this.query.toLowerCase().split(/\s+/);
+          results = results
+            .map((value) => {
+              const itemText = JSON.stringify(value).toLowerCase();
+              const matchCount = lowerCaseWords.reduce((count, word) => {
+                return count + (itemText.includes(word) ? 1 : 0)
+              }, 0); 
+              return { value, matchCount };
+            })
+            .filter((item) => item.matchCount > 0)
+            .sort((a, b) => b.matchCount - a.matchCount)
+            .map((item) => item.value);
+        }
+        // Display only when match
+        if (this.filter.length) {
+          results = results.filter((knowledge) => this.filter.includes(knowledge.id));
+        }
+        this.connectivityKnowledge = results;
+      }
     },
     // For connectivity input actions
     action: function (action) {
@@ -286,7 +342,7 @@ export default {
       console.log("onConnectivityComponentClick" , data)
     }
   },
-  mounted: function () {
+  mounted: async function () {
     console.log('mounted app')
     EventBus.on('contextUpdate', (payLoad) => {
       console.log('contextUpdate', payLoad)
@@ -294,6 +350,18 @@ export default {
     EventBus.on('datalink-clicked', (payLoad) => {
       console.log('datalink-clicked', payLoad)
     });
+    if (this.envVars.FLATMAPAPI_LOCATION && this.sckanVersion) {
+      this.flatmapQueries = markRaw(new FlatmapQueries());
+      this.flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
+      const sql = `select knowledge from knowledge
+      where source="${this.sckanVersion}"
+      order by source desc`;
+      const response = await this.flatmapQueries.flatmapQuery(sql);
+      const mappedData = response.values.map((x) => x[0]);
+      const parsedData = mappedData.map((x) => JSON.parse(x));
+      this.flatmapKnowledge = filterConnectivityKnowledge(parsedData, this.sckanVersion);
+      this.connectivityKnowledge = this.flatmapKnowledge;
+    }
   },
 }
 </script>

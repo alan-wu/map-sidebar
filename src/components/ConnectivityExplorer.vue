@@ -62,19 +62,7 @@
 </template>
 
 <script>
-const filterConnectivityKnowledge = (knowledge, sckanVersion) => {
-  return knowledge.filter((item) => {
-    if (item?.source && item.source === sckanVersion) {
-      if ("connectivity" in item) {
-        return true;
-      }
-    }
-    return false;
-  });
-};
-
 /* eslint-disable no-alert, no-console */
-import { markRaw } from "vue";
 import {
   ElButton as Button,
   ElCard as Card,
@@ -84,17 +72,6 @@ import {
 } from "element-plus";
 import SearchFilters from "./SearchFilters.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
-import {
-  FlatmapQueries,
-  findTaxonomyLabels,
-} from "@abi-software/map-utilities/src/services/flatmapQueries.js";
-import {
-  getReferenceConnectivitiesFromStorage,
-  loadAndStoreKnowledge,
-  refreshFlatmapKnowledgeCache,
-  getKnowledgeSource,
-  getReferenceConnectivitiesByAPI,
-} from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
 
 var initial_state = {
   filters: [],
@@ -121,9 +98,9 @@ export default {
   },
   name: "ConnectivityExplorer",
   props: {
-    sckanVersion: {
-      type: String,
-      default: "",
+    flatmapKnowledge: {
+      type: Array,
+      default: [],
     },
     entry: {
       type: Object,
@@ -137,9 +114,6 @@ export default {
   data: function () {
     return {
       ...this.entry,
-      mapServer: "",
-      flatmapQueries: undefined,
-      flatmapKnowledge: [],
       paginatedResults: [],
       bodyStyle: {
         flex: "1 1 auto",
@@ -184,8 +158,8 @@ export default {
     },
   },
   watch: {
-    sckanVersion: function () {
-      this.loadFlatmapKnowledge();
+    flatmapKnowledge: function () {
+      this.openSearch(this.filter, this.searchInput);
     },
   },
   methods: {
@@ -219,7 +193,7 @@ export default {
           if (option.withSearch) {
             this.searchKnowledge(this.filter, search);
           }
-          this.$refs.filtersRef.setCascader(this.filter);
+          // this.$refs.filtersRef.setCascader(this.filter);
         }
       } else {
         //cascader is not ready, perform search if no filter is set,
@@ -290,25 +264,7 @@ export default {
     searchKnowledge: function (filters, query = "") {
       this.resetSearch();
       this.loadingCards = true;
-      if (query === "") {
-        this.results = this.flatmapKnowledge;
-      } else {
-        const lowerCaseWords = query.toLowerCase().split(/\s+/);
-        this.results = this.flatmapKnowledge
-          .map((value) => {
-            const itemText = JSON.stringify(value).toLowerCase();
-            let matchCount = 0;
-            for (const word of lowerCaseWords) {
-              if (itemText.includes(word)) {
-                matchCount++;
-              }
-            }
-            return { value, matchCount };
-          })
-          .filter((item) => item.matchCount > 0)
-          .sort((a, b) => b.matchCount - a.matchCount)
-          .map((item) => item.value);
-      }
+      this.results = this.flatmapKnowledge;
       this.numberOfHits = this.results.length;
       this.paginatedResults = this.results.slice(
         this.start,
@@ -316,11 +272,13 @@ export default {
       );
       this.loadingCards = false;
       this.scrollToTop();
-      this.$emit('search-changed', {
-        value: this.searchInput,
-        type: 'query-update',
-      })
-      this.lastSearch = query;
+      if (this.searchInput !== this.lastSearch) {        
+        this.$emit("search-changed", {
+          value: this.searchInput,
+          type: "query-update",
+        });
+        this.lastSearch = query;
+      }
     },
     filtersLoading: function (val) {
       this.loadingCards = val;
@@ -343,28 +301,10 @@ export default {
       this.start = 0;
       this.page = 1;
     },
-    loadFlatmapKnowledge: function () {
-      if (this.mapServer && this.sckanVersion) {
-        this.flatmapQueries = markRaw(new FlatmapQueries());
-        this.flatmapQueries.initialise(this.mapServer);
-        const sql = `select knowledge from knowledge
-        where source="${this.sckanVersion}"
-        order by source desc`;
-        this.flatmapQueries.flatmapQuery(sql).then((response) => {
-          const mappedData = response.values.map((x) => x[0]);
-          const parsedData = mappedData.map((x) => JSON.parse(x));
-          this.flatmapKnowledge = filterConnectivityKnowledge(
-            parsedData,
-            this.sckanVersion
-          );
-          this.openSearch(this.filter, this.searchInput);
-        });
-      }
-    },
   },
   mounted: function () {
     this.mapServer = this.envVars.FLATMAPAPI_LOCATION;
-    this.loadFlatmapKnowledge();
+    this.openSearch(this.filter, this.searchInput);
   },
 };
 </script>

@@ -58,7 +58,7 @@
               <connectivity-explorer
                 :ref="'connectivityExplorerTab_' + tab.id"
                 v-show="tab.id === activeTabId"
-                :sckanVersion="sckanVersion"
+                :flatmapKnowledge="flatmapKnowledge"
                 :envVars="envVars"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
@@ -161,9 +161,9 @@ export default {
         y: 0,
       },
     },
-    sckanVersion: {
-      type: String,
-      default: "",
+    flatmapKnowledge: {
+      type: Array,
+      default: [],
     },
   },
   data: function () {
