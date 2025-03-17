@@ -25,6 +25,9 @@ import { Close as ElIconClose } from "@element-plus/icons-vue";
 
 export default {
   name: "Tabs",
+  components: {
+    ElIconClose,
+  },
   props: {
     tabEntries: {
       type: Array,
@@ -34,13 +37,23 @@ export default {
       type: Number,
       default: 1,
     },
+    contextArray: {
+      type: Array,
+      default: () => [],
+    },
   },
   computed: {
     tabs: function () {
       // permanent tabs always show in the front
       const permanent = this.tabEntries.filter((t) => !t.closable);
       const temporary = this.tabEntries.filter((t) => t.closable);
-      return permanent.concat(temporary);
+      let entries = permanent.concat(temporary);
+      if (this.contextArray.length) {
+        for (let i in entries) {
+          entries[i].contextCard = this.contextArray[i];
+        }
+      }
+      return entries;
     },
   },
   methods: {

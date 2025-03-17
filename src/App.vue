@@ -22,12 +22,9 @@
       class="side-bar"
       ref="sideBar"
       :visible="sideBarVisibility"
-      :tabs="tabs"
-      :activeTabId="activeId"
       :annotationEntry="annotationEntry"
       :createData="createData"
       :connectivityInfo="connectivityInput"
-      @tabClicked="tabClicked"
       :flatmapKnowledge="connectivityKnowledge"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
@@ -119,28 +116,12 @@ export default {
   components: {
     SideBar,
   },
-  computed: {
-    tabs: function () {
-      let temp = [...this.tabArray]
-      for (let i in this.tabArray) {
-        temp[i].contextCard = this.contextArray[i]
-      }
-      return temp
-    },
-  },
   data: function () {
     return {
       annotationEntry: {
         featureId :"epicardium",
         resourceId: "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json","resource":"https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json"
       },
-      contextArray: [null, null],
-      tabArray: [
-        { title: 'Search', id: 1, type: 'search', closable: false},
-        { title: 'Connectivity', id: 2, type: 'connectivity', closable: true },
-        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
-        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer', closable: false },
-      ],
       sideBarVisibility: true,
       envVars: {
         API_LOCATION: import.meta.env.VITE_APP_API_LOCATION,
@@ -154,7 +135,6 @@ export default {
         FLATMAPAPI_LOCATION: import.meta.env.VITE_FLATMAPAPI_LOCATION,
       },
       connectivityInput: exampleConnectivityInput,
-      activeId: 1,
       createData: {
         toBeConfirmed: false,
         points: [],
