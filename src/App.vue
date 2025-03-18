@@ -25,7 +25,7 @@
       :annotationEntry="annotationEntry"
       :createData="createData"
       :connectivityInfo="connectivityInput"
-      :flatmapKnowledge="connectivityKnowledge"
+      :connectivityKnowledge="connectivityKnowledge"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
       @connectivity-component-click="onConnectivityComponentClick"
@@ -41,31 +41,11 @@ import { markRaw } from "vue";
 import SideBar from './components/SideBar.vue'
 import EventBus from './components/EventBus.js'
 import exampleConnectivityInput from './exampleConnectivityInput.js'
-import {
-  FlatmapQueries,
-  findTaxonomyLabels,
-} from "@abi-software/map-utilities/src/services/flatmapQueries.js";
-import {
-  getReferenceConnectivitiesFromStorage,
-  loadAndStoreKnowledge,
-  refreshFlatmapKnowledgeCache,
-  getKnowledgeSource,
-  getReferenceConnectivitiesByAPI,
-} from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
+import { FlatmapQueries } from "@abi-software/map-utilities/src/services/flatmapQueries.js";
+import { getKnowledgeSource, loadAndStoreKnowledge } from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
 
 
 const capitalise = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
-const filterConnectivityKnowledge = (knowledge, sckanVersion) => {
-  return knowledge.filter((item) => {
-    if (item?.source && item.source === sckanVersion) {
-      if ("connectivity" in item) {
-        return true;
-      }
-    }
-    return false;
-  });
-};
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -119,8 +99,9 @@ export default {
   data: function () {
     return {
       annotationEntry: {
-        featureId :"epicardium",
-        resourceId: "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json","resource":"https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json"
+        featureId: "epicardium",
+        resourceId: "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json",
+        "resource": "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json"
       },
       sideBarVisibility: true,
       envVars: {
@@ -151,41 +132,53 @@ export default {
     }
   },
   methods: {
+    loadConnectivityKnowledge: async function (flatmap) {
+      const sckanVersion = getKnowledgeSource(flatmap);
+      const flatmapQueries = markRaw(new FlatmapQueries());
+      flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
+      const knowledge = await loadAndStoreKnowledge(flatmap, flatmapQueries);
+      this.flatmapKnowledge = knowledge.filter((item) => {
+        if (item.source === sckanVersion && "connectivity" in item) return true;
+        return false;
+      });
+      this.connectivityKnowledge = this.flatmapKnowledge;
+    },
+    connectivityQueryFilter: async function (payload) {
+      let results = this.flatmapKnowledge;
+      if (payload.type === "query-update") this.query = payload.value;
+      if (payload.type === "filter-update") this.filter = payload.value;
+      if (this.query) {
+        let suggestions = [];
+        // this.searchSuggestions(this.query, suggestions);
+        // apply search
+        const labels = ['ilxtr:neuron-type-aacar-11'];
+        let paths = [];
+        if (labels.length === 1) {
+          // paths = await flatmap.retrieveConnectedPaths([this.query], { type: this.filter });
+          // default
+          paths = ['ilxtr:neuron-type-aacar-4', 'ilxtr:neuron-type-aacar-10a', 'ilxtr:neuron-type-aacar-7a',
+            'ilxtr:neuron-type-aacar-6', 'ilxtr:neuron-type-aacar-9a', 'ilxtr:neuron-type-aacar-8a',
+            'ilxtr:neuron-type-aacar-8v', 'ilxtr:neuron-type-aacar-9v', 'ilxtr:neuron-type-aacar-7v']
+          // apply filter
+          if (this.filter.length) {
+            paths = ['ilxtr:neuron-type-aacar-4', 'ilxtr:neuron-type-aacar-10a', 'ilxtr:neuron-type-aacar-6',
+              'ilxtr:neuron-type-aacar-8v', 'ilxtr:neuron-type-aacar-9v', 'ilxtr:neuron-type-aacar-7v']
+          }
+        }
+        results = results.filter((item) => {
+          if (paths.length) return paths.includes(item.id);
+          return labels.includes(item.label) || labels.includes(item["long-label"]);
+        })
+      }
+      this.connectivityKnowledge = results;
+    },
     hoverChanged: function (data) {
       console.log('hoverChanged', data)
     },
     searchChanged: function (data) {
       console.log(data)
       if (data.id === 4) {
-        if (data.type === "query-update") {
-          this.query = data.value || "";
-        }
-        if (data.type === "filter-update") {
-          this.filter = data.value.length
-            ? ['ilxtr:neuron-type-aacar-13', 'ilxtr:neuron-type-aacar-10a'] // replace with actual origin/component/destination
-            : [];
-        }
-        let results = this.flatmapKnowledge;
-        // Display based on relevance
-        if (this.query) {
-          const lowerCaseWords = this.query.toLowerCase().split(/\s+/);
-          results = results
-            .map((value) => {
-              const itemText = JSON.stringify(value).toLowerCase();
-              const matchCount = lowerCaseWords.reduce((count, word) => {
-                return count + (itemText.includes(word) ? 1 : 0)
-              }, 0); 
-              return { value, matchCount };
-            })
-            .filter((item) => item.matchCount > 0)
-            .sort((a, b) => b.matchCount - a.matchCount)
-            .map((item) => item.value);
-        }
-        // Display only when match
-        if (this.filter.length) {
-          results = results.filter((knowledge) => this.filter.includes(knowledge.id));
-        }
-        this.connectivityKnowledge = results;
+        this.connectivityQueryFilter(data)
       }
     },
     // For connectivity input actions
@@ -330,18 +323,7 @@ export default {
     EventBus.on('datalink-clicked', (payLoad) => {
       console.log('datalink-clicked', payLoad)
     });
-    if (this.envVars.FLATMAPAPI_LOCATION && this.sckanVersion) {
-      this.flatmapQueries = markRaw(new FlatmapQueries());
-      this.flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
-      const sql = `select knowledge from knowledge
-      where source="${this.sckanVersion}"
-      order by source desc`;
-      const response = await this.flatmapQueries.flatmapQuery(sql);
-      const mappedData = response.values.map((x) => x[0]);
-      const parsedData = mappedData.map((x) => JSON.parse(x));
-      this.flatmapKnowledge = filterConnectivityKnowledge(parsedData, this.sckanVersion);
-      this.connectivityKnowledge = this.flatmapKnowledge;
-    }
+    this.loadConnectivityKnowledge({ 'provenance': { 'connectivity': { 'knowledge-source': this.sckanVersion } } });
   },
 }
 </script>
