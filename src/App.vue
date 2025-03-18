@@ -28,7 +28,7 @@
       :connectivityKnowledge="connectivityKnowledge"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
-      @connectivity-component-click="onConnectivityComponentClick"
+      @connectivity-hovered="onConnectivityHovered"
       @actionClick="action"
     />
   </div>
@@ -311,8 +311,8 @@ export default {
         this.createDataSet = false
       }
     },
-    onConnectivityComponentClick: function(data) {
-      console.log("onConnectivityComponentClick" , data)
+    onConnectivityHovered: function(data) {
+      console.log("onConnectivityHovered" , data)
     }
   },
   mounted: async function () {

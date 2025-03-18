@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     cardClicked: function (data) {
-      EventBus.emit("connectivity-clicked", data);
+      EventBus.emit("connectivity-explorer-clicked", data);
     },
   },
 };

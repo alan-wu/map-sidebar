@@ -39,7 +39,7 @@
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
                 @show-reference-connectivities="onShowReferenceConnectivities"
-                @connectivity-component-click="onConnectivityComponentClick"
+                @connectivity-hovered="onConnectivityHovered"
               />
             </template>
             <template v-else-if="tab.type === 'annotation'">
@@ -205,8 +205,8 @@ export default {
      * This function is triggered after a connectivity component is clicked.
      * @arg data
      */
-    onConnectivityComponentClick: function (data) {
-      this.$emit('connectivity-component-click', data);
+    onConnectivityHovered: function (data) {
+      this.$emit('connectivity-hovered', data);
     },
     /**
      * This event is emitted when the search filters are changed.
@@ -385,8 +385,8 @@ export default {
     })
 
     // Get available anatomy facets for the connectivity info
-    EventBus.on('connectivity-clicked', (payLoad) => {
-      this.$emit('connectivity-clicked', payLoad);
+    EventBus.on('connectivity-explorer-clicked', (payLoad) => {
+      this.$emit('connectivity-explorer-clicked', payLoad);
     })
 
     // Get available anatomy facets for the connectivity info

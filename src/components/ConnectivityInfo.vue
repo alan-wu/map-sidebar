@@ -563,7 +563,7 @@ export default {
       }
 
       // type: to show error only for click event
-      this.$emit('connectivity-component-click', data);
+      this.$emit('connectivity-hovered', data);
     },
     getErrorConnectivities: function (errorData) {
       const errorDataToEmit = [...new Set(errorData)];
