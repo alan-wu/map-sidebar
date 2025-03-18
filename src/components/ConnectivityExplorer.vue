@@ -98,7 +98,7 @@ export default {
   },
   name: "ConnectivityExplorer",
   props: {
-    flatmapKnowledge: {
+    connectivityKnowledge: {
       type: Array,
       default: [],
     },
@@ -129,17 +129,17 @@ export default {
             {
               facetPropPath: "flatmap.connectivity",
               id: 0,
-              label: "origin",
+              label: "origins",
             },
             {
               facetPropPath: "flatmap.connectivity",
               id: 1,
-              label: "component",
+              label: "components",
             },
             {
               facetPropPath: "flatmap.connectivity",
               id: 2,
-              label: "destination",
+              label: "destinations",
             },
           ],
         },
@@ -158,7 +158,7 @@ export default {
     },
   },
   watch: {
-    flatmapKnowledge: function () {
+    connectivityKnowledge: function () {
       this.openSearch(this.filter, this.searchInput);
     },
   },
@@ -264,7 +264,7 @@ export default {
     searchKnowledge: function (filters, query = "") {
       this.resetSearch();
       this.loadingCards = true;
-      this.results = this.flatmapKnowledge;
+      this.results = this.connectivityKnowledge;
       this.numberOfHits = this.results.length;
       this.paginatedResults = this.results.slice(
         this.start,

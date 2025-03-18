@@ -58,7 +58,7 @@
               <connectivity-explorer
                 :ref="'connectivityExplorerTab_' + tab.id"
                 v-show="tab.id === activeTabId"
-                :flatmapKnowledge="flatmapKnowledge"
+                :connectivityKnowledge="connectivityKnowledge"
                 :envVars="envVars"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
@@ -161,7 +161,7 @@ export default {
         y: 0,
       },
     },
-    flatmapKnowledge: {
+    connectivityKnowledge: {
       type: Array,
       default: [],
     },
