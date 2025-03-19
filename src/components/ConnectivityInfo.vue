@@ -5,7 +5,9 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            {{ capitalise(entry.title) }}
+            <span @click="connectivityClicked(entry)">
+              {{ capitalise(entry.title) }}
+            </span>
             <template v-if="entry.featuresAlert">
               <el-popover
                 width="250"
@@ -619,6 +621,9 @@ export default {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
     },
+    connectivityClicked: function (data) {
+      this.$emit('connectivity-clicked', data.featureId[0]);
+    },
   },
   mounted: function () {
     this.sckanVersion = this.entry['knowledge-source'];
@@ -659,6 +664,10 @@ export default {
   font-weight: bold;
   padding-bottom: 8px;
   color: $app-primary-color;
+
+  span:hover {
+    cursor: pointer;
+  }
 }
 
 .block + .block {

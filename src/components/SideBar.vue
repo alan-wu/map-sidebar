@@ -39,6 +39,7 @@
                 :ref="'connectivityTab_' + tab.id"
                 @show-connectivity="showConnectivity"
                 @show-reference-connectivities="onShowReferenceConnectivities"
+                @connectivity-clicked="onConnectivityClicked"
                 @connectivity-hovered="onConnectivityHovered"
               />
             </template>
@@ -202,7 +203,14 @@ export default {
       this.$emit('show-reference-connectivities', refSource);
     },
     /**
-     * This function is triggered after a connectivity component is clicked.
+     * This function is triggered after connectivity term is clicked.
+     * @arg data
+     */
+    onConnectivityClicked: function (data) {
+      this.$emit('connectivity-clicked', data);
+    },
+    /**
+     * This function is triggered after connectivity term is hovered.
      * @arg data
      */
     onConnectivityHovered: function (data) {
@@ -229,45 +237,31 @@ export default {
     toggleDrawer: function () {
       this.drawerOpen = !this.drawerOpen
     },
+    openConnectivitySearch: function (facets, query) {
+      this.drawerOpen = true;
+      // Because refs are in v-for, nextTick is needed here
+      this.$nextTick(() => {
+        const connectivityExplorerTabRef = this.getTabRef(4, 'connectivityExplorer', true);
+        connectivityExplorerTabRef.openSearch(facets, query);
+      })
+    },
     openSearch: function (facets, query) {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getSearchTabRefById(1);
+        const searchTabRef = this.getTabRef(1, 'search', true);
         searchTabRef.openSearch(facets, query);
       })
     },
     /**
-     * Get the tab object by tab id and type.
-     * If not found, return the first available tab.
-     */
-    getTabByIdAndType: function (id, type) {
-      const tabId = id || this.activeTabId;
-      const tabType = type || 'search'; // default to search tab
-      const tabObj = this.tabEntries.find((tab) => tab.id === tabId && tab.type === tabType);
-      const firstAvailableTab = this.tabEntries[0];
-      return tabObj || firstAvailableTab;
-    },
-    /**
      * Get the ref id of the tab by id and type.
      */
-    getTabRefId: function (id, type) {
-      let refIdPrefix = 'searchTab_'; // default to search tab
-      if (type === 'connectivity') {
-        refIdPrefix = 'connectivityTab_';
-      } else if (type === 'annotation') {
-        refIdPrefix = 'annotationTab_';
-      } else if (type === 'connectivityExplorer') {
-        refIdPrefix = 'connectivityExplorerTab_';
-      }
-      const tabObj = this.getTabByIdAndType(id, type);
-      const tabRefId = refIdPrefix + tabObj.id;
-      return tabRefId;
-    },
-    getSearchTabRefById: function (id) {
-      const searchTabId = id || 1; // to use id when there are multiple search tabs
-      const searchTabRefId = this.getTabRefId(searchTabId, 'search');
-      return this.$refs[searchTabRefId][0];
+    getTabRef: function (id = 1, type = 'search', open = false) {
+      const matchedTab = this.tabEntries.filter((tab) => tab.id === id && tab.type === type);
+      const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
+      const tabRef = type + 'Tab_' + tabInfo[0].id;
+      if (open) this.tabClicked({ id, type });
+      return this.$refs[tabRef][0];
     },
     /**
      * The function to add filters to sidebar search.
@@ -281,7 +275,7 @@ export default {
 
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getSearchTabRefById(1);
+        const searchTabRef = this.getTabRef(1, 'search', true);
         searchTabRef.addFilter(filter)
       })
     },
@@ -289,7 +283,7 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getSearchTabRefById(1);
+        const searchTabRef = this.getTabRef(1, 'search', true);
         searchTabRef.openSearch(
           '',
           undefined,
@@ -299,7 +293,7 @@ export default {
       })
     },
     getAlgoliaFacets: async function () {
-      const searchTabRef = this.getSearchTabRefById(1);
+      const searchTabRef = this.getTabRef(1, 'search');
       return await searchTabRef.getAlgoliaFacets()
     },
     setDrawerOpen: function (value = true) {

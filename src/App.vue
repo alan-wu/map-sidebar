@@ -16,6 +16,7 @@
       <el-button @click="keywordSearch">keyword search</el-button>
       <el-button @click="getFacets">Get facets</el-button>
       <el-button @click="toggleCreateData">Create Data/Annotation</el-button>
+      <el-button @click="openConnectivitySearch">Connectivity Search</el-button>
     </div>
     <SideBar
       :envVars="envVars"
@@ -28,6 +29,7 @@
       :connectivityKnowledge="connectivityKnowledge"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
+      @connectivity-clicked="openConnectivitySearch"
       @connectivity-hovered="onConnectivityHovered"
       @actionClick="action"
     />
@@ -313,6 +315,10 @@ export default {
     },
     onConnectivityHovered: function(data) {
       console.log("onConnectivityHovered" , data)
+    },
+    openConnectivitySearch: function (data) {
+      const query = data || 'ilxtr:neuron-type-aacar-5'
+      this.$refs.sideBar.openConnectivitySearch([], query)
     }
   },
   mounted: async function () {
