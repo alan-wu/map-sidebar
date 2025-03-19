@@ -287,5 +287,4 @@ export default {
         "Domestic Pig"
     ],
     "knowledge-source": "sckan-2024-03-26-npo",
-    neuronCuration: true
 }

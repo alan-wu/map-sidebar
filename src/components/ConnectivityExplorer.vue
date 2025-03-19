@@ -193,7 +193,7 @@ export default {
           if (option.withSearch) {
             this.searchKnowledge(this.filter, search);
           }
-          // this.$refs.filtersRef.setCascader(this.filter);
+          this.$refs.filtersRef.setCascader(this.filter);
         }
       } else {
         //cascader is not ready, perform search if no filter is set,
@@ -263,6 +263,7 @@ export default {
     },
     searchKnowledge: function (filters, query = "") {
       this.resetSearch();
+      this.filter = filters;
       this.loadingCards = true;
       this.results = this.connectivityKnowledge;
       this.numberOfHits = this.results.length;

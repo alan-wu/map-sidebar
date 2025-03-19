@@ -16,7 +16,7 @@
       <el-button @click="keywordSearch">keyword search</el-button>
       <el-button @click="getFacets">Get facets</el-button>
       <el-button @click="toggleCreateData">Create Data/Annotation</el-button>
-      <el-button @click="openConnectivitySearch">Connectivity Search</el-button>
+      <el-button @click="openConnectivitySearch()">Connectivity Search</el-button>
     </div>
     <SideBar
       :envVars="envVars"
@@ -316,9 +316,16 @@ export default {
     onConnectivityHovered: function(data) {
       console.log("onConnectivityHovered" , data)
     },
-    openConnectivitySearch: function (data) {
-      const query = data || 'ilxtr:neuron-type-aacar-5'
-      this.$refs.sideBar.openConnectivitySearch([], query)
+    openConnectivitySearch: function (entry) {
+      const query = entry?.id[0] || 'ilxtr:neuron-type-aacar-5'
+      let filter = entry?.type ? [
+        {
+          facet: entry?.type,
+          term: 'Connectivity',
+          facetPropPath: 'flatmap.connectivity',
+        }
+      ] : []
+      this.$refs.sideBar.openConnectivitySearch(filter, query)
     }
   },
   mounted: async function () {

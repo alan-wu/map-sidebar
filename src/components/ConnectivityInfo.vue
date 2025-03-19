@@ -5,7 +5,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="connectivityClicked(entry)">
+            <span @click="connectivityClicked(entry.featureId)">
               {{ capitalise(entry.title) }}
             </span>
             <template v-if="entry.featuresAlert">
@@ -54,39 +54,7 @@
       </div>
     </div>
 
-    <div class="content-container neuron-connection-button" v-if="entry.neuronCuration">
-      <div class="block attribute-title-container">
-        <span class="attribute-title">Neuron Connection</span>
-      </div>
-      <div class="block">
-        <el-button 
-          v-if="hasOrigins" 
-          class="button" 
-          type="primary"
-          @click="showNeuronConnection('origins')"
-        >
-          Origins
-        </el-button>
-        <el-button
-          v-if="hasComponents" 
-          class="button" 
-          type="primary"
-          @click="showNeuronConnection('components')"
-        >
-          Components
-        </el-button>
-        <el-button 
-          v-if="hasDestinations" 
-          class="button" 
-          type="primary"
-          @click="showNeuronConnection('destinations')"
-        >
-          Destinations
-        </el-button>
-      </div>
-    </div>
-
-    <div class="content-container population-display" v-if="entry.neuronCuration">
+    <div class="content-container population-display">
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
       </div>
@@ -132,14 +100,14 @@
           :key="origin"
         >
           <span
-            @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
-            @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
+            @mouseenter="connectivityHovered(origin)"
+            @mouseleave="connectivityHovered()"
           >
             {{ capitalise(origin) }}
           </span>
           <el-icon 
-            class="neuron-connection-icon" 
-            @click="showNeuronConnection('origins', origin)"
+            class="connectivity-search-icon" 
+            @click="connectivityClicked(entry.featureId, 'Origins', origin)"
           >
             <el-icon-location />
           </el-icon>
@@ -164,14 +132,14 @@
           :key="component"
         >
           <span
-            @mouseenter="toggleConnectivityTooltip(component, {show: true})"
-            @mouseleave="toggleConnectivityTooltip(component, {show: false})"
+            @mouseenter="connectivityHovered(component)"
+            @mouseleave="connectivityHovered()"
           >
             {{ capitalise(component) }}
           </span>
           <el-icon 
-            class="neuron-connection-icon" 
-            @click="showNeuronConnection('components', component)"
+            class="connectivity-search-icon" 
+            @click="connectivityClicked(entry.featureId, 'Components', component)"
           >
             <el-icon-location />
           </el-icon>
@@ -201,14 +169,14 @@
           :key="destination"
         >
           <span
-            @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
-            @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
+            @mouseenter="connectivityHovered(destination)"
+            @mouseleave="connectivityHovered()"
           >
             {{ capitalise(destination) }}
           </span>
           <el-icon 
-            class="neuron-connection-icon" 
-            @click="showNeuronConnection('destinations', destination)"
+            class="connectivity-search-icon" 
+            @click="connectivityClicked(entry.featureId, 'Destinations', destination)"
           >
             <el-icon-location />
           </el-icon>
@@ -427,13 +395,6 @@ export default {
     },
   },
   methods: {
-    showNeuronConnection: function (type, label = undefined) {
-      const data = label ? this.findConnectivityDatasets(label) : []
-      this.$emit('neuron-connection-change', {
-        type: type,
-        data: data
-      });
-    },
     titleCase: function (title) {
       return titleCase(title)
     },
@@ -491,7 +452,6 @@ export default {
     },
     switchConnectivityView: function (val) {
       this.activeView = val;
-
       if (val === 'graphView' && !this.graphViewLoaded) {
         // to load the connectivity graph only after the container is in view
         this.$nextTick(() => {
@@ -502,7 +462,7 @@ export default {
     onTapNode: function (data) {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
-      this.toggleConnectivityTooltip(name, {show: true});
+      this.connectivityHovered(name);
     },
     onShowReferenceConnectivities: function (refSource) {
       this.$emit('show-reference-connectivities', refSource);
@@ -612,7 +572,7 @@ export default {
 
       return contentArray.join('\n\n<br>');
     },
-    findConnectivityDatasets: function (label) {
+    getConnectivityDatasets: function (label) {
       const allWithDatasets = [
         ...this.entry.componentsWithDatasets,
         ...this.entry.destinationsWithDatasets,
@@ -633,10 +593,15 @@ export default {
       });
       return data
     },
-    toggleConnectivityTooltip: function (label, option) {
-      const data = option.show ? this.findConnectivityDatasets(label) : []
+    connectivityHovered: function (label) {
+      const data = label ? this.getConnectivityDatasets(label) : []
       // type: to show error only for click event
       this.$emit('connectivity-hovered', data);
+    },
+    connectivityClicked: function (id, type, label) {
+      const data = label ? this.getConnectivityDatasets(label) : []
+      const payload = { id, type, data }
+      this.$emit('connectivity-clicked', payload);
     },
     getErrorConnectivities: function (errorData) {
       const errorDataToEmit = [...new Set(errorData)];
@@ -691,9 +656,6 @@ export default {
       this.timeoutID = setTimeout(() => {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
-    },
-    connectivityClicked: function (data) {
-      this.$emit('connectivity-clicked', data.featureId[0]);
     },
   },
   mounted: function () {
@@ -862,14 +824,14 @@ export default {
   position: relative;
   cursor: default;
 
-  .neuron-connection-icon {
+  .connectivity-search-icon {
     display: none;
   }
 
   &:hover {
     color: $app-primary-color;
 
-    .neuron-connection-icon {
+    .connectivity-search-icon {
       padding-top: 4px;
       cursor: pointer;
       display: block;
