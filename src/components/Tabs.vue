@@ -58,9 +58,11 @@ export default {
 $tab-height: 30px;
 
 .tab-container {
-  height: $tab-height;
+  height: $tab-height + 2;
   display: flex;
   flex-direction: row;
+  position: relative;
+  z-index: 1;
 }
 
 .title {

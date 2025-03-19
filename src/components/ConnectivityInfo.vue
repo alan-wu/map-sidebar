@@ -235,6 +235,7 @@
     <div class="content-container" v-show="activeView === 'graphView'">
       <template v-if="graphViewLoaded">
         <connectivity-graph
+          :key="entry.featureId[0]"
           :entry="entry.featureId[0]"
           :mapServer="envVars.FLATMAPAPI_LOCATION"
           :sckanVersion="sckanVersion"
@@ -245,7 +246,11 @@
     </div>
 
     <div class="content-container content-container-references" v-if="resources.length">
-      <external-resource-card :resources="resources" @references-loaded="onReferencesLoaded"></external-resource-card>
+      <external-resource-card
+        :resources="resources"
+        @references-loaded="onReferencesLoaded"
+        @show-reference-connectivities="onShowReferenceConnectivities"
+      ></external-resource-card>
     </div>
   </div>
 </template>
@@ -497,6 +502,9 @@ export default {
       const name = data.map(t => t.label).join(', ');
       this.toggleConnectivityTooltip(name, {show: true});
     },
+    onShowReferenceConnectivities: function (refSource) {
+      this.$emit('show-reference-connectivities', refSource);
+    },
     onReferencesLoaded: function (references) {
       this.updatedCopyContent = this.getUpdateCopyContent(references);
     },
@@ -511,11 +519,23 @@ export default {
       // to avoid default formatting on font size and margin
 
       // Title
-      if (this.entry.title) {
-        contentArray.push(`<div><strong>${capitalise(this.entry.title)}</strong></div>`);
-      } else {
-        contentArray.push(`<div><strong>${this.entry.featureId}</strong></div>`);
+      let title = this.entry.title;
+      let featureId = this.entry.featureId;
+      const titleContent = [];
+
+      if (title) {
+        titleContent.push(`<strong>${capitalise(this.entry.title)}</strong>`);
       }
+
+      if (featureId?.length) {
+        if (typeof featureId === 'object') {
+          titleContent.push(`(${featureId[0]})`);
+        } else {
+          titleContent.push(`(${featureId})`);
+        }
+      }
+
+      contentArray.push(`<div>${titleContent.join(' ')}</div>`);
 
       // Description
       if (this.entry.provenanceTaxonomyLabel?.length) {
