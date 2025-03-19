@@ -216,6 +216,9 @@ export default {
     onConnectivityHovered: function (data) {
       this.$emit('connectivity-hovered', data);
     },
+    showNeuronConnection: function (data) {
+      this.$emit('neuron-connection-change', data);
+    },
     /**
      * This event is emitted when the search filters are changed.
      * @arg `obj` {data, id}
