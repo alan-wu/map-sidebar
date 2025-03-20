@@ -317,14 +317,8 @@ export default {
       console.log("onConnectivityHovered" , data)
     },
     openConnectivitySearch: function (entry) {
-      const query = entry?.id[0] || 'ilxtr:neuron-type-aacar-5'
-      let filter = entry?.type ? [
-        {
-          facet: entry?.type,
-          term: 'Connectivity',
-          facetPropPath: 'flatmap.connectivity',
-        }
-      ] : []
+      const query = entry ? entry.query : 'ilxtr:neuron-type-aacar-5'
+      const filter = entry ? entry.filter : []
       this.$refs.sideBar.openConnectivitySearch(filter, query)
     }
   },

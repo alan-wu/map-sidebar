@@ -5,7 +5,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="connectivityClicked(entry.featureId)">
+            <span @click="connectivityClicked(entry.featureId[0])">
               {{ capitalise(entry.title) }}
             </span>
             <template v-if="entry.featuresAlert">
@@ -107,7 +107,7 @@
           </span>
           <el-icon 
             class="connectivity-search-icon" 
-            @click="connectivityClicked(entry.featureId, 'Origins', origin)"
+            @click="connectivityClicked(entry.featureId[0], 'Origins', origin)"
           >
             <el-icon-location />
           </el-icon>
@@ -139,7 +139,7 @@
           </span>
           <el-icon 
             class="connectivity-search-icon" 
-            @click="connectivityClicked(entry.featureId, 'Components', component)"
+            @click="connectivityClicked(entry.featureId[0], 'Components', component)"
           >
             <el-icon-location />
           </el-icon>
@@ -176,7 +176,7 @@
           </span>
           <el-icon 
             class="connectivity-search-icon" 
-            @click="connectivityClicked(entry.featureId, 'Destinations', destination)"
+            @click="connectivityClicked(entry.featureId[0], 'Destinations', destination)"
           >
             <el-icon-location />
           </el-icon>
@@ -594,13 +594,25 @@ export default {
       return data
     },
     connectivityHovered: function (label) {
-      const data = label ? this.getConnectivityDatasets(label) : []
+      const data = label ? this.getConnectivityDatasets(label) : [];
       // type: to show error only for click event
       this.$emit('connectivity-hovered', data);
     },
     connectivityClicked: function (id, type, label) {
-      const data = label ? this.getConnectivityDatasets(label) : []
-      const payload = { id, type, data }
+      let payload = {
+        query: id,
+        filter: [],
+        data: label ? this.getConnectivityDatasets(label) : [],
+      };
+      if (type && label) {
+        payload.filter.push({
+          AND: undefined,
+          facet: type,
+          facetPropPath: 'flatmap.connectivity.source',
+          facetSubPropPath: undefined,
+          term: 'Connectivity',
+        });
+      };
       this.$emit('connectivity-clicked', payload);
     },
     getErrorConnectivities: function (errorData) {

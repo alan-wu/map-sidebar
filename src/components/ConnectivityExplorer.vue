@@ -123,23 +123,23 @@ export default {
       filterOptions: [
         {
           id: 3,
-          key: "flatmap.connectivity",
-          label: "connectivity",
+          key: "flatmap.connectivity.source",
+          label: "Connectivity",
           children: [
             {
-              facetPropPath: "flatmap.connectivity",
+              facetPropPath: "flatmap.connectivity.source",
               id: 0,
-              label: "origins",
+              label: "Origins",
             },
             {
-              facetPropPath: "flatmap.connectivity",
+              facetPropPath: "flatmap.connectivity.source",
               id: 1,
-              label: "components",
+              label: "Components",
             },
             {
-              facetPropPath: "flatmap.connectivity",
+              facetPropPath: "flatmap.connectivity.source",
               id: 2,
-              label: "destinations",
+              label: "Destinations",
             },
           ],
         },
