@@ -147,7 +147,7 @@ export default {
       this.connectivityKnowledge = this.flatmapKnowledge;
     },
     connectivityQueryFilter: async function (flatmap, payload) {
-      let results = this.connectivityKnowledge;
+      let results = this.flatmapKnowledge;
       if (payload.type === "query-update") {
         if (this.query !== payload.value) this.target = [];
         this.query = payload.value;
@@ -162,15 +162,17 @@ export default {
       if (this.query) {
         let flag = "", order = [], suggestions = [], paths = [];
         // this.searchSuggestions(this.query, suggestions);
-        const labels = [...new Set(suggestions)];
+        // const labels = [...new Set(suggestions)];
+        const labels = ['neuron type aacar 11'];
         flag = 'label';
         order = labels;
         if (labels.length === 1) {
-          const options = {
-            type: this.filter.map(f => f.facet.toLowerCase()),
-            target: this.target.map(d => d.id),
-          };
+          // const options = {
+          //   type: this.filter.map(f => f.facet.toLowerCase()),
+          //   target: this.target.map(d => d.id),
+          // };
           // paths = await flatmap.retrieveConnectedPaths(this.query, options);
+          paths =['ilxtr:neuron-type-aacar-11', 'ilxtr:neuron-type-bolew-unbranched-11'];
           flag = 'id';
           order = [this.query, ...paths.filter(item => item !== this.query)];
         }
@@ -335,7 +337,9 @@ export default {
     EventBus.on('datalink-clicked', (payLoad) => {
       console.log('datalink-clicked', payLoad)
     });
-    this.loadConnectivityKnowledge({ 'provenance': { 'connectivity': { 'knowledge-source': this.sckanVersion } } });
+    setTimeout(()=>{
+      this.loadConnectivityKnowledge({ 'provenance': { 'connectivity': { 'knowledge-source': this.sckanVersion } } });
+    }, 2000)
   },
 }
 </script>

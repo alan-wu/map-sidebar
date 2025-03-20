@@ -31,8 +31,8 @@
       @loading="filtersLoading"
       @cascaderReady="cascaderReady"
     ></SearchFilters>
-    <div class="content scrollbar" ref="content">
-      <div class="error-feedback" v-if="results.length === 0">
+    <div class="content scrollbar" v-loading="loadingCards" ref="content">
+      <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
       <div
@@ -114,7 +114,6 @@ export default {
   data: function () {
     return {
       ...this.entry,
-      paginatedResults: [],
       bodyStyle: {
         flex: "1 1 auto",
         "flex-flow": "column",
@@ -156,10 +155,21 @@ export default {
         options: this.filterOptions,
       };
     },
+    paginatedResults: function () {
+      return this.results.slice(
+        this.start,
+        this.start + this.numberPerPage
+      );
+    },
   },
   watch: {
-    connectivityKnowledge: function () {
-      this.openSearch(this.filter, this.searchInput);
+    connectivityKnowledge: function (value) {
+      this.results = value;
+      this.numberOfHits = this.results.length;
+      this.loadingCards = false;
+    },
+    paginatedResults: function () {
+      this.loadingCards = false;
     },
   },
   methods: {
@@ -241,6 +251,8 @@ export default {
         value: filters,
         type: "filter-update",
       });
+      // The filter currently should work together with query
+      if (this.searchInput === "") this.loadingCards = false;
     },
     /**
      * Transform filters for third level items to perform search
@@ -263,16 +275,8 @@ export default {
       this.searchKnowledge(transformedFilters, this.searchInput);
     },
     searchKnowledge: function (filters, query = "") {
-      this.resetSearch();
-      if (query !== "") this.filter = filters;
       this.loadingCards = true;
-      this.results = this.connectivityKnowledge;
-      this.numberOfHits = this.results.length;
-      this.paginatedResults = this.results.slice(
-        this.start,
-        this.start + this.numberPerPage
-      );
-      this.loadingCards = false;
+      if (query !== "") this.filter = filters;
       this.scrollToTop();
       if (this.searchInput !== this.lastSearch) {
         this.$emit("search-changed", {

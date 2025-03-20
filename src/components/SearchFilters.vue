@@ -261,12 +261,10 @@ export default {
     populateCascader: function () {
       if (this.entry.options) {
         return new Promise((resolve) => {
-          setTimeout(() => {
-            this.facets = this.entry.options
-            this.options = this.entry.options
-            this.processOptions()
-            resolve();
-          }, 2000);
+          this.facets = this.entry.options
+          this.options = this.entry.options
+          this.processOptions()
+          resolve();
         });
       }
       return new Promise((resolve) => {
