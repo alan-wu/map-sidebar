@@ -164,7 +164,8 @@ export default {
   },
   methods: {
     hoverChanged: function (data) {
-      this.$emit('hover-changed', data)
+      const payload = data ? { ...data, type: 'dataset' } : data
+      this.$emit('hover-changed', payload)
     },
     resetSearch: function () {
       this.numberOfHits = 0

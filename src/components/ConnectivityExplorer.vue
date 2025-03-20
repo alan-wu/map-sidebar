@@ -164,7 +164,8 @@ export default {
   },
   methods: {
     hoverChanged: function (data) {
-      this.$emit("hover-changed", data);
+      const payload = data ? { ...data, type: "connectivity" } : data;
+      this.$emit("hover-changed", payload);
     },
     resetSearch: function () {
       this.numberOfHits = 0;
@@ -273,7 +274,7 @@ export default {
       );
       this.loadingCards = false;
       this.scrollToTop();
-      if (this.searchInput !== this.lastSearch) {        
+      if (this.searchInput !== this.lastSearch) {
         this.$emit("search-changed", {
           value: this.searchInput,
           type: "query-update",
