@@ -130,7 +130,8 @@ export default {
       flatmapKnowledge: [],
       connectivityKnowledge: [],
       query: '',
-      filter: []
+      filter: [],
+      target: [],
     }
   },
   methods: {
@@ -140,37 +141,41 @@ export default {
       flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
       const knowledge = await loadAndStoreKnowledge(flatmap, flatmapQueries);
       this.flatmapKnowledge = knowledge.filter((item) => {
-        if (item.source === sckanVersion && "connectivity" in item) return true;
+        if (item.source === sckanVersion && item.connectivity?.length) return true;
         return false;
       });
       this.connectivityKnowledge = this.flatmapKnowledge;
     },
-    connectivityQueryFilter: async function (payload) {
-      let results = this.flatmapKnowledge;
-      if (payload.type === "query-update") this.query = payload.value;
-      if (payload.type === "filter-update") this.filter = payload.value;
+    connectivityQueryFilter: async function (flatmap, payload) {
+      let results = this.connectivityKnowledge;
+      if (payload.type === "query-update") {
+        if (this.query !== payload.value) this.target = [];
+        this.query = payload.value;
+      } else if (payload.type === "filter-update") {
+        this.filter = payload.value;
+        this.target = [];
+      } else if (payload.type === "query-filter-update") {
+        this.query = payload.query;
+        this.filter = payload.filter;
+        this.target = payload.data;
+      }
       if (this.query) {
-        let suggestions = [];
+        let flag = "", order = [], suggestions = [], paths = [];
         // this.searchSuggestions(this.query, suggestions);
-        // apply search
-        const labels = ['ilxtr:neuron-type-aacar-11'];
-        let paths = [];
+        const labels = [...new Set(suggestions)];
+        flag = 'label';
+        order = labels;
         if (labels.length === 1) {
-          // paths = await flatmap.retrieveConnectedPaths([this.query], { type: this.filter });
-          // default
-          paths = ['ilxtr:neuron-type-aacar-4', 'ilxtr:neuron-type-aacar-10a', 'ilxtr:neuron-type-aacar-7a',
-            'ilxtr:neuron-type-aacar-6', 'ilxtr:neuron-type-aacar-9a', 'ilxtr:neuron-type-aacar-8a',
-            'ilxtr:neuron-type-aacar-8v', 'ilxtr:neuron-type-aacar-9v', 'ilxtr:neuron-type-aacar-7v']
-          // apply filter
-          if (this.filter.length) {
-            paths = ['ilxtr:neuron-type-aacar-4', 'ilxtr:neuron-type-aacar-10a', 'ilxtr:neuron-type-aacar-6',
-              'ilxtr:neuron-type-aacar-8v', 'ilxtr:neuron-type-aacar-9v', 'ilxtr:neuron-type-aacar-7v']
-          }
+          const options = {
+            type: this.filter.map(f => f.facet.toLowerCase()),
+            target: this.target.map(d => d.id),
+          };
+          // paths = await flatmap.retrieveConnectedPaths(this.query, options);
+          flag = 'id';
+          order = [this.query, ...paths.filter(item => item !== this.query)];
         }
-        results = results.filter((item) => {
-          if (paths.length) return paths.includes(item.id);
-          return labels.includes(item.label) || labels.includes(item["long-label"]);
-        })
+        results = results.filter(item => paths.includes(item.id) || labels.includes(item.label));
+        results.sort((a, b) => order.indexOf(a[flag]) - order.indexOf(b[flag]));
       }
       this.connectivityKnowledge = results;
     },
@@ -180,7 +185,7 @@ export default {
     searchChanged: function (data) {
       console.log(data)
       if (data.id === 4) {
-        this.connectivityQueryFilter(data)
+        this.connectivityQueryFilter({}, data)
       }
     },
     // For connectivity input actions
