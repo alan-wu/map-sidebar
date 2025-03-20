@@ -98,6 +98,12 @@ export default {
   components: {
     SideBar,
   },
+  provide() {
+    return {
+      $annotator: undefined,
+      userApiKey: undefined,
+    }
+  },
   data: function () {
     return {
       annotationEntry: {

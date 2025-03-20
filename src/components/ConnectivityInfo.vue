@@ -216,23 +216,21 @@
     </div>
 
     <div class="content-container content-container-references" v-if="resources.length">
-      <external-resource-card
+      <ExternalResourceCard
         :resources="resources"
         @references-loaded="onReferencesLoaded"
         @show-reference-connectivities="onShowReferenceConnectivities"
-      ></external-resource-card>
+      />
     </div>
   </div>
 </template>
 
 <script>
+  /* eslint-disable no-alert, no-console */
 import {
-  ArrowUp as ElIconArrowUp,
-  ArrowDown as ElIconArrowDown,
   Warning as ElIconWarning,
-  Connection as ElIconConnection,
+  Connection as ElIconLocation,
 } from '@element-plus/icons-vue'
-/* eslint-disable no-alert, no-console */
 import {
   ElButton as Button,
   ElContainer as Container,
@@ -242,7 +240,8 @@ import {
 import EventBus from './EventBus.js'
 import {
   CopyToClipboard,
-  ConnectivityGraph
+  ConnectivityGraph,
+  ExternalResourceCard
 } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
 
@@ -265,11 +264,11 @@ export default {
     Button,
     Container,
     Icon,
-    ElIconArrowUp,
-    ElIconArrowDown,
     ElIconWarning,
+    ElIconLocation,
     CopyToClipboard,
     ConnectivityGraph,
+    ExternalResourceCard
   },
   props: {
     entry: {
@@ -362,9 +361,6 @@ export default {
         this.entry.destinationsWithDatasets.length > 0 &&
         this.shouldShowExploreButton(this.entry.destinationsWithDatasets)
       );
-    },
-    updatedCopyContent: function () {
-      return this.getUpdateCopyContent();
     },
     resources: function () {
       let resources = [];
