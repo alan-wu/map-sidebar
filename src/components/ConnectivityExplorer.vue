@@ -263,7 +263,7 @@ export default {
     },
     searchKnowledge: function (filters, query = "") {
       this.resetSearch();
-      this.filter = filters;
+      if (query !== "") this.filter = filters;
       this.loadingCards = true;
       this.results = this.connectivityKnowledge;
       this.numberOfHits = this.results.length;
