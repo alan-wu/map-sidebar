@@ -156,11 +156,7 @@ export default {
     }
   },
   methods: {
-    loadConnectivityKnowledge: async function (flatmap) {
-      // const sckanVersion = getKnowledgeSource(flatmap);
-      // const flatmapQueries = markRaw(new FlatmapQueries());
-      // flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
-      // const knowledge = await loadAndStoreKnowledge(flatmap, flatmapQueries);
+    loadConnectivityKnowledge: async function () {
       const sql = `select knowledge from knowledge
         where source="${this.sckanVersion}"
         order by source desc`;
@@ -173,7 +169,7 @@ export default {
       });
       this.connectivityKnowledge = this.flatmapKnowledge;
     },
-    connectivityQueryFilter: async function (flatmap, payload) {
+    connectivityQueryFilter: async function (payload) {
       let results = this.flatmapKnowledge;
       if (payload.type === "query-update") {
         if (this.query !== payload.value) this.target = [];
@@ -187,18 +183,11 @@ export default {
         this.target = payload.data;
       }
       if (this.query) {
-        let flag = "", order = [], suggestions = [], paths = [];
-        // this.searchSuggestions(this.query, suggestions);
-        // const labels = [...new Set(suggestions)];
+        let flag = "", order = [], paths = [];
         const labels = ['neuron type aacar 11'];
         flag = 'label';
         order = labels;
         if (labels.length === 1) {
-          // const options = {
-          //   type: this.filter.map(f => f.facet.toLowerCase()),
-          //   target: this.target.map(d => d.id),
-          // };
-          // paths = await flatmap.retrieveConnectedPaths(this.query, options);
           paths =['ilxtr:neuron-type-aacar-11', 'ilxtr:neuron-type-bolew-unbranched-11'];
           flag = 'id';
           order = [this.query, ...paths.filter(item => item !== this.query)];
@@ -212,9 +201,11 @@ export default {
       console.log('hoverChanged', data)
     },
     searchChanged: function (data) {
-      console.log(data)
+      if (!this.flatmapKnowledge.length) {
+        this.loadConnectivityKnowledge();
+      }
       if (data.id === 4) {
-        this.connectivityQueryFilter({}, data)
+        this.connectivityQueryFilter(data)
       }
     },
     // For connectivity input actions
@@ -364,9 +355,6 @@ export default {
     EventBus.on('datalink-clicked', (payLoad) => {
       console.log('datalink-clicked', payLoad)
     });
-    setTimeout(()=>{
-      this.loadConnectivityKnowledge({ 'provenance': { 'connectivity': { 'knowledge-source': this.sckanVersion } } });
-    }, 2000)
   },
 }
 </script>

@@ -229,7 +229,7 @@
   /* eslint-disable no-alert, no-console */
 import {
   Warning as ElIconWarning,
-  Connection as ElIconLocation,
+  Location as ElIconLocation,
 } from '@element-plus/icons-vue'
 import {
   ElButton as Button,
@@ -307,7 +307,6 @@ export default {
         motor: 'is the location of the initial cell body of the circuit',
         sensory: 'is the location of the initial cell body in the PNS circuit',
       },
-      componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
