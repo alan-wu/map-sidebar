@@ -43,11 +43,26 @@ import { markRaw } from "vue";
 import SideBar from './components/SideBar.vue'
 import EventBus from './components/EventBus.js'
 import exampleConnectivityInput from './exampleConnectivityInput.js'
-import { FlatmapQueries } from "@abi-software/map-utilities/src/services/flatmapQueries.js";
-import { getKnowledgeSource, loadAndStoreKnowledge } from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
+// import { FlatmapQueries } from "@abi-software/map-utilities/src/services/flatmapQueries.js";
+// import { getKnowledgeSource, loadAndStoreKnowledge } from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
 
 
 const capitalise = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+const flatmapQuery = (flatmapApi, sql) => {
+  const data = { sql: sql };
+  return fetch(`${flatmapApi}knowledge/query/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
 
 // let testContext = {
 //   "description": "3D digital tracings of the enteric plexus obtained from seven subjects (M11, M16, M162, M163, M164, M168) are mapped randomly on mouse proximal colon. The data depicts individual neural wiring patterns in enteric microcircuits, and revealed both neuron and fiber units wired in a complex organization.",
@@ -142,12 +157,18 @@ export default {
   },
   methods: {
     loadConnectivityKnowledge: async function (flatmap) {
-      const sckanVersion = getKnowledgeSource(flatmap);
-      const flatmapQueries = markRaw(new FlatmapQueries());
-      flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
-      const knowledge = await loadAndStoreKnowledge(flatmap, flatmapQueries);
+      // const sckanVersion = getKnowledgeSource(flatmap);
+      // const flatmapQueries = markRaw(new FlatmapQueries());
+      // flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION);
+      // const knowledge = await loadAndStoreKnowledge(flatmap, flatmapQueries);
+      const sql = `select knowledge from knowledge
+        where source="${this.sckanVersion}"
+        order by source desc`;
+      const response = await flatmapQuery(this.envVars.FLATMAPAPI_LOCATION, sql);
+      const mappedData = response.values.map(x => x[0]);
+      const knowledge = mappedData.map(x => JSON.parse(x));
       this.flatmapKnowledge = knowledge.filter((item) => {
-        if (item.source === sckanVersion && item.connectivity?.length) return true;
+        if (item.source === this.sckanVersion && item.connectivity?.length) return true;
         return false;
       });
       this.connectivityKnowledge = this.flatmapKnowledge;
