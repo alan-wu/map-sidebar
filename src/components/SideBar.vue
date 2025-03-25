@@ -29,22 +29,8 @@
             @tabClosed="tabClosed"
           />
           <template v-for="tab in tabs" key="tab.id">
-            <!-- Connectivity Info -->
-            <template v-if="tab.type === 'connectivity' && connectivityInfo">
-              <connectivity-info
-                :entry="connectivityInfo"
-                :availableAnatomyFacets="availableAnatomyFacets"
-                v-if="tab.id === activeTabId"
-                :envVars="envVars"
-                :ref="'connectivityTab_' + tab.id"
-                @show-connectivity="showConnectivity"
-                @show-reference-connectivities="onShowReferenceConnectivities"
-                @connectivity-clicked="onConnectivityClicked"
-                @connectivity-hovered="onConnectivityHovered"
-              />
-            </template>
-            <template v-else-if="tab.type === 'annotation'">
-              <annotation-tool
+            <template v-if="tab.type === 'annotation'">
+              <AnnotationTool
                 :ref="'annotationTab_' + tab.id"
                 v-show="tab.id === activeTabId"
                 :annotationEntry="annotationEntry"
@@ -56,7 +42,7 @@
               />
             </template>
             <template v-else-if="tab.type === 'connectivityExplorer'">
-              <connectivity-explorer
+              <ConnectivityExplorer
                 :ref="'connectivityExplorerTab_' + tab.id"
                 v-show="tab.id === activeTabId"
                 :connectivityKnowledge="connectivityKnowledge"
@@ -100,7 +86,6 @@ import SidebarContent from './SidebarContent.vue'
 import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
 import AnnotationTool from './AnnotationTool.vue'
-import ConnectivityInfo from './ConnectivityInfo.vue'
 import ConnectivityExplorer from './ConnectivityExplorer.vue'
 
 /**
@@ -114,7 +99,6 @@ export default {
     ElIconArrowRight,
     Drawer,
     Icon,
-    ConnectivityInfo,
     AnnotationTool,
     ConnectivityExplorer,
   },
@@ -180,9 +164,8 @@ export default {
       activeTabId: 1,
       tabs: [
         { title: 'Search', id: 1, type: 'search', closable: false },
-        { title: 'Connectivity', id: 2, type: 'connectivity', closable: true },
+        { title: 'Connectivity Explorer', id: 2, type: 'connectivityExplorer', closable: false },
         { title: 'Annotation', id: 3, type: 'annotation', closable: true },
-        { title: 'Connectivity Explorer', id: 4, type: 'connectivityExplorer', closable: false },
       ]
     }
   },
@@ -247,7 +230,7 @@ export default {
       this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const connectivityExplorerTabRef = this.getTabRef(4, 'connectivityExplorer', true);
+        const connectivityExplorerTabRef = this.getTabRef(2, 'connectivityExplorer', true);
         connectivityExplorerTabRef.openSearch(facets, query);
       })
     },
@@ -325,7 +308,6 @@ export default {
       return this.tabs.filter((tab) =>
         tab.type === "search" ||
         tab.type === "connectivityExplorer" ||
-        (tab.type === "connectivity" && this.connectivityInfo && Object.keys(this.connectivityInfo).length > 0) ||
         (tab.type === "annotation" && this.annotationEntry && Object.keys(this.annotationEntry).length > 0)
       );
     },

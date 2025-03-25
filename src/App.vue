@@ -202,7 +202,7 @@ export default {
       if (!this.flatmapKnowledge.length) {
         this.loadConnectivityKnowledge();
       }
-      if (data.id === 4) {
+      if (data.id === 2) {
         this.connectivityQueryFilter(data)
       }
     },
