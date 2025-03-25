@@ -87,7 +87,6 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
-import EventBus from "./EventBus.js";
 import SearchFilters from "./SearchFilters.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
 import connectivityInfo from "./connectivityInfo.vue";
@@ -294,8 +293,6 @@ export default {
         value: filters,
         type: "filter-update",
       });
-      // The filter currently should work together with query
-      if (this.searchInput === "") this.loadingCards = false;
     },
     /**
      * Transform filters for third level items to perform search
@@ -318,10 +315,10 @@ export default {
       this.searchKnowledge(transformedFilters, this.searchInput);
     },
     searchKnowledge: function (filters, query = "") {
-      this.loadingCards = true;
       if (query !== "") this.filter = filters;
       this.scrollToTop();
       if (this.searchInput !== this.lastSearch) {
+        this.loadingCards = true;
         this.$emit("search-changed", {
           value: this.searchInput,
           type: "query-update",
