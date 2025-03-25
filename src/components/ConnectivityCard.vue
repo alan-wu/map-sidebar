@@ -15,9 +15,6 @@
 </template>
 
 <script>
-/* eslint-disable no-alert, no-console */
-import EventBus from "./EventBus.js";
-
 export default {
   name: "ConnectivityCard",
   data() {
@@ -37,7 +34,7 @@ export default {
   },
   methods: {
     cardClicked: function (data) {
-      EventBus.emit("connectivity-explorer-clicked", data);
+      this.$emit("connectivity-explorer-clicked", data);
     },
   },
 };

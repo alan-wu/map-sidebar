@@ -55,6 +55,7 @@
                 @show-reference-connectivities="onShowReferenceConnectivities"
                 @connectivity-clicked="onConnectivityClicked"
                 @connectivity-hovered="onConnectivityHovered"
+                @connectivity-explorer-clicked="onConnectivityExplorerClicked"
               />
             </template>
             <template v-else>
@@ -170,6 +171,9 @@ export default {
     }
   },
   methods: {
+    onConnectivityExplorerClicked: function (data) {
+      this.$emit('connectivity-explorer-clicked', data)
+    },
     /**
      * This event is emitted when the mouse hover are changed.
      * @arg data
@@ -365,17 +369,6 @@ export default {
     EventBus.on('available-facets', (payLoad) => {
         this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
     })
-
-    // Get available anatomy facets for the connectivity info
-    EventBus.on('connectivity-explorer-clicked', (payLoad) => {
-      this.$emit('connectivity-explorer-clicked', payLoad);
-    })
-
-    // Get available anatomy facets for the connectivity info
-    EventBus.on('connectivity-hovered', (payLoad) => {
-      this.$emit('connectivity-hovered', payLoad);
-    })
-
   },
 }
 </script>

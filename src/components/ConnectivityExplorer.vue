@@ -40,13 +40,13 @@
         :key="result.id"
         class="step-item"
       >
-        <div class="dataset-card">
-          <ConnectivityCard
-            :entry="result"
-            @mouseenter="hoverChanged(result)"
-            @mouseleave="hoverChanged(undefined)"
-          />
-        </div>
+        <ConnectivityCard
+          class="dataset-card"
+          :entry="result"
+          @connectivity-explorer-clicked="onConnectivityExplorerClicked"
+          @mouseenter="hoverChanged(result)"
+          @mouseleave="hoverChanged(undefined)"
+        />
         <ConnectivityInfo
           v-show="
             Object.keys(connectivityEntry).length > 0 &&
@@ -203,10 +203,10 @@ export default {
             oldVal.featureId &&
             newVal.featureId[0] === oldVal.featureId[0]
           ) {
-            // click on the same card, switch between show and hide
+            // switch between show and hide when click on the same card
             this.displayConnectivity = !this.displayConnectivity;
           } else {
-            // click on different cards, always show
+            // always show when click on different cards
             this.displayConnectivity = true;
           }
         }
@@ -215,6 +215,17 @@ export default {
     },
   },
   methods: {
+    onConnectivityExplorerClicked: function (data) {
+      if (
+        Object.keys(this.connectivityEntry).length > 0 &&
+        data.id === this.connectivityEntry.featureId[0]
+      ) {
+        this.displayConnectivity = !this.displayConnectivity;
+      } else {
+        // retrieve new entry when different connectivity clicked
+        this.$emit("connectivity-explorer-clicked", data);
+      }
+    },
     hoverChanged: function (data) {
       const payload = data ? { ...data, type: "connectivity" } : data;
       this.$emit("hover-changed", payload);
