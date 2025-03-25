@@ -43,11 +43,6 @@
         <div class="dataset-card">
           <ConnectivityCard
             :entry="result"
-            :expanded="
-              Object.keys(connectivityInfo).length > 0 &&
-              result.id === connectivityInfo.featureId[0] &&
-              displayConnectivity
-            "
             @mouseenter="hoverChanged(result)"
             @mouseleave="hoverChanged(undefined)"
           />

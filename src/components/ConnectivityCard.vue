@@ -2,20 +2,13 @@
   <div class="connectivity-card-container" ref="container">
     <div class="connectivity-card" ref="card">
       <div class="seperator-path"></div>
-      <div class="card">
-        <div class="card-left">
-          <div class="title" @click="cardClicked(entry)">{{ entry.label }}</div>
-          <template v-for="field in displayFields" :key="field">
-            <div class="details" v-if="entry[field]">
-              <strong>{{ field }}:</strong> {{ entry[field] }}
-            </div>
-          </template>
-        </div>
-        <div class="card-right">
-          <el-button @click="cardClicked(entry)" size="small" class="button">
-            {{ expanded ? "Hide" : "Show" }} detail
-          </el-button>
-        </div>
+      <div class="card" @click="cardClicked(entry)">
+        <div class="title">{{ entry.label }}</div>
+        <template v-for="field in displayFields" :key="field">
+          <div class="details" v-if="entry[field]">
+            <strong>{{ field }}:</strong> {{ entry[field] }}
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -41,10 +34,6 @@ export default {
       type: Object,
       default: () => {},
     },
-    expanded: {
-      type: Boolean,
-      default: false,
-    },
   },
   methods: {
     cardClicked: function (data) {
@@ -64,8 +53,7 @@ export default {
 .card {
   padding-top: 18px;
   padding-left: 6px;
-  display: flex;
-  justify-content: space-between;
+  cursor: pointer;
 }
 
 .title {
@@ -73,7 +61,6 @@ export default {
   font-weight: bold;
   line-height: 1.5;
   letter-spacing: 1.05px;
-  cursor: pointer;
 }
 
 .details {
