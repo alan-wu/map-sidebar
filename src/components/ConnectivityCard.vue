@@ -3,15 +3,19 @@
     <div class="connectivity-card" ref="card">
       <div class="seperator-path"></div>
       <div class="card">
-        <div class="title" @click="cardClicked(entry)">{{ entry.label }}</div>
-        <template v-for="field in displayFields" :key="field">
-          <div class="details" v-if="entry[field]">
-            <strong>{{ field }}:</strong> {{ entry[field] }}
-          </div>
-        </template>
-        <el-button @click="cardClicked(entry)" size="small" class="button">
-          View connectivity
-        </el-button>
+        <div class="card-left">
+          <div class="title" @click="cardClicked(entry)">{{ entry.label }}</div>
+          <template v-for="field in displayFields" :key="field">
+            <div class="details" v-if="entry[field]">
+              <strong>{{ field }}:</strong> {{ entry[field] }}
+            </div>
+          </template>
+        </div>
+        <div class="card-right">
+          <el-button @click="cardClicked(entry)" size="small" class="button">
+            {{ expanded ? "Hide" : "Show" }} detail
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -22,12 +26,12 @@
 import EventBus from "./EventBus.js";
 
 export default {
+  name: "ConnectivityCard",
   data() {
     return {
-      displayFields: ["label", "id"],
+      displayFields: ["id"],
     };
   },
-  name: "ConnectivityCard",
   props: {
     /**
      * Object containing information for
@@ -36,6 +40,10 @@ export default {
     entry: {
       type: Object,
       default: () => {},
+    },
+    expanded: {
+      type: Boolean,
+      default: false,
     },
   },
   methods: {
@@ -50,12 +58,14 @@ export default {
 .connectivity-card {
   padding-left: 5px;
   position: relative;
-  min-height: 8.5rem;
+  min-height: 5rem;
 }
 
 .card {
   padding-top: 18px;
   padding-left: 6px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .title {
@@ -72,6 +82,7 @@ export default {
 }
 
 .button {
+  margin-right: 3.5rem;
   font-family: Asap;
   font-size: 14px;
   font-weight: normal;

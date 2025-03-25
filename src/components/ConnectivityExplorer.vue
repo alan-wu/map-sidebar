@@ -40,11 +40,33 @@
         :key="result.id"
         class="step-item"
       >
-        <ConnectivityCard
-          class="dataset-card"
-          :entry="result"
-          @mouseenter="hoverChanged(result)"
-          @mouseleave="hoverChanged(undefined)"
+        <div class="dataset-card">
+          <ConnectivityCard
+            :entry="result"
+            :expanded="
+              Object.keys(connectivityInfo).length > 0 &&
+              result.id === connectivityInfo.featureId[0] &&
+              displayConnectivity
+            "
+            @mouseenter="hoverChanged(result)"
+            @mouseleave="hoverChanged(undefined)"
+          />
+        </div>
+        <ConnectivityInfo
+          v-if="
+            Object.keys(connectivityInfo).length > 0 &&
+            result.id === connectivityInfo.featureId[0] &&
+            displayConnectivity
+          "
+          :entry="connectivityInfo"
+          :availableAnatomyFacets="availableAnatomyFacets"
+          :envVars="envVars"
+          @show-connectivity="$emit('show-connectivity', $event)"
+          @show-reference-connectivities="
+            $emit('show-reference-connectivities', $event)
+          "
+          @connectivity-clicked="$emit('connectivity-clicked', $event)"
+          @connectivity-hovered="$emit('connectivity-hovered', $event)"
         />
       </div>
       <el-pagination
@@ -70,8 +92,10 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
+import EventBus from "./EventBus.js";
 import SearchFilters from "./SearchFilters.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
+import connectivityInfo from "./connectivityInfo.vue";
 
 var initial_state = {
   filters: [],
@@ -110,6 +134,14 @@ export default {
       type: Object,
       default: () => {},
     },
+    connectivityInfo: {
+      type: Object,
+      default: {},
+    },
+    availableAnatomyFacets: {
+      type: Object,
+      default: [],
+    },
   },
   data: function () {
     return {
@@ -144,6 +176,7 @@ export default {
         },
       ],
       cascaderIsReady: false,
+      displayConnectivity: false,
     };
   },
   computed: {
@@ -156,10 +189,7 @@ export default {
       };
     },
     paginatedResults: function () {
-      return this.results.slice(
-        this.start,
-        this.start + this.numberPerPage
-      );
+      return this.results.slice(this.start, this.start + this.numberPerPage);
     },
   },
   watch: {
@@ -170,6 +200,24 @@ export default {
     },
     paginatedResults: function () {
       this.loadingCards = false;
+    },
+    connectivityInfo: {
+      handler(newVal, oldVal) {
+        if (newVal && newVal.featureId) {
+          if (
+            oldVal &&
+            oldVal.featureId &&
+            newVal.featureId[0] === oldVal.featureId[0]
+          ) {
+            // click on the same card, switch between show and hide
+            this.displayConnectivity = !this.displayConnectivity;
+          } else {
+            // click on different cards, always show
+            this.displayConnectivity = true;
+          }
+        }
+      },
+      deep: true,
     },
   },
   methods: {
@@ -309,7 +357,6 @@ export default {
     },
   },
   mounted: function () {
-    this.mapServer = this.envVars.FLATMAPAPI_LOCATION;
     this.openSearch(this.filter, this.searchInput);
   },
 };

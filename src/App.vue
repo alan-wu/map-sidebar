@@ -32,6 +32,7 @@
       @connectivity-clicked="openConnectivitySearch"
       @connectivity-hovered="onConnectivityHovered"
       @actionClick="action"
+      @connectivity-explorer-clicked="onConnectivityExplorerClicked"
     />
   </div>
 </template>
@@ -39,12 +40,9 @@
 <script>
 /* eslint-disable no-alert, no-console */
 // optionally import default styles
-import { markRaw } from "vue";
 import SideBar from './components/SideBar.vue'
 import EventBus from './components/EventBus.js'
 import exampleConnectivityInput from './exampleConnectivityInput.js'
-// import { FlatmapQueries } from "@abi-software/map-utilities/src/services/flatmapQueries.js";
-// import { getKnowledgeSource, loadAndStoreKnowledge } from "@abi-software/map-utilities/src/services/flatmapKnowledge.js";
 
 
 const capitalise = (str) => str.charAt(0).toUpperCase() + str.slice(1);
@@ -138,7 +136,7 @@ export default {
         ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
         FLATMAPAPI_LOCATION: import.meta.env.VITE_FLATMAPAPI_LOCATION,
       },
-      connectivityInput: exampleConnectivityInput,
+      connectivityInput: {},
       createData: {
         toBeConfirmed: false,
         points: [],
@@ -345,6 +343,9 @@ export default {
       const query = entry ? entry.query : 'ilxtr:neuron-type-aacar-5'
       const filter = entry ? entry.filter : []
       this.$refs.sideBar.openConnectivitySearch(filter, query)
+    },
+    onConnectivityExplorerClicked: function () {
+      this.connectivityInput = {...exampleConnectivityInput}
     }
   },
   mounted: async function () {

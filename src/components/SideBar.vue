@@ -61,8 +61,14 @@
                 v-show="tab.id === activeTabId"
                 :connectivityKnowledge="connectivityKnowledge"
                 :envVars="envVars"
+                :connectivityInfo="connectivityInfo"
+                :availableAnatomyFacets="availableAnatomyFacets"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
+                @show-connectivity="showConnectivity"
+                @show-reference-connectivities="onShowReferenceConnectivities"
+                @connectivity-clicked="onConnectivityClicked"
+                @connectivity-hovered="onConnectivityHovered"
               />
             </template>
             <template v-else>
@@ -143,14 +149,14 @@ export default {
      */
     connectivityInfo: {
       type: Object,
-      default: null,
+      default: {},
     },
     /**
      * The annotation data to show in sidebar.
      */
     annotationEntry: {
       type: Object,
-      default: null,
+      default: {},
     },
     createData: {
       type: Object,
@@ -215,9 +221,6 @@ export default {
      */
     onConnectivityHovered: function (data) {
       this.$emit('connectivity-hovered', data);
-    },
-    showNeuronConnection: function (data) {
-      this.$emit('neuron-connection-change', data);
     },
     /**
      * This event is emitted when the search filters are changed.
@@ -322,7 +325,7 @@ export default {
       return this.tabs.filter((tab) =>
         tab.type === "search" ||
         tab.type === "connectivityExplorer" ||
-        (tab.type === "connectivity" && this.connectivityInfo) ||
+        (tab.type === "connectivity" && this.connectivityInfo && Object.keys(this.connectivityInfo).length > 0) ||
         (tab.type === "annotation" && this.annotationEntry && Object.keys(this.annotationEntry).length > 0)
       );
     },
