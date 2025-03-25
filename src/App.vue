@@ -25,7 +25,7 @@
       :visible="sideBarVisibility"
       :annotationEntry="annotationEntry"
       :createData="createData"
-      :connectivityInfo="connectivityInput"
+      :connectivityEntry="connectivityEntry"
       :connectivityKnowledge="connectivityKnowledge"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
@@ -136,7 +136,7 @@ export default {
         ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
         FLATMAPAPI_LOCATION: import.meta.env.VITE_FLATMAPAPI_LOCATION,
       },
-      connectivityInput: {},
+      connectivityEntry: {},
       createData: {
         toBeConfirmed: false,
         points: [],
@@ -345,7 +345,7 @@ export default {
       this.$refs.sideBar.openConnectivitySearch(filter, query)
     },
     onConnectivityExplorerClicked: function () {
-      this.connectivityInput = {...exampleConnectivityInput}
+      this.connectivityEntry = {...exampleConnectivityInput}
     }
   },
   mounted: async function () {

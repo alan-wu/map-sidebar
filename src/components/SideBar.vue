@@ -47,7 +47,7 @@
                 v-show="tab.id === activeTabId"
                 :connectivityKnowledge="connectivityKnowledge"
                 :envVars="envVars"
-                :connectivityInfo="connectivityInfo"
+                :connectivityEntry="connectivityEntry"
                 :availableAnatomyFacets="availableAnatomyFacets"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
@@ -131,7 +131,7 @@ export default {
     /**
      * The connectivity info data to show in sidebar.
      */
-    connectivityInfo: {
+    connectivityEntry: {
       type: Object,
       default: {},
     },

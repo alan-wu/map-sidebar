@@ -48,12 +48,12 @@
           />
         </div>
         <ConnectivityInfo
-          v-if="
-            Object.keys(connectivityInfo).length > 0 &&
-            result.id === connectivityInfo.featureId[0] &&
+          v-show="
+            Object.keys(connectivityEntry).length > 0 &&
+            result.id === connectivityEntry.featureId[0] &&
             displayConnectivity
           "
-          :entry="connectivityInfo"
+          :entry="connectivityEntry"
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
           @show-connectivity="$emit('show-connectivity', $event)"
@@ -89,7 +89,7 @@ import {
 } from "element-plus";
 import SearchFilters from "./SearchFilters.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
-import connectivityInfo from "./connectivityInfo.vue";
+import ConnectivityInfo from "./ConnectivityInfo.vue";
 
 var initial_state = {
   filters: [],
@@ -128,7 +128,7 @@ export default {
       type: Object,
       default: () => {},
     },
-    connectivityInfo: {
+    connectivityEntry: {
       type: Object,
       default: {},
     },
@@ -195,7 +195,7 @@ export default {
     paginatedResults: function () {
       this.loadingCards = false;
     },
-    connectivityInfo: {
+    connectivityEntry: {
       handler(newVal, oldVal) {
         if (newVal && newVal.featureId) {
           if (
