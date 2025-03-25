@@ -109,7 +109,7 @@
             class="connectivity-search-icon" 
             @click="connectivityClicked(entry.featureId[0], 'Origins', origin)"
           >
-            <el-icon-location />
+            <el-icon-search />
           </el-icon>
         </div>
         <el-button
@@ -141,7 +141,7 @@
             class="connectivity-search-icon" 
             @click="connectivityClicked(entry.featureId[0], 'Components', component)"
           >
-            <el-icon-location />
+            <el-icon-search />
           </el-icon>
         </div>
       </div>
@@ -178,7 +178,7 @@
             class="connectivity-search-icon" 
             @click="connectivityClicked(entry.featureId[0], 'Destinations', destination)"
           >
-            <el-icon-location />
+            <el-icon-search />
           </el-icon>
         </div>
         <el-button v-show="hasDestinationsWithDatasets" class="button" @click="openAxons"
@@ -230,6 +230,7 @@
 import {
   Warning as ElIconWarning,
   Location as ElIconLocation,
+  Search as ElIconSearch,
 } from '@element-plus/icons-vue'
 import {
   ElButton as Button,
@@ -266,6 +267,7 @@ export default {
     Icon,
     ElIconWarning,
     ElIconLocation,
+    ElIconSearch,
     CopyToClipboard,
     ConnectivityGraph,
     ExternalResourceCard
