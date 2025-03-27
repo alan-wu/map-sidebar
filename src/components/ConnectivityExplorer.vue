@@ -31,6 +31,11 @@
       @loading="filtersLoading"
       @cascaderReady="cascaderReady"
     ></SearchFilters>
+    <SearchHistory
+      ref="searchHistory"
+      localStorageKey="sparc.science-connectivity-search-history"
+      @search="searchHistorySearch"
+    ></SearchHistory>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
@@ -60,7 +65,7 @@
           @show-reference-connectivities="
             $emit('show-reference-connectivities', $event)
           "
-          @connectivity-clicked="$emit('connectivity-clicked', $event)"
+          @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
         />
       </div>
@@ -88,6 +93,7 @@ import {
   ElPagination as Pagination,
 } from "element-plus";
 import SearchFilters from "./SearchFilters.vue";
+import SearchHistory from "./SearchHistory.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
 import ConnectivityInfo from "./ConnectivityInfo.vue";
 
@@ -107,7 +113,9 @@ var initial_state = {
 export default {
   components: {
     SearchFilters,
+    SearchHistory,
     ConnectivityCard,
+    ConnectivityInfo,
     Button,
     Card,
     Icon,
@@ -215,6 +223,17 @@ export default {
     },
   },
   methods: {
+    onConnectivityClicked: function (data) {
+      this.$refs.searchHistory.selectValue = "Search history";
+      if (data.query.trim()) {
+        this.$refs.searchHistory.addSearchToHistory(
+          data.filter,
+          data.query,
+          data.data
+        );
+      }
+      this.$emit("connectivity-clicked", data);
+    },
     onConnectivityExplorerClicked: function (data) {
       if (
         Object.keys(this.connectivityEntry).length > 0 &&
@@ -326,15 +345,24 @@ export default {
       this.searchKnowledge(transformedFilters, this.searchInput);
     },
     searchKnowledge: function (filters, query = "") {
-      if (query !== "") this.filter = filters;
+      this.$refs.searchHistory.selectValue = "Search history";
+      if (this.searchInput.trim()) {
+        this.$refs.searchHistory.addSearchToHistory(
+          this.filters,
+          this.searchInput
+        );
+      }
+      this.loadingCards = true;
       this.scrollToTop();
       if (this.searchInput !== this.lastSearch) {
-        this.loadingCards = true;
+        this.lastSearch = query;
         this.$emit("search-changed", {
           value: this.searchInput,
           type: "query-update",
         });
-        this.lastSearch = query;
+      } else {
+        // fix forever loading when only filter apply
+        this.loadingCards = false;
       }
     },
     filtersLoading: function (val) {
@@ -357,6 +385,13 @@ export default {
     resetPageNavigation: function () {
       this.start = 0;
       this.page = 1;
+    },
+    searchHistorySearch: function (item) {
+      this.$emit("connectivity-clicked", {
+        data: item.data,
+        filter: item.filters,
+        query: item.search,
+      });
     },
   },
   mounted: function () {

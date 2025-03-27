@@ -32,6 +32,7 @@
     ></SearchFilters>
     <SearchHistory
       ref="searchHistory"
+      localStorageKey="sparc.science-dataset-search-history"
       @search="searchHistorySearch"
     ></SearchHistory>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
