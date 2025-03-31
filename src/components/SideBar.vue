@@ -64,7 +64,7 @@
                 v-show="tab.id === activeTabId"
                 :contextCardEntry="tab.contextCard"
                 :envVars="envVars"
-                :ref="'searchTab_' + tab.id"
+                :ref="'datasetExplorerTab_' + tab.id"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
               />
@@ -164,7 +164,7 @@ export default {
       availableAnatomyFacets: [],
       activeTabId: 1,
       tabs: [
-        { title: 'Search', id: 1, type: 'search', closable: false },
+        { title: 'Dataset Explorer', id: 1, type: 'datasetExplorer', closable: false },
         { title: 'Connectivity Explorer', id: 2, type: 'connectivityExplorer', closable: false },
         { title: 'Annotation', id: 3, type: 'annotation', closable: true },
       ]
@@ -242,8 +242,8 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getTabRef(1, 'search', true);
-        searchTabRef.openSearch(facets, query);
+        const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer', true);
+        datasetExplorerTabRef.openSearch(facets, query);
       })
     },
     /**
@@ -270,16 +270,16 @@ export default {
 
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getTabRef(1, 'search', true);
-        searchTabRef.addFilter(filter)
+        const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer', true);
+        datasetExplorerTabRef.addFilter(filter)
       })
     },
     openNeuronSearch: function (neuron) {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getTabRef(1, 'search', true);
-        searchTabRef.openSearch(
+        const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer', true);
+        datasetExplorerTabRef.openSearch(
           '',
           undefined,
           'scicrunch-query-string/',
@@ -288,8 +288,8 @@ export default {
       })
     },
     getAlgoliaFacets: async function () {
-      const searchTabRef = this.getTabRef(1, 'search');
-      return await searchTabRef.getAlgoliaFacets()
+      const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer');
+      return await datasetExplorerTabRef.getAlgoliaFacets()
     },
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
@@ -320,7 +320,7 @@ export default {
     // This should respect the information provided by the property
     tabEntries: function () {
       return this.tabs.filter((tab) =>
-        tab.type === "search" ||
+        tab.type === "datasetExplorer" ||
         tab.type === "connectivityExplorer" ||
         (
           tab.type === "annotation" &&
@@ -375,7 +375,7 @@ export default {
     })
     EventBus.on('onConnectivityActionClick', (payLoad) => {
       // switch to search tab with tab id: 1
-      this.setActiveTab({id: 1, type: 'search'});
+      this.tabClicked({id: 1, type: 'datasetExplorer'});
       this.$emit('actionClick', payLoad);
     })
 
