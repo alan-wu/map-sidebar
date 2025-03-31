@@ -249,11 +249,13 @@ export default {
     /**
      * Get the ref id of the tab by id and type.
      */
-    getTabRef: function (id = 1, type = 'search', open = false) {
-      const matchedTab = this.tabEntries.filter((tab) => tab.id === id && tab.type === type);
+    getTabRef: function (id = 1, type = 'datasetExplorer', switchTab = false) {
+      const matchedTab = this.tabEntries.filter((tabEntry) => {
+        return tabEntry.id === id && tabEntry.type === type;
+      });
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
       const tabRef = type + 'Tab_' + tabInfo[0].id;
-      if (open) this.tabClicked({ id, type });
+      if (switchTab) this.setActiveTab({ id, type });
       return this.$refs[tabRef][0];
     },
     /**
@@ -292,8 +294,16 @@ export default {
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
     },
+    setActiveTab: function (tab) {
+      const matchedTab = this.tabEntries.filter((tabEntry) => {
+        return tabEntry.id === tab.id && tabEntry.type === tab.type;
+      });
+      const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
+      this.activeTabId = tabInfo[0].id;
+    },
     tabClicked: function (tab) {
-      this.activeTabId = tab.id
+      this.setActiveTab(tab);
+      this.$emit('tabClicked', tab);
     },
     tabClosed: function (tab) {
       this.$emit('tabClosed', tab);
@@ -312,7 +322,11 @@ export default {
       return this.tabs.filter((tab) =>
         tab.type === "search" ||
         tab.type === "connectivityExplorer" ||
-        (tab.type === "annotation" && this.annotationEntry && Object.keys(this.annotationEntry).length > 0)
+        (
+          tab.type === "annotation" &&
+          this.annotationEntry &&
+          Object.keys(this.annotationEntry).length > 0
+        )
       );
     },
   },
@@ -361,7 +375,7 @@ export default {
     })
     EventBus.on('onConnectivityActionClick', (payLoad) => {
       // switch to search tab with tab id: 1
-      this.tabClicked({id: 1, type: 'search'});
+      this.setActiveTab({id: 1, type: 'search'});
       this.$emit('actionClick', payLoad);
     })
 
