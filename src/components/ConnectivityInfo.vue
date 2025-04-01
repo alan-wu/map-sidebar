@@ -594,17 +594,8 @@ export default {
   }
 }
 
-.info,
 .alert {
   color: #8300bf;
-}
-
-.info {
-  transform: rotate(180deg);
-  margin-left: 8px;
-}
-
-.alert {
   margin-left: 5px;
   vertical-align: text-bottom;
 
@@ -662,39 +653,6 @@ export default {
   font-weight: 600;
   /* font-weight: bold; */
   text-transform: uppercase;
-}
-
-.attribute-content {
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.25s ease;
-  position: relative;
-  cursor: default;
-
-  &:hover {
-    color: $app-primary-color;
-  }
-
-  + .attribute-content {
-    &::before {
-      content: "";
-      width: 90%;
-      height: 1px;
-      background-color: var(--el-border-color);
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-  }
-
-  &:last-of-type {
-    margin-bottom: 0.5em;
-  }
-}
-
-.popover-container {
-  height: 100%;
-  width: 100%;
 }
 
 .main {
@@ -883,26 +841,5 @@ export default {
   &:not([style*="display: none"]) ~ .content-container-references {
     margin-top: -1.25rem;
   }
-}
-
-.connectivity-error-container {
-  position: sticky;
-  bottom: 0.5rem;
-  width: 100%;
-  min-height: 31px; // placeholder
-  margin-top: -10px !important;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-}
-
-.connectivity-error {
-  width: fit-content;
-  font-size: 12px;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--el-color-error-light-9);
-  border-radius: var(--el-border-radius-small);
-  border: 1px solid var(--el-color-error);
 }
 </style>
