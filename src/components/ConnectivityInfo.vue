@@ -79,131 +79,14 @@
     </div>
 
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
-      {{ entry.paths }}
-      <div v-if="entry.origins && entry.origins.length > 0" class="block">
-        <div class="attribute-title-container">
-          <span class="attribute-title">Origin</span>
-          <el-popover
-            width="250"
-            trigger="hover"
-            :teleported="false"
-            popper-class="popover-origin-help"
-          >
-            <template #reference>
-              <el-icon class="info"><el-icon-warning /></el-icon>
-            </template>
-            <span style="word-break: keep-all">
-              <i>Origin</i> {{ originDescription }}
-            </span>
-
-          </el-popover>
-        </div>
-        <div
-          v-for="(origin, i) in entry.origins"
-          class="attribute-content"
-          :origin-item-label="origin"
-          :key="origin"
-          @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
-        >
-          {{ capitalise(origin) }}
-        </div>
-        <el-button
-          v-show="
-            entry.originsWithDatasets && entry.originsWithDatasets.length > 0 &&
-            shouldShowExploreButton(entry.originsWithDatasets)
-          "
-          class="button"
-          id="open-dendrites-button"
-          @click="openDendrites"
-        >
-          Explore origin data
-        </el-button>
-      </div>
-      <div
-        v-if="entry.components && entry.components.length > 0"
-        class="block"
-      >
-        <div class="attribute-title-container">
-          <div class="attribute-title">Components</div>
-        </div>
-        <div
-          v-for="(component, i) in entry.components"
-          class="attribute-content"
-          :component-item-label="component"
-          :key="component"
-          @mouseenter="toggleConnectivityTooltip(component, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(component, {show: false})"
-        >
-          {{ capitalise(component) }}
-        </div>
-      </div>
-      <div
-        v-if="entry.destinations && entry.destinations.length > 0"
-        class="block"
-      >
-        <div class="attribute-title-container">
-          <span class="attribute-title">Destination</span>
-          <el-popover
-            width="250"
-            trigger="hover"
-            :teleported="false"
-            popper-class="popover-origin-help"
-          >
-            <template #reference>
-              <el-icon class="info"><el-icon-warning /></el-icon>
-            </template>
-            <span style="word-break: keep-all">
-              <i>Destination</i> is where the axons terminate
-            </span>
-          </el-popover>
-        </div>
-        <div
-          v-for="(destination, i) in entry.destinations"
-          class="attribute-content"
-          :destination-item-label="destination"
-          :key="destination"
-          @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
-        >
-          {{ capitalise(destination) }}
-        </div>
-        <el-button
-          v-show="
-            entry.destinationsWithDatasets &&
-            entry.destinationsWithDatasets.length > 0 &&
-            shouldShowExploreButton(entry.destinationsWithDatasets)
-          "
-          class="button"
-          @click="openAxons"
-        >
-          Explore destination data
-        </el-button>
-      </div>
-      <div
-        v-show="
-          entry.componentsWithDatasets &&
-          entry.componentsWithDatasets.length > 0 &&
-          shouldShowExploreButton(entry.componentsWithDatasets)
-        "
-        class="block"
-      >
-        <el-button
-          class="button"
-          @click="openAll"
-        >
-          Search for data on components
-        </el-button>
-      </div>
-
-      <div class="connectivity-error-container">
-        <div class="connectivity-error" v-if="connectivityError">
-          <strong v-if="connectivityError.errorConnectivities">
-            {{ connectivityError.errorConnectivities }}
-          </strong>
-          {{ connectivityError.errorMessage }}
-        </div>
-      </div>
+      <connectivity-list
+        :key="entry.featureId[0]"
+        :entry="entry"
+        :availableAnatomyFacets="availableAnatomyFacets"
+        :connectivityError="connectivityError"
+        @connectivity-component-click="onConnectivityComponentClick"
+        @connectivity-action-click="onConnectivityActionClick"
+      ></connectivity-list>
     </div>
 
     <div class="content-container" v-show="activeView === 'graphView'">
@@ -246,6 +129,7 @@ import EventBus from './EventBus.js'
 import {
   CopyToClipboard,
   ConnectivityGraph,
+  ConnectivityList,
   ExternalResourceCard,
 } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
@@ -275,6 +159,7 @@ export default {
     ExternalResourceCard,
     CopyToClipboard,
     ConnectivityGraph,
+    ConnectivityList,
   },
   props: {
     entry: {
@@ -618,6 +503,12 @@ export default {
       this.timeoutID = setTimeout(() => {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
+    },
+    onConnectivityComponentClick: function (data) {
+      this.$emit('connectivity-component-click', data);
+    },
+    onConnectivityActionClick: function (data) {
+      EventBus.emit('onConnectivityActionClick', data);
     },
   },
   mounted: function () {
