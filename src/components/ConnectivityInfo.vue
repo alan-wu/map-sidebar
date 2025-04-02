@@ -84,7 +84,7 @@
         :entry="entry"
         :availableAnatomyFacets="availableAnatomyFacets"
         :connectivityError="connectivityError"
-        @connectivity-component-click="onConnectivityComponentClick"
+        @toggle-connectivity-tooltip="onToggleConnectivityTooltip"
         @connectivity-action-click="onConnectivityActionClick"
       ></connectivity-list>
     </div>
@@ -113,11 +113,6 @@
 </template>
 
 <script>
-import {
-  ArrowUp as ElIconArrowUp,
-  ArrowDown as ElIconArrowDown,
-  Warning as ElIconWarning,
-} from '@element-plus/icons-vue'
 /* eslint-disable no-alert, no-console */
 import {
   ElButton as Button,
@@ -153,9 +148,6 @@ export default {
     Button,
     Container,
     Icon,
-    ElIconArrowUp,
-    ElIconArrowDown,
-    ElIconWarning,
     ExternalResourceCard,
     CopyToClipboard,
     ConnectivityGraph,
@@ -188,10 +180,8 @@ export default {
     return {
       controller: undefined,
       activeSpecies: undefined,
-      pubmedSearchUrl: '',
       loading: false,
       activeView: 'listView',
-      facetList: [],
       showToolip: false,
       showDetails: false,
       originDescriptions: {
@@ -206,15 +196,6 @@ export default {
       updatedCopyContent: '',
       sckanVersion: '',
     }
-  },
-  watch: {
-    availableAnatomyFacets: {
-      handler: function (val) {
-        this.convertFacetsToList(val)
-      },
-      immediate: true,
-      deep: true,
-    },
   },
   computed: {
     resources: function () {
@@ -251,49 +232,6 @@ export default {
     },
     capitalise: function (text) {
       return capitalise(text)
-    },
-    openUrl: function (url) {
-      window.open(url, '_blank')
-    },
-    openAll: function () {
-      EventBus.emit('onConnectivityActionClick', {
-        type: 'Facets',
-        labels: this.entry.componentsWithDatasets.map((a) => a.name.toLowerCase()),
-      })
-    },
-    openAxons: function () {
-      EventBus.emit('onConnectivityActionClick', {
-        type: 'Facets',
-        labels: this.entry.destinationsWithDatasets.map((a) => a.name.toLowerCase()),
-      })
-    },
-    // shouldShowExploreButton: Checks if the feature is in the list of available anatomy facets
-    shouldShowExploreButton: function (features) {
-      for (let i = 0; i < features.length; i++) {
-        if (this.facetList.includes(features[i].name.toLowerCase())) {
-          return true
-        }
-      }
-      return false
-    },
-    // convertFacetsToList: Converts the available anatomy facets to a list for easy searching
-    convertFacetsToList: function (facets) {
-      facets.forEach((facet) => {
-        if(facet.children) {
-          this.convertFacetsToList(facet.children)
-        } else {
-          this.facetList.push(facet.label.toLowerCase())
-        }
-      })
-    },
-    openDendrites: function () {
-      EventBus.emit('onConnectivityActionClick', {
-        type: 'Facets',
-        labels: this.entry.originsWithDatasets.map((a) => a.name.toLowerCase()),
-      })
-    },
-    pubmedSearchUrlUpdate: function (val) {
-      this.pubmedSearchUrl = val
     },
     showConnectivity: function (entry) {
       // move the map center to highlighted area
@@ -504,8 +442,9 @@ export default {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
     },
-    onConnectivityComponentClick: function (data) {
-      this.$emit('connectivity-component-click', data);
+    onToggleConnectivityTooltip: function (data) {
+      const {name, option} = data;
+      this.toggleConnectivityTooltip(name, option);
     },
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
