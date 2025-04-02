@@ -1,5 +1,27 @@
 <template>
   <div v-if="entry" class="main" v-loading="loading">
+    <div v-if="connectivityEntry.length > 1">
+      <el-popover
+        width="auto"
+        trigger="hover"
+        :teleported="false"
+      >
+        <template #reference>
+          <el-button class="button" @click="previous">Previous</el-button>
+        </template>
+        <span>{{ previousLabel }}</span>
+      </el-popover>
+      <el-popover
+        width="auto"
+        trigger="hover"
+        :teleported="false"
+      >
+        <template #reference>
+          <el-button class="button" @click="next">Next</el-button>
+        </template>
+        <span>{{ nextLabel }}</span>
+      </el-popover>
+    </div>
     <!-- Connectivity Info Title -->
     <div class="connectivity-info-title">
       <div class="title-content">
@@ -44,7 +66,7 @@
           popper-class="popover-map-pin"
         >
           <template #reference>
-            <el-button class="button-circle" circle @click="showConnectivity(entry)">
+            <el-button class="button-circle" circle @click="showConnectivity">
               <el-icon color="white">
                 <el-icon-location />
               </el-icon>
@@ -277,18 +299,9 @@ export default {
     ConnectivityGraph,
   },
   props: {
-    entry: {
-      type: Object,
-      default: () => ({
-        destinations: [],
-        origins: [],
-        components: [],
-        destinationsWithDatasets: [],
-        originsWithDatasets: [],
-        componentsWithDatasets: [],
-        resource: undefined,
-        featuresAlert: undefined,
-      }),
+    connectivityEntry: {
+      type: Array,
+      default: [],
     },
     envVars: {
       type: Object,
@@ -319,7 +332,7 @@ export default {
       timeoutID: undefined,
       graphViewLoaded: false,
       updatedCopyContent: '',
-      sckanVersion: '',
+      entryIndex: 0
     }
   },
   watch: {
@@ -332,6 +345,9 @@ export default {
     },
   },
   computed: {
+    entry: function () {
+      return this.connectivityEntry[this.entryIndex];
+    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
@@ -359,8 +375,33 @@ export default {
       text += ' species'
       return text
     },
+    sckanVersion: function () {
+      return this.entry.knowledgeSource
+    },
+    previousLabel: function () {
+      if (this.entryIndex === 0) {
+        return "This is the first item"
+      }
+      return this.connectivityEntry[this.entryIndex - 1].title
+    },
+    nextLabel: function () {
+      if (this.entryIndex === this.connectivityEntry.length - 1) {
+        return "This is the last item"
+      }
+      return this.connectivityEntry[this.entryIndex + 1].title
+    }
   },
   methods: {
+    previous: function () {
+      if (this.entryIndex !== 0) {
+        this.entryIndex = this.entryIndex - 1;
+      }
+    },
+    next: function () {
+      if (this.entryIndex !== this.connectivityEntry.length - 1) {
+        this.entryIndex = this.entryIndex + 1;
+      }
+    },
     titleCase: function (title) {
       return titleCase(title)
     },
@@ -410,9 +451,9 @@ export default {
     pubmedSearchUrlUpdate: function (val) {
       this.pubmedSearchUrl = val
     },
-    showConnectivity: function (entry) {
+    showConnectivity: function () {
       // move the map center to highlighted area
-      const featureIds = entry.featureId || [];
+      const featureIds = this.entry.featureId || [];
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
     },
@@ -621,7 +662,6 @@ export default {
     },
   },
   mounted: function () {
-    this.sckanVersion = this.entry['knowledge-source'];
     this.updatedCopyContent = this.getUpdateCopyContent();
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);

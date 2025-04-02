@@ -1,4 +1,4 @@
-export default {
+export default [{
     "destinations": [
         "Fifth thoracic ganglion",
         "ventricular intrinsic cardiac ganglion",
@@ -287,4 +287,4 @@ export default {
         "Domestic Pig"
     ],
     "knowledge-source": "sckan-2024-03-26-npo",
-}
+}]
