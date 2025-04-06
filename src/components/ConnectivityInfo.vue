@@ -58,12 +58,15 @@
       </div>
     </div>
 
-    <div class="content-container population-display">
+    <div
+      class="content-container population-display"
+      :class="dualConnectionSource ? 'population-display-toolbar' : ''"
+    >
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
       </div>
       <div class="block buttons-row">
-        <div>
+        <div v-if="dualConnectionSource">
           <span>Connection from:</span>
           <el-radio-group v-model="connectivitySource">
             <el-radio value="map">Map</el-radio>
@@ -206,6 +209,8 @@ export default {
       sckanVersion: '',
       connectivitySource: 'sckan',
       mapuuid: '',
+      mapId: '',
+      dualConnectionSource: false,
     }
   },
   computed: {
@@ -464,7 +469,14 @@ export default {
   mounted: function () {
     this.sckanVersion = this.entry['knowledge-source'];
     this.mapuuid = this.entry['mapuuid'];
+    this.mapId = this.entry['mapId'];
     this.updatedCopyContent = this.getUpdateCopyContent();
+
+    // TODO: only rat flatmap has dual connections now
+    if (this.mapId === 'rat-flatmap') {
+      this.dualConnectionSource = true;
+    }
+
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
     });
@@ -647,11 +659,6 @@ export default {
 
 .buttons-row {
   text-align: right;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
 
   .button {
     cursor: default;
@@ -678,13 +685,26 @@ export default {
 .population-display {
   display: flex;
   flex: 1 1 auto !important;
-  flex-direction: column !important;
-  align-items: start;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid $app-primary-color;
   padding-bottom: 0.5rem !important;
 
+  &.population-display-toolbar {
+    flex-direction: column !important;
+    align-items: start;
+
+    .buttons-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+  }
+
   .el-radio {
-    height: 24px;
     margin-right: 1rem;
   }
 }
