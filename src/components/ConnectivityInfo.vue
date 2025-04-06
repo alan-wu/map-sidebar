@@ -63,18 +63,27 @@
         <span class="attribute-title">Population Display</span>
       </div>
       <div class="block buttons-row">
-        <el-button
-          :class="activeView === 'listView' ? 'button' : 'el-button-secondary'"
-          @click="switchConnectivityView('listView')"
-        >
-          List view
-        </el-button>
-        <el-button
-          :class="activeView === 'graphView' ? 'button' : 'el-button-secondary'"
-          @click="switchConnectivityView('graphView')"
-        >
-          Graph view
-        </el-button>
+        <div>
+          <span>Connection from:</span>
+          <el-radio-group v-model="connectivitySource">
+            <el-radio value="map">Map</el-radio>
+            <el-radio value="sckan">SCKAN</el-radio>
+          </el-radio-group>
+        </div>
+        <div>
+          <el-button
+            :class="activeView === 'listView' ? 'button' : 'el-button-secondary'"
+            @click="switchConnectivityView('listView')"
+          >
+            List view
+          </el-button>
+          <el-button
+            :class="activeView === 'graphView' ? 'button' : 'el-button-secondary'"
+            @click="switchConnectivityView('graphView')"
+          >
+            Graph view
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -195,6 +204,7 @@ export default {
       graphViewLoaded: false,
       updatedCopyContent: '',
       sckanVersion: '',
+      connectivitySource: 'sckan',
     }
   },
   computed: {
@@ -635,6 +645,11 @@ export default {
 
 .buttons-row {
   text-align: right;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 
   .button {
     cursor: default;
@@ -650,16 +665,26 @@ export default {
     margin-top: 0 !important;
     margin-left: 10px !important;
   }
+
+  > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
 .population-display {
   display: flex;
   flex: 1 1 auto !important;
-  flex-direction: row !important;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column !important;
+  align-items: start;
   border-bottom: 1px solid $app-primary-color;
   padding-bottom: 0.5rem !important;
+
+  .el-radio {
+    height: 24px;
+    margin-right: 1rem;
+  }
 }
 
 .tooltip-container {
