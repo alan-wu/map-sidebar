@@ -114,6 +114,7 @@
           :entry="entry.featureId[0]"
           :mapServer="flatmapApi"
           :sckanVersion="sckanVersion"
+          :connectivityFromMap="connectivityFromMap"
           @tap-node="onTapNode"
           ref="connectivityGraphRef"
         />
@@ -213,6 +214,7 @@ export default {
       componentsWithDatasets: [],
       destinations: [],
       destinationsWithDatasets: [],
+      connectivityFromMap: null,
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
@@ -485,6 +487,7 @@ export default {
       if (this.connectivitySource === 'map') {
         this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
           .then((response) => {
+            this.connectivityFromMap = response;
             processConnectivity(this.flatmapApi, this.sckanVersion, response)
               .then((result) => {
                 const mapSource = {
@@ -499,6 +502,7 @@ export default {
               })
           });
       } else {
+        this.connectivityFromMap = null;
         this.updateConnectionsData(this.entry);
       }
     },
