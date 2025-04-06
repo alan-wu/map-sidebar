@@ -205,6 +205,7 @@ export default {
       updatedCopyContent: '',
       sckanVersion: '',
       connectivitySource: 'sckan',
+      mapuuid: '',
     }
   },
   computed: {
@@ -462,6 +463,7 @@ export default {
   },
   mounted: function () {
     this.sckanVersion = this.entry['knowledge-source'];
+    this.mapuuid = this.entry['mapuuid'];
     this.updatedCopyContent = this.getUpdateCopyContent();
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
