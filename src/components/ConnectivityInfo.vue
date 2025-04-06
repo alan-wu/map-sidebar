@@ -68,7 +68,7 @@
       <div class="block buttons-row">
         <div v-if="dualConnectionSource">
           <span>Connection from:</span>
-          <el-radio-group v-model="connectivitySource">
+          <el-radio-group v-model="connectivitySource" @change="onConnectivitySourceChange">
             <el-radio value="map">Map</el-radio>
             <el-radio value="sckan">SCKAN</el-radio>
           </el-radio-group>
@@ -94,6 +94,12 @@
       <connectivity-list
         :key="entry.featureId[0]"
         :entry="entry"
+        :origins="origins"
+        :components="components"
+        :destinations="destinations"
+        :originsWithDatasets="originsWithDatasets"
+        :componentsWithDatasets="componentsWithDatasets"
+        :destinationsWithDatasets="destinationsWithDatasets"
         :availableAnatomyFacets="availableAnatomyFacets"
         :connectivityError="connectivityError"
         @toggle-connectivity-tooltip="onToggleConnectivityTooltip"
@@ -106,7 +112,7 @@
         <connectivity-graph
           :key="entry.featureId[0]"
           :entry="entry.featureId[0]"
-          :mapServer="envVars.FLATMAPAPI_LOCATION"
+          :mapServer="flatmapApi"
           :sckanVersion="sckanVersion"
           @tap-node="onTapNode"
           ref="connectivityGraphRef"
@@ -140,6 +146,7 @@ import {
   ExternalResourceCard,
 } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
+import { processConnectivity } from './flatmapQueries.js';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -200,7 +207,12 @@ export default {
         motor: 'is the location of the initial cell body of the circuit',
         sensory: 'is the location of the initial cell body in the PNS circuit',
       },
+      origins: [],
+      originsWithDatasets: [],
+      components: [],
       componentsWithDatasets: [],
+      destinations: [],
+      destinationsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
@@ -211,6 +223,7 @@ export default {
       mapuuid: '',
       mapId: '',
       dualConnectionSource: false,
+      flatmapApi: '',
     }
   },
   computed: {
@@ -339,28 +352,28 @@ export default {
       }
 
       // Origins
-      if (this.entry.origins?.length) {
+      if (this.origins?.length) {
         const title = 'Origin';
-        const origins = this.entry.origins;
-        const originsWithDatasets = this.entry.originsWithDatasets;
+        const origins = this.origins;
+        const originsWithDatasets = this.originsWithDatasets;
         const transformedOrigins = transformData(title, origins, originsWithDatasets);
         contentArray.push(transformedOrigins);
       }
 
       // Components
-      if (this.entry.components?.length) {
+      if (this.components?.length) {
         const title = 'Components';
-        const components = this.entry.components;
-        const componentsWithDatasets = this.entry.componentsWithDatasets;
+        const components = this.components;
+        const componentsWithDatasets = this.componentsWithDatasets;
         const transformedComponents = transformData(title, components, componentsWithDatasets);
         contentArray.push(transformedComponents);
       }
 
       // Destination
-      if (this.entry.destinations?.length) {
+      if (this.destinations?.length) {
         const title = 'Destination';
-        const destinations = this.entry.destinations;
-        const destinationsWithDatasets = this.entry.destinationsWithDatasets;
+        const destinations = this.destinations;
+        const destinationsWithDatasets = this.destinationsWithDatasets;
         const transformedDestinations = transformData(title, destinations, destinationsWithDatasets);
         contentArray.push(transformedDestinations);
       }
@@ -380,9 +393,9 @@ export default {
     },
     toggleConnectivityTooltip: function (name, option) {
       const allWithDatasets = [
-        ...this.entry.componentsWithDatasets,
-        ...this.entry.destinationsWithDatasets,
-        ...this.entry.originsWithDatasets,
+        ...this.componentsWithDatasets,
+        ...this.destinationsWithDatasets,
+        ...this.originsWithDatasets,
       ];
       const names = name.split(','); // some features have more than one value
       const data = [];
@@ -458,6 +471,51 @@ export default {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
     },
+    updateConnectionsData: function (source) {
+      this.origins = source.origins;
+      this.components = source.components;
+      this.destinations = source.destinations;
+      this.originsWithDatasets = source.originsWithDatasets;
+      this.componentsWithDatasets = source.componentsWithDatasets;
+      this.destinationsWithDatasets = source.destinationsWithDatasets;
+
+      this.updatedCopyContent = this.getUpdateCopyContent();
+    },
+    onConnectivitySourceChange: function (val) {
+      if (this.connectivitySource === 'map') {
+        this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
+          .then((response) => {
+            processConnectivity(this.flatmapApi, this.sckanVersion, response)
+              .then((result) => {
+                const mapSource = {
+                  origins: result.labels.origins,
+                  components: result.labels.components,
+                  destinations: result.labels.destinations,
+                  originsWithDatasets: result.withDatasets.originsWithDatasets,
+                  componentsWithDatasets: result.withDatasets.componentsWithDatasets,
+                  destinationsWithDatasets: result.withDatasets.destinationsWithDatasets,
+                }
+                this.updateConnectionsData(mapSource);
+              })
+          });
+      } else {
+        this.updateConnectionsData(this.entry);
+      }
+    },
+    getConnectionsFromMap: async function (mapuuid, pathId) {
+      const url = this.flatmapApi + `flatmap/${mapuuid}/connectivity/${pathId}`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
     onToggleConnectivityTooltip: function (data) {
       const {name, option} = data;
       this.toggleConnectivityTooltip(name, option);
@@ -470,7 +528,8 @@ export default {
     this.sckanVersion = this.entry['knowledge-source'];
     this.mapuuid = this.entry['mapuuid'];
     this.mapId = this.entry['mapId'];
-    this.updatedCopyContent = this.getUpdateCopyContent();
+    this.flatmapApi = this.envVars.FLATMAPAPI_LOCATION;
+    this.updateConnectionsData(this.entry);
 
     // TODO: only rat flatmap has dual connections now
     if (this.mapId === 'rat-flatmap') {
