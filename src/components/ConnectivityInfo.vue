@@ -67,7 +67,7 @@
       </div>
       <div class="block buttons-row">
         <div v-if="dualConnectionSource">
-          <span>Connection from:</span>
+          <span>Connectivity from:</span>
           <el-radio-group v-model="connectivitySource" @change="onConnectivitySourceChange">
             <el-radio value="map">Map</el-radio>
             <el-radio value="sckan">SCKAN</el-radio>
