@@ -177,12 +177,12 @@ export default {
     entry: {
       type: Object,
       default: () => ({
-        destinations: [],
         origins: [],
         components: [],
-        destinationsWithDatasets: [],
+        destinations: [],
         originsWithDatasets: [],
         componentsWithDatasets: [],
+        destinationsWithDatasets: [],
         resource: undefined,
         featuresAlert: undefined,
       }),
