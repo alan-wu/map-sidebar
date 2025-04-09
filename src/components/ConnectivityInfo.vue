@@ -1,6 +1,6 @@
 <template>
   <div v-if="entry" class="main" v-loading="loading">
-    <div v-if="connectivityEntry.length > 1">
+    <div v-if="connectivityEntry.length > 1" class="button-container">
       <el-popover
         width="auto"
         trigger="hover"
@@ -688,6 +688,11 @@ export default {
     flex: 1 0 0%;
     max-width: 85%;
   }
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
 }
 
 .title {
