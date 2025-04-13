@@ -171,6 +171,7 @@ export default {
   data: function () {
     return {
       drawerOpen: false,
+      initFilters: { filter: [], searchInput: '' },
       availableAnatomyFacets: []
     }
   },
@@ -225,7 +226,9 @@ export default {
       this.drawerOpen = !this.drawerOpen
     },
     openSearch: function (facets, query) {
-      this.drawerOpen = true
+      this.initFilters.filter = facets;
+      this.initFilters.searchInput = query;
+      this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
         const searchTabRef = this.getSearchTabRefById(1);
@@ -297,6 +300,9 @@ export default {
     },
     setDrawerOpen: function (value = true) {
       this.drawerOpen = value
+    },
+    onPmrActionClick: function (payload) {
+      this.$emit('actionClick', payload);
     },
     /**
      * The function to emit 'tabClicked' event with tab's `id` and tab's `type`
