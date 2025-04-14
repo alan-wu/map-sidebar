@@ -240,6 +240,7 @@ export default {
       this.drawerOpen = !this.drawerOpen
     },
     openSearch: function (facets, query) {
+      this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
         const searchTabRef = this.getSearchTabRefById(1);
