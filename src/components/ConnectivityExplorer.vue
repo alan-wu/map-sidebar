@@ -53,18 +53,12 @@
           @mouseleave="hoverChanged(undefined)"
         />
         <ConnectivityInfo
-          v-show="
-            Object.keys(connectivityEntry).length > 0 &&
-            result.id === connectivityEntry.featureId[0] &&
-            displayConnectivity
-          "
-          :entry="connectivityEntry"
+          v-if="expanded === result.id"
+          :connectivityEntry="getConnectivityEntry(result)"
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
           @show-connectivity="$emit('show-connectivity', $event)"
-          @show-reference-connectivities="
-            $emit('show-reference-connectivities', $event)
-          "
+          @show-reference-connectivities="$emit('show-reference-connectivities', $event)"
           @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
         />
@@ -137,8 +131,8 @@ export default {
       default: () => {},
     },
     connectivityEntry: {
-      type: Object,
-      default: {},
+      type: Array,
+      default: [],
     },
     availableAnatomyFacets: {
       type: Object,
@@ -179,6 +173,7 @@ export default {
       ],
       cascaderIsReady: false,
       displayConnectivity: false,
+      expanded: ""
     };
   },
   computed: {
@@ -203,24 +198,6 @@ export default {
     paginatedResults: function () {
       this.loadingCards = false;
     },
-    connectivityEntry: {
-      handler(newVal, oldVal) {
-        if (newVal && newVal.featureId) {
-          if (
-            oldVal &&
-            oldVal.featureId &&
-            newVal.featureId[0] === oldVal.featureId[0]
-          ) {
-            // switch between show and hide when click on the same card
-            this.displayConnectivity = !this.displayConnectivity;
-          } else {
-            // always show when click on different cards
-            this.displayConnectivity = true;
-          }
-        }
-      },
-      deep: true,
-    },
   },
   methods: {
     onConnectivityClicked: function (data) {
@@ -235,15 +212,18 @@ export default {
       this.$emit("connectivity-clicked", data);
     },
     onConnectivityExplorerClicked: function (data) {
-      if (
-        Object.keys(this.connectivityEntry).length > 0 &&
-        data.id === this.connectivityEntry.featureId[0]
-      ) {
-        this.displayConnectivity = !this.displayConnectivity;
+      if (this.expanded === data.id) {
+        this.expanded = "";
       } else {
-        // retrieve new entry when different connectivity clicked
-        this.$emit("connectivity-explorer-clicked", data);
+        this.expanded = data.id;
       }
+    },
+    getConnectivityEntry: function (data) {
+      const entry = this.connectivityEntry.filter(entry => entry.featureId[0] === data.id);
+      if (entry.length > 0) {
+        return entry;
+      }
+      this.$emit("connectivity-explorer-clicked", data);
     },
     hoverChanged: function (data) {
       const payload = data ? { ...data, type: "connectivity" } : data;

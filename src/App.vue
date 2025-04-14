@@ -136,7 +136,7 @@ export default {
         ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
         FLATMAPAPI_LOCATION: import.meta.env.VITE_FLATMAPAPI_LOCATION,
       },
-      connectivityEntry: {},
+      connectivityEntry: [],
       createData: {
         toBeConfirmed: false,
         points: [],
@@ -345,7 +345,7 @@ export default {
       this.$refs.sideBar.openConnectivitySearch(filter, query)
     },
     onConnectivityExplorerClicked: function () {
-      this.connectivityEntry = {...exampleConnectivityInput}
+      this.connectivityEntry = [...exampleConnectivityInput]
     }
   },
   mounted: async function () {

@@ -3,7 +3,7 @@
     <div class="connectivity-card" ref="card">
       <div class="seperator-path"></div>
       <div class="card" @click="cardClicked(entry)">
-        <div class="title">{{ entry.label }}</div>
+        <div class="title">{{ capitalise(entry.label) }}</div>
         <template v-for="field in displayFields" :key="field">
           <div class="details" v-if="entry[field]">
             <strong>{{ field }}:</strong> {{ entry[field] }}
@@ -33,6 +33,10 @@ export default {
     },
   },
   methods: {
+    capitalise: function (text) {
+      if (text) return text.charAt(0).toUpperCase() + text.slice(1);
+      return "";
+    },
     cardClicked: function (data) {
       this.$emit("connectivity-explorer-clicked", data);
     },
