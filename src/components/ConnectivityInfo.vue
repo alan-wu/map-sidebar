@@ -1,6 +1,6 @@
 <template>
   <div v-if="entry" class="main" v-loading="loading">
-    <div v-if="connectivityEntry.length > 1" class="toggle-button">
+    <div v-if="connectivityEntry.length > 1 && !entryId" class="toggle-button">
       <el-popover
         width="auto"
         trigger="hover"
@@ -311,6 +311,10 @@ export default {
       type: Array,
       default: [],
     },
+    entryId: {
+      type: String,
+      default: "",
+    },
     envVars: {
       type: Object,
       default: () => {},
@@ -353,6 +357,11 @@ export default {
   },
   computed: {
     entry: function () {
+      if (this.entryId) {
+        return this.connectivityEntry.filter((entry) => {
+          return entry.featureId[0] === this.entryId;
+        })[this.entryIndex];
+      }
       return this.connectivityEntry[this.entryIndex];
     },
     hasProvenanceTaxonomyLabel: function () {

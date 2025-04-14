@@ -54,7 +54,8 @@
         />
         <ConnectivityInfo
           v-if="expanded === result.id"
-          :connectivityEntry="getConnectivityEntry(result)"
+          :connectivityEntry="connectivityEntry"
+          :entryId="result.id"
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
           @show-connectivity="$emit('show-connectivity', $event)"
@@ -201,6 +202,7 @@ export default {
   },
   methods: {
     onConnectivityClicked: function (data) {
+      this.expanded = "";
       this.$refs.searchHistory.selectValue = "Search history";
       if (data.query.trim()) {
         this.$refs.searchHistory.addSearchToHistory(
@@ -217,13 +219,10 @@ export default {
       } else {
         this.expanded = data.id;
       }
-    },
-    getConnectivityEntry: function (data) {
       const entry = this.connectivityEntry.filter(entry => entry.featureId[0] === data.id);
-      if (entry.length > 0) {
-        return entry;
+      if (entry.length === 0) {
+        this.$emit("connectivity-explorer-clicked", data);
       }
-      this.$emit("connectivity-explorer-clicked", data);
     },
     hoverChanged: function (data) {
       const payload = data ? { ...data, type: "connectivity" } : data;
