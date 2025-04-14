@@ -34,6 +34,7 @@ declare module 'vue' {
     ElRow: typeof import('element-plus/es')['ElRow']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElText: typeof import('element-plus/es')['ElText']
     ImageGallery: typeof import('./components/ImageGallery.vue')['default']
     PMRDatasetCard: typeof import('./components/PMRDatasetCard.vue')['default']
     PMRSearch: typeof import('./components/PMRSearch.vue')['default']

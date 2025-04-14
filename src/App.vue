@@ -112,9 +112,10 @@ export default {
       },
       contextArray: [null, null],
       tabArray: [
-        { title: 'Flatmap', id: 1, type: 'search'},
-        { title: 'Connectivity', id: 2, type: 'connectivity' },
-        { title: 'Annotation', id: 3, type: 'annotation' },
+        { title: 'Search', id: 1, type: 'search', closable: false },
+        { title: 'PMRSearch', id: 2, type: 'pmrSearch', closable: false },
+        { title: 'Connectivity', id: 3, type: 'connectivity', closable: false },
+        { title: 'Annotation', id: 4, type: 'annotation', closable: true },
       ],
       sideBarVisibility: true,
       envVars: {
@@ -169,13 +170,9 @@ export default {
       }
     },
     openPMRSearch: function () {
-      this.$refs.sideBar.openSearch(
+      this.activeId = 2
+      this.$refs.sideBar.openPMRSearch(
         [
-          {
-            facet: "PMR",
-            term: "Data type",
-            facetPropPath: "item.types.name",
-          }
         ],
         'cardiovascular multiscale model'
       );

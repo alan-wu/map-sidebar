@@ -138,10 +138,10 @@ export default {
     tabs: {
       type: Array,
       default: () => [
-        { id: 1, title: 'Search', type: 'search' },
-        { id: 2, title: 'Connectivity', type: 'connectivity' },
-        { id: 3, title: 'Annotation', type: 'annotation' },
-        { id: 4, title: 'PMR Search', type: 'pmrSearch' }
+        { id: 1, title: 'Search', type: 'search', closable: false },
+        { id: 2, title: 'Connectivity', type: 'connectivity', closable: false },
+        { id: 3, title: 'Annotation', type: 'annotation', closable: true },
+        { id: 4, title: 'PMR Search', type: 'pmrSearch', closable: false },
       ],
     },
     /**
@@ -248,6 +248,7 @@ export default {
       })
     },
     openPMRSearch: function (facets, query) {
+      this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
         const searchTabRef = this.getTabByType("pmrSearch");

@@ -18,13 +18,16 @@
         >
           Search
         </el-button>
+        <el-text class="results-number">
+          {{ numberOfHitsText }}
+        </el-text>
       </div>
     </template>
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
-      <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
+      <div class="error-feedback" v-if="pmrResults.length === 0 && !loadingCards">
         No results found - Please change your search criteria.
       </div>
-      <div v-for="(result, i) in results" :key="result.doi || i" class="step-item">
+      <div v-for="(result, i) in pmrResults" :key="result.doi || i" class="step-item">
         <PMRDatasetCard
           class="dataset-card"
           :entry="result"
@@ -108,6 +111,15 @@ export default {
       },
     }
   },
+  computed: {
+    numberOfHitsText: function() {
+      if (this.pmrNumberOfHits > 1) {
+        return `${this.pmrNumberOfHits} results`
+      } else {
+        return `${this.pmrNumberOfHits} result`
+      }
+    }
+  },
   methods: {
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
@@ -120,23 +132,22 @@ export default {
     resetSearch: function () {
       this.pmrNumberOfHits = 0
       this.page = 1
-      this.discoverIds = []
-      this._dois = []
-      this.results = []
+      this.pmrResults = []
       this.loadingCards = false
     },
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
       this.resetSearch()
       this.loadingCards = true;
-      this.flatmapQueries.updateOffset(this.calculatePMROffest())
+      this.flatmapQueries.updateOffset((this.page - 1) * this.numberPerPage)
       this.flatmapQueries.updateLimit(this.numberPerPage)
       this.flatmapQueries.pmrSearch(filter, search).then((data) => {
         data.forEach((result) => {
-          this.results.push(result)
+          this.pmrResults.push(result)
         })
         this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
-        this.loadingCards = false;
+        this.loadingCards = false
+        console.log(results)
       })
     },
     clearSearchClicked: function () {
@@ -145,7 +156,7 @@ export default {
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.openSearch(this.filter, this.searchInput)
+        this.openPMRSearch(this.filter, this.searchInput)
         this.$refs.searchHistory.selectValue = 'Full search history'
         this.$refs.searchHistory.addSearchToHistory(
           this.filter,
@@ -172,12 +183,8 @@ export default {
     },
     pageChange: function (page) {
       this.page = page
-      this.results = []
+      this.pmrResults = []
       this.openPMRSearch(this.filter, this.searchInput)
-    },
-    handleMissingData: function (doi) {
-      let i = this.results.findIndex((res) => res.doi === doi)
-      if (this.results[i]) this.results[i].detailsReady = true
     },
     scrollToTop: function () {
       if (this.$refs.content) {
@@ -268,6 +275,17 @@ export default {
   height: 40px;
   padding-right: 14px;
 
+  :deep(.el-input__inner) {
+    font-family: inherit;
+  }
+}
+
+.results-number {
+  width: 100px !important;
+  height: 40px;
+  padding-left: 20px;
+  font-size: 18px;
+  color: white;
   :deep(.el-input__inner) {
     font-family: inherit;
   }
