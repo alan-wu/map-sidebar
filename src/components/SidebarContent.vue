@@ -34,29 +34,18 @@
       ref="searchHistory"
       @search="searchHistorySearch"
     ></SearchHistory>
-      pmr hits: {{ pmrNumberOfHits }}
     <div class="content scrollbar" v-loading="loadingCards" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
-      <div v-for="(result, i) in results" :key="result.doi || i" class="step-item">
+      <div v-for="result in results" :key="result.doi" class="step-item">
         <DatasetCard
-          v-if="result.dataSource === 'SPARC'"
           class="dataset-card"
           :entry="result"
           :envVars="envVars"
           @mouseenter="hoverChanged(result)"
           @mouseleave="hoverChanged(undefined)"
-        ></DatasetCard>
-        <PMRDatasetCard
-          v-else-if="result.dataSource === 'PMR'"
-          class="dataset-card"
-          :entry="result"
-          :envVars="envVars"
-          @pmr-action-click="onPmrActionClick"
-          @mouseenter="hoverChanged(result)"
-          @mouseleave="hoverChanged(undefined)"
-        ></PMRDatasetCard>
+        />
       </div>
       <el-pagination
         class="pagination"
@@ -84,17 +73,12 @@ import {
 } from 'element-plus'
 import SearchFilters from './SearchFilters.vue'
 import SearchHistory from './SearchHistory.vue'
+import DatasetCard from './DatasetCard.vue'
 import EventBus from './EventBus.js'
-
-import DatasetCard from "./DatasetCard.vue";
-import PMRDatasetCard from "./PMRDatasetCard.vue";
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
-import FlatmapQueries from '../flatmapQueries/flatmapQueries.js'
-import mixedPageCalculation from '../mixins/mixedPageCalculation.vue'
 import { markRaw } from 'vue'
-const RatioOfPMRResults = 0.2; // Ratio of PMR results to Sparc results
 
 // handleErrors: A custom fetch error handler to recieve messages from the server
 //    even when an error is found
@@ -115,27 +99,21 @@ var initial_state = {
   searchInput: '',
   lastSearch: '',
   results: [],
-  pmrNumberOfHits: 0,
-  sparcNumberOfHits: 0,
+  numberOfHits: 0,
   filter: [],
   loadingCards: false,
   numberPerPage: 10,
   page: 1,
-  pmrResultsOnlyFlag: false,
-  noPMRResultsFlag: false,
+  pageModel: 1,
+  start: 0,
   hasSearched: false,
   contextCardEnabled: false,
-  pmrResults: [],
-  RatioOfPMRResults: RatioOfPMRResults,
-};
-
-
+}
 
 export default {
   components: {
     SearchFilters,
     DatasetCard,
-    PMRDatasetCard,
     SearchHistory,
     Button,
     Card,
@@ -145,7 +123,6 @@ export default {
     Pagination
   },
   name: 'SideBarContent',
-  mixins: [mixedPageCalculation],
   props: {
     visible: {
       type: Boolean,
@@ -159,13 +136,6 @@ export default {
       type: Object,
       default: () => initial_state,
     },
-    initFilters: {
-      type: Object,
-      default: {
-        filter: [],
-        searchInput: '',
-      }
-    },
     envVars: {
       type: Object,
       default: () => {},
@@ -174,7 +144,6 @@ export default {
   data: function () {
     return {
       ...this.entry,
-      ...this.initFilters,
       algoliaClient: undefined,
       bodyStyle: {
         flex: '1 1 auto',
@@ -192,54 +161,21 @@ export default {
         filterFacets: this.filter,
       }
     },
-    // npp_SPARC: Number per page for SPARC datasets
-    npp_SPARC: function () {
-      return Math.round(this.numberPerPage * (1 - RatioOfPMRResults))
-    },
-    // npp_PMR: Number per page for PMR datasets
-    npp_PMR: function () {
-      return Math.round(this.numberPerPage * RatioOfPMRResults)
-    },
-    numberOfHits: function () {
-      return this.sparcNumberOfHits + this.pmrNumberOfHits
-    },
-
   },
   methods: {
     hoverChanged: function (data) {
       this.$emit('hover-changed', data)
     },
-    onPmrActionClick: function (data) {
-      this.$emit('pmr-action-click', data);
-    },
-    // resetSearch: Resets the results, and page, and variable results ratio
-    //     Does not: reset filters, search input, or search history
     resetSearch: function () {
-      this.pmrNumberOfHits = 0
-      this.sparcNumberOfHits = 0
-      this.page = 1
-      this.calculateVariableRatio()
+      this.numberOfHits = 0
       this.discoverIds = []
       this._dois = []
       this.results = []
       this.loadingCards = false
     },
-    // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
-    openPMRSearch: function (filter, search = '') {
-      this.resetSearch()
-      this.loadingCards = true;
-      this.flatmapQueries.updateOffset(this.calculatePMROffest())
-      this.flatmapQueries.updateLimit(this.PMRLimit(this.pmrResultsOnlyFlag))
-      this.flatmapQueries.pmrSearch(filter, search).then((data) => {
-        data.forEach((result) => {
-          this.results.push(result)
-        })
-        this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
-        this.loadingCards = false;
-      })
-    },
     openSearch: function (filter, search = '', option = { withSearch: true }) {
       this.searchInput = search
+      this.resetPageNavigation()
       //Proceed normally if cascader is ready
       if (this.cascaderIsReady) {
         this.filter =
@@ -257,14 +193,7 @@ export default {
           this.resetSearch()
         } else if (this.filter) {
           if (option.withSearch) {
-            if (this.pmrResultsOnlyFlag) {
-              this.openPMRSearch(this.filter, search);
-            } else if (this.noPMRResultsFlag) {
-              this.searchAlgolia(this.filter, search);
-            } else {
-              this.searchAlgolia(this.filter, search);
-              this.openPMRSearch(this.filter, search);
-            }
+            this.searchAlgolia(this.filter, search)
           }
           this.$refs.filtersRef.setCascader(this.filter)
         }
@@ -273,20 +202,13 @@ export default {
         //otherwise waith for cascader to be ready
         this.filter = filter
         if ((!filter || filter.length == 0) && option.withSearch) {
-          if (this.pmrResultsOnlyFlag) {
-            this.openPMRSearch(this.filter, search);
-          } else if (this.noPMRResultsFlag) {
-            this.searchAlgolia(this.filter, search);
-          } else {
-            this.searchAlgolia(this.filter, search);
-            this.openPMRSearch(this.filter, search);
-          }
+          this.searchAlgolia(this.filter, search)
         }
       }
     },
     addFilter: function (filter) {
       if (this.cascaderIsReady) {
-        this.resetSearch()
+        this.resetPageNavigation()
         if (filter) {
           if (this.$refs.filtersRef.addFilter(filter))
             this.$refs.filtersRef.initiateSearch()
@@ -304,52 +226,18 @@ export default {
       this.openSearch(this.filter, this.searchInput)
     },
     clearSearchClicked: function () {
-      this.searchInput = ''
-      this.resetSearch()
-      this.openSearch(this.filter, this.searchInput)
-      this.$refs.searchHistory.selectValue = 'Full search history'
+      this.searchInput = '';
+      this.searchAndFilterUpdate();
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
-        this.openSearch(this.filter, this.searchInput)
-        this.$refs.searchHistory.selectValue = 'Full search history'
-        this.$refs.searchHistory.addSearchToHistory(
-          this.filter,
-          this.searchInput
-        )
-      }
-    },
-    updatePMROnlyFlag: function (filters) {
-      const dataTypeFilters = filters.filter((item) => item.facetPropPath === 'item.types.name');
-      const pmrFilter = dataTypeFilters.filter((item) => item.facet === 'PMR');
-      const showAllFilter = dataTypeFilters.filter((item) => item.facet === 'Show all');
-
-      this.pmrResultsOnlyFlag = false;
-      this.noPMRResultsFlag = false;
-
-      if (dataTypeFilters.length === 1 && pmrFilter.length === 1) {
-        this.pmrResultsOnlyFlag = true;
-      }
-
-      if (dataTypeFilters.length > 0 && pmrFilter.length === 0 && showAllFilter.length === 0) {
-        this.noPMRResultsFlag = true;
+        this.searchInput = this.searchInput.trim();
+        this.searchAndFilterUpdate();
       }
     },
     filterUpdate: function (filters) {
-      this.filter = [...filters]
+      this.filters = [...filters]
       this.searchAndFilterUpdate();
-      // Check if PMR is in the filters
-      this.updatePMROnlyFlag(filters)
-      // Note that we cannot use the openSearch function as that modifies filters
-      this.resetSearch()
-      if (this.pmrResultsOnlyFlag) {
-        this.openPMRSearch(filters, this.searchInput)
-      } else if (this.noPMRResultsFlag) {
-        this.searchAlgolia(filters, this.searchInput)
-      } else {
-        this.searchAlgolia(filters, this.searchInput)
-        this.openPMRSearch(filters, this.searchInput)
-      }
       this.$emit('search-changed', {
         value: filters,
         type: 'filter-update',
@@ -382,13 +270,6 @@ export default {
       }
     },
     searchAlgolia(filters, query = '') {
-
-      // Remove loading if we dont expect any results
-      if (this.SPARCLimit() === 0) {
-        this.loadingCards = false
-        return
-      }
-
       // Algolia search
 
       this.loadingCards = true
@@ -400,17 +281,12 @@ export default {
           EventBus.emit('number-of-datasets-for-anatomies', r.forScaffold)
         })
       this.algoliaClient
-        .search(getFilters(filters), query, this.calculateSPARCOffest(), this.SPARCLimit(this.pmrResultsOnlyFlag) )
+        .search(getFilters(filters), query, this.numberPerPage, this.page)
         .then((searchData) => {
-          this.sparcNumberOfHits = searchData.total
+          this.numberOfHits = searchData.total
           this.discoverIds = searchData.discoverIds
           this._dois = searchData.dois
-          searchData.items.forEach((item) => {
-            item.detailsReady = false
-            this.results.push(item)
-          })
-          // add the items to the results
-          this.results.concat(searchData.items)
+          this.results = searchData.items
           this.loadingCards = false
           this.scrollToTop()
           this.$emit('search-changed', {
@@ -432,10 +308,14 @@ export default {
       this.pageChange(1)
     },
     pageChange: function (page) {
+      this.start = (page - 1) * this.numberPerPage
       this.page = page
-      this.results = []
-      this.calculateVariableRatio()
-      this.openSearch(this.filter, this.searchInput, false)
+      this.searchAlgolia(
+        this.filters,
+        this.searchInput,
+        this.numberPerPage,
+        this.page
+      )
     },
     handleMissingData: function (doi) {
       let i = this.results.findIndex((res) => res.doi === doi)
@@ -477,6 +357,7 @@ export default {
       }
     },
     resetPageNavigation: function () {
+      this.start = 0
       this.page = 1
     },
     resultsProcessing: function (data) {
@@ -592,13 +473,7 @@ export default {
       this.envVars.PENNSIEVE_API_LOCATION
     ))
     this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
-
-    // initialise flatmap queries
-    this.flatmapQueries = new FlatmapQueries()
-    this.flatmapQueries.initialise(this.envVars.FLATMAP_API_LOCATION)
-
-    // open search
-    this.openSearch(this.filter, this.searchInput, this.mode )
+    this.openSearch(this.filter, this.searchInput)
   },
   created: function () {
     //Create non-reactive local variables
@@ -638,17 +513,6 @@ export default {
   border: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-}
-
-.data-type-select {
-  width: 90px;
-  margin-left: 10px;
-}
-
-.button {
-  background-color: $app-primary-color;
-  border: $app-primary-color;
-  color: white;
 }
 
 .step-item {

@@ -19,7 +19,6 @@
           />
         </span>
         <div class="card-right">
-          <el-tag type="primary" class="source-tag">SPARC Dataset</el-tag>
           <div class="title" @click="cardClicked">{{ entry.name }}</div>
           <div class="details">
             {{ contributors }} {{ entry.publishDate ? `(${publishYear})` : '' }}
@@ -371,14 +370,6 @@ export default {
   letter-spacing: 1.05px;
   color: #484848;
   cursor: pointer;
-}
-
-.source-tag {
-  margin-bottom: 0.75rem;
-  margin-right: 2rem;
-  position: absolute;
-  bottom: 0;
-  right: 0;
 }
 
 .card {

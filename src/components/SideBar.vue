@@ -172,7 +172,6 @@ export default {
   data: function () {
     return {
       drawerOpen: false,
-      initFilters: { filter: [], searchInput: '' },
       availableAnatomyFacets: []
     }
   },
@@ -227,9 +226,6 @@ export default {
       this.drawerOpen = !this.drawerOpen
     },
     openSearch: function (facets, query) {
-      this.initFilters.filter = facets;
-      this.initFilters.searchInput = query;
-      this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
         const searchTabRef = this.getSearchTabRefById(1);

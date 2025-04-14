@@ -266,28 +266,11 @@ export default {
                 }
               })
             })
-
-            this.populatePMRinCascader();
           })
           .finally(() => {
             resolve()
           })
       })
-    },
-    /**
-     * Add PMR checkbox in filters (cascader)
-     */
-    populatePMRinCascader: function () {
-      for (let i = 0; i < this.options.length; i += 1) {
-        const option = this.options[i];
-        // match with "Data type"'s' key
-        if (option.key === 'item.types.name') {
-          option.children.push({
-            label: 'PMR',
-            value: this.createCascaderItemValue("Data type", "PMR"),
-          });
-        }
-      }
     },
     /**
      * Create manual events when cascader tag is closed
