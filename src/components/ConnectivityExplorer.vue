@@ -18,6 +18,14 @@
         >
           Search
         </el-button>
+        <el-button
+          type="primary"
+          class="button"
+          @click="onConnectivityClicked({filter:[], query:''})"
+          size="large"
+        >
+          Restore
+        </el-button>
       </div>
     </template>
     <SearchFilters
