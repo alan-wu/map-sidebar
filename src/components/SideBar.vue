@@ -42,7 +42,7 @@
                 @connectivity-component-click="onConnectivityComponentClick"
               />
             </template>
-            <template v-else-if="tab.type === 'annotation'">
+            <template v-if="tab.type === 'annotation'">
               <annotation-tool
                 :ref="'annotationTab_' + tab.id"
                 v-show="tab.id === activeTabId"
@@ -54,7 +54,7 @@
                 @confirm-delete="$emit('confirm-delete', $event)"
               />
             </template>
-            <template v-else>
+            <template v-if="tab.type === 'search'">
               <SidebarContent
                 class="sidebar-content-container"
                 v-show="tab.id === activeTabId"
