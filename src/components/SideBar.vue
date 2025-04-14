@@ -66,6 +66,17 @@
                 @pmr-action-click="onPmrActionClick"
               />
             </template>
+            <template v-if="tab.type === 'pmrSearch'">
+              <PMRSearch
+                class="sidebar-content-container"
+                v-show="tab.id === activeTabId"
+                :envVars="envVars"
+                :ref="'pmrSearchTab_' + tab.id"
+                @search-changed="searchChanged(tab.id, $event)"
+                @hover-changed="hoverChanged($event)"
+                @pmr-action-click="onPmrActionClick"
+              />
+            </template>
           </template>
         </div>
       </div>
@@ -85,6 +96,7 @@ import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
 import AnnotationTool from './AnnotationTool.vue'
 import ConnectivityInfo from './ConnectivityInfo.vue'
+import PMRSearch from './PMRSearch.vue'
 
 /**
  * Aims to provide a sidebar for searching capability for SPARC portal.
@@ -99,6 +111,7 @@ export default {
     Icon,
     ConnectivityInfo,
     AnnotationTool,
+    PMRSearch,
   },
   name: 'SideBar',
   props: {
@@ -127,7 +140,8 @@ export default {
       default: () => [
         { id: 1, title: 'Search', type: 'search' },
         { id: 2, title: 'Connectivity', type: 'connectivity' },
-        { id: 3, title: 'Annotation', type: 'annotation' }
+        { id: 3, title: 'Annotation', type: 'annotation' },
+        { id: 4, title: 'PMR Search', type: 'pmrSearch' }
       ],
     },
     /**
@@ -232,6 +246,13 @@ export default {
         searchTabRef.openSearch(facets, query);
       })
     },
+    openPMRSearch: function (facets, query) {
+      // Because refs are in v-for, nextTick is needed here
+      this.$nextTick(() => {
+        const searchTabRef = this.getTabByType("pmrSearch");
+        searchTabRef.openPMRSearch(facets, query);
+      })
+    },
     /**
      * Get the tab object by tab id and type.
      * If not found, return the first available tab.
@@ -244,6 +265,16 @@ export default {
       return tabObj || firstAvailableTab;
     },
     /**
+     * Get the first tab object by type.
+     * If not found, return the first available tab.
+     */
+     getTabByType: function (type) {
+      const tabType = type || 'search'; // default to search tab
+      const tabObj = this.activeTabs.find((tab) => tab.type === tabType);
+      const firstAvailableTab = this.activeTabs[0];
+      return tabObj || firstAvailableTab;
+    },
+    /**
      * Get the ref id of the tab by id and type.
      */
     getTabRefId: function (id, type) {
@@ -252,6 +283,8 @@ export default {
         refIdPrefix = 'connectivityTab_';
       } else if (type === 'annotation') {
         refIdPrefix = 'annotationTab_';
+      } else if (type === 'pmrSearch') {
+        refIdPrefix = 'pmrSearchTab_';
       }
       const tabObj = this.getTabByIdAndType(id, type);
       const tabRefId = refIdPrefix + tabObj.id;
@@ -340,6 +373,8 @@ export default {
           if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
             tabs.push(tab);
           }
+        } else if (tab.type === "pmrSearch") {
+          tabs.push(tab);
         }
       })
       return tabs;

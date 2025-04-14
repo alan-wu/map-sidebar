@@ -36,6 +36,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ImageGallery: typeof import('./components/ImageGallery.vue')['default']
     PMRDatasetCard: typeof import('./components/PMRDatasetCard.vue')['default']
+    PMRSearch: typeof import('./components/PMRSearch.vue')['default']
     SearchFilters: typeof import('./components/SearchFilters.vue')['default']
     SearchHistory: typeof import('./components/SearchHistory.vue')['default']
     SideBar: typeof import('./components/SideBar.vue')['default']
