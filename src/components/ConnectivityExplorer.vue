@@ -22,9 +22,9 @@
           type="primary"
           class="button"
           @click="onConnectivityClicked({filter:[], query:''})"
-          size="large"
+          size="default"
         >
-          Restore
+          Reset
         </el-button>
       </div>
     </template>
