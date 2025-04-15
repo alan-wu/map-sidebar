@@ -137,7 +137,7 @@
             </template>
             <span style="word-break: keep-all">
               The list is not in any specific order.<br>
-              Paths can be viewed using Graph View.
+              Specific paths can be viewed using Graph View.
             </span>
           </el-popover>
         </div>
