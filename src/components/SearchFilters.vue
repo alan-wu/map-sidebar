@@ -213,7 +213,60 @@ export default {
         )
       return value
     },
+    processOptions: function () {
+      // create top level of options in cascader
+      this.options.forEach((facet, i) => {
+        this.options[i].total = this.countTotalFacet(facet)
+
+        this.options[i].label = convertReadableLabel(facet.label)
+        this.options[i].value = this.createCascaderItemValue(
+          facet.key,
+          undefined
+        )
+
+        // put "Show all" as first option
+        this.options[i].children.unshift({
+          value: this.createCascaderItemValue('Show all'),
+          label: 'Show all',
+        })
+
+        // populate second level of options
+        this.options[i].children.forEach((facetItem, j) => {
+          // Format labels except funding program
+          if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
+            this.options[i].children[j].label = convertReadableLabel(
+              facetItem.label
+            )
+          }
+          this.options[i].children[j].value =
+            this.createCascaderItemValue(facet.label, facetItem.label)
+          if (
+            this.options[i].children[j].children &&
+            this.options[i].children[j].children.length > 0
+          ) {
+            this.options[i].children[j].children.forEach((term, k) => {
+              this.options[i].children[j].children[k].label =
+                convertReadableLabel(term.label)
+              this.options[i].children[j].children[k].value =
+                this.createCascaderItemValue(
+                  facet.label,
+                  facetItem.label,
+                  term.label
+                )
+            })
+          }
+        })
+      })
+    },
     populateCascader: function () {
+      if (this.entry.options) {
+        return new Promise((resolve) => {
+          this.facets = this.entry.options
+          this.options = this.entry.options
+          this.processOptions()
+          resolve();
+        });
+      }
       return new Promise((resolve) => {
         // Algolia facet serach
         this.algoliaClient
@@ -222,50 +275,7 @@ export default {
             this.facets = data
             EventBus.emit('available-facets', data)
             this.options = data
-
-            // create top level of options in cascader
-            this.options.forEach((facet, i) => {
-              this.options[i].total = this.countTotalFacet(facet)
-
-              this.options[i].label = convertReadableLabel(facet.label)
-              this.options[i].value = this.createCascaderItemValue(
-                facet.key,
-                undefined
-              )
-
-              // put "Show all" as first option
-              this.options[i].children.unshift({
-                value: this.createCascaderItemValue('Show all'),
-                label: 'Show all',
-              })
-
-              // populate second level of options
-              this.options[i].children.forEach((facetItem, j) => {
-                // Format labels except funding program
-                if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
-                  this.options[i].children[j].label = convertReadableLabel(
-                    facetItem.label
-                  )
-                }
-                this.options[i].children[j].value =
-                  this.createCascaderItemValue(facet.label, facetItem.label)
-                if (
-                  this.options[i].children[j].children &&
-                  this.options[i].children[j].children.length > 0
-                ) {
-                  this.options[i].children[j].children.forEach((term, k) => {
-                    this.options[i].children[j].children[k].label =
-                      convertReadableLabel(term.label)
-                    this.options[i].children[j].children[k].value =
-                      this.createCascaderItemValue(
-                        facet.label,
-                        facetItem.label,
-                        term.label
-                      )
-                  })
-                }
-              })
-            })
+            this.processOptions()
           })
           .finally(() => {
             resolve()
@@ -735,13 +745,18 @@ export default {
     removeTopLevelCascaderCheckboxes: function () {
       // Next tick allows the cascader menu to change
       this.$nextTick(() => {
-        let cascadePanels = document.querySelectorAll(
-          '.sidebar-cascader-popper .el-cascader-menu__list'
-        )
-        // Hide the checkboxes on the first level of the cascader
-        cascadePanels[0]
-          .querySelectorAll('.el-checkbox__input')
-          .forEach((el) => (el.style.display = 'none'))
+        const cascadePanels = document.querySelectorAll('.sidebar-cascader-popper .el-cascader-menu__list');
+
+        cascadePanels.forEach(panel => {
+          const panelText = panel.textContent;
+          const expandArrow = panel.querySelector('.el-icon.arrow-right');
+
+          if (!panelText.includes('Show all') && expandArrow) {
+            panel.querySelectorAll('.el-checkbox__input').forEach(checkbox => {
+              checkbox.style.display = 'none';
+            });
+          }
+        });
       })
     },
     /*
@@ -788,11 +803,24 @@ export default {
       if (filters) {
         if (this.cascaderIsReady) {
           const result = []
+          const terms = []
           filters.forEach((filter) => {
             const validatedFilter =
               this.validateAndConvertFilterToHierarchical(filter)
             if (validatedFilter) {
               result.push(validatedFilter)
+              terms.push(validatedFilter.term)
+            }
+          })         
+          // make sure unused filter terms' show all checkbox is always checked 
+          this.options.forEach((option)=>{
+            if (!terms.includes(option.label)) {
+              result.push({
+                facet: "Show all",
+                facetPropPath: option.key,
+                label: "Show all",
+                term: option.label
+              })
             }
           })
           return result

@@ -1,11 +1,47 @@
 <template>
   <div v-if="entry" class="main" v-loading="loading">
+    <div v-if="connectivityEntry.length > 1 && !entryId" class="toggle-button">
+      <el-popover
+        width="auto"
+        trigger="hover"
+        :teleported="false"
+      >
+        <template #reference>
+          <el-button 
+            class="button" 
+            @click="previous" 
+            :disabled="this.entryIndex === 0"
+          >
+            Previous
+          </el-button>
+        </template>
+        <span>{{ previousLabel }}</span>
+      </el-popover>
+      <el-popover
+        width="auto"
+        trigger="hover"
+        :teleported="false"
+      >
+        <template #reference>
+          <el-button 
+            class="button" 
+            @click="next" 
+            :disabled="this.entryIndex === this.connectivityEntry.length - 1"
+          >
+            Next
+          </el-button>
+        </template>
+        <span>{{ nextLabel }}</span>
+      </el-popover>
+    </div>
     <!-- Connectivity Info Title -->
     <div class="connectivity-info-title">
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            {{ capitalise(entry.title) }}
+            <span @click="connectivityClicked(entry.featureId[0])">
+              {{ capitalise(entry.title) }}
+            </span>
             <template v-if="entry.featuresAlert">
               <el-popover
                 width="250"
@@ -22,13 +58,7 @@
               </el-popover>
             </template>
           </div>
-          <div
-            v-if="
-              entry.provenanceTaxonomyLabel &&
-              entry.provenanceTaxonomyLabel.length > 0
-            "
-            class="subtitle"
-          >
+          <div v-if="hasProvenanceTaxonomyLabel" class="subtitle">
             {{ provSpeciesDescription }}
           </div>
         </div>
@@ -44,7 +74,7 @@
           popper-class="popover-map-pin"
         >
           <template #reference>
-            <el-button class="button-circle" circle @click="showConnectivity(entry)">
+            <el-button class="button-circle" circle @click="showConnectivity">
               <el-icon color="white">
                 <el-icon-location />
               </el-icon>
@@ -80,7 +110,7 @@
 
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       {{ entry.paths }}
-      <div v-if="entry.origins && entry.origins.length > 0" class="block">
+      <div v-if="hasOrigins" class="block">
         <div class="attribute-title-container">
           <span class="attribute-title">Origin</span>
           <el-popover
@@ -95,7 +125,6 @@
             <span style="word-break: keep-all">
               <i>Origin</i> {{ originDescription }}
             </span>
-
           </el-popover>
         </div>
         <div
@@ -103,16 +132,22 @@
           class="attribute-content"
           :origin-item-label="origin"
           :key="origin"
-          @mouseenter="toggleConnectivityTooltip(origin, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(origin, {show: false})"
         >
-          {{ capitalise(origin) }}
+          <span
+            @mouseenter="connectivityHovered(origin)"
+            @mouseleave="connectivityHovered()"
+          >
+            {{ capitalise(origin) }}
+          </span>
+          <el-icon 
+            class="connectivity-search-icon" 
+            @click="connectivityClicked(entry.featureId[0], 'Origins', origin)"
+          >
+            <el-icon-search />
+          </el-icon>
         </div>
         <el-button
-          v-show="
-            entry.originsWithDatasets && entry.originsWithDatasets.length > 0 &&
-            shouldShowExploreButton(entry.originsWithDatasets)
-          "
+          v-show="hasOriginsWithDatasets"
           class="button"
           id="open-dendrites-button"
           @click="openDendrites"
@@ -120,10 +155,7 @@
           Explore origin data
         </el-button>
       </div>
-      <div
-        v-if="entry.components && entry.components.length > 0"
-        class="block"
-      >
+      <div v-if="hasComponents" class="block">
         <div class="attribute-title-container">
           <div class="attribute-title">Components</div>
         </div>
@@ -132,16 +164,22 @@
           class="attribute-content"
           :component-item-label="component"
           :key="component"
-          @mouseenter="toggleConnectivityTooltip(component, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(component, {show: false})"
         >
-          {{ capitalise(component) }}
+          <span
+            @mouseenter="connectivityHovered(component)"
+            @mouseleave="connectivityHovered()"
+          >
+            {{ capitalise(component) }}
+          </span>
+          <el-icon 
+            class="connectivity-search-icon" 
+            @click="connectivityClicked(entry.featureId[0], 'Components', component)"
+          >
+            <el-icon-search />
+          </el-icon>
         </div>
       </div>
-      <div
-        v-if="entry.destinations && entry.destinations.length > 0"
-        class="block"
-      >
+      <div v-if="hasDestinations" class="block">
         <div class="attribute-title-container">
           <span class="attribute-title">Destination</span>
           <el-popover
@@ -163,35 +201,27 @@
           class="attribute-content"
           :destination-item-label="destination"
           :key="destination"
-          @mouseenter="toggleConnectivityTooltip(destination, {show: true})"
-          @mouseleave="toggleConnectivityTooltip(destination, {show: false})"
         >
-          {{ capitalise(destination) }}
+          <span
+            @mouseenter="connectivityHovered(destination)"
+            @mouseleave="connectivityHovered()"
+          >
+            {{ capitalise(destination) }}
+          </span>
+          <el-icon 
+            class="connectivity-search-icon" 
+            @click="connectivityClicked(entry.featureId[0], 'Destinations', destination)"
+          >
+            <el-icon-search />
+          </el-icon>
         </div>
-        <el-button
-          v-show="
-            entry.destinationsWithDatasets &&
-            entry.destinationsWithDatasets.length > 0 &&
-            shouldShowExploreButton(entry.destinationsWithDatasets)
-          "
-          class="button"
-          @click="openAxons"
+        <el-button v-show="hasDestinationsWithDatasets" class="button" @click="openAxons"
         >
           Explore destination data
         </el-button>
       </div>
-      <div
-        v-show="
-          entry.componentsWithDatasets &&
-          entry.componentsWithDatasets.length > 0 &&
-          shouldShowExploreButton(entry.componentsWithDatasets)
-        "
-        class="block"
-      >
-        <el-button
-          class="button"
-          @click="openAll"
-        >
+      <div v-show="hasComponentsWithDatasets" class="block">
+        <el-button class="button" @click="openAll">
           Search for data on components
         </el-button>
       </div>
@@ -220,22 +250,22 @@
     </div>
 
     <div class="content-container content-container-references" v-if="resources.length">
-      <external-resource-card
+      <ExternalResourceCard
         :resources="resources"
         @references-loaded="onReferencesLoaded"
         @show-reference-connectivities="onShowReferenceConnectivities"
-      ></external-resource-card>
+      />
     </div>
   </div>
 </template>
 
 <script>
+  /* eslint-disable no-alert, no-console */
 import {
-  ArrowUp as ElIconArrowUp,
-  ArrowDown as ElIconArrowDown,
   Warning as ElIconWarning,
+  Location as ElIconLocation,
+  Search as ElIconSearch,
 } from '@element-plus/icons-vue'
-/* eslint-disable no-alert, no-console */
 import {
   ElButton as Button,
   ElContainer as Container,
@@ -246,7 +276,7 @@ import EventBus from './EventBus.js'
 import {
   CopyToClipboard,
   ConnectivityGraph,
-  ExternalResourceCard,
+  ExternalResourceCard
 } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
 
@@ -269,26 +299,21 @@ export default {
     Button,
     Container,
     Icon,
-    ElIconArrowUp,
-    ElIconArrowDown,
     ElIconWarning,
-    ExternalResourceCard,
+    ElIconLocation,
+    ElIconSearch,
     CopyToClipboard,
     ConnectivityGraph,
+    ExternalResourceCard
   },
   props: {
-    entry: {
-      type: Object,
-      default: () => ({
-        destinations: [],
-        origins: [],
-        components: [],
-        destinationsWithDatasets: [],
-        originsWithDatasets: [],
-        componentsWithDatasets: [],
-        resource: undefined,
-        featuresAlert: undefined,
-      }),
+    connectivityEntry: {
+      type: Array,
+      default: [],
+    },
+    entryId: {
+      type: String,
+      default: "",
     },
     envVars: {
       type: Object,
@@ -313,13 +338,12 @@ export default {
         motor: 'is the location of the initial cell body of the circuit',
         sensory: 'is the location of the initial cell body in the PNS circuit',
       },
-      componentsWithDatasets: [],
       uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
       graphViewLoaded: false,
       updatedCopyContent: '',
-      sckanVersion: '',
+      entryIndex: 0
     }
   },
   watch: {
@@ -332,6 +356,50 @@ export default {
     },
   },
   computed: {
+    entry: function () {
+      if (this.entryId) {
+        return this.connectivityEntry.filter((entry) => {
+          return entry.featureId[0] === this.entryId;
+        })[this.entryIndex];
+      }
+      return this.connectivityEntry[this.entryIndex];
+    },
+    hasProvenanceTaxonomyLabel: function () {
+      return (
+        this.entry.provenanceTaxonomyLabel &&
+        this.entry.provenanceTaxonomyLabel.length > 0
+      );
+    },
+    hasOrigins: function () {
+      return this.entry.origins && this.entry.origins.length > 0;
+    },
+    hasOriginsWithDatasets: function () {
+      return (
+        this.entry.originsWithDatasets &&
+        this.entry.originsWithDatasets.length > 0 &&
+        this.shouldShowExploreButton(this.entry.originsWithDatasets)
+      );
+    },
+    hasComponents: function () {
+      return this.entry.components && this.entry.components.length > 0;
+    },
+    hasComponentsWithDatasets: function () {
+      return (
+        this.entry.componentsWithDatasets &&
+        this.entry.componentsWithDatasets.length > 0 &&
+        this.shouldShowExploreButton(this.entry.componentsWithDatasets)
+      );
+    },
+    hasDestinations: function () {
+      return this.entry.destinations && this.entry.destinations.length > 0;
+    },
+    hasDestinationsWithDatasets: function () {
+      return (
+        this.entry.destinationsWithDatasets &&
+        this.entry.destinationsWithDatasets.length > 0 &&
+        this.shouldShowExploreButton(this.entry.destinationsWithDatasets)
+      );
+    },
     resources: function () {
       let resources = [];
       if (this.entry && this.entry.hyperlinks) {
@@ -359,8 +427,33 @@ export default {
       text += ' species'
       return text
     },
+    sckanVersion: function () {
+      return this.entry.knowledgeSource
+    },
+    previousLabel: function () {
+      if (this.entryIndex === 0) {
+        return "This is the first item. Click 'Next' to see more information."
+      }
+      return this.connectivityEntry[this.entryIndex - 1].title
+    },
+    nextLabel: function () {
+      if (this.entryIndex === this.connectivityEntry.length - 1) {
+        return "This is the last item. Click 'Previous' to see more information."
+      }
+      return this.connectivityEntry[this.entryIndex + 1].title
+    }
   },
   methods: {
+    previous: function () {
+      if (this.entryIndex !== 0) {
+        this.entryIndex = this.entryIndex - 1;
+      }
+    },
+    next: function () {
+      if (this.entryIndex !== this.connectivityEntry.length - 1) {
+        this.entryIndex = this.entryIndex + 1;
+      }
+    },
     titleCase: function (title) {
       return titleCase(title)
     },
@@ -410,15 +503,14 @@ export default {
     pubmedSearchUrlUpdate: function (val) {
       this.pubmedSearchUrl = val
     },
-    showConnectivity: function (entry) {
+    showConnectivity: function () {
       // move the map center to highlighted area
-      const featureIds = entry.featureId || [];
+      const featureIds = this.entry.featureId || [];
       // connected to flatmapvuer > moveMap(featureIds) function
       this.$emit('show-connectivity', featureIds);
     },
     switchConnectivityView: function (val) {
       this.activeView = val;
-
       if (val === 'graphView' && !this.graphViewLoaded) {
         // to load the connectivity graph only after the container is in view
         this.$nextTick(() => {
@@ -429,7 +521,7 @@ export default {
     onTapNode: function (data) {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
-      this.toggleConnectivityTooltip(name, {show: true});
+      this.connectivityHovered(name);
     },
     onShowReferenceConnectivities: function (refSource) {
       this.$emit('show-reference-connectivities', refSource);
@@ -539,31 +631,48 @@ export default {
 
       return contentArray.join('\n\n<br>');
     },
-    toggleConnectivityTooltip: function (name, option) {
+    getConnectivityDatasets: function (label) {
       const allWithDatasets = [
         ...this.entry.componentsWithDatasets,
         ...this.entry.destinationsWithDatasets,
         ...this.entry.originsWithDatasets,
       ];
-      const names = name.split(','); // some features have more than one value
-      const data = [];
-      if (option.show) {
-        names.forEach((n) => {
-          const foundData = allWithDatasets.find((a) =>
-            a.name.toLowerCase().trim() === n.toLowerCase().trim()
-          );
-
-          if (foundData) {
-            data.push({
-              id: foundData.id,
-              label: foundData.name
-            });
-          }
-        });
-      }
-
+      const names = label.split(','); // some features have more than one value
+      let data = [];
+      names.forEach((n) => {
+        const foundData = allWithDatasets.find((a) =>
+          a.name.toLowerCase().trim() === n.toLowerCase().trim()
+        );
+        if (foundData) {
+          data.push({
+            id: foundData.id,
+            label: foundData.name
+          });
+        }
+      });
+      return data
+    },
+    connectivityHovered: function (label) {
+      const data = label ? this.getConnectivityDatasets(label) : [];
       // type: to show error only for click event
-      this.$emit('connectivity-component-click', data);
+      this.$emit('connectivity-hovered', data);
+    },
+    connectivityClicked: function (id, type, label) {
+      let payload = {
+        query: id,
+        filter: [],
+        data: label ? this.getConnectivityDatasets(label) : [],
+      };
+      if (type && label) {
+        payload.filter.push({
+          AND: undefined,
+          facet: type,
+          facetPropPath: 'flatmap.connectivity.source',
+          facetSubPropPath: undefined,
+          term: 'Connectivity',
+        });
+      };
+      this.$emit('connectivity-clicked', payload);
     },
     getErrorConnectivities: function (errorData) {
       const errorDataToEmit = [...new Set(errorData)];
@@ -621,7 +730,6 @@ export default {
     },
   },
   mounted: function () {
-    this.sckanVersion = this.entry['knowledge-source'];
     this.updatedCopyContent = this.getUpdateCopyContent();
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
@@ -650,6 +758,17 @@ export default {
   }
 }
 
+.toggle-button {
+  display: flex;
+  justify-content: space-between;
+
+  .is-disabled {
+    color: #fff !important;
+    background-color: #ac76c5 !important;
+    border: 1px solid #ac76c5 !important;
+  }
+}
+
 .title {
   text-align: left;
   // width: 16em;
@@ -659,6 +778,10 @@ export default {
   font-weight: bold;
   padding-bottom: 8px;
   color: $app-primary-color;
+
+  span:hover {
+    cursor: pointer;
+  }
 }
 
 .block + .block {
@@ -774,17 +897,29 @@ export default {
 }
 
 .attribute-content {
+  display: flex;
+  justify-content: space-between;
   font-size: 14px;
   font-weight: 500;
   transition: color 0.25s ease;
   position: relative;
   cursor: default;
 
-  &:hover {
-    color: $app-primary-color;
+  .connectivity-search-icon {
+    display: none;
   }
 
-  + .attribute-content {
+  &:hover {
+    color: $app-primary-color;
+
+    .connectivity-search-icon {
+      padding-top: 4px;
+      cursor: pointer;
+      display: block;
+    }
+  }
+
+  +.attribute-content {
     &::before {
       content: "";
       width: 90%;
@@ -857,6 +992,19 @@ export default {
       border-color: transparent !important;
     }
   }
+
+  .el-button + .el-button {
+    margin-top: 0 !important;
+    margin-left: 10px !important;
+  }
+}
+
+.neuron-connection-button {
+  display: flex;
+  flex: 1 1 auto !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
 
   .el-button + .el-button {
     margin-top: 0 !important;
