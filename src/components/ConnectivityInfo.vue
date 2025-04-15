@@ -92,7 +92,7 @@
 
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       <connectivity-list
-        :key="entry.featureId[0]"
+        :key="connectivityKey"
         :entry="entry"
         :origins="origins"
         :components="components"
@@ -110,7 +110,7 @@
     <div class="content-container" v-show="activeView === 'graphView'">
       <template v-if="graphViewLoaded">
         <connectivity-graph
-          :key="entry.featureId[0]"
+          :key="connectivityKey"
           :entry="entry.featureId[0]"
           :mapServer="flatmapApi"
           :sckanVersion="sckanVersion"
@@ -147,7 +147,6 @@ import {
   ExternalResourceCard,
 } from '@abi-software/map-utilities';
 import '@abi-software/map-utilities/dist/style.css';
-import { processConnectivity } from './flatmapQueries.js';
 
 const titleCase = (str) => {
   return str.replace(/\w\S*/g, (t) => {
@@ -229,12 +228,10 @@ export default {
     }
   },
   watch: {
-    entry: {
-      handler: function (val) {
-        this.onConnectivitySourceChange();
-      },
-      immediate: true,
-      deep: true,
+    entry: function (newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.updateConnectionsData(newVal);
+      }
     }
   },
   computed: {
@@ -264,6 +261,9 @@ export default {
       text = text.slice(0, -1) // remove last comma
       text += ' species'
       return text
+    },
+    connectivityKey: function () {
+      return this.entry.featureId[0] + this.connectivitySource;
     },
   },
   methods: {
@@ -497,23 +497,12 @@ export default {
         this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
           .then((response) => {
             this.connectivityFromMap = response;
-            processConnectivity(this.flatmapApi, this.sckanVersion, response)
-              .then((result) => {
-                const mapSource = {
-                  origins: result.labels.origins,
-                  components: result.labels.components,
-                  destinations: result.labels.destinations,
-                  originsWithDatasets: result.withDatasets.originsWithDatasets,
-                  componentsWithDatasets: result.withDatasets.componentsWithDatasets,
-                  destinationsWithDatasets: result.withDatasets.destinationsWithDatasets,
-                }
-                this.updateConnectionsData(mapSource);
-              })
           });
       } else {
         this.connectivityFromMap = null;
-        this.updateConnectionsData(this.entry);
       }
+
+      EventBus.emit('connectivity-source-change', val);
     },
     getConnectionsFromMap: async function (mapuuid, pathId) {
       const url = this.flatmapApi + `flatmap/${mapuuid}/connectivity/${pathId}`;

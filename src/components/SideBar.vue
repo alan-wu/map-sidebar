@@ -396,6 +396,9 @@ export default {
       this.tabClicked({id: 1, type: 'search'});
       this.$emit('actionClick', payLoad);
     })
+    EventBus.on('connectivity-source-change', (payLoad) => {
+      this.$emit('connectivity-source-change', payLoad);
+    })
 
     // Get available anatomy facets for the connectivity info
     EventBus.on('available-facets', (payLoad) => {
