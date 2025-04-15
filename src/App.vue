@@ -166,7 +166,7 @@ export default {
       const sql = `select knowledge from knowledge
         where source="${this.sckanVersion}"
         order by source desc`;
-      const response = await flatmapQuery(this.envVars.FLATMAPAPI_LOCATION, sql);
+      const response = await flatmapQuery(this.envVars.FLATMAP_API_LOCATION, sql);
       const mappedData = response.values.map(x => x[0]);
       const knowledge = mappedData.map(x => JSON.parse(x));
       this.flatmapKnowledge = knowledge.filter((item) => {
