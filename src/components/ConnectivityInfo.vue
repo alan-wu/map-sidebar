@@ -92,6 +92,7 @@
 
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       <connectivity-list
+        v-loading="connectivityLoading"
         :key="connectivityListKey"
         :entry="entry"
         :origins="origins"
@@ -110,6 +111,7 @@
     <div class="content-container" v-show="activeView === 'graphView'">
       <template v-if="graphViewLoaded">
         <connectivity-graph
+          v-loading="connectivityLoading"
           :key="connectivityGraphKey"
           :entry="entry.featureId[0]"
           :mapServer="flatmapApi"
@@ -227,14 +229,17 @@ export default {
       flatmapApi: '',
       connectivityListKey: '',
       connectivityGraphKey: '',
+      connectivityLoading: false,
     }
   },
   watch: {
     entry: function (newVal, oldVal) {
       if (newVal !== oldVal) {
+        this.connectivityLoading = true;
         this.updateKeys();
         this.updateGraphConnectivity();
         this.updateConnectionsData(newVal);
+        this.connectivityLoading = false;
       }
     }
   },
@@ -496,6 +501,8 @@ export default {
     onConnectivitySourceChange: function (val) {
       const { featureId } = this.entry;
 
+      this.connectivityLoading = true;
+
       if (this.activeView !== 'graphView') {
         this.graphViewLoaded = false;
       }
@@ -513,9 +520,11 @@ export default {
         this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
           .then((response) => {
             this.connectivityFromMap = response;
+            this.connectivityLoading = false;
           });
       } else {
         this.connectivityFromMap = null;
+        this.connectivityLoading = false
       }
     },
     getConnectionsFromMap: async function (mapuuid, pathId) {
