@@ -105,6 +105,14 @@ export default {
   },
   name: 'SideBar',
   props: {
+    tabs: {
+      type: Array,
+      default: [
+        { title: 'Dataset Explorer', id: 1, type: 'datasetExplorer', closable: false },
+        { title: 'Connectivity Explorer', id: 2, type: 'connectivityExplorer', closable: false },
+        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
+      ],
+    },
     /**
      * The option to show side bar.
      */
@@ -163,11 +171,6 @@ export default {
       drawerOpen: false,
       availableAnatomyFacets: [],
       activeTabId: 1,
-      tabs: [
-        { title: 'Dataset Explorer', id: 1, type: 'datasetExplorer', closable: false },
-        { title: 'Connectivity Explorer', id: 2, type: 'connectivityExplorer', closable: false },
-        { title: 'Annotation', id: 3, type: 'annotation', closable: true },
-      ]
     }
   },
   methods: {
