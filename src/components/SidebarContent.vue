@@ -22,9 +22,9 @@
           type="primary"
           class="button"
           @click="openSearch([], '')"
-          size="large"
+          size="default"
         >
-          Restore
+          Reset
         </el-button>
       </div>
     </template>

@@ -237,7 +237,7 @@ export default {
       this.drawerOpen = true;
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const connectivityExplorerTabRef = this.getTabRef(2, 'connectivityExplorer', true);
+        const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer', true);
         connectivityExplorerTabRef.openSearch(facets, query);
       })
     },
@@ -245,20 +245,21 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer', true);
+        const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
         datasetExplorerTabRef.openSearch(facets, query);
       })
     },
     /**
      * Get the ref id of the tab by id and type.
      */
-    getTabRef: function (id = 1, type = 'datasetExplorer', switchTab = false) {
+    getTabRef: function (id, type, switchTab = false) {
       const matchedTab = this.tabEntries.filter((tabEntry) => {
-        return tabEntry.id === id && tabEntry.type === type;
+        return (id === undefined || tabEntry.id === id) && 
+          (type === undefined || tabEntry.type === type);
       });
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
-      const tabRef = type + 'Tab_' + tabInfo[0].id;
-      if (switchTab) this.setActiveTab({ id, type });
+      const tabRef = tabInfo[0].type + 'Tab_' + tabInfo[0].id;
+      if (switchTab) this.setActiveTab({ id: tabInfo[0].id, type: tabInfo[0].type });
       return this.$refs[tabRef][0];
     },
     /**
@@ -273,7 +274,7 @@ export default {
 
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer', true);
+        const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
         datasetExplorerTabRef.addFilter(filter)
       })
     },
@@ -281,7 +282,7 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer', true);
+        const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
         datasetExplorerTabRef.openSearch(
           '',
           undefined,
@@ -291,7 +292,7 @@ export default {
       })
     },
     getAlgoliaFacets: async function () {
-      const datasetExplorerTabRef = this.getTabRef(1, 'datasetExplorer');
+      const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer');
       return await datasetExplorerTabRef.getAlgoliaFacets()
     },
     setDrawerOpen: function (value = true) {
