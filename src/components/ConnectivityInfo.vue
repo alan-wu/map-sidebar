@@ -92,7 +92,7 @@
 
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       <connectivity-list
-        :key="connectivityKey"
+        :key="connectivityListKey"
         :entry="entry"
         :origins="origins"
         :components="components"
@@ -110,7 +110,7 @@
     <div class="content-container" v-show="activeView === 'graphView'">
       <template v-if="graphViewLoaded">
         <connectivity-graph
-          :key="connectivityKey"
+          :key="connectivityGraphKey"
           :entry="entry.featureId[0]"
           :mapServer="flatmapApi"
           :sckanVersion="sckanVersion"
@@ -225,11 +225,15 @@ export default {
       mapId: '',
       dualConnectionSource: false,
       flatmapApi: '',
+      connectivityListKey: '',
+      connectivityGraphKey: '',
     }
   },
   watch: {
     entry: function (newVal, oldVal) {
       if (newVal !== oldVal) {
+        this.updateKeys();
+        this.updateGraphConnectivity();
         this.updateConnectionsData(newVal);
       }
     }
@@ -261,9 +265,6 @@ export default {
       text = text.slice(0, -1) // remove last comma
       text += ' species'
       return text
-    },
-    connectivityKey: function () {
-      return this.entry.featureId[0] + this.connectivitySource;
     },
   },
   methods: {
@@ -495,6 +496,19 @@ export default {
     onConnectivitySourceChange: function (val) {
       const { featureId } = this.entry;
 
+      if (this.activeView !== 'graphView') {
+        this.graphViewLoaded = false;
+      }
+
+      this.updateGraphConnectivity();
+      this.updateKeys();
+
+      EventBus.emit('connectivity-source-change', {
+        featureId: featureId,
+        connectivitySource: val,
+      });
+    },
+    updateGraphConnectivity: function () {
       if (this.connectivitySource === 'map') {
         this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
           .then((response) => {
@@ -503,11 +517,6 @@ export default {
       } else {
         this.connectivityFromMap = null;
       }
-
-      EventBus.emit('connectivity-source-change', {
-        featureId: featureId,
-        connectivitySource: val,
-      });
     },
     getConnectionsFromMap: async function (mapuuid, pathId) {
       const url = this.flatmapApi + `flatmap/${mapuuid}/connectivity/${pathId}`;
@@ -530,12 +539,23 @@ export default {
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
     },
+    /**
+     * Using two different keys for List and Graph
+     * because the graph needs to be in view to update
+     */
+    updateKeys: function () {
+      if (this.activeView === 'graphView') {
+        this.connectivityGraphKey = this.entry.featureId[0] + this.connectivitySource;
+      }
+      this.connectivityListKey = this.entry.featureId[0] + this.connectivitySource;
+    },
   },
   mounted: function () {
     this.sckanVersion = this.entry['knowledge-source'];
     this.mapuuid = this.entry['mapuuid'];
     this.mapId = this.entry['mapId'];
     this.flatmapApi = this.envVars.FLATMAPAPI_LOCATION;
+    this.updateKeys();
     this.updateConnectionsData(this.entry);
 
     // TODO: only rat flatmap has dual connections now
