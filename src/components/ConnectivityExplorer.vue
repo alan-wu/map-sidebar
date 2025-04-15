@@ -296,11 +296,15 @@ export default {
     clearSearchClicked: function () {
       this.searchInput = "";
       this.searchAndFilterUpdate();
+      this.$refs.filtersRef.checkShowAllBoxes();
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.searchInput = this.searchInput.trim();
         this.searchAndFilterUpdate();
+        if (!this.searchInput) {
+          this.$refs.filtersRef.checkShowAllBoxes();
+        }
       }
     },
     filterUpdate: function (filters) {
