@@ -141,8 +141,8 @@ export default {
      * The connectivity info data to show in sidebar.
      */
     connectivityEntry: {
-      type: Object,
-      default: {},
+      type: Array,
+      default: [],
     },
     /**
      * The annotation data to show in sidebar.
