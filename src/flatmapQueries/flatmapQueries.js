@@ -210,11 +210,13 @@ let FlatmapQueries = function () {
   this.createLookup = function () {
     this.flatmapQuery(this.labelSQL())
       .then(data => {
-        data.values.forEach(d => {
-          if (d[1] && (typeof d[1] === 'string' || d[1] instanceof String)) {
-            this.lookup[d[1].toLowerCase()] = d[0]
-          }
-        })
+        if (data?.values) {
+          data.values.forEach(d => {
+            if (d[1] && (typeof d[1] === 'string' || d[1] instanceof String)) {
+              this.lookup[d[1].toLowerCase()] = d[0]
+            }
+          })
+        }
       })
   }
 
