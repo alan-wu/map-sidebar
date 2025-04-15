@@ -268,7 +268,7 @@ export default {
       this.drawerOpen = true
       // Because refs are in v-for, nextTick is needed here
       this.$nextTick(() => {
-        const searchTabRef = this.getTabRef(4, "pmrSearch", true);
+        const searchTabRef = this.getTabRef(undefined, "pmrSearch", true);
         searchTabRef.openPMRSearch(facets, query);
       })
     },

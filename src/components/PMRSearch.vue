@@ -138,6 +138,7 @@ export default {
     // openPMRSearch: Resets the results, populates dataset cards and filters with PMR data.
     openPMRSearch: function (filter, search = '') {
       this.resetSearch()
+      this.searchInput = search
       this.loadingCards = true;
       this.flatmapQueries.updateOffset((this.page - 1) * this.numberPerPage)
       this.flatmapQueries.updateLimit(this.numberPerPage)
@@ -147,7 +148,6 @@ export default {
         })
         this.pmrNumberOfHits = this.flatmapQueries.numberOfHits
         this.loadingCards = false
-        console.log(results)
       })
     },
     clearSearchClicked: function () {
