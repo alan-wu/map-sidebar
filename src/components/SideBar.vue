@@ -174,6 +174,14 @@ export default {
       availableAnatomyFacets: []
     }
   },
+  watch: {
+    connectivityInfo: function (newVal) {
+      // Clear connectivity state when connectivity info tab is closed.
+      if (!newVal) {
+        this.clearConnectivityState();
+      }
+    }
+  },
   methods: {
     /**
      * This event is emitted when the mouse hover are changed.
@@ -326,6 +334,13 @@ export default {
      */
     storeAvailableAnatomyFacets: function (availableAnatomyFacets) {
       localStorage.setItem('available-anatomy-facets', JSON.stringify(availableAnatomyFacets))
+    },
+    /**
+     * Remove saved states for connectivity info views
+     */
+    clearConnectivityState: function () {
+      localStorage.removeItem('connectivity-active-view');
+      localStorage.removeItem('connectivity-source');
     },
   },
   computed: {

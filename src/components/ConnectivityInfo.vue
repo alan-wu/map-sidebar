@@ -287,6 +287,7 @@ export default {
     },
     switchConnectivityView: function (val) {
       this.activeView = val;
+      this.setState();
 
       if (val === 'graphView' && !this.graphViewLoaded) {
         // to load the connectivity graph only after the container is in view
@@ -498,10 +499,11 @@ export default {
 
       this.updatedCopyContent = this.getUpdateCopyContent();
     },
-    onConnectivitySourceChange: function (val) {
+    onConnectivitySourceChange: function (connectivitySource) {
       const { featureId } = this.entry;
 
       this.connectivityLoading = true;
+      this.setState();
 
       if (this.activeView !== 'graphView') {
         this.graphViewLoaded = false;
@@ -512,7 +514,7 @@ export default {
 
       EventBus.emit('connectivity-source-change', {
         featureId: featureId,
-        connectivitySource: val,
+        connectivitySource: connectivitySource,
       });
     },
     updateGraphConnectivity: function () {
@@ -558,13 +560,40 @@ export default {
       }
       this.connectivityListKey = this.entry.featureId[0] + this.connectivitySource;
     },
+    /**
+     * store active view and connectivity source
+     * to keep view between switching tabs
+     */
+    setState: function () {
+      localStorage.setItem('connectivity-active-view', this.activeView);
+      localStorage.setItem('connectivity-source', this.connectivitySource);
+    },
+    updateSettingsFromState: function () {
+      const activeView = localStorage.getItem('connectivity-active-view');
+      const connectivitySource = localStorage.getItem('connectivity-source');
+
+      if (activeView) {
+        this.activeView = activeView;
+      }
+
+      if (this.activeView === 'graphView') {
+        this.graphViewLoaded = true;
+      }
+
+      if (connectivitySource) {
+        this.connectivitySource = connectivitySource;
+      }
+    },
   },
   mounted: function () {
     this.sckanVersion = this.entry['knowledge-source'];
     this.mapuuid = this.entry['mapuuid'];
     this.mapId = this.entry['mapId'];
     this.flatmapApi = this.envVars.FLATMAPAPI_LOCATION;
+
+    this.updateSettingsFromState();
     this.updateKeys();
+    this.updateGraphConnectivity();
     this.updateConnectionsData(this.entry);
 
     // TODO: only rat flatmap has dual connections now
