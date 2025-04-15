@@ -493,6 +493,8 @@ export default {
       this.updatedCopyContent = this.getUpdateCopyContent();
     },
     onConnectivitySourceChange: function (val) {
+      const { featureId } = this.entry;
+
       if (this.connectivitySource === 'map') {
         this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
           .then((response) => {
@@ -502,7 +504,10 @@ export default {
         this.connectivityFromMap = null;
       }
 
-      EventBus.emit('connectivity-source-change', val);
+      EventBus.emit('connectivity-source-change', {
+        featureId: featureId,
+        connectivitySource: val,
+      });
     },
     getConnectionsFromMap: async function (mapuuid, pathId) {
       const url = this.flatmapApi + `flatmap/${mapuuid}/connectivity/${pathId}`;
