@@ -577,7 +577,6 @@ export default {
       const { featureId } = this.entry;
 
       this.connectivityLoading = true;
-      this.setState();
 
       if (this.activeView !== 'graphView') {
         this.graphViewLoaded = false;
@@ -641,11 +640,9 @@ export default {
      */
     setState: function () {
       localStorage.setItem('connectivity-active-view', this.activeView);
-      localStorage.setItem('connectivity-source', this.connectivitySource);
     },
     updateSettingsFromState: function () {
       const activeView = localStorage.getItem('connectivity-active-view');
-      const connectivitySource = localStorage.getItem('connectivity-source');
 
       if (activeView) {
         this.activeView = activeView;
@@ -653,10 +650,6 @@ export default {
 
       if (this.activeView === 'graphView') {
         this.graphViewLoaded = true;
-      }
-
-      if (connectivitySource) {
-        this.connectivitySource = connectivitySource;
       }
     },
   },

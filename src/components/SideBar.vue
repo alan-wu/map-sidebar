@@ -338,7 +338,6 @@ export default {
      */
     clearConnectivityState: function () {
       localStorage.removeItem('connectivity-active-view');
-      localStorage.removeItem('connectivity-source');
     },
   },
   computed: {
