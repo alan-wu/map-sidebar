@@ -612,8 +612,8 @@ export default {
       }
     },
     onToggleConnectivityTooltip: function (data) {
-      const {name, option} = data;
-      this.toggleConnectivityTooltip(name, option);
+      const label = data.option ? data.name : "";
+      this.connectivityHovered(label);
     },
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
