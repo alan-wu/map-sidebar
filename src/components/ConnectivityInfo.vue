@@ -72,7 +72,7 @@
           </template>
           <span style="word-break: keep-all">
             This list is ordered alphabetically,
-            switch to graph view for path details
+            switch to graph view for path details.
           </span>
         </el-popover>
       </div>
