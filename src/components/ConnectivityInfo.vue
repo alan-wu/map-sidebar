@@ -244,18 +244,7 @@ export default {
       connectivityListKey: '',
       connectivityGraphKey: '',
       connectivityLoading: false,
-    }
-  },
-  watch: {
-    entry: function (newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.connectivityLoading = true;
-        this.updateKeys();
-        this.updateGraphConnectivity();
-        this.updateConnectionsData(newVal);
-        this.connectivityLoading = false;
-      }
-    }
+    };
   },
   computed: {
     entry: function () {
@@ -321,6 +310,23 @@ export default {
       return this.envVars.FLATMAPAPI_LOCATION;
     },
   },
+  watch: {
+    entry: {
+      deep: true,
+      immediate: true,
+      handler: function (newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.connectivityLoading = true;
+          // TODO: only rat flatmap has dual connections now
+          if (this.entry.mapId === "rat-flatmap") {
+            this.dualConnectionSource = true;
+          }
+          this.connectivitySource = this.entry.connectivitySource;
+          this.updateKeys();
+          this.updateGraphConnectivity();
+          this.connectivityLoading = false;
+        }
+      },
     },
   },
   methods: {
@@ -655,14 +661,6 @@ export default {
   },
   mounted: function () {
     this.updateSettingsFromState();
-    this.updateKeys();
-    this.updateGraphConnectivity();
-    this.updateConnectionsData(this.entry);
-
-    // TODO: only rat flatmap has dual connections now
-    if (this.mapId === 'rat-flatmap') {
-      this.dualConnectionSource = true;
-    }
     this.updatedCopyContent = this.getUpdateCopyContent();
 
     EventBus.on('connectivity-graph-error', (errorInfo) => {
