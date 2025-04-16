@@ -123,7 +123,7 @@
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       <connectivity-list
         v-loading="connectivityLoading"
-        :key="connectivityListKey"
+        :key="`${connectivityKey}list`"
         :entry="entry"
         :origins="origins"
         :components="components"
@@ -138,11 +138,11 @@
       />
     </div>
 
-    <div class="content-container" v-show="activeView === 'graphView'">
+    <div class="content-container content-container-connectivity" v-show="activeView === 'graphView'">
       <template v-if="graphViewLoaded">
         <connectivity-graph
           v-loading="connectivityLoading"
-          :key="connectivityGraphKey"
+          :key="`${connectivityKey}graph`"
           :entry="entry.featureId[0]"
           :mapServer="flatmapApi"
           :sckanVersion="sckanVersion"
@@ -232,18 +232,16 @@ export default {
   },
   data: function () {
     return {
-      activeView: 'listView',
-      connectivityFromMap: null,
-      connectivityError: null,
-      timeoutID: undefined,
-      graphViewLoaded: false,
-      updatedCopyContent: '',
       entryIndex: 0,
-      connectivitySource: 'sckan',
-      dualConnectionSource: false,
-      connectivityListKey: '',
-      connectivityGraphKey: '',
+      updatedCopyContent: '',
+      activeView: 'listView',
+      timeoutID: undefined,
       connectivityLoading: false,
+      dualConnectionSource: false,
+      connectivitySource: 'sckan',
+      connectivityError: null,
+      graphViewLoaded: false,
+      connectivityFromMap: null,
     };
   },
   computed: {
@@ -281,6 +279,9 @@ export default {
       text = text.slice(0, -1); // remove last comma
       text += " species";
       return text;
+    },
+    connectivityKey: function () {
+      return this.entry.featureId[0] + this.entry.connectivitySource;
     },
     origins: function () {
       return this.entry.origins;
@@ -322,7 +323,6 @@ export default {
             this.dualConnectionSource = true;
           }
           this.connectivitySource = this.entry.connectivitySource;
-          this.updateKeys();
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
         }
@@ -583,7 +583,6 @@ export default {
       }
 
       this.updateGraphConnectivity();
-      this.updateKeys();
 
       EventBus.emit('connectivity-source-change', {
         featureId: featureId,
@@ -623,16 +622,6 @@ export default {
     },
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
-    },
-    /**
-     * Using two different keys for List and Graph
-     * because the graph needs to be in view to update
-     */
-    updateKeys: function () {
-      if (this.activeView === 'graphView') {
-        this.connectivityGraphKey = this.entry.featureId[0] + this.connectivitySource;
-      }
-      this.connectivityListKey = this.entry.featureId[0] + this.connectivitySource;
     },
     /**
      * store active view and connectivity source
