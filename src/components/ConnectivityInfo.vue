@@ -1,5 +1,5 @@
 <template>
-  <div v-if="entry" class="main" v-loading="loading">
+  <div v-if="entry" class="main">
     <div v-if="connectivityEntry.length > 1 && !entryId" class="toggle-button">
       <el-popover
         width="auto"
@@ -221,19 +221,6 @@ export default {
       type: String,
       default: "",
     },
-    entry: {
-      type: Object,
-      default: () => ({
-        origins: [],
-        components: [],
-        destinations: [],
-        originsWithDatasets: [],
-        componentsWithDatasets: [],
-        destinationsWithDatasets: [],
-        resource: undefined,
-        featuresAlert: undefined,
-      }),
-    },
     envVars: {
       type: Object,
       default: () => {},
@@ -245,35 +232,15 @@ export default {
   },
   data: function () {
     return {
-      controller: undefined,
-      activeSpecies: undefined,
-      loading: false,
       activeView: 'listView',
-      showToolip: false,
-      showDetails: false,
-      originDescriptions: {
-        motor: 'is the location of the initial cell body of the circuit',
-        sensory: 'is the location of the initial cell body in the PNS circuit',
-      },
-      origins: [],
-      originsWithDatasets: [],
-      components: [],
-      componentsWithDatasets: [],
-      destinations: [],
-      destinationsWithDatasets: [],
       connectivityFromMap: null,
-      uberons: [{ id: undefined, name: undefined }],
       connectivityError: null,
       timeoutID: undefined,
       graphViewLoaded: false,
       updatedCopyContent: '',
       entryIndex: 0,
-      sckanVersion: '',
       connectivitySource: 'sckan',
-      mapuuid: '',
-      mapId: '',
       dualConnectionSource: false,
-      flatmapApi: '',
       connectivityListKey: '',
       connectivityGraphKey: '',
       connectivityLoading: false,
@@ -305,35 +272,10 @@ export default {
         this.entry.provenanceTaxonomyLabel.length > 0
       );
     },
-    hasOrigins: function () {
-      return this.entry.origins && this.entry.origins.length > 0;
     },
-    hasOriginsWithDatasets: function () {
-      return (
-        this.entry.originsWithDatasets &&
-        this.entry.originsWithDatasets.length > 0 &&
-        this.shouldShowExploreButton(this.entry.originsWithDatasets)
-      );
     },
-    hasComponents: function () {
-      return this.entry.components && this.entry.components.length > 0;
     },
-    hasComponentsWithDatasets: function () {
-      return (
-        this.entry.componentsWithDatasets &&
-        this.entry.componentsWithDatasets.length > 0 &&
-        this.shouldShowExploreButton(this.entry.componentsWithDatasets)
-      );
     },
-    hasDestinations: function () {
-      return this.entry.destinations && this.entry.destinations.length > 0;
-    },
-    hasDestinationsWithDatasets: function () {
-      return (
-        this.entry.destinationsWithDatasets &&
-        this.entry.destinationsWithDatasets.length > 0 &&
-        this.shouldShowExploreButton(this.entry.destinationsWithDatasets)
-      );
     },
     resources: function () {
       let resources = [];
@@ -342,16 +284,6 @@ export default {
       }
       return resources;
     },
-    originDescription: function () {
-      if (
-        this.entry &&
-        this.entry.title &&
-        this.entry.title.toLowerCase().includes('motor')
-      ) {
-        return this.originDescriptions.motor
-      } else {
-        return this.originDescriptions.sensory
-      }
     },
     provSpeciesDescription: function () {
       let text = 'Studied in'
@@ -395,7 +327,7 @@ export default {
     capitalise: function (text) {
       return capitalise(text)
     },
-    showConnectivity: function (entry) {
+    showConnectivity: function () {
       // move the map center to highlighted area
       const featureIds = this.entry.featureId || [];
       // connected to flatmapvuer > moveMap(featureIds) function
@@ -743,12 +675,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-.display {
-  width: 44px;
-  word-break: normal;
-}
-
 .connectivity-info-title {
   padding: 0;
   display: flex;
@@ -803,30 +729,6 @@ export default {
   &:active {
     background-color: $app-primary-color;
     border-color: $app-primary-color;
-  }
-}
-
-.icon {
-  right: 0px;
-  position: absolute;
-  top: 10px;
-}
-
-.icon:hover {
-  cursor: pointer;
-}
-
-:deep(.popover-origin-help.el-popover) {
-  text-transform: none !important; // need to overide the tooltip text transform
-  border: 1px solid $app-primary-color;
-  font-weight: 400;
-  font-family: Asap, sans-serif, Helvetica;
-
-  .el-popper__arrow {
-    &:before {
-      border-color: $app-primary-color;
-      background-color: #ffffff;
-    }
   }
 }
 
