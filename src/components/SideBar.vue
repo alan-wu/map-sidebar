@@ -173,6 +173,14 @@ export default {
       activeTabId: 1,
     }
   },
+  watch: {
+    connectivityInfo: function (newVal) {
+      // Clear connectivity state when connectivity info tab is closed.
+      if (!newVal) {
+        this.clearConnectivityState();
+      }
+    }
+  },
   methods: {
     onConnectivityExplorerClicked: function (data) {
       this.$emit('connectivity-explorer-clicked', data)
@@ -319,6 +327,19 @@ export default {
     updateConnectivityGraphError: function (errorInfo) {
       EventBus.emit('connectivity-graph-error', errorInfo);
     },
+    /**
+     * Store available anatomy facets data for connectivity list component
+     */
+    storeAvailableAnatomyFacets: function (availableAnatomyFacets) {
+      localStorage.setItem('available-anatomy-facets', JSON.stringify(availableAnatomyFacets))
+    },
+    /**
+     * Remove saved states for connectivity info views
+     */
+    clearConnectivityState: function () {
+      localStorage.removeItem('connectivity-active-view');
+      localStorage.removeItem('connectivity-source');
+    },
   },
   computed: {
     // This should respect the information provided by the property
@@ -382,11 +403,18 @@ export default {
       this.tabClicked({id: 1, type: 'datasetExplorer'});
       this.$emit('actionClick', payLoad);
     })
+    EventBus.on('connectivity-source-change', (payLoad) => {
+      this.$emit('connectivity-source-change', payLoad);
+    })
 
     // Get available anatomy facets for the connectivity info
     EventBus.on('available-facets', (payLoad) => {
         this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
+        this.storeAvailableAnatomyFacets(this.availableAnatomyFacets);
     })
+
+    // clear connectivity view states on first load
+    this.clearConnectivityState();
   },
 }
 </script>
