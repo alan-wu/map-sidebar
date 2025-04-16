@@ -7,9 +7,9 @@
         :teleported="false"
       >
         <template #reference>
-          <el-button 
-            class="button" 
-            @click="previous" 
+          <el-button
+            class="button"
+            @click="previous"
             :disabled="this.entryIndex === 0"
           >
             Previous
@@ -23,9 +23,9 @@
         :teleported="false"
       >
         <template #reference>
-          <el-button 
-            class="button" 
-            @click="next" 
+          <el-button
+            class="button"
+            @click="next"
             :disabled="this.entryIndex === this.connectivityEntry.length - 1"
           >
             Next
@@ -135,7 +135,7 @@
         :connectivityError="connectivityError"
         @toggle-connectivity-tooltip="onToggleConnectivityTooltip"
         @connectivity-action-click="onConnectivityActionClick"
-      ></connectivity-list>
+      />
     </div>
 
     <div class="content-container" v-show="activeView === 'graphView'">
@@ -266,49 +266,62 @@ export default {
       }
       return this.connectivityEntry[this.entryIndex];
     },
+    previousLabel: function () {
+      if (this.entryIndex === 0) {
+        return "This is the first item. Click 'Next' to see more information.";
+      }
+      return this.connectivityEntry[this.entryIndex - 1].title;
+    },
+    nextLabel: function () {
+      if (this.entryIndex === this.connectivityEntry.length - 1) {
+        return "This is the last item. Click 'Previous' to see more information.";
+      }
+      return this.connectivityEntry[this.entryIndex + 1].title;
+    },
     hasProvenanceTaxonomyLabel: function () {
       return (
         this.entry.provenanceTaxonomyLabel &&
         this.entry.provenanceTaxonomyLabel.length > 0
       );
     },
+    provSpeciesDescription: function () {
+      let text = "Studied in";
+      this.entry.provenanceTaxonomyLabel.forEach((label) => {
+        text += ` ${label},`;
+      });
+      text = text.slice(0, -1); // remove last comma
+      text += " species";
+      return text;
     },
+    origins: function () {
+      return this.entry.origins;
     },
+    components: function () {
+      return this.entry.components;
     },
+    destinations: function () {
+      return this.entry.destinations;
     },
+    originsWithDatasets: function () {
+      return this.entry.originsWithDatasets;
+    },
+    componentsWithDatasets: function () {
+      return this.entry.componentsWithDatasets;
+    },
+    destinationsWithDatasets: function () {
+      return this.entry.destinationsWithDatasets;
     },
     resources: function () {
-      let resources = [];
-      if (this.entry && this.entry.hyperlinks) {
-        resources = this.entry.hyperlinks;
-      }
-      return resources;
-    },
-    },
-    provSpeciesDescription: function () {
-      let text = 'Studied in'
-      this.entry.provenanceTaxonomyLabel.forEach((label) => {
-        text += ` ${label},`
-      })
-      text = text.slice(0, -1) // remove last comma
-      text += ' species'
-      return text
+      return this.entry.hyperlinks;
     },
     sckanVersion: function () {
-      return this.entry.knowledgeSource
+      return this.entry.knowledgeSource;
     },
-    previousLabel: function () {
-      if (this.entryIndex === 0) {
-        return "This is the first item. Click 'Next' to see more information."
-      }
-      return this.connectivityEntry[this.entryIndex - 1].title
+    flatmapApi: function () {
+      return this.envVars.FLATMAPAPI_LOCATION;
     },
-    nextLabel: function () {
-      if (this.entryIndex === this.connectivityEntry.length - 1) {
-        return "This is the last item. Click 'Previous' to see more information."
-      }
-      return this.connectivityEntry[this.entryIndex + 1].title
-    }
+  },
+    },
   },
   methods: {
     previous: function () {
@@ -554,16 +567,6 @@ export default {
         this.connectivityError = null;
       }, ERROR_TIMEOUT);
     },
-    updateConnectionsData: function (source) {
-      this.origins = source.origins;
-      this.components = source.components;
-      this.destinations = source.destinations;
-      this.originsWithDatasets = source.originsWithDatasets;
-      this.componentsWithDatasets = source.componentsWithDatasets;
-      this.destinationsWithDatasets = source.destinationsWithDatasets;
-
-      this.updatedCopyContent = this.getUpdateCopyContent();
-    },
     onConnectivitySourceChange: function (connectivitySource) {
       const { featureId } = this.entry;
 
@@ -651,12 +654,6 @@ export default {
     },
   },
   mounted: function () {
-    this.updatedCopyContent = this.getUpdateCopyContent();
-    this.sckanVersion = this.entry['knowledge-source'];
-    this.mapuuid = this.entry['mapuuid'];
-    this.mapId = this.entry['mapId'];
-    this.flatmapApi = this.envVars.FLATMAPAPI_LOCATION;
-
     this.updateSettingsFromState();
     this.updateKeys();
     this.updateGraphConnectivity();
@@ -666,6 +663,7 @@ export default {
     if (this.mapId === 'rat-flatmap') {
       this.dualConnectionSource = true;
     }
+    this.updatedCopyContent = this.getUpdateCopyContent();
 
     EventBus.on('connectivity-graph-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
