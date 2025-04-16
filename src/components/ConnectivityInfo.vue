@@ -592,19 +592,20 @@ export default {
       });
     },
     updateGraphConnectivity: function () {
-      if (this.connectivitySource === 'map') {
-        this.getConnectionsFromMap(this.mapuuid, this.entry.featureId[0])
-          .then((response) => {
-            this.connectivityFromMap = response;
-            this.connectivityLoading = false;
-          });
+      if (this.connectivitySource === "map") {
+        this.getConnectionsFromMap().then((response) => {
+          this.connectivityFromMap = response;
+          this.connectivityLoading = false;
+        });
       } else {
         this.connectivityFromMap = null;
-        this.connectivityLoading = false
+        this.connectivityLoading = false;
       }
     },
-    getConnectionsFromMap: async function (mapuuid, pathId) {
-      const url = this.flatmapApi + `flatmap/${mapuuid}/connectivity/${pathId}`;
+    getConnectionsFromMap: async function () {
+      const url =
+        this.flatmapApi +
+        `flatmap/${this.entry.mapuuid}/connectivity/${this.entry.featureId[0]}`;
 
       try {
         const response = await fetch(url);
