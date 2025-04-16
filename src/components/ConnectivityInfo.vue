@@ -61,6 +61,20 @@
     <div class="content-container population-display">
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
+        <el-popover
+          width="250"
+          trigger="hover"
+          :teleported="false"
+          popper-class="popover-origin-help"
+        >
+          <template #reference>
+            <el-icon class="info"><el-icon-warning /></el-icon>
+          </template>
+          <span style="word-break: keep-all">
+            This list is ordered alphabetically,
+            switch to graph view for path details
+          </span>
+        </el-popover>
       </div>
       <div class="block buttons-row">
         <el-button
@@ -126,20 +140,6 @@
       >
         <div class="attribute-title-container">
           <span class="attribute-title">Components</span>
-          <el-popover
-            width="250"
-            trigger="hover"
-            :teleported="false"
-            popper-class="popover-origin-help"
-          >
-            <template #reference>
-              <el-icon class="info"><el-icon-warning /></el-icon>
-            </template>
-            <span style="word-break: keep-all">
-              The list is not in any specific order.<br>
-              Specific paths can be viewed using Graph View.
-            </span>
-          </el-popover>
         </div>
         <div
           v-for="(component, i) in entry.components"
