@@ -212,7 +212,7 @@ export default {
   mounted: function () {
     // initialise flatmap queries
     this.flatmapQueries = new FlatmapQueries()
-    this.flatmapQueries.initialise(this.envVars.FLATMAP_API_LOCATION)
+    this.flatmapQueries.initialise(this.envVars.FLATMAPAPI_LOCATION)
 
     // open search
     this.openPMRSearch(this.filter, this.searchInput )
