@@ -325,7 +325,7 @@ export default {
       this.$emit('actionClick', payload);
     },
     setActiveTab: function (tab) {
-      const matchedTab = this.tabEntries.filter((tabEntry) => {
+      const matchedTab = this.tabs.filter((tabEntry) => {
         return tabEntry.id === tab.id && tabEntry.type === tab.type;
       });
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
