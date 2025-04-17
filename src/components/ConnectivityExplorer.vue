@@ -386,6 +386,7 @@ export default {
     },
   },
   mounted: function () {
+    localStorage.removeItem('connectivity-active-view');
     this.openSearch(this.filter, this.searchInput);
   },
 };

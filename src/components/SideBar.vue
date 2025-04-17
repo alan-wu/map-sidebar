@@ -345,6 +345,12 @@ export default {
     updateConnectivityGraphError: function (errorInfo) {
       EventBus.emit('connectivity-graph-error', errorInfo);
     },
+    /**
+     * Store available anatomy facets data for connectivity list component
+     */
+    storeAvailableAnatomyFacets: function (availableAnatomyFacets) {
+      localStorage.setItem('available-anatomy-facets', JSON.stringify(availableAnatomyFacets))
+    },
   },
   computed: {
     // This should respect the information provided by the property
@@ -409,10 +415,14 @@ export default {
       this.tabClicked({id: 1, type: 'datasetExplorer'});
       this.$emit('actionClick', payLoad);
     })
+    EventBus.on('connectivity-source-change', (payLoad) => {
+      this.$emit('connectivity-source-change', payLoad);
+    })
 
     // Get available anatomy facets for the connectivity info
     EventBus.on('available-facets', (payLoad) => {
         this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
+        this.storeAvailableAnatomyFacets(this.availableAnatomyFacets);
     })
   },
 }
