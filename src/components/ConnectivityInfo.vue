@@ -65,6 +65,7 @@
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
         <el-popover
+          v-if="activeView === 'listView'"
           width="250"
           trigger="hover"
           :teleported="false"
