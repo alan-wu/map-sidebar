@@ -64,6 +64,20 @@
     >
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
+        <el-popover
+          width="250"
+          trigger="hover"
+          :teleported="false"
+          popper-class="popover-origin-help"
+        >
+          <template #reference>
+            <el-icon class="info"><el-icon-warning /></el-icon>
+          </template>
+          <span style="word-break: keep-all">
+            This list is ordered alphabetically,
+            switch to graph view for path details.
+          </span>
+        </el-popover>
       </div>
       <div class="block buttons-row">
         <div v-if="dualConnectionSource">
@@ -729,6 +743,12 @@ export default {
   flex-direction: column;
   gap: 1.75rem;
   padding: 1rem;
+}
+
+.info {
+  color: #8300bf;
+  transform: rotate(180deg);
+  margin-left: 8px;
 }
 
 .attribute-title-container {
