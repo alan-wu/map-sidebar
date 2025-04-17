@@ -318,6 +318,10 @@ export default {
       handler: function (newVal, oldVal) {
         if (newVal !== oldVal) {
           this.connectivityLoading = true;
+          this.activeView = localStorage.getItem('connectivity-active-view') || this.activeView;
+          if (this.activeView === 'graphView') {
+            this.graphViewLoaded = true;
+          }
           // TODO: only rat flatmap has dual connections now
           if (this.entry.mapId === "rat-flatmap") {
             this.dualConnectionSource = true;
@@ -354,7 +358,7 @@ export default {
     },
     switchConnectivityView: function (val) {
       this.activeView = val;
-      this.setState();
+      localStorage.setItem('connectivity-active-view', this.activeView);
 
       if (val === 'graphView' && !this.graphViewLoaded) {
         // to load the connectivity graph only after the container is in view
@@ -623,27 +627,8 @@ export default {
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
     },
-    /**
-     * store active view and connectivity source
-     * to keep view between switching tabs
-     */
-    setState: function () {
-      localStorage.setItem('connectivity-active-view', this.activeView);
-    },
-    updateSettingsFromState: function () {
-      const activeView = localStorage.getItem('connectivity-active-view');
-
-      if (activeView) {
-        this.activeView = activeView;
-      }
-
-      if (this.activeView === 'graphView') {
-        this.graphViewLoaded = true;
-      }
-    },
   },
   mounted: function () {
-    this.updateSettingsFromState();
     this.updatedCopyContent = this.getUpdateCopyContent();
 
     EventBus.on('connectivity-graph-error', (errorInfo) => {

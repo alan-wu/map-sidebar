@@ -173,14 +173,6 @@ export default {
       activeTabId: 1,
     }
   },
-  watch: {
-    connectivityInfo: function (newVal) {
-      // Clear connectivity state when connectivity info tab is closed.
-      if (!newVal) {
-        this.clearConnectivityState();
-      }
-    }
-  },
   methods: {
     onConnectivityExplorerClicked: function (data) {
       this.$emit('connectivity-explorer-clicked', data)
@@ -333,12 +325,6 @@ export default {
     storeAvailableAnatomyFacets: function (availableAnatomyFacets) {
       localStorage.setItem('available-anatomy-facets', JSON.stringify(availableAnatomyFacets))
     },
-    /**
-     * Remove saved states for connectivity info views
-     */
-    clearConnectivityState: function () {
-      localStorage.removeItem('connectivity-active-view');
-    },
   },
   computed: {
     // This should respect the information provided by the property
@@ -411,9 +397,6 @@ export default {
         this.availableAnatomyFacets = payLoad.find((facet) => facet.label === 'Anatomical Structure').children
         this.storeAvailableAnatomyFacets(this.availableAnatomyFacets);
     })
-
-    // clear connectivity view states on first load
-    this.clearConnectivityState();
   },
 }
 </script>
