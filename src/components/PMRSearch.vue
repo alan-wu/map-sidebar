@@ -158,11 +158,13 @@ export default {
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.openPMRSearch(this.filter, this.searchInput)
+        /*
         this.$refs.searchHistory.selectValue = 'Full search history'
         this.$refs.searchHistory.addSearchToHistory(
           this.filter,
           this.searchInput
         )
+        */
       }
     },
     searchAndFilterUpdate: function () {

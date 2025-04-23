@@ -56,6 +56,13 @@
             >
               Simulation
             </el-button>
+            <el-button v-if="entry.simulation"
+              size="small"
+              class="button"
+              @click="onOpenCORClick(entry.simulation)"
+            >
+              OpenCOR
+            </el-button>
           </div>
         </div>
       </div>
@@ -154,8 +161,16 @@ export default {
       });
     },
     onSimulationClick: function (data) {
+      console.log(this.entry)
       this.emitPMRActionClick({
         type: 'Simulation',
+        resource: data,
+      });
+    },
+    onOpenCORClick: function (data) {
+      console.log(this.entry)
+      this.emitPMRActionClick({
+        type: 'OpenCOR',
         resource: data,
       });
     },
