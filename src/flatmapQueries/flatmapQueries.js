@@ -59,7 +59,7 @@ let FlatmapQueries = function () {
           sql += '('
         }
         if (t !== '') {
-          params.push(terms)
+          params.push(t)
           sql += `m.term=?`
           validFilter = true
           if (i < terms.length - 1) {
