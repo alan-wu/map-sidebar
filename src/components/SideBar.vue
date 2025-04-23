@@ -154,7 +154,7 @@ export default {
      * The annotation data to show in sidebar.
      */
     annotationEntry: {
-      type: Object,
+      type: Array,
       default: null,
     },
     createData: {
@@ -334,7 +334,7 @@ export default {
             tabs.push(tab);
           }
         } else if (tab.type === "annotation") {
-          if (this.annotationEntry && Object.keys(this.annotationEntry).length > 0) {
+          if (this.annotationEntry && this.annotationEntry.length > 0) {
             tabs.push(tab);
           }
         }
