@@ -121,11 +121,11 @@ export default {
   },
   data: function () {
     return {
-      annotationEntry: {
+      annotationEntry: [{
         featureId: "epicardium",
         resourceId: "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json",
         "resource": "https://mapcore-bucket1.s3-us-west-2.amazonaws.com/others/29_Jan_2020/heartICN_metadata.json"
-      },
+      }],
       tabArray: [
         { title: 'Dataset Explorer', id: 1, type: 'datasetExplorer', closable: false },
         { title: 'PMRSearch', id: 2, type: 'pmrSearch', closable: false },

@@ -163,8 +163,8 @@ export default {
      * The annotation data to show in sidebar.
      */
     annotationEntry: {
-      type: Object,
-      default: {},
+      type: Array,
+      default: [],
     },
     createData: {
       type: Object,
@@ -362,7 +362,7 @@ export default {
         (
           tab.type === "annotation" &&
           this.annotationEntry &&
-          Object.keys(this.annotationEntry).length > 0
+          this.annotationEntry.length > 0
         )
       );
     },
