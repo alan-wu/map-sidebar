@@ -74,8 +74,8 @@
           popper-class="popover-map-pin"
         >
           <template #reference>
-            <el-button class="button-circle" circle @click="showConnectivity">
-              <el-icon color="white">
+            <el-button class="button-circle secondary" circle @click="showConnectivity">
+              <el-icon color="#8300bf">
                 <el-icon-location />
               </el-icon>
             </el-button>
@@ -85,6 +85,23 @@
           </span>
         </el-popover>
         <CopyToClipboard :content="updatedCopyContent" />
+        <template v-if="withCloseButton">
+          <el-popover
+            width="auto"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-map-pin"
+          >
+            <template #reference>
+              <el-button class="button-circle" circle @click="closeConnectivity">
+                <el-icon color="white">
+                  <el-icon-close />
+                </el-icon>
+              </el-button>
+            </template>
+            <span>Close</span>
+          </el-popover>
+        </template>
       </div>
     </div>
 
@@ -244,6 +261,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    withCloseButton: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: function () {
     return {
@@ -344,6 +365,7 @@ export default {
           this.connectivitySource = this.entry.connectivitySource;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
+          this.$emit('loaded');
         }
       },
     },
@@ -642,6 +664,9 @@ export default {
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
     },
+    closeConnectivity: function () {
+      this.$emit('close-connectivity');
+    },
   },
   mounted: function () {
     this.updatedCopyContent = this.getUpdateCopyContent();
@@ -683,7 +708,7 @@ export default {
   // width: 16em;
   line-height: 1.3em !important;
   font-size: 18px;
-  font-family: Helvetica;
+  // font-family: Helvetica;
   font-weight: bold;
   padding-bottom: 8px;
   color: $app-primary-color;
@@ -708,6 +733,10 @@ export default {
   &:active {
     background-color: $app-primary-color;
     border-color: $app-primary-color;
+  }
+
+  &.secondary {
+    background-color: white;
   }
 }
 
@@ -974,6 +1003,10 @@ export default {
       border-color: $app-primary-color !important;
       border-radius: 50%;
     }
+  }
+
+  .el-button + .el-button {
+    margin-left: 0 !important;
   }
 }
 

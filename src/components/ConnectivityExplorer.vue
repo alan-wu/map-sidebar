@@ -51,7 +51,12 @@
       <div
         v-for="result in paginatedResults"
         :key="result.id"
+        :ref="'stepItem-'  + result.id"
         class="step-item"
+        :class="{
+          'is-active': expanded === result.id && result.loaded,
+          'is-loading': expanded === result.id && !result.loaded,
+        }"
       >
         <ConnectivityCard
           class="dataset-card"
@@ -66,10 +71,13 @@
           :entryId="result.id"
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
+          :withCloseButton="true"
           @show-connectivity="$emit('show-connectivity', $event)"
           @show-reference-connectivities="$emit('show-reference-connectivities', $event)"
           @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
+          @loaded="onConnectivityInfoLoaded(result)"
+          @close-connectivity="toggleConnectivityOpen(result)"
         />
       </div>
       <el-pagination
@@ -200,7 +208,12 @@ export default {
   },
   watch: {
     connectivityKnowledge: function (value) {
-      this.results = value;
+      this.results = value.map((item) => {
+        return {
+          ...item,
+          loaded: false,
+        };
+      });
       this.numberOfHits = this.results.length;
       this.loadingCards = false;
     },
@@ -221,12 +234,16 @@ export default {
       }
       this.$emit("connectivity-clicked", data);
     },
-    onConnectivityExplorerClicked: function (data) {
+    toggleConnectivityOpen: function (data) {
       if (this.expanded === data.id) {
         this.expanded = "";
       } else {
         this.expanded = data.id;
       }
+    },
+    onConnectivityExplorerClicked: function (data) {
+      data.loaded = false; // reset loading
+      this.toggleConnectivityOpen(data);
       const entry = this.connectivityEntry.filter(entry => entry.featureId[0] === data.id);
       if (entry.length === 0) {
         this.$emit("connectivity-explorer-clicked", data);
@@ -384,6 +401,17 @@ export default {
         query: item.search,
       });
     },
+    onConnectivityInfoLoaded: function (result) {
+      result.loaded = true;
+
+      const stepItemRef = this.$refs['stepItem-' + result.id];
+
+      this.$nextTick(() => {
+        if (stepItemRef && stepItemRef[0]) {
+          stepItemRef[0].scrollIntoViewIfNeeded(false);
+        }
+      });
+    },
   },
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
@@ -413,6 +441,10 @@ export default {
     &::before {
       border-color: var(--el-color-primary);
     }
+
+    :deep(.connectivity-card .title) {
+      color: $app-primary-color;
+    }
   }
 }
 
@@ -429,6 +461,52 @@ export default {
   font-size: 14px;
   margin-bottom: 18px;
   text-align: left;
+  max-height: 200px;
+  transition: all 0.3s ease;
+
+  .dataset-card {
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.3s ease;
+  }
+
+  &.is-active {
+    max-height: 1800px;
+    background-color: #f7faff;
+    border: 2px solid $app-primary-color;
+    border-radius: var(--el-border-radius-base);
+
+    .dataset-card {
+      pointer-events: none;
+
+      &::before {
+        display: none;
+      }
+
+      + .main {
+        border: 0 none;
+      }
+    }
+
+    &:not(.is-loading) {
+      .dataset-card {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+      }
+    }
+  }
+
+  &.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+
+    :deep(.connectivity-card .title) {
+      color: $app-primary-color;
+      font-size: 18px;
+      letter-spacing: normal;
+    }
+  }
 }
 
 .search-input {
