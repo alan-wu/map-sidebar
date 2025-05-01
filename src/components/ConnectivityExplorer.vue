@@ -44,7 +44,7 @@
       localStorageKey="sparc.science-connectivity-search-history"
       @search="searchHistorySearch"
     ></SearchHistory>
-    <div class="content scrollbar" v-loading="loadingCards" ref="content">
+    <div class="content scrollbar" v-loading="loadingCards || initLoading" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
@@ -190,6 +190,7 @@ export default {
       ],
       cascaderIsReady: false,
       displayConnectivity: false,
+      initLoading: true,
       expanded: ""
     };
   },
@@ -215,6 +216,7 @@ export default {
         };
       });
       this.numberOfHits = this.results.length;
+      this.initLoading = false;
       this.loadingCards = false;
     },
     paginatedResults: function () {
