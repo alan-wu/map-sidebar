@@ -536,8 +536,11 @@ export default {
 .pagination {
   padding-bottom: 16px;
   background-color: white;
-  padding-left: 95px;
   font-weight: bold;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
 .pagination :deep(button) {
