@@ -14,13 +14,12 @@
           type="primary"
           class="button"
           @click="searchEvent"
-          size="large"
+          size="default"
         >
           Search
         </el-button>
         <el-button
-          type="primary"
-          class="button"
+          class="el-button-secondary"
           @click="onConnectivityClicked({filter:[], query:''})"
           size="default"
         >
@@ -621,5 +620,16 @@ export default {
 :deep(.my-drawer) {
   background: rgba(0, 0, 0, 0);
   box-shadow: none;
+}
+
+.el-button-secondary {
+  color: $app-primary-color !important;
+  border-color: $app-primary-color !important;
+  background-color: #f9f2fc !important;
+
+  &:hover {
+    background-color: white !important;
+    border-color: #292b66 !important;
+  }
 }
 </style>
