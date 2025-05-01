@@ -46,6 +46,7 @@
                 :ref="'connectivityExplorerTab_' + tab.id"
                 v-show="tab.id === activeTabId"
                 :connectivityKnowledge="connectivityKnowledge"
+                :connectivityInfoOpen="connectivityInfoOpen"
                 :envVars="envVars"
                 :connectivityEntry="connectivityEntry"
                 :availableAnatomyFacets="availableAnatomyFacets"
@@ -171,6 +172,7 @@ export default {
       drawerOpen: false,
       availableAnatomyFacets: [],
       activeTabId: 1,
+      connectivityInfoOpen: false,
     }
   },
   methods: {
@@ -249,12 +251,15 @@ export default {
         datasetExplorerTabRef.openSearch(facets, query);
       })
     },
+    setConnectivityInfoOpen: function (option) {
+      this.connectivityInfoOpen = option;
+    },
     /**
      * Get the ref id of the tab by id and type.
      */
     getTabRef: function (id, type, switchTab = false) {
       const matchedTab = this.tabEntries.filter((tabEntry) => {
-        return (id === undefined || tabEntry.id === id) && 
+        return (id === undefined || tabEntry.id === id) &&
           (type === undefined || tabEntry.type === type);
       });
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;

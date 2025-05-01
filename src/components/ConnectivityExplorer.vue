@@ -154,6 +154,10 @@ export default {
       type: Object,
       default: [],
     },
+    connectivityInfoOpen: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: function () {
     return {
@@ -214,6 +218,10 @@ export default {
           loaded: false,
         };
       });
+      if (this.connectivityInfoOpen) {
+        this.results[0].loaded = true;
+        this.expanded = this.results[0].id;
+      }
       this.numberOfHits = this.results.length;
       this.initLoading = false;
       this.loadingCards = false;
