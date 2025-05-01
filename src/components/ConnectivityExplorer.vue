@@ -56,13 +56,13 @@
           'is-active': expanded === result.id && result.loaded,
           'is-loading': expanded === result.id && !result.loaded,
         }"
+        @mouseenter="hoverChanged(result)"
+        @mouseleave="hoverChanged(undefined)"
       >
         <ConnectivityCard
           class="dataset-card"
           :entry="result"
           @connectivity-explorer-clicked="onConnectivityExplorerClicked"
-          @mouseenter="hoverChanged(result)"
-          @mouseleave="hoverChanged(undefined)"
         />
         <ConnectivityInfo
           v-if="expanded === result.id"
