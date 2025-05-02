@@ -218,13 +218,15 @@ export default {
           loaded: false,
         };
       });
-      if (this.connectivityInfoOpen) {
-        this.results[0].loaded = true;
-        this.expanded = this.results[0].id;
-      }
+
       this.numberOfHits = this.results.length;
       this.initLoading = false;
       this.loadingCards = false;
+
+      if (this.numberOfHits === 1) {
+        this.onConnectivityExplorerClicked(this.results[0]);
+        this.expanded = this.results[0].id;
+      }
     },
     paginatedResults: function () {
       this.loadingCards = false;
