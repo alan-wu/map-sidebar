@@ -46,7 +46,6 @@
                 :ref="'connectivityExplorerTab_' + tab.id"
                 v-show="tab.id === activeTabId"
                 :connectivityKnowledge="connectivityKnowledge"
-                :connectivityInfoOpen="connectivityInfoOpen"
                 :envVars="envVars"
                 :connectivityEntry="connectivityEntry"
                 :availableAnatomyFacets="availableAnatomyFacets"
@@ -172,7 +171,6 @@ export default {
       drawerOpen: false,
       availableAnatomyFacets: [],
       activeTabId: 1,
-      connectivityInfoOpen: false,
     }
   },
   methods: {
@@ -250,9 +248,6 @@ export default {
         const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
         datasetExplorerTabRef.openSearch(facets, query);
       })
-    },
-    setConnectivityInfoOpen: function (option) {
-      this.connectivityInfoOpen = option;
     },
     /**
      * Get the ref id of the tab by id and type.

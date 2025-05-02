@@ -154,10 +154,6 @@ export default {
       type: Object,
       default: [],
     },
-    connectivityInfoOpen: {
-      type: Boolean,
-      default: false,
-    },
   },
   data: function () {
     return {
