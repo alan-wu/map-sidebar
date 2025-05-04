@@ -499,6 +499,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../assets/pagination.scss';
+
 .dataset-card {
   position: relative;
 
@@ -558,23 +560,6 @@ export default {
       color: #fff;
     }
   }
-}
-
-.pagination {
-  padding-bottom: 16px;
-  background-color: white;
-  padding-left: 95px;
-  font-weight: bold;
-}
-
-.pagination :deep(button) {
-  background-color: white !important;
-}
-.pagination :deep(li) {
-  background-color: white !important;
-}
-.pagination :deep(li.is-active) {
-  color: $app-primary-color;
 }
 
 .error-feedback {
