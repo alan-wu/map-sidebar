@@ -14,14 +14,15 @@
           type="primary"
           class="button"
           @click="searchEvent"
-          size="default"
+          size="large"
         >
           Search
         </el-button>
         <el-button
-          class="el-button-secondary"
+          link
+          class="el-button-link"
           @click="onConnectivityClicked({filter:[], query:''})"
-          size="default"
+          size="large"
         >
           Reset
         </el-button>
@@ -631,14 +632,13 @@ export default {
   box-shadow: none;
 }
 
-.el-button-secondary {
-  color: $app-primary-color !important;
-  border-color: $app-primary-color !important;
-  background-color: #f9f2fc !important;
+.el-button-link {
+  color: white !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 
   &:hover {
-    background-color: white !important;
-    border-color: #292b66 !important;
+    text-decoration-color: transparent;
   }
 }
 </style>
