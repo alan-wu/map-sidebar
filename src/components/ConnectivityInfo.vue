@@ -39,7 +39,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="connectivityClicked(entry.featureId[0])">
+            <span @click="onConnectivityClicked({id: entry.featureId[0]})">
               {{ capitalise(entry.title) }}
             </span>
             <template v-if="entry.featuresAlert">
@@ -165,7 +165,8 @@
         :destinationsWithDatasets="destinationsWithDatasets"
         :availableAnatomyFacets="availableAnatomyFacets"
         :connectivityError="connectivityError"
-        @toggle-connectivity-tooltip="onToggleConnectivityTooltip"
+        @connectivity-hovered="onConnectivityHovered"
+        @connectivity-clicked="onConnectivityClicked"
         @connectivity-action-click="onConnectivityActionClick"
       />
     </div>
@@ -407,7 +408,7 @@ export default {
     onTapNode: function (data) {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
-      this.connectivityHovered(name);
+      this.onConnectivityHovered(name);
     },
     onShowReferenceConnectivities: function (refSource) {
       this.$emit('show-reference-connectivities', refSource);
@@ -538,21 +539,24 @@ export default {
       });
       return data
     },
-    connectivityHovered: function (label) {
-      const data = label ? this.getConnectivityDatasets(label) : [];
-      // type: to show error only for click event
-      this.$emit('connectivity-hovered', data);
-    },
-    connectivityClicked: function (id, type, label) {
-      let payload = {
-        query: id,
-        filter: [],
+    onConnectivityHovered: function (label) {
+      const payload = {
+        connectivityInfo: this.entry,
         data: label ? this.getConnectivityDatasets(label) : [],
       };
-      if (type && label) {
+      // type: to show error only for click event
+      this.$emit('connectivity-hovered', payload);
+    },
+    onConnectivityClicked: function (data) {
+      let payload = {
+        query: data.id,
+        filter: [],
+        data: data.label ? this.getConnectivityDatasets(data.label) : [],
+      };
+      if (data.type && data.label) {
         payload.filter.push({
           AND: undefined,
-          facet: type,
+          facet: data.type,
           facetPropPath: 'flatmap.connectivity.source',
           facetSubPropPath: undefined,
           term: 'Connectivity',
@@ -656,10 +660,6 @@ export default {
       } catch (error) {
         throw new Error(error);
       }
-    },
-    onToggleConnectivityTooltip: function (data) {
-      const label = data.option ? data.name : "";
-      this.connectivityHovered(label);
     },
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
