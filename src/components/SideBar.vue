@@ -254,7 +254,7 @@ export default {
      */
     getTabRef: function (id, type, switchTab = false) {
       const matchedTab = this.tabEntries.filter((tabEntry) => {
-        return (id === undefined || tabEntry.id === id) && 
+        return (id === undefined || tabEntry.id === id) &&
           (type === undefined || tabEntry.type === type);
       });
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;

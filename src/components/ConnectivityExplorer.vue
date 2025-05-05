@@ -19,10 +19,10 @@
           Search
         </el-button>
         <el-button
-          type="primary"
-          class="button"
+          link
+          class="el-button-link"
           @click="onConnectivityClicked({filter:[], query:''})"
-          size="default"
+          size="large"
         >
           Reset
         </el-button>
@@ -44,21 +44,26 @@
       localStorageKey="sparc.science-connectivity-search-history"
       @search="searchHistorySearch"
     ></SearchHistory>
-    <div class="content scrollbar" v-loading="loadingCards" ref="content">
+    <div class="content scrollbar" v-loading="loadingCards || initLoading" ref="content">
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
       <div
         v-for="result in paginatedResults"
         :key="result.id"
+        :ref="'stepItem-'  + result.id"
         class="step-item"
+        :class="{
+          'is-active': expanded === result.id && result.loaded,
+          'is-loading': expanded === result.id && !result.loaded,
+        }"
+        @mouseenter="hoverChanged(result)"
+        @mouseleave="hoverChanged(undefined)"
       >
         <ConnectivityCard
           class="dataset-card"
           :entry="result"
           @connectivity-explorer-clicked="onConnectivityExplorerClicked"
-          @mouseenter="hoverChanged(result)"
-          @mouseleave="hoverChanged(undefined)"
         />
         <ConnectivityInfo
           v-if="expanded === result.id"
@@ -66,10 +71,13 @@
           :entryId="result.id"
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
+          :withCloseButton="true"
           @show-connectivity="$emit('show-connectivity', $event)"
           @show-reference-connectivities="$emit('show-reference-connectivities', $event)"
           @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
+          @loaded="onConnectivityInfoLoaded(result)"
+          @close-connectivity="toggleConnectivityOpen(result)"
         />
       </div>
       <el-pagination
@@ -182,6 +190,7 @@ export default {
       ],
       cascaderIsReady: false,
       displayConnectivity: false,
+      initLoading: true,
       expanded: ""
     };
   },
@@ -200,9 +209,21 @@ export default {
   },
   watch: {
     connectivityKnowledge: function (value) {
-      this.results = value;
+      this.results = value.map((item) => {
+        return {
+          ...item,
+          loaded: false,
+        };
+      });
+
       this.numberOfHits = this.results.length;
+      this.initLoading = false;
       this.loadingCards = false;
+
+      if (this.numberOfHits === 1) {
+        this.onConnectivityExplorerClicked(this.results[0]);
+        this.expanded = this.results[0].id;
+      }
     },
     paginatedResults: function () {
       this.loadingCards = false;
@@ -221,12 +242,16 @@ export default {
       }
       this.$emit("connectivity-clicked", data);
     },
-    onConnectivityExplorerClicked: function (data) {
+    toggleConnectivityOpen: function (data) {
       if (this.expanded === data.id) {
         this.expanded = "";
       } else {
         this.expanded = data.id;
       }
+    },
+    onConnectivityExplorerClicked: function (data) {
+      data.loaded = false; // reset loading
+      this.toggleConnectivityOpen(data);
       const entry = this.connectivityEntry.filter(entry => entry.featureId[0] === data.id);
       if (entry.length === 0) {
         this.$emit("connectivity-explorer-clicked", data);
@@ -384,6 +409,17 @@ export default {
         query: item.search,
       });
     },
+    onConnectivityInfoLoaded: function (result) {
+      result.loaded = true;
+
+      const stepItemRef = this.$refs['stepItem-' + result.id];
+
+      this.$nextTick(() => {
+        if (stepItemRef && stepItemRef[0]) {
+          stepItemRef[0].scrollIntoViewIfNeeded(false);
+        }
+      });
+    },
   },
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
@@ -393,6 +429,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../assets/pagination.scss';
+
 .dataset-card {
   position: relative;
 
@@ -413,6 +451,10 @@ export default {
     &::before {
       border-color: var(--el-color-primary);
     }
+
+    :deep(.connectivity-card .title) {
+      color: $app-primary-color;
+    }
   }
 }
 
@@ -429,6 +471,52 @@ export default {
   font-size: 14px;
   margin-bottom: 18px;
   text-align: left;
+  max-height: 200px;
+  transition: all 0.3s ease;
+
+  .dataset-card {
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.3s ease;
+  }
+
+  &.is-active {
+    max-height: 1800px;
+    background-color: #f7faff;
+    border: 2px solid $app-primary-color;
+    border-radius: var(--el-border-radius-base);
+
+    .dataset-card {
+      pointer-events: none;
+
+      &::before {
+        display: none;
+      }
+
+      + .main {
+        border: 0 none;
+      }
+    }
+
+    &:not(.is-loading) {
+      .dataset-card {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+      }
+    }
+  }
+
+  &.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+
+    :deep(.connectivity-card .title) {
+      color: $app-primary-color;
+      font-size: 18px;
+      letter-spacing: normal;
+    }
+  }
 }
 
 .search-input {
@@ -452,25 +540,6 @@ export default {
       color: #fff;
     }
   }
-}
-
-.pagination {
-  padding-bottom: 16px;
-  background-color: white;
-  padding-left: 95px;
-  font-weight: bold;
-}
-
-.pagination :deep(button) {
-  background-color: white !important;
-}
-
-.pagination :deep(li) {
-  background-color: white !important;
-}
-
-.pagination :deep(li.is-active) {
-  color: $app-primary-color;
 }
 
 .error-feedback {
@@ -541,5 +610,15 @@ export default {
 :deep(.my-drawer) {
   background: rgba(0, 0, 0, 0);
   box-shadow: none;
+}
+
+.el-button-link {
+  color: white !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration-color: transparent;
+  }
 }
 </style>
