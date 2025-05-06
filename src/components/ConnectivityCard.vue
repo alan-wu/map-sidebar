@@ -2,7 +2,7 @@
   <div class="connectivity-card-container" ref="container">
     <div class="connectivity-card" ref="card">
       <div class="seperator-path"></div>
-      <div class="card" @click="cardClicked(entry)">
+      <div v-loading="loading" class="card" @click="cardClicked(entry)">
         <div class="title">{{ capitalise(entry.label) }}</div>
         <template v-for="field in displayFields" :key="field">
           <div class="details" v-if="entry[field]">
@@ -32,13 +32,24 @@ export default {
       default: () => {},
     },
   },
+  computed: {
+    loading: function () {
+      // Only when click on overlay paths
+      if ("detailsReady" in this.entry) {
+        return !this.entry.detailsReady;
+      }
+      return false;
+    },
+  },
   methods: {
     capitalise: function (text) {
       if (text) return text.charAt(0).toUpperCase() + text.slice(1);
       return "";
     },
     cardClicked: function (data) {
-      this.$emit("connectivity-explorer-clicked", data);
+      if (!this.loading) {
+        this.$emit("connectivity-explorer-clicked", data);
+      }
     },
   },
 };
