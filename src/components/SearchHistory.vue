@@ -164,10 +164,6 @@ function generateUUID() {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-const capitalise = function (txt) {
-  return txt.charAt(0).toUpperCase() + txt.slice(1)
-}
-
 export default {
   name: 'SearchHistory',
   components: {
@@ -227,7 +223,7 @@ export default {
       }
       return filterItem;
     },
-    addSearchToHistory(filters = [], search = '', data = []) {
+    addSearchToHistory(filters = [], search = '') {
       search = search.trim() // remove whitespace
 
       const isExistingItem = this.searchHistory.some((item) => {
@@ -252,11 +248,10 @@ export default {
       });
 
       if (!isExistingItem) {
-        const {label, longLabel} = this.searchHistoryItemLabel(search, filters, data);
+        const {label, longLabel} = this.searchHistoryItemLabel(search, filters);
         const newItem = {
           filters: filters,
           search: search,
-          data: data,
           saved: false,
           label: label,
           longLabel: longLabel,
@@ -331,7 +326,7 @@ export default {
         }
 
         if (!item.label) {
-          const {label, longLabel} = this.searchHistoryItemLabel(item.search, item.filters, item.data);
+          const {label, longLabel} = this.searchHistoryItemLabel(item.search, item.filters);
           item['label'] = label;
           item['longLabel'] = longLabel;
         }
@@ -367,28 +362,20 @@ export default {
     search: function (item) {
       this.$emit('search', item)
     },
-    searchHistoryItemLabel: function (search, filters, data) {
+    searchHistoryItemLabel: function (search, filters) {
       let label = search ? `"${search.trim()}"` : '';
       let longLabel = '';
       let filterItems = [];
       let filterLabels = [];
-      let dataLabels = [];
 
       if (filters) {
         filterItems = filters.filter((filterItem) => filterItem.facet !== 'Show all');
         filterLabels = filterItems.map((item) => item.facet2 || item.facet);
-        if (data) {
-          dataLabels = data.map((item) => capitalise(item.label));
-        }
       }
-      
 
       if (label && filterItems.length) {
         longLabel += label;
         longLabel += `, ${filterLabels.join(', ')}`;
-        if (data.length) {
-          longLabel += `(${dataLabels.join(', ')})`;
-        }
         label += ` (+${filterItems.length})`;
       }
 
