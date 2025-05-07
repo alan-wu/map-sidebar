@@ -31,7 +31,6 @@
     <SearchFilters
       class="filters"
       ref="filtersRef"
-      filterType="connectivity"
       :entry="filterEntry"
       :envVars="envVars"
       @filterResults="filterUpdate"
@@ -201,6 +200,7 @@ export default {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
         options: this.filterOptions,
+        showFilters: false
       };
     },
     paginatedResults: function () {

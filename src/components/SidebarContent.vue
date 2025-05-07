@@ -168,6 +168,7 @@ export default {
       return {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
+        showFilters: true
       }
     },
   },

@@ -1,89 +1,91 @@
 <template>
   <div class="filters">
     <MapSvgSpriteColor />
-    <div class="cascader-tag" v-if="presentTags.length > 0">
-      <el-tag
-        class="ml-2"
-        type="info"
-        closable
-        @close="cascadeTagClose(presentTags[0])"
-      >
-        {{ presentTags[0] }}
-      </el-tag>
-      <el-popover
-        v-if="presentTags.length > 1"
-        placement="bottom-start"
-        :width="200"
-        trigger="hover"
-        popper-class="cascade-tags-popover"
-      >
-        <template #default>
-          <div class="el-tags-container">
-            <el-tag
-              v-for="(tag, i) in presentTags.slice(1)"
-              :key="i"
-              class="ml-2"
-              type="info"
-              closable
-              @close="cascadeTagClose(tag)"
-            >
-              {{ tag }}
-            </el-tag>
-          </div>
-        </template>
-        <template #reference>
-          <div class="el-tags-container">
-            <el-tag
-              v-if="presentTags.length > 1"
-              class="ml-2"
-              type="info"
-            >
-              +{{ presentTags.length - 1 }}
-            </el-tag>
-          </div>
-        </template>
-      </el-popover>
-    </div>
-    <transition name="el-zoom-in-top">
-      <span v-show="showFilters" v-loading="!cascaderIsReady" class="search-filters transition-box">
-        <el-cascader
-          class="cascader"
-          ref="cascader"
-          v-model="cascadeSelected"
-          size="large"
-          placeholder=" "
-          :collapse-tags="true"
-          collapse-tags-tooltip
-          :options="options"
-          :props="props"
-          @change="cascadeEvent($event)"
-          @expand-change="cascadeExpandChange"
-          :show-all-levels="true"
-          popper-class="sidebar-cascader-popper"
-        />
-        <div v-if="showFiltersText" class="filter-default-value">Filters</div>
-        <el-popover
-          title="How do filters work?"
-          width="250"
-          trigger="hover"
-          popper-class="filter-help-popover"
+    <div v-show="showFilters">
+      <div class="cascader-tag" v-if="presentTags.length > 0">
+        <el-tag
+          class="ml-2"
+          type="info"
+          closable
+          @close="cascadeTagClose(presentTags[0])"
         >
-          <template #reference>
-            <MapSvgIcon icon="help" class="help" />
+          {{ presentTags[0] }}
+        </el-tag>
+        <el-popover
+          v-if="presentTags.length > 1"
+          placement="bottom-start"
+          :width="200"
+          trigger="hover"
+          popper-class="cascade-tags-popover"
+        >
+          <template #default>
+            <div class="el-tags-container">
+              <el-tag
+                v-for="(tag, i) in presentTags.slice(1)"
+                :key="i"
+                class="ml-2"
+                type="info"
+                closable
+                @close="cascadeTagClose(tag)"
+              >
+                {{ tag }}
+              </el-tag>
+            </div>
           </template>
-          <div>
-            <strong>Within categories:</strong> OR
-            <br />
-            example: 'heart' OR 'colon'
-            <br />
-            <br />
-            <strong>Between categories:</strong> AND
-            <br />
-            example: 'rat' AND 'lung'
-          </div>
+          <template #reference>
+            <div class="el-tags-container">
+              <el-tag
+                v-if="presentTags.length > 1"
+                class="ml-2"
+                type="info"
+              >
+                +{{ presentTags.length - 1 }}
+              </el-tag>
+            </div>
+          </template>
         </el-popover>
-      </span>
-    </transition>
+      </div>
+      <transition name="el-zoom-in-top">
+        <span v-loading="!cascaderIsReady" class="search-filters transition-box">
+          <el-cascader
+            class="cascader"
+            ref="cascader"
+            v-model="cascadeSelected"
+            size="large"
+            placeholder=" "
+            :collapse-tags="true"
+            collapse-tags-tooltip
+            :options="options"
+            :props="props"
+            @change="cascadeEvent($event)"
+            @expand-change="cascadeExpandChange"
+            :show-all-levels="true"
+            popper-class="sidebar-cascader-popper"
+          />
+          <div v-if="showFiltersText" class="filter-default-value">Filters</div>
+          <el-popover
+            title="How do filters work?"
+            width="250"
+            trigger="hover"
+            popper-class="filter-help-popover"
+          >
+            <template #reference>
+              <MapSvgIcon icon="help" class="help" />
+            </template>
+            <div>
+              <strong>Within categories:</strong> OR
+              <br />
+              example: 'heart' OR 'colon'
+              <br />
+              <br />
+              <strong>Between categories:</strong> AND
+              <br />
+              example: 'rat' AND 'lung'
+            </div>
+          </el-popover>
+        </span>
+      </transition>
+    </div>
     <div class="dataset-shown">
       <span class="dataset-results-feedback">{{ numberOfResultsText }}</span>
       <el-select
@@ -164,7 +166,6 @@ export default {
         organ: false,
         datasets: false,
       },
-      showFilters: true,
       showFiltersText: true,
       cascadeSelected: [],
       cascadeSelectedWithBoolean: [],
@@ -197,6 +198,9 @@ export default {
     numberOfResultsText: function () {
       return `${this.entry.numberOfHits} results | Showing`
     },
+    showFilters: function () {
+      return this.entry.showFilters
+    }
   },
   methods: {
     createCascaderItemValue: function (
