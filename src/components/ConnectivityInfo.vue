@@ -553,15 +553,6 @@ export default {
         filter: [],
         data: data.label ? this.getConnectivityDatasets(data.label) : [],
       };
-      if (data.type && data.label) {
-        payload.filter.push({
-          AND: undefined,
-          facet: data.type,
-          facetPropPath: 'flatmap.connectivity.source',
-          facetSubPropPath: undefined,
-          term: 'Connectivity',
-        });
-      };
       this.$emit('connectivity-clicked', payload);
     },
     getErrorConnectivities: function (errorData) {
