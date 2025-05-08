@@ -53,7 +53,6 @@
                 @hover-changed="hoverChanged($event)"
                 @show-connectivity="showConnectivity"
                 @show-reference-connectivities="onShowReferenceConnectivities"
-                @connectivity-clicked="onConnectivityClicked"
                 @connectivity-hovered="onConnectivityHovered"
                 @connectivity-explorer-clicked="onConnectivityExplorerClicked"
               />
@@ -197,13 +196,6 @@ export default {
      */
     onShowReferenceConnectivities: function (refSource) {
       this.$emit('show-reference-connectivities', refSource);
-    },
-    /**
-     * This function is triggered after connectivity term is clicked.
-     * @arg data
-     */
-    onConnectivityClicked: function (data) {
-      this.$emit('connectivity-clicked', data);
     },
     /**
      * This function is triggered after connectivity term is hovered.

@@ -21,7 +21,7 @@
         <el-button
           link
           class="el-button-link"
-          @click="onConnectivityClicked({filter:[], query:''})"
+          @click="openSearch([], '')"
           size="large"
         >
           Reset
@@ -209,7 +209,6 @@ export default {
   },
   watch: {
     connectivityKnowledge: function (value) {
-      this.expanded = "";
       this.results = value.map((item) => {
         return {
           ...item,
@@ -223,7 +222,6 @@ export default {
 
       if (this.numberOfHits === 1) {
         this.onConnectivityExplorerClicked(this.results[0]);
-        this.expanded = this.results[0].id;
       }
     },
     paginatedResults: function () {
@@ -232,16 +230,9 @@ export default {
   },
   methods: {
     onConnectivityClicked: function (data) {
-      this.expanded = "";
-      this.$refs.searchHistory.selectValue = "Search history";
-      if (data.query.trim()) {
-        this.$refs.searchHistory.addSearchToHistory(
-          data.filter,
-          data.query,
-          data.data
-        );
-      }
-      this.$emit("connectivity-clicked", data);
+      this.searchInput = data.query;
+      this.filters = data.filter;
+      this.searchAndFilterUpdate();
     },
     toggleConnectivityOpen: function (data) {
       if (this.expanded === data.id) {
@@ -362,6 +353,7 @@ export default {
       this.searchKnowledge(transformedFilters, this.searchInput);
     },
     searchKnowledge: function (filters, query = "") {
+      this.expanded = "";
       this.$refs.searchHistory.selectValue = "Search history";
       if (this.searchInput.trim()) {
         this.$refs.searchHistory.addSearchToHistory(
@@ -371,16 +363,11 @@ export default {
       }
       this.loadingCards = true;
       this.scrollToTop();
-      if (this.searchInput !== this.lastSearch) {
-        this.lastSearch = query;
-        this.$emit("search-changed", {
-          value: this.searchInput,
-          type: "query-update",
-        });
-      } else {
-        // fix forever loading when only filter apply
-        this.loadingCards = false;
-      }
+      this.$emit("search-changed", {
+        value: this.searchInput,
+        type: "query-update",
+      });
+      this.lastSearch = query;
     },
     filtersLoading: function (val) {
       this.loadingCards = val;
@@ -404,11 +391,9 @@ export default {
       this.page = 1;
     },
     searchHistorySearch: function (item) {
-      this.$emit("connectivity-clicked", {
-        data: item.data,
-        filter: item.filters,
-        query: item.search,
-      });
+      this.searchInput = item.search;
+      this.filters = item.filters;
+      this.searchAndFilterUpdate();
     },
     onConnectivityInfoLoaded: function (result) {
       result.loaded = true;
