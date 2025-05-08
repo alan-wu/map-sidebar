@@ -209,6 +209,7 @@ export default {
   },
   watch: {
     connectivityKnowledge: function (value) {
+      this.expanded = "";
       this.results = value.map((item) => {
         return {
           ...item,
