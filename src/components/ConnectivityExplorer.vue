@@ -43,7 +43,12 @@
       localStorageKey="sparc.science-connectivity-search-history"
       @search="searchHistorySearch"
     ></SearchHistory>
-    <div class="content scrollbar" v-loading="loadingCards || initLoading" ref="content">
+    <div
+      class="content scrollbar"
+      v-loading="loadingCards || initLoading"
+      ref="content"
+      @mouseleave="hoverChanged(undefined)"
+    >
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
       </div>
@@ -57,7 +62,6 @@
           'is-loading': expanded === result.id && !result.loaded,
         }"
         @mouseenter="hoverChanged(result)"
-        @mouseleave="hoverChanged(undefined)"
       >
         <ConnectivityCard
           class="dataset-card"
