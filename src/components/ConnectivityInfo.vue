@@ -360,7 +360,7 @@ export default {
             this.graphViewLoaded = true;
           }
 
-          this.checkDualConnectionSource();
+          this.checkAndUpdateDualConnection();
           this.connectivitySource = this.entry.connectivitySource;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
@@ -616,6 +616,7 @@ export default {
         this.graphViewLoaded = false;
       }
 
+      this.checkAndUpdateDualConnection();
       this.updateGraphConnectivity();
 
       EventBus.emit('connectivity-source-change', {
@@ -656,10 +657,14 @@ export default {
     closeConnectivity: function () {
       this.$emit('close-connectivity');
     },
-    checkDualConnectionSource: function () {
-      // TODO: only rat flatmap has dual connections now
-      if (this.entry.mapId === "rat-flatmap") {
+    checkAndUpdateDualConnection: async function () {
+      const response = await this.getConnectionsFromMap()
+
+      if (response?.connectivity?.length) {
         this.dualConnectionSource = true;
+      } else {
+        this.dualConnectionSource = false;
+        this.connectivitySource = 'sckan';
       }
     },
   },
