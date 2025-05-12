@@ -39,7 +39,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="onConnectivityClicked({id: entry.featureId[0]})">
+            <span @click="onConnectivityClicked(entry.title)">
               {{ capitalise(entry.title) }}
             </span>
             <template v-if="entry.featuresAlert">
@@ -545,11 +545,10 @@ export default {
       // type: to show error only for click event
       this.$emit('connectivity-hovered', payload);
     },
-    onConnectivityClicked: function (data) {
-      let payload = {
-        query: data.id,
-        filter: [],
-        data: data.label ? this.getConnectivityDatasets(data.label) : [],
+    onConnectivityClicked: function (label) {
+      const payload = {
+        query: label,
+        filter: []
       };
       this.$emit('connectivity-clicked', payload);
     },
