@@ -39,7 +39,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="connectivityClicked(entry.featureId[0])">
+            <span @click="onConnectivityClicked({id: entry.featureId[0]})">
               {{ capitalise(entry.title) }}
             </span>
             <template v-if="entry.featuresAlert">
@@ -74,8 +74,8 @@
           popper-class="popover-map-pin"
         >
           <template #reference>
-            <el-button class="button-circle" circle @click="showConnectivity">
-              <el-icon color="white">
+            <el-button class="button-circle secondary" circle @click="showConnectivity">
+              <el-icon color="#8300bf">
                 <el-icon-location />
               </el-icon>
             </el-button>
@@ -85,6 +85,23 @@
           </span>
         </el-popover>
         <CopyToClipboard :content="updatedCopyContent" />
+        <template v-if="withCloseButton">
+          <el-popover
+            width="auto"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-map-pin"
+          >
+            <template #reference>
+              <el-button class="button-circle" circle @click="closeConnectivity">
+                <el-icon color="white">
+                  <el-icon-close />
+                </el-icon>
+              </el-button>
+            </template>
+            <span>Close</span>
+          </el-popover>
+        </template>
       </div>
     </div>
 
@@ -148,7 +165,8 @@
         :destinationsWithDatasets="destinationsWithDatasets"
         :availableAnatomyFacets="availableAnatomyFacets"
         :connectivityError="connectivityError"
-        @toggle-connectivity-tooltip="onToggleConnectivityTooltip"
+        @connectivity-hovered="onConnectivityHovered"
+        @connectivity-clicked="onConnectivityClicked"
         @connectivity-action-click="onConnectivityActionClick"
       />
     </div>
@@ -243,6 +261,10 @@ export default {
     availableAnatomyFacets: {
       type: Array,
       default: () => [],
+    },
+    withCloseButton: {
+      type: Boolean,
+      default: false,
     },
   },
   data: function () {
@@ -344,6 +366,7 @@ export default {
           this.connectivitySource = this.entry.connectivitySource;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
+          this.$emit('loaded');
         }
       },
     },
@@ -385,7 +408,7 @@ export default {
     onTapNode: function (data) {
       // save selected state for list view
       const name = data.map(t => t.label).join(', ');
-      this.connectivityHovered(name);
+      this.onConnectivityHovered(name);
     },
     onShowReferenceConnectivities: function (refSource) {
       this.$emit('show-reference-connectivities', refSource);
@@ -516,21 +539,24 @@ export default {
       });
       return data
     },
-    connectivityHovered: function (label) {
-      const data = label ? this.getConnectivityDatasets(label) : [];
-      // type: to show error only for click event
-      this.$emit('connectivity-hovered', data);
-    },
-    connectivityClicked: function (id, type, label) {
-      let payload = {
-        query: id,
-        filter: [],
+    onConnectivityHovered: function (label) {
+      const payload = {
+        connectivityInfo: this.entry,
         data: label ? this.getConnectivityDatasets(label) : [],
       };
-      if (type && label) {
+      // type: to show error only for click event
+      this.$emit('connectivity-hovered', payload);
+    },
+    onConnectivityClicked: function (data) {
+      let payload = {
+        query: data.id,
+        filter: [],
+        data: data.label ? this.getConnectivityDatasets(data.label) : [],
+      };
+      if (data.type && data.label) {
         payload.filter.push({
           AND: undefined,
-          facet: type,
+          facet: data.type,
           facetPropPath: 'flatmap.connectivity.source',
           facetSubPropPath: undefined,
           term: 'Connectivity',
@@ -635,12 +661,11 @@ export default {
         throw new Error(error);
       }
     },
-    onToggleConnectivityTooltip: function (data) {
-      const label = data.option ? data.name : "";
-      this.connectivityHovered(label);
-    },
     onConnectivityActionClick: function (data) {
       EventBus.emit('onConnectivityActionClick', data);
+    },
+    closeConnectivity: function () {
+      this.$emit('close-connectivity');
     },
   },
   mounted: function () {
@@ -683,7 +708,7 @@ export default {
   // width: 16em;
   line-height: 1.3em !important;
   font-size: 18px;
-  font-family: Helvetica;
+  // font-family: Helvetica;
   font-weight: bold;
   padding-bottom: 8px;
   color: $app-primary-color;
@@ -708,6 +733,10 @@ export default {
   &:active {
     background-color: $app-primary-color;
     border-color: $app-primary-color;
+  }
+
+  &.secondary {
+    background-color: white;
   }
 }
 
@@ -974,6 +1003,10 @@ export default {
       border-color: $app-primary-color !important;
       border-radius: 50%;
     }
+  }
+
+  .el-button + .el-button {
+    margin-left: 0 !important;
   }
 }
 

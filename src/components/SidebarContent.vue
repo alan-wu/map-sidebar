@@ -19,10 +19,10 @@
           Search
         </el-button>
         <el-button
-          type="primary"
-          class="button"
+          link
+          class="el-button-link"
           @click="openSearch([], '')"
-          size="default"
+          size="large"
         >
           Reset
         </el-button>
@@ -499,6 +499,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../assets/pagination.scss';
+
 .dataset-card {
   position: relative;
 
@@ -558,23 +560,6 @@ export default {
       color: #fff;
     }
   }
-}
-
-.pagination {
-  padding-bottom: 16px;
-  background-color: white;
-  padding-left: 95px;
-  font-weight: bold;
-}
-
-.pagination :deep(button) {
-  background-color: white !important;
-}
-.pagination :deep(li) {
-  background-color: white !important;
-}
-.pagination :deep(li.is-active) {
-  color: $app-primary-color;
 }
 
 .error-feedback {
@@ -645,5 +630,15 @@ export default {
 :deep(.my-drawer) {
   background: rgba(0, 0, 0, 0);
   box-shadow: none;
+}
+
+.el-button-link {
+  color: white !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration-color: transparent;
+  }
 }
 </style>
