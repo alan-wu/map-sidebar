@@ -39,7 +39,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="onConnectivityClicked({id: entry.featureId[0]})">
+            <span @click="onConnectivityClicked(entry.title)">
               {{ capitalise(entry.title) }}
             </span>
             <template v-if="entry.featuresAlert">
@@ -359,10 +359,8 @@ export default {
           if (this.activeView === 'graphView') {
             this.graphViewLoaded = true;
           }
-          // TODO: only rat flatmap has dual connections now
-          if (this.entry.mapId === "rat-flatmap") {
-            this.dualConnectionSource = true;
-          }
+
+          this.checkAndUpdateDualConnection();
           this.connectivitySource = this.entry.connectivitySource;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
@@ -547,20 +545,10 @@ export default {
       // type: to show error only for click event
       this.$emit('connectivity-hovered', payload);
     },
-    onConnectivityClicked: function (data) {
-      let payload = {
-        query: data.id,
-        filter: [],
-        data: data.label ? this.getConnectivityDatasets(data.label) : [],
-      };
-      if (data.type && data.label) {
-        payload.filter.push({
-          AND: undefined,
-          facet: data.type,
-          facetPropPath: 'flatmap.connectivity.source',
-          facetSubPropPath: undefined,
-          term: 'Connectivity',
-        });
+    onConnectivityClicked: function (label) {
+      const payload = {
+        query: label,
+        filter: []
       };
       this.$emit('connectivity-clicked', payload);
     },
@@ -627,6 +615,7 @@ export default {
         this.graphViewLoaded = false;
       }
 
+      this.checkAndUpdateDualConnection();
       this.updateGraphConnectivity();
 
       EventBus.emit('connectivity-source-change', {
@@ -666,6 +655,16 @@ export default {
     },
     closeConnectivity: function () {
       this.$emit('close-connectivity');
+    },
+    checkAndUpdateDualConnection: async function () {
+      const response = await this.getConnectionsFromMap()
+
+      if (response?.connectivity?.length) {
+        this.dualConnectionSource = true;
+      } else {
+        this.dualConnectionSource = false;
+        this.connectivitySource = 'sckan';
+      }
     },
   },
   mounted: function () {

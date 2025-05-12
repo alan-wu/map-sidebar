@@ -31,7 +31,6 @@
       :tabs="tabArray"
       @search-changed="searchChanged($event)"
       @hover-changed="hoverChanged($event)"
-      @connectivity-clicked="openConnectivitySearch"
       @connectivity-hovered="onConnectivityHovered"
       @actionClick="action"
       @connectivity-explorer-clicked="onConnectivityExplorerClicked"
