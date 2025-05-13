@@ -407,7 +407,11 @@ export default {
 
       this.$nextTick(() => {
         if (stepItemRef && stepItemRef[0]) {
-          stepItemRef[0].scrollIntoViewIfNeeded(false);
+          stepItemRef[0].scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest',
+          });
         }
       });
     },
@@ -560,6 +564,7 @@ export default {
   overflow-y: scroll;
   scrollbar-width: thin;
   border-radius: var(--el-border-radius-base);
+  position: relative;
 }
 
 .content :deep(.el-loading-spinner .path) {
