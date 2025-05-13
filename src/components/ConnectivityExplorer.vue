@@ -357,15 +357,19 @@ export default {
       );
       this.searchKnowledge(transformedFilters, this.searchInput);
     },
-    searchKnowledge: function (filters, query = "") {
-      this.expanded = "";
-      this.$refs.searchHistory.selectValue = "Search history";
-      if (this.searchInput.trim()) {
+    searchHistoryUpdate: function (filters, search) {
+      this.$refs.searchHistory.selectValue = 'Search history';
+      // save history only if there has value
+      if (search?.trim()) {
         this.$refs.searchHistory.addSearchToHistory(
-          this.filters,
-          this.searchInput
+          filters,
+          search
         );
       }
+    },
+    searchKnowledge: function (filters, query = "") {
+      this.expanded = "";
+      this.searchHistoryUpdate(filters, query);
       this.loadingCards = true;
       this.scrollToTop();
       this.$emit("search-changed", {

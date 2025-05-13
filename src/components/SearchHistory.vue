@@ -249,25 +249,27 @@ export default {
 
       if (!isExistingItem) {
         const {label, longLabel} = this.searchHistoryItemLabel(search, filters);
-        const newItem = {
-          filters: filters,
-          search: search,
-          saved: false,
-          label: label,
-          longLabel: longLabel,
-          id: generateUUID(),
-          updated: (new Date()).getTime(),
-        };
-
-        this.searchHistory.push(newItem);
-
-        this.searchHistory = this.searchHistory.sort(this.sortSearchHistory);
-
-        // trim search history to 12 items
-        this.trimSearchHistory();
-
-        // Save new data
-        localStorage.setItem(this.localStorageKey, JSON.stringify(this.searchHistory));
+        if (label || longLabel) {          
+          const newItem = {
+            filters: filters,
+            search: search,
+            saved: false,
+            label: label,
+            longLabel: longLabel,
+            id: generateUUID(),
+            updated: (new Date()).getTime(),
+          };
+  
+          this.searchHistory.push(newItem);
+  
+          this.searchHistory = this.searchHistory.sort(this.sortSearchHistory);
+  
+          // trim search history to 12 items
+          this.trimSearchHistory();
+  
+          // Save new data
+          localStorage.setItem(this.localStorageKey, JSON.stringify(this.searchHistory));
+        }
       }
     },
     /**
@@ -389,7 +391,7 @@ export default {
       }
 
       if (!label) {
-        label = 'Unknown search';
+        label = '';
       } else if (label.length > 15 && !longLabel) {
         longLabel = label;
       }
