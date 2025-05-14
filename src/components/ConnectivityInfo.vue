@@ -725,17 +725,18 @@ export default {
   margin: 0;
   width: 24px !important;
   height: 24px !important;
+  border: 1px solid $app-primary-color !important;
 
   &,
   &:hover,
   &:focus,
   &:active {
     background-color: $app-primary-color;
-    border-color: $app-primary-color;
+    border-color: $app-primary-color !important;
   }
 
   &.secondary {
-    background-color: white;
+    background-color: white !important;
   }
 }
 
@@ -990,7 +991,7 @@ export default {
 .title-buttons {
   display: flex;
   flex: 1 0 0%;
-  max-width: 15%;
+  max-width: 20%;
   flex-direction: row;
   justify-content: end;
   gap: 0.5rem;
