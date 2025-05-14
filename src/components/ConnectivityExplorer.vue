@@ -406,16 +406,11 @@ export default {
     },
     onConnectivityInfoLoaded: function (result) {
       result.loaded = true;
-
       const stepItemRef = this.$refs['stepItem-' + result.id];
-
+      const contentRef = this.$refs['content'];
       this.$nextTick(() => {
-        if (stepItemRef && stepItemRef[0]) {
-          stepItemRef[0].scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-            inline: 'nearest',
-          });
+        if (contentRef && stepItemRef && stepItemRef[0]) {
+          contentRef.scrollTop = stepItemRef[0].offsetTop;
         }
       });
     },
