@@ -475,7 +475,7 @@ export default {
   }
 
   &.is-active {
-    max-height: 1800px;
+    max-height: 9999px;
     background-color: #f7faff;
     border: 2px solid $app-primary-color;
     border-radius: var(--el-border-radius-base);
