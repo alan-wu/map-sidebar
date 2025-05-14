@@ -635,19 +635,21 @@ export default {
       }
     },
     getConnectionsFromMap: async function () {
-      const url =
-        this.flatmapApi +
-        `flatmap/${this.entry.mapuuid}/connectivity/${this.entry.featureId[0]}`;
-
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Response status: ${response.status}`);
+      if (this.entry.mapuuid) {        
+        const url =
+          this.flatmapApi +
+          `flatmap/${this.entry.mapuuid}/connectivity/${this.entry.featureId[0]}`;
+  
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+          }
+  
+          return await response.json();
+        } catch (error) {
+          throw new Error(error);
         }
-
-        return await response.json();
-      } catch (error) {
-        throw new Error(error);
       }
     },
     onConnectivityActionClick: function (data) {
