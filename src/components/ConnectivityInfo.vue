@@ -276,7 +276,7 @@ export default {
       connectivityLoading: false,
       dualConnectionSource: false,
       connectivitySource: 'sckan',
-      connectivityError: null,
+      connectivityError: {},
       graphViewLoaded: false,
       connectivityFromMap: null,
     };
@@ -603,7 +603,7 @@ export default {
       }
 
       this.timeoutID = setTimeout(() => {
-        this.connectivityError = null;
+        this.connectivityError = {};
       }, ERROR_TIMEOUT);
     },
     onConnectivitySourceChange: function (connectivitySource) {
