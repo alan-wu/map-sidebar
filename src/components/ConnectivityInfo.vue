@@ -552,25 +552,6 @@ export default {
       };
       this.$emit('connectivity-clicked', payload);
     },
-    getErrorConnectivities: function (errorData) {
-      const errorDataToEmit = [...new Set(errorData)];
-      let errorConnectivities = '';
-
-      errorDataToEmit.forEach((connectivity, i) => {
-        const { label } = connectivity;
-        errorConnectivities += (i === 0) ? capitalise(label) : label;
-
-        if (errorDataToEmit.length > 1) {
-          if ((i + 2) === errorDataToEmit.length) {
-            errorConnectivities += ' and ';
-          } else if ((i + 1) < errorDataToEmit.length) {
-            errorConnectivities += ', ';
-          }
-        }
-      });
-
-      return errorConnectivities;
-    },
     /**
      * Function to show error message.
      * `errorInfo` includes `errorData` array (optional) for error connectivities
@@ -579,7 +560,10 @@ export default {
      */
     getConnectivityError: function (errorInfo) {
       const { errorData, errorMessage } = errorInfo;
-      const errorConnectivities = this.getErrorConnectivities(errorData);
+      const errorConnectivities = errorData
+        .map((connectivity) => capitalise(connectivity.label))
+        .join(', ')
+        .replace(/, ([^,]*)$/, ' and $1');
 
       return {
         errorConnectivities,
