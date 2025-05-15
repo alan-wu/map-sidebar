@@ -180,8 +180,8 @@
           :mapServer="flatmapApi"
           :sckanVersion="sckanVersion"
           :connectivityFromMap="connectivityFromMap"
+          :connectivityError="connectivityError"
           @tap-node="onTapNode"
-          ref="connectivityGraphRef"
         />
       </template>
     </div>
@@ -588,14 +588,6 @@ export default {
     },
     pushConnectivityError: function (errorInfo) {
       const connectivityError = this.getConnectivityError(errorInfo);
-      const connectivityGraphRef = this.$refs.connectivityGraphRef;
-
-      // error for graph view
-      if (connectivityGraphRef) {
-        connectivityGraphRef.showErrorMessage(connectivityError);
-      }
-
-      // error for list view
       this.connectivityError = {...connectivityError};
 
       if (this.timeoutID) {
@@ -672,7 +664,7 @@ export default {
   mounted: function () {
     this.updatedCopyContent = this.getUpdateCopyContent();
 
-    EventBus.on('connectivity-graph-error', (errorInfo) => {
+    EventBus.on('connectivity-error', (errorInfo) => {
       this.pushConnectivityError(errorInfo);
     });
   },
