@@ -39,9 +39,7 @@
       <div class="title-content">
         <div class="block" v-if="entry.title">
           <div class="title">
-            <span @click="onConnectivityClicked(entry.title)">
-              {{ capitalise(entry.title) }}
-            </span>
+            <span>{{ capitalise(entry.title) }}</span>
             <template v-if="entry.featuresAlert">
               <el-popover
                 width="250"
@@ -546,10 +544,7 @@ export default {
       this.$emit('connectivity-hovered', payload);
     },
     onConnectivityClicked: function (label) {
-      const payload = {
-        query: label,
-        filter: []
-      };
+      const payload = { query: label, filter: [] };
       this.$emit('connectivity-clicked', payload);
     },
     /**
@@ -682,17 +677,11 @@ export default {
 
 .title {
   text-align: left;
-  // width: 16em;
   line-height: 1.3em !important;
   font-size: 18px;
-  // font-family: Helvetica;
   font-weight: bold;
   padding-bottom: 8px;
   color: $app-primary-color;
-
-  span:hover {
-    cursor: pointer;
-  }
 }
 
 .block + .block {
