@@ -227,8 +227,6 @@ const capitalise = function (str) {
   return ''
 }
 
-const ERROR_TIMEOUT = 3000; // 3 seconds
-
 export default {
   name: 'ConnectivityInfo',
   components: {
@@ -270,7 +268,6 @@ export default {
       entryIndex: 0,
       updatedCopyContent: '',
       activeView: 'listView',
-      timeoutID: undefined,
       connectivityLoading: false,
       dualConnectionSource: false,
       connectivitySource: 'sckan',
@@ -565,18 +562,6 @@ export default {
         errorMessage,
       };
     },
-    pushConnectivityError: function (errorInfo) {
-      const connectivityError = this.getConnectivityError(errorInfo);
-      this.connectivityError = {...connectivityError};
-
-      if (this.timeoutID) {
-        clearTimeout(this.timeoutID);
-      }
-
-      this.timeoutID = setTimeout(() => {
-        this.connectivityError = {};
-      }, ERROR_TIMEOUT);
-    },
     onConnectivitySourceChange: function (connectivitySource) {
       const { featureId } = this.entry;
 
@@ -644,7 +629,8 @@ export default {
     this.updatedCopyContent = this.getUpdateCopyContent();
 
     EventBus.on('connectivity-error', (errorInfo) => {
-      this.pushConnectivityError(errorInfo);
+      const connectivityError = this.getConnectivityError(errorInfo);
+      this.connectivityError = { ...connectivityError };
     });
   },
 }
