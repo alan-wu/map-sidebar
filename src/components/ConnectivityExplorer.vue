@@ -475,7 +475,7 @@ export default {
   }
 
   &.is-active {
-    max-height: 1800px;
+    max-height: 9999px;
     background-color: #f7faff;
     border: 2px solid $app-primary-color;
     border-radius: var(--el-border-radius-base);
@@ -611,9 +611,14 @@ export default {
   color: white !important;
   text-decoration: underline;
   text-underline-offset: 2px;
+  border-color: transparent !important;
+  background-color: transparent !important;
+  padding: 2px !important;
+  height: auto !important;
 
   &:hover {
     text-decoration-color: transparent;
+    box-shadow: none !important;
   }
 }
 </style>
