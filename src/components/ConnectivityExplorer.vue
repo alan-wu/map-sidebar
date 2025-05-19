@@ -70,7 +70,7 @@
         <ConnectivityCard
           class="dataset-card"
           :entry="result"
-          @connectivity-card-clicked="onConnectivityExplorerClicked"
+          @open-connectivity="onConnectivityCollapseChange"
         />
         <ConnectivityInfo
           v-if="expanded === result.id"
@@ -84,7 +84,7 @@
           @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
           @loaded="onConnectivityInfoLoaded(result)"
-          @close-connectivity="closeConnectivity(result)"
+          @close-connectivity="onConnectivityCollapseChange(result)"
         />
       </div>
       <el-pagination
@@ -233,7 +233,7 @@ export default {
       });
       this.numberOfHits = this.results.length;
       if (this.numberOfHits === 1) {
-        this.onConnectivityExplorerClicked(this.results[0]);
+        this.onConnectivityCollapseChange(this.results[0]);
       }
     },
     paginatedResults: function () {
@@ -246,20 +246,12 @@ export default {
       this.filters = data.filter;
       this.searchAndFilterUpdate();
     },
-    openConnectivity: function (data) {
-      this.expanded = data.id;
-    },
-    closeConnectivity: function (data) {
-      this.expanded = '';
-    },
-    onConnectivityExplorerClicked: function (data) {
-      if (this.expanded !== data.id) {
-        data.loaded = false; // reset loading
-        this.openConnectivity(data);
-        const entry = this.connectivityEntry.filter(entry => entry.featureId[0] === data.id);
-        if (entry.length === 0) {
-          this.$emit("connectivity-explorer-clicked", data);
-        }
+    onConnectivityCollapseChange: function (data) {
+      data.loaded = false; // reset loading
+      this.expanded = this.expanded === data.id ? "" : data.id;
+      // close connectivity event will not trigger emit
+      if (!this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
+        this.$emit("connectivity-collapse-change", data);
       }
     },
     hoverChanged: function (data) {
