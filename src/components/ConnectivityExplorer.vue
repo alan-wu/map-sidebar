@@ -66,7 +66,7 @@
         <ConnectivityCard
           class="dataset-card"
           :entry="result"
-          @connectivity-explorer-clicked="onConnectivityExplorerClicked"
+          @open-connectivity="onConnectivityCollapseChange"
         />
         <ConnectivityInfo
           v-if="expanded === result.id"
@@ -80,7 +80,7 @@
           @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
           @loaded="onConnectivityInfoLoaded(result)"
-          @close-connectivity="toggleConnectivityOpen(result)"
+          @close-connectivity="onConnectivityCollapseChange(result)"
         />
       </div>
       <el-pagination
@@ -226,7 +226,7 @@ export default {
       this.loadingCards = false;
 
       if (this.numberOfHits === 1) {
-        this.onConnectivityExplorerClicked(this.results[0]);
+        this.onConnectivityCollapseChange(this.results[0]);
       }
     },
     paginatedResults: function () {
@@ -239,19 +239,12 @@ export default {
       this.filters = data.filter;
       this.searchAndFilterUpdate();
     },
-    toggleConnectivityOpen: function (data) {
-      if (this.expanded === data.id) {
-        this.expanded = "";
-      } else {
-        this.expanded = data.id;
-      }
-    },
-    onConnectivityExplorerClicked: function (data) {
+    onConnectivityCollapseChange: function (data) {
       data.loaded = false; // reset loading
-      this.toggleConnectivityOpen(data);
-      const entry = this.connectivityEntry.filter(entry => entry.featureId[0] === data.id);
-      if (entry.length === 0) {
-        this.$emit("connectivity-explorer-clicked", data);
+      this.expanded = this.expanded === data.id ? "" : data.id;
+      // close connectivity event will not trigger emit
+      if (!this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
+        this.$emit("connectivity-collapse-change", data);
       }
     },
     hoverChanged: function (data) {
