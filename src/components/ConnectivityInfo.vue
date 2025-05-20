@@ -343,14 +343,19 @@ export default {
       handler: function (newVal, oldVal) {
         if (newVal !== oldVal) {
           this.connectivityLoading = true;
-          this.activeView = localStorage.getItem('connectivity-active-view') || this.activeView;
+          this.activeView =
+            localStorage.getItem('connectivity-active-view') ||
+            this.activeView;
           if (this.activeView === 'graphView') {
             this.graphViewLoaded = true;
           }
           this.connectivitySource = this.entry.connectivitySource;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
-          this.$emit('loaded');
+          // only emit to scroll when entire entry content changes
+          if (!oldVal || newVal?.featureId[0] !== oldVal?.featureId[0]) {
+            this.$emit('loaded');
+          }
         }
       },
     },
@@ -572,7 +577,11 @@ export default {
     updateGraphConnectivity: function () {
       if (this.connectivitySource === "map") {
         this.getConnectionsFromMap().then((response) => {
-          this.connectivityFromMap = response;
+          // show sckan source graph if map source not exist
+          this.connectivityFromMap = null;
+          if (response?.connectivity?.length) {
+            this.connectivityFromMap = response;
+          }
           this.connectivityLoading = false;
         });
       } else {
