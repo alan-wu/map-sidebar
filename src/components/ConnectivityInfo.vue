@@ -56,6 +56,7 @@
               </el-popover>
             </template>
           </div>
+          <div class="subtitle"><strong>id: </strong>{{ entry.featureId[0] }}</div>
           <div v-if="hasProvenanceTaxonomyLabel" class="subtitle">
             {{ provSpeciesDescription }}
           </div>
