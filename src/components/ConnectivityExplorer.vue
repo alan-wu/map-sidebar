@@ -26,6 +26,14 @@
         >
           Reset
         </el-button>
+        <el-button
+          link
+          class="el-button-link"
+          @click="onFilterVisibility"
+          size="large"
+        >
+          Filter
+        </el-button>
       </div>
     </template>
     <SearchFilters
@@ -195,7 +203,8 @@ export default {
       freezeTimeout: undefined,
       freezed: false,
       initLoading: true,
-      expanded: ""
+      expanded: "",
+      filterVisibility: true
     };
   },
   computed: {
@@ -215,6 +224,7 @@ export default {
   watch: {
     connectivityKnowledge: function (value) {
       this.expanded = "";
+      this.filterVisibility = true;
       this.results = value.map((item) => {
         return {
           ...item,
@@ -235,6 +245,10 @@ export default {
     },
   },
   methods: {
+    onFilterVisibility: function () {
+      this.filterVisibility = !this.filterVisibility;
+      this.$emit('filter-visibility', this.filterVisibility);
+    },
     freezeHoverChange: function () {
       this.freezed = true;
       if (this.freezeTimeout) {
