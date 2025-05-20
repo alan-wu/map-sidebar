@@ -1,7 +1,7 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
     <template #header>
-      <div class="header">
+      <div class="header" @mouseleave="hoverChanged(undefined)">
         <el-input
           class="search-input"
           placeholder="Search"
@@ -75,8 +75,8 @@
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
           :withCloseButton="true"
-          @show-connectivity="$emit('show-connectivity', $event)"
-          @show-reference-connectivities="$emit('show-reference-connectivities', $event)"
+          @show-connectivity="onShowConnectivity"
+          @show-reference-connectivities="onShowReferenceConnectivities"
           @connectivity-clicked="onConnectivityClicked"
           @connectivity-hovered="$emit('connectivity-hovered', $event)"
           @loaded="onConnectivityInfoLoaded(result)"
@@ -192,7 +192,8 @@ export default {
         },
       ],
       cascaderIsReady: false,
-      displayConnectivity: false,
+      freezeTimeout: undefined,
+      freezed: false,
       initLoading: true,
       expanded: ""
     };
@@ -234,6 +235,23 @@ export default {
     },
   },
   methods: {
+    freezeHoverChange: function () {
+      this.freezed = true;
+      if (this.freezeTimeout) {
+        clearTimeout(this.freezeTimeout);
+      }
+      this.freezeTimeout = setTimeout(() => {
+        this.freezed = false;
+      }, 3000)
+    },
+    onShowConnectivity: function (data) {
+      this.freezeHoverChange();
+      this.$emit('show-connectivity', data);
+    },
+    onShowReferenceConnectivities: function (data) {
+      this.freezeHoverChange();
+      this.$emit('show-reference-connectivities', data);
+    },
     onConnectivityClicked: function (data) {
       this.searchInput = data.query;
       this.filters = data.filter;
@@ -248,8 +266,11 @@ export default {
       }
     },
     hoverChanged: function (data) {
-      const payload = data ? { ...data, type: "connectivity" } : data;
-      this.$emit("hover-changed", payload);
+      // disable hover changes when show connectivity is clicked
+      if (!this.freezed) {
+        const payload = data ? { ...data, type: "connectivity" } : data;
+        this.$emit("hover-changed", payload);
+      }
     },
     resetSearch: function () {
       this.numberOfHits = 0;
