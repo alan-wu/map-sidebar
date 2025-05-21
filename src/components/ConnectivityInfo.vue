@@ -22,6 +22,7 @@
               </el-popover>
             </template>
           </div>
+          <div class="subtitle"><strong>id: </strong>{{ entry.featureId[0] }}</div>
           <div v-if="hasProvenanceTaxonomyLabel" class="subtitle">
             {{ provSpeciesDescription }}
           </div>
@@ -69,10 +70,7 @@
       </div>
     </div>
 
-    <div
-      class="content-container population-display"
-      :class="dualConnectionSource ? 'population-display-toolbar' : ''"
-    >
+    <div class="content-container population-display">
       <div class="block attribute-title-container">
         <span class="attribute-title">Population Display</span>
         <el-popover
@@ -92,27 +90,23 @@
         </el-popover>
       </div>
       <div class="block buttons-row">
-        <div v-if="dualConnectionSource">
-          <span>Connectivity from:</span>
-          <el-radio-group v-model="connectivitySource" @change="onConnectivitySourceChange">
-            <el-radio value="map">Map</el-radio>
-            <el-radio value="sckan">SCKAN</el-radio>
-          </el-radio-group>
-        </div>
-        <div>
-          <el-button
-            :class="activeView === 'listView' ? 'button' : 'el-button-secondary'"
-            @click="switchConnectivityView('listView')"
-          >
-            List view
-          </el-button>
-          <el-button
-            :class="activeView === 'graphView' ? 'button' : 'el-button-secondary'"
-            @click="switchConnectivityView('graphView')"
-          >
-            Graph view
-          </el-button>
-        </div>
+        <span>Connectivity from:</span>
+        <el-radio-group v-model="connectivitySource" @change="onConnectivitySourceChange">
+          <el-radio value="map">Map</el-radio>
+          <el-radio value="sckan">SCKAN</el-radio>
+        </el-radio-group>
+        <el-button
+          :class="activeView === 'listView' ? 'button' : 'el-button-secondary'"
+          @click="switchConnectivityView('listView')"
+        >
+          List view
+        </el-button>
+        <el-button
+          :class="activeView === 'graphView' ? 'button' : 'el-button-secondary'"
+          @click="switchConnectivityView('graphView')"
+        >
+          Graph view
+        </el-button>
       </div>
     </div>
 
@@ -234,7 +228,6 @@ export default {
       updatedCopyContent: '',
       activeView: 'listView',
       connectivityLoading: false,
-      dualConnectionSource: false,
       connectivitySource: 'sckan',
       connectivityError: {},
       graphViewLoaded: false,
@@ -300,16 +293,19 @@ export default {
       handler: function (newVal, oldVal) {
         if (newVal !== oldVal) {
           this.connectivityLoading = true;
-          this.activeView = localStorage.getItem('connectivity-active-view') || this.activeView;
+          this.activeView =
+            localStorage.getItem('connectivity-active-view') ||
+            this.activeView;
           if (this.activeView === 'graphView') {
             this.graphViewLoaded = true;
           }
-
-          this.checkAndUpdateDualConnection();
           this.connectivitySource = this.entry.connectivitySource;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
-          this.$emit('loaded');
+          // only emit to scroll when entire entry content changes
+          if (!oldVal || newVal?.featureId[0] !== oldVal?.featureId[0]) {
+            this.$emit('loaded');
+          }
         }
       },
     },
@@ -511,7 +507,6 @@ export default {
         this.graphViewLoaded = false;
       }
 
-      this.checkAndUpdateDualConnection();
       this.updateGraphConnectivity();
 
       EventBus.emit('connectivity-source-change', {
@@ -522,7 +517,11 @@ export default {
     updateGraphConnectivity: function () {
       if (this.connectivitySource === "map") {
         this.getConnectionsFromMap().then((response) => {
-          this.connectivityFromMap = response;
+          // show sckan source graph if map source not exist
+          this.connectivityFromMap = null;
+          if (response?.connectivity?.length) {
+            this.connectivityFromMap = response;
+          }
           this.connectivityLoading = false;
         });
       } else {
@@ -553,16 +552,6 @@ export default {
     },
     closeConnectivity: function () {
       this.$emit('close-connectivity');
-    },
-    checkAndUpdateDualConnection: async function () {
-      const response = await this.getConnectionsFromMap()
-
-      if (response?.connectivity?.length) {
-        this.dualConnectionSource = true;
-      } else {
-        this.dualConnectionSource = false;
-        this.connectivitySource = 'sckan';
-      }
     },
   },
   mounted: function () {
@@ -786,17 +775,15 @@ export default {
   border-bottom: 1px solid $app-primary-color;
   padding-bottom: 0.5rem !important;
 
-  &.population-display-toolbar {
-    flex-direction: column !important;
-    align-items: start;
+  flex-direction: column !important;
+  align-items: start;
 
-    .buttons-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
+  .buttons-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
   }
 
   .el-radio {
