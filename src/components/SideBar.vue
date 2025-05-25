@@ -236,7 +236,7 @@ export default {
     resetConnectivitySearch: function () {
       this.$nextTick(() => {
         const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer', false);
-        connectivityExplorerTabRef.openSearch([], '');
+        connectivityExplorerTabRef.resetSearchIfNoActiveSearch();
       })
     },
     openSearch: function (facets, query) {
