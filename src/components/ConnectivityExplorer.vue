@@ -223,24 +223,18 @@ export default {
   },
   watch: {
     connectivityKnowledge: function (newVal, oldVal) {
-      this.expanded = "";
-      this.filterVisibility = true;
+      this.expanded = ""; // reset expanded state
+      this.filterVisibility = true; // reset filter visibility
       this.initLoading = false;
       this.loadingCards = false;
-
-      if (JSON.stringify(newVal) === JSON.stringify(oldVal)) {
-        return;
-      }
-
-      this.results = newVal.map((item) => {
-        return {
-          ...item,
-          loaded: false,
-        };
-      });
-      this.numberOfHits = this.results.length;
-      if (this.numberOfHits === 1) {
-        this.onConnectivityCollapseChange(this.results[0]);
+      if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        this.results = newVal.map((item) => {
+          return { ...item, loaded: false };
+        });
+        this.numberOfHits = this.results.length;
+        if (this.numberOfHits === 1) {
+          this.onConnectivityCollapseChange(this.results[0]);
+        }
       }
     },
     paginatedResults: function () {
