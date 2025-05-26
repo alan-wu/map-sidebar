@@ -216,24 +216,19 @@ export default {
     },
   },
   watch: {
-    connectivityKnowledge: function (value, oldValue) {
-      this.expanded = '';
-      this.initLoading = false;
+    connectivityKnowledge: function (newVal, oldVal) {
+      this.expanded = ""; // reset expanded state
+      this.filterVisibility = true; // reset filter visibility
       this.loadingCards = false;
-
-      if (JSON.stringify(value) === JSON.stringify(oldValue)) {
-        return;
-      }
-
-      this.results = value.map((item) => {
-        return {
-          ...item,
-          loaded: false,
-        };
-      });
-      this.numberOfHits = this.results.length;
-      if (this.numberOfHits === 1) {
-        this.onConnectivityCollapseChange(this.results[0]);
+      if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        this.results = newVal.map((item) => {
+          return { ...item, loaded: false };
+        });
+        this.initLoading = false;
+        this.numberOfHits = this.results.length;
+        if (this.numberOfHits === 1) {
+          this.onConnectivityCollapseChange(this.results[0]);
+        }
       }
     },
     paginatedResults: function () {
