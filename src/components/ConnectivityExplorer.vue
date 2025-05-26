@@ -222,20 +222,23 @@ export default {
     },
   },
   watch: {
-    connectivityKnowledge: function (value) {
+    connectivityKnowledge: function (newVal, oldVal) {
       this.expanded = "";
       this.filterVisibility = true;
-      this.results = value.map((item) => {
+      this.initLoading = false;
+      this.loadingCards = false;
+
+      if (JSON.stringify(newVal) === JSON.stringify(oldVal)) {
+        return;
+      }
+
+      this.results = newVal.map((item) => {
         return {
           ...item,
           loaded: false,
         };
       });
-
       this.numberOfHits = this.results.length;
-      this.initLoading = false;
-      this.loadingCards = false;
-
       if (this.numberOfHits === 1) {
         this.onConnectivityCollapseChange(this.results[0]);
       }
@@ -290,6 +293,9 @@ export default {
       this.numberOfHits = 0;
       this.results = [];
       this.loadingCards = false;
+    },
+    resetSearchIfNoActiveSearch: function() {
+      if (!this.searchInput) this.openSearch([], '');
     },
     openSearch: function (filter, search = "", option = { withSearch: true }) {
       this.searchInput = search;
