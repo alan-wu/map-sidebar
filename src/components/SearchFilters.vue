@@ -208,8 +208,8 @@ export default {
       immediate: true,
       handler: function (newVal, oldVal) {
         if (JSON.stringify(newVal?.options) !== JSON.stringify(oldVal?.options)) {
-          this.options.length = 0
-          this.filters.length = 0
+          this.options = []
+          this.filters = []
           this.cascaderIsReady = false
           // Populate the cascader with new options
           this.populateCascader().then(() => {
@@ -249,11 +249,13 @@ export default {
           undefined
         )
 
-        // put "Show all" as first option
-        this.options[i].children.unshift({
-          value: this.createCascaderItemValue('Show all'),
-          label: 'Show all',
-        })
+        if (!this.options[i].children.find((child) => child.label === 'Show all')) {
+          // put "Show all" as first option
+          this.options[i].children.unshift({
+            value: this.createCascaderItemValue('Show all'),
+            label: 'Show all',
+          })
+        }
 
         // populate second level of options
         this.options[i].children.forEach((facetItem, j) => {
