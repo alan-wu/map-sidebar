@@ -158,6 +158,10 @@ export default {
       type: Object,
       default: [],
     },
+    filterOptions: {
+      type: Array,
+      default: [],
+    },
   },
   data: function () {
     return {
@@ -167,30 +171,6 @@ export default {
         "flex-flow": "column",
         display: "flex",
       },
-      filterOptions: [
-        {
-          id: 3,
-          key: "flatmap.connectivity.source",
-          label: "Connectivity",
-          children: [
-            {
-              facetPropPath: "flatmap.connectivity.source",
-              id: 0,
-              label: "Origins",
-            },
-            {
-              facetPropPath: "flatmap.connectivity.source",
-              id: 1,
-              label: "Components",
-            },
-            {
-              facetPropPath: "flatmap.connectivity.source",
-              id: 2,
-              label: "Destinations",
-            },
-          ],
-        },
-      ],
       cascaderIsReady: false,
       displayConnectivity: false,
       initLoading: true,
@@ -204,7 +184,7 @@ export default {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
         options: this.filterOptions,
-        showFilters: false
+        showFilters: true
       };
     },
     paginatedResults: function () {

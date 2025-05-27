@@ -1,7 +1,7 @@
 <template>
   <div class="filters">
     <MapSvgSpriteColor />
-    <div v-show="showFilters">
+    <div v-if="showFilters">
       <div class="cascader-tag" v-if="presentTags.length > 0">
         <el-tag
           class="ml-2"
@@ -201,6 +201,27 @@ export default {
     showFilters: function () {
       return this.entry.showFilters
     }
+  },
+  watch: {
+    entry: {
+      deep: true,
+      immediate: true,
+      handler: function (newVal, oldVal) {
+        if (JSON.stringify(newVal?.options) !== JSON.stringify(oldVal?.options)) {
+          this.options.length = 0
+          this.filters.length = 0
+          this.cascaderIsReady = false
+          // Populate the cascader with new options
+          this.populateCascader().then(() => {
+            this.cascaderIsReady = true
+            this.checkShowAllBoxes()
+            // this.setCascader(this.entry.filterFacets)
+            this.cssMods()
+            this.$emit('cascaderReady')
+          })
+        }
+      },
+    },
   },
   methods: {
     createCascaderItemValue: function (
