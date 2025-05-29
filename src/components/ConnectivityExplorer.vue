@@ -319,10 +319,10 @@ export default {
     filterUpdate: function (filters) {
       this.filters = [...filters];
       this.searchAndFilterUpdate();
-      this.$emit("search-changed", {
-        value: filters,
-        type: "filter-update",
-      });
+      // this.$emit("search-changed", {
+      //   value: filters,
+      //   type: "filter-update",
+      // });
     },
     /**
      * Transform filters for third level items to perform search
@@ -360,8 +360,10 @@ export default {
       this.loadingCards = true;
       this.scrollToTop();
       this.$emit("search-changed", {
-        value: this.searchInput,
-        type: "query-update",
+        // value: this.searchInput,
+        // type: "query-update",
+        query: query,
+        filter: filters,
       });
       this.lastSearch = query;
     },
