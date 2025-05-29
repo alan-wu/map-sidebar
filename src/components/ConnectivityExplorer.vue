@@ -273,6 +273,7 @@ export default {
             this.searchKnowledge(this.filter, search);
           }
           this.$refs.filtersRef.setCascader(this.filter);
+          this.searchHistoryUpdate(this.filter, search);
         }
       } else {
         //cascader is not ready, perform search if no filter is set,
@@ -280,6 +281,7 @@ export default {
         this.filter = filter;
         if ((!filter || filter.length == 0) && option.withSearch) {
           this.searchKnowledge(this.filter, search);
+          this.searchHistoryUpdate(this.filter, search);
         }
       }
     },
@@ -305,15 +307,11 @@ export default {
     clearSearchClicked: function () {
       this.searchInput = "";
       this.searchAndFilterUpdate();
-      this.$refs.filtersRef.checkShowAllBoxes();
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.searchInput = this.searchInput.trim();
         this.searchAndFilterUpdate();
-        if (!this.searchInput) {
-          this.$refs.filtersRef.checkShowAllBoxes();
-        }
       }
     },
     filterUpdate: function (filters) {
@@ -339,24 +337,23 @@ export default {
     },
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
-      const transformedFilters = this.transformFiltersBeforeSearch(
-        this.filters
-      );
+      const transformedFilters = this.transformFiltersBeforeSearch(this.filters);
       this.searchKnowledge(transformedFilters, this.searchInput);
+      this.searchHistoryUpdate(this.filters, this.searchInput);
     },
     searchHistoryUpdate: function (filters, search) {
       this.$refs.searchHistory.selectValue = 'Search history';
       // save history only if there has value
-      if (search?.trim()) {
+      if (filters.length || search?.trim()) {
+        const transformedFilters = this.transformFiltersBeforeSearch(filters);
         this.$refs.searchHistory.addSearchToHistory(
-          filters,
+          transformedFilters,
           search
         );
       }
     },
     searchKnowledge: function (filters, query = "") {
       this.expanded = "";
-      this.searchHistoryUpdate(filters, query);
       this.loadingCards = true;
       this.scrollToTop();
       this.$emit("search-changed", {
@@ -392,6 +389,8 @@ export default {
       this.searchInput = item.search;
       this.filters = item.filters;
       this.searchAndFilterUpdate();
+      // withSearch: false to prevent knowledgeSearch in openSearch
+      this.openSearch([...item.filters], item.search, { withSearch: false });
     },
     onConnectivityInfoLoaded: function (result) {
       result.loaded = true;
