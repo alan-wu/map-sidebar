@@ -941,6 +941,9 @@ export default {
       border-color: $app-primary-color !important;
       border-radius: 50%;
     }
+    &.is-disabled {
+      border-color: #dab3ec !important;
+    }
   }
 
   .el-button + .el-button {
