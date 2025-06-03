@@ -49,7 +49,7 @@
                 :envVars="envVars"
                 :connectivityEntry="connectivityEntry"
                 :availableAnatomyFacets="availableAnatomyFacets"
-                :filterOptions="filterOptions"
+                :connectivityFilterOptions="filterOptions"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged($event)"
                 @show-connectivity="showConnectivity"

@@ -158,7 +158,7 @@ export default {
       type: Object,
       default: [],
     },
-    filterOptions: {
+    connectivityFilterOptions: {
       type: Array,
       default: [],
     },
@@ -183,7 +183,7 @@ export default {
       return {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
-        options: this.filterOptions,
+        options: this.connectivityFilterOptions,
         showFilters: true
       };
     },
