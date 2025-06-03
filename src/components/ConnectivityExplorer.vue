@@ -1,5 +1,9 @@
 <template>
-  <el-card :body-style="bodyStyle" class="content-card">
+  <el-card
+    :body-style="bodyStyle"
+    class="content-card"
+    @mouseleave="hoverChanged(undefined)"
+  >
     <template #header>
       <div class="header">
         <el-input
