@@ -61,21 +61,20 @@
         :key="result.id"
         :ref="'stepItem-'  + result.id"
         class="step-item"
-        :class="{
-          'is-active': expanded === result.id && result.loaded,
-          'is-loading': expanded === result.id && !result.loaded,
-        }"
         @mouseenter="hoverChanged(result)"
       >
         <ConnectivityCard
-          class="dataset-card"
+          v-show="expanded !== result.id"
+          class="connectivity-card"
           :entry="result"
+          :connectivityEntry="connectivityEntry"
           @open-connectivity="onConnectivityCollapseChange"
         />
         <ConnectivityInfo
           v-if="expanded === result.id"
-          :connectivityEntry="connectivityEntry"
+          class="connectivity-info"
           :entryId="result.id"
+          :connectivityEntry="connectivityEntry"
           :availableAnatomyFacets="availableAnatomyFacets"
           :envVars="envVars"
           :withCloseButton="true"
@@ -220,9 +219,7 @@ export default {
       this.expanded = ""; // reset expanded state
       this.loadingCards = false;
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        this.results = newVal.map((item) => {
-          return { ...item, loaded: false };
-        });
+        this.results = newVal;
         this.initLoading = false;
         this.numberOfHits = this.results.length;
         // knowledge is from the neuron click if there is 'ready' property
@@ -251,7 +248,6 @@ export default {
       this.searchAndFilterUpdate();
     },
     collapseChange:function (data) {
-      data.loaded = false; // reset loading
       this.expanded = this.expanded === data.id ? "" : data.id;
     },
     onConnectivityCollapseChange: function (data) {
@@ -420,7 +416,6 @@ export default {
       this.searchAndFilterUpdate();
     },
     onConnectivityInfoLoaded: function (result) {
-      result.loaded = true;
       const stepItemRef = this.$refs['stepItem-' + result.id];
       const contentRef = this.$refs['content'];
       this.$nextTick(() => {
@@ -440,7 +435,7 @@ export default {
 <style lang="scss" scoped>
 @import '../assets/pagination.scss';
 
-.dataset-card {
+.connectivity-card {
   position: relative;
 
   &::before {
@@ -480,51 +475,15 @@ export default {
   font-size: 14px;
   margin-bottom: 18px;
   text-align: left;
-  max-height: 200px;
   transition: all 0.3s ease;
 
-  .dataset-card {
-    opacity: 1;
-    visibility: visible;
-    transition: all 0.3s ease;
+  .connectivity-card {
+    max-height: 200px;
   }
-
-  &.is-active {
-    max-height: 9999px;
+  .connectivity-info {
     background-color: #f7faff;
     border: 2px solid $app-primary-color;
     border-radius: var(--el-border-radius-base);
-
-    .dataset-card {
-      pointer-events: none;
-
-      &::before {
-        display: none;
-      }
-
-      + .main {
-        border: 0 none;
-      }
-    }
-
-    &:not(.is-loading) {
-      .dataset-card {
-        opacity: 0;
-        visibility: hidden;
-        height: 0;
-      }
-    }
-  }
-
-  &.is-loading {
-    opacity: 0.5;
-    pointer-events: none;
-
-    :deep(.connectivity-card .title) {
-      color: $app-primary-color;
-      font-size: 18px;
-      letter-spacing: normal;
-    }
   }
 }
 
