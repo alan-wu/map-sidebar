@@ -248,7 +248,9 @@ export default {
       this.loadingCards = false;
     },
     resetSearchIfNoActiveSearch: function() {
-      if (!this.searchInput) this.openSearch([], '');
+      if (!this.searchInput && (!this.filter || this.filter.length == 0)) {
+        this.openSearch([], '');
+      }
     },
     openSearch: function (filter, search = "", option = { withSearch: true }) {
       this.searchInput = search;
