@@ -247,6 +247,7 @@ export default {
     },
     closeConnectivity: function (data) {
       this.expanded = '';
+      this.$emit('connectivity-item-close');
     },
     onConnectivityExplorerClicked: function (data) {
       if (this.expanded !== data.id) {

@@ -55,6 +55,7 @@
                 @show-reference-connectivities="onShowReferenceConnectivities"
                 @connectivity-hovered="onConnectivityHovered"
                 @connectivity-explorer-clicked="onConnectivityExplorerClicked"
+                @connectivity-item-close="onConnectivityItemClose"
               />
             </template>
             <template v-else>
@@ -175,6 +176,14 @@ export default {
   methods: {
     onConnectivityExplorerClicked: function (data) {
       this.$emit('connectivity-explorer-clicked', data)
+    },
+    /**
+     * This event is emitted when
+     * the close button of the opened connectivity card
+     * in connectivity explorer is clicked.
+     */
+    onConnectivityItemClose: function () {
+      this.$emit('connectivity-item-close');
     },
     /**
      * This event is emitted when the mouse hover are changed.
