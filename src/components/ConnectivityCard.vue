@@ -35,8 +35,8 @@ export default {
   computed: {
     loading: function () {
       // Only when click on overlay paths
-      if ("detailsReady" in this.entry) {
-        return !this.entry.detailsReady;
+      if ("ready" in this.entry) {
+        return !this.entry.ready;
       }
       return false;
     },

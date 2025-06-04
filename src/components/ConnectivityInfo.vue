@@ -291,7 +291,7 @@ export default {
       deep: true,
       immediate: true,
       handler: function (newVal, oldVal) {
-        if (newVal !== oldVal) {
+        if (newVal && newVal !== oldVal) {
           this.connectivityLoading = true;
           this.activeView =
             localStorage.getItem('connectivity-active-view') ||
