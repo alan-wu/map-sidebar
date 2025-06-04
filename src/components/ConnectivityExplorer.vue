@@ -218,7 +218,6 @@ export default {
   watch: {
     connectivityKnowledge: function (newVal, oldVal) {
       this.expanded = ""; // reset expanded state
-      this.filterVisibility = true; // reset filter visibility
       this.loadingCards = false;
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         this.results = newVal.map((item) => {
@@ -226,8 +225,18 @@ export default {
         });
         this.initLoading = false;
         this.numberOfHits = this.results.length;
-        if (this.numberOfHits === 1) {
+        // knowledge is from the neuron click if there is 'ready' property
+        if (this.numberOfHits === 1 && !('ready' in this.results[0])) {
           this.onConnectivityCollapseChange(this.results[0]);
+        }
+      }
+    },
+    // watch for connectivityEntry changes
+    // card should be expanded if there is only one entry and it is ready
+    connectivityEntry: function (newVal, oldVal) {
+      if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+        if (newVal.length === 1 && newVal[0].ready) {
+          this.collapseChange(newVal[0]);
         }
       }
     },
@@ -241,12 +250,20 @@ export default {
       this.filters = data.filter;
       this.searchAndFilterUpdate();
     },
-    onConnectivityCollapseChange: function (data) {
+    collapseChange:function (data) {
       data.loaded = false; // reset loading
       this.expanded = this.expanded === data.id ? "" : data.id;
+    },
+    onConnectivityCollapseChange: function (data) {
       // close connectivity event will not trigger emit
-      if (!this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
-        this.$emit("connectivity-collapse-change", data);
+      if (this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
+        this.collapseChange(data);
+      } else {
+        this.expanded = "";
+        // Make sure to emit the change after the next DOM update
+        this.$nextTick(() => {
+          this.$emit("connectivity-collapse-change", data);
+        });
       }
     },
     hoverChanged: function (data) {
