@@ -231,10 +231,15 @@ export default {
     // watch for connectivityEntry changes
     // card should be expanded if there is only one entry and it is ready
     connectivityEntry: function (newVal, oldVal) {
-      if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        if (newVal.length === 1 && newVal[0].ready) {
-          this.collapseChange(newVal[0]);
+      if (newVal.length === 1 && newVal[0].ready) {
+        // if the changed property is connectivity source, do not collapse
+        if (
+          (newVal[0].connectivitySource !== oldVal[0].connectivitySource) &&
+          oldVal[0].ready
+        ) {
+          return;
         }
+        this.collapseChange(newVal[0]);
       }
     },
     paginatedResults: function () {
