@@ -206,6 +206,9 @@ export default {
           if (option.withSearch) {
             this.searchAlgolia(this.filter, search)
           }
+          if (filter.length === 0) {
+            this.filters = this.filter
+          }
           this.$refs.filtersRef.setCascader(this.filter)
           this.searchHistoryUpdate(this.filter, search);
         }
@@ -288,7 +291,6 @@ export default {
     },
     searchAlgolia(filters, query = '') {
       // Algolia search
-
       this.loadingCards = true
       this.algoliaClient
         .anatomyInSearch(getFilters(filters), query)
