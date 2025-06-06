@@ -257,7 +257,8 @@ export default {
       this.loadingCards = false;
     },
     resetSearchIfNoActiveSearch: function() {
-      if (!this.searchInput && (!this.filter || this.filter.length == 0)) {
+      const hasValidFacet = this.filter.some(f => f.facet !== "Show all");
+      if (!this.searchInput && !hasValidFacet) {
         this.openSearch([], '');
       }
     },
