@@ -54,7 +54,7 @@
                 @show-connectivity="showConnectivity"
                 @show-reference-connectivities="onShowReferenceConnectivities"
                 @connectivity-hovered="onConnectivityHovered"
-                @connectivity-explorer-clicked="onConnectivityExplorerClicked"
+                @connectivity-collapse-change="onConnectivityCollapseChange"
                 @connectivity-item-close="onConnectivityItemClose"
               />
             </template>
@@ -174,8 +174,8 @@ export default {
     }
   },
   methods: {
-    onConnectivityExplorerClicked: function (data) {
-      this.$emit('connectivity-explorer-clicked', data)
+    onConnectivityCollapseChange: function (data) {
+      this.$emit('connectivity-collapse-change', data)
     },
     /**
      * This event is emitted when
