@@ -115,7 +115,6 @@ import ConnectivityCard from "./ConnectivityCard.vue";
 import ConnectivityInfo from "./ConnectivityInfo.vue";
 
 var initial_state = {
-  filters: [],
   searchInput: "",
   lastSearch: "",
   results: [],
@@ -229,7 +228,7 @@ export default {
   methods: {
     onConnectivityClicked: function (data) {
       this.searchInput = data.query;
-      this.filters = data.filter;
+      this.filter = data.filter;
       this.searchAndFilterUpdate();
     },
     collapseChange:function (data) {
@@ -262,7 +261,7 @@ export default {
         this.openSearch([], '');
       }
     },
-    openSearch: function (filter, search = "", option = { withSearch: true }) {
+    openSearch: function (filter, search = "") {
       this.searchInput = search;
       this.resetPageNavigation();
       //Proceed normally if cascader is ready
@@ -281,9 +280,7 @@ export default {
           this.$refs.filtersRef.checkShowAllBoxes();
           this.resetSearch();
         } else if (this.filter) {
-          if (option.withSearch) {
-            this.searchKnowledge(this.filter, search);
-          }
+          this.searchKnowledge(this.filter, search);
           this.$refs.filtersRef.setCascader(this.filter);
           this.searchHistoryUpdate(this.filter, search);
         }
@@ -291,7 +288,7 @@ export default {
         //cascader is not ready, perform search if no filter is set,
         //otherwise waith for cascader to be ready
         this.filter = filter;
-        if ((!filter || filter.length == 0) && option.withSearch) {
+        if (!filter || filter.length == 0) {
           this.searchKnowledge(this.filter, search);
           this.searchHistoryUpdate(this.filter, search);
         }
@@ -327,41 +324,23 @@ export default {
       }
     },
     filterUpdate: function (filters) {
-      this.filters = [...filters];
+      this.filter = [...filters];
       this.searchAndFilterUpdate();
       // this.$emit("search-changed", {
       //   value: filters,
       //   type: "filter-update",
       // });
     },
-    /**
-     * Transform filters for third level items to perform search
-     * because cascader keeps adding it back.
-     */
-    transformFiltersBeforeSearch: function (filters) {
-      return filters.map((filter) => {
-        if (filter.facet2) {
-          filter.facet = filter.facet2;
-          delete filter.facet2;
-        }
-        return filter;
-      });
-    },
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
-      const transformedFilters = this.transformFiltersBeforeSearch(this.filters);
-      this.searchKnowledge(transformedFilters, this.searchInput);
-      this.searchHistoryUpdate(this.filters, this.searchInput);
+      this.searchKnowledge(this.filter, this.searchInput);
+      this.searchHistoryUpdate(this.filter, this.searchInput);
     },
     searchHistoryUpdate: function (filters, search) {
       this.$refs.searchHistory.selectValue = 'Search history';
       // save history only if there has value
       if (filters.length || search?.trim()) {
-        const transformedFilters = this.transformFiltersBeforeSearch(filters);
-        this.$refs.searchHistory.addSearchToHistory(
-          transformedFilters,
-          search
-        );
+        this.$refs.searchHistory.addSearchToHistory(this.filter, search);
       }
     },
     searchKnowledge: function (filters, query = "") {
@@ -386,7 +365,7 @@ export default {
     pageChange: function (page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
-      this.searchKnowledge(this.filters, this.searchInput);
+      this.searchKnowledge(this.filter, this.searchInput);
     },
     scrollToTop: function () {
       if (this.$refs.content) {
@@ -399,10 +378,8 @@ export default {
     },
     searchHistorySearch: function (item) {
       this.searchInput = item.search;
-      this.filters = item.filters;
-      this.searchAndFilterUpdate();
-      // withSearch: false to prevent knowledgeSearch in openSearch
-      this.openSearch([...item.filters], item.search, { withSearch: false });
+      this.filter = item.filters;
+      this.openSearch([...item.filters], item.search);
     },
     onConnectivityInfoLoaded: function (result) {
       const stepItemRef = this.$refs['stepItem-' + result.id];
