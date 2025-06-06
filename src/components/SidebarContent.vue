@@ -104,7 +104,6 @@ var handleErrors = async function (response) {
 }
 
 var initial_state = {
-  filters: [],
   searchInput: '',
   lastSearch: '',
   results: [],
@@ -206,9 +205,6 @@ export default {
           if (option.withSearch) {
             this.searchAlgolia(this.filter, search)
           }
-          if (filter.length === 0) {
-            this.filters = this.filter
-          }
           this.$refs.filtersRef.setCascader(this.filter)
           this.searchHistoryUpdate(this.filter, search);
         }
@@ -252,7 +248,7 @@ export default {
       }
     },
     filterUpdate: function (filters) {
-      this.filters = [...filters]
+      this.filter = [...filters]
       this.searchAndFilterUpdate();
       this.$emit('search-changed', {
         value: filters,
@@ -330,7 +326,7 @@ export default {
       this.start = (page - 1) * this.numberPerPage
       this.page = page
       this.searchAlgolia(
-        this.filters,
+        this.filter,
         this.searchInput,
         this.numberPerPage,
         this.page
@@ -478,10 +474,10 @@ export default {
     },
     searchHistorySearch: function (item) {
       this.searchInput = item.search
-      this.filters = item.filters
       this.searchAndFilterUpdate();
       // withSearch: false to prevent algoliaSearch in openSearch
       this.openSearch([...item.filters], item.search, { withSearch: false });
+      this.filter = item.filters
     },
   },
   mounted: function () {
