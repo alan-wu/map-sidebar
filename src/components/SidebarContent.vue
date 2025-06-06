@@ -255,34 +255,16 @@ export default {
         type: 'filter-update',
       })
     },
-    /**
-     * Transform filters for third level items to perform search
-     * because cascader keeps adding it back.
-     */
-    transformFiltersBeforeSearch: function (filters) {
-      return filters.map((filter) => {
-        if (filter.facet2) {
-          filter.facet = filter.facet2;
-          delete filter.facet2;
-        }
-        return filter;
-      });
-    },
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
-      const transformedFilters = this.transformFiltersBeforeSearch(this.filters);
-      this.searchAlgolia(transformedFilters, this.searchInput);
-      this.searchHistoryUpdate(this.filters, this.searchInput);
+      this.searchAlgolia(this.filter, this.searchInput);
+      this.searchHistoryUpdate(this.filter, this.searchInput);
     },
     searchHistoryUpdate: function (filters, search) {
       this.$refs.searchHistory.selectValue = 'Search history';
       // save history only if there has value
       if (filters.length || search?.trim()) {
-        const transformedFilters = this.transformFiltersBeforeSearch(filters);
-        this.$refs.searchHistory.addSearchToHistory(
-          transformedFilters,
-          search
-        );
+        this.$refs.searchHistory.addSearchToHistory(filters, search);
       }
     },
     searchAlgolia(filters, query = '') {
