@@ -183,7 +183,7 @@ export default {
       this.results = []
       this.loadingCards = false
     },
-    openSearch: function (filter, search = '', option = { withSearch: true }) {
+    openSearch: function (filter, search = '') {
       this.searchInput = search
       this.resetPageNavigation()
       //Proceed normally if cascader is ready
@@ -202,9 +202,7 @@ export default {
           this.$refs.filtersRef.checkShowAllBoxes()
           this.resetSearch()
         } else if (this.filter) {
-          if (option.withSearch) {
-            this.searchAlgolia(this.filter, search)
-          }
+          this.searchAlgolia(this.filter, search)
           this.$refs.filtersRef.setCascader(this.filter)
           this.searchHistoryUpdate(this.filter, search);
         }
@@ -212,7 +210,7 @@ export default {
         //cascader is not ready, perform search if no filter is set,
         //otherwise waith for cascader to be ready
         this.filter = filter
-        if ((!filter || filter.length == 0) && option.withSearch) {
+        if (!filter || filter.length == 0) {
           this.searchAlgolia(this.filter, search)
           this.searchHistoryUpdate(this.filter, search);
         }
@@ -456,10 +454,8 @@ export default {
     },
     searchHistorySearch: function (item) {
       this.searchInput = item.search
-      this.searchAndFilterUpdate();
-      // withSearch: false to prevent algoliaSearch in openSearch
-      this.openSearch([...item.filters], item.search, { withSearch: false });
       this.filter = item.filters
+      this.openSearch([...item.filters], item.search);
     },
   },
   mounted: function () {
