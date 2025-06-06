@@ -131,6 +131,9 @@ const convertReadableLabel = function (original) {
   if (speciesMap[name]) {
     return capitalise(speciesMap[name])
   } else {
+    if (original === original.toUpperCase()) {
+      return original
+    }
     return capitalise(name)
   }
 }
