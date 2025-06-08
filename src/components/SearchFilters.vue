@@ -9,12 +9,12 @@
           closable
           @close="cascadeTagClose(presentTags[0])"
         >
-          {{ presentTags[0] }}
+          <p class="tag-text">{{ presentTags[0] }}</p>
         </el-tag>
         <el-popover
           v-if="presentTags.length > 1"
           placement="bottom-start"
-          :width="200"
+          :width="250"
           trigger="hover"
           popper-class="cascade-tags-popover"
         >
@@ -890,6 +890,13 @@ export default {
   z-index: 1;
   display: flex;
   gap: 4px;
+}
+
+.tag-text {
+  max-width: 75px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .el-tags-container {
