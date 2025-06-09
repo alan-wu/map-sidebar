@@ -297,7 +297,7 @@ export default {
     hoverChanged: function (data) {
       // disable hover changes when show connectivity is clicked
       if (!this.freezed) {
-        const payload = data ? { ...data, type: "connectivity" } : data;
+        const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
         this.$emit("hover-changed", payload);
       }
     },
@@ -330,6 +330,9 @@ export default {
         } else if (this.filter) {
           if (option.withSearch) {
             this.searchKnowledge(this.filter, search);
+          }
+          if (filter.length === 0) {
+            this.filters = this.filter;
           }
           this.$refs.filtersRef.setCascader(this.filter);
         }
@@ -380,6 +383,7 @@ export default {
       this.searchAndFilterUpdate();
       this.$emit("search-changed", {
         value: filters,
+        tabType: "connectivity",
         type: "filter-update",
       });
     },
@@ -420,6 +424,7 @@ export default {
       this.scrollToTop();
       this.$emit("search-changed", {
         value: this.searchInput,
+        tabType: "connectivity",
         type: "query-update",
       });
       this.lastSearch = query;
