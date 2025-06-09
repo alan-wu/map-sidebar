@@ -26,14 +26,10 @@
         >
           Reset
         </el-button>
-        <el-button
-          link
-          class="el-button-link"
-          @click="onFilterVisibility"
-          size="large"
-        >
-          Filter
-        </el-button>
+        <el-radio-group v-model="filterVisibility">
+          <el-radio :value="true">Focused</el-radio>
+          <el-radio :value="false">Contextual</el-radio>
+        </el-radio-group>
       </div>
     </template>
     <SearchFilters
@@ -224,7 +220,6 @@ export default {
   watch: {
     connectivityKnowledge: function (newVal, oldVal) {
       this.expanded = ""; // reset expanded state
-      this.filterVisibility = true; // reset filter visibility
       this.initLoading = false;
       this.loadingCards = false;
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
@@ -240,12 +235,12 @@ export default {
     paginatedResults: function () {
       this.loadingCards = false;
     },
-  },
-  methods: {
-    onFilterVisibility: function () {
-      this.filterVisibility = !this.filterVisibility;
+    filterVisibility: function (state) {
+      this.filterVisibility = state;
       this.$emit('filter-visibility', this.filterVisibility);
     },
+  },
+  methods: {
     freezeHoverChange: function () {
       this.freezed = true;
       if (this.freezeTimeout) {
@@ -552,6 +547,9 @@ export default {
 }
 
 .header {
+  display: flex;
+  align-items: center;
+
   .el-button {
     font-family: inherit;
 
@@ -559,7 +557,19 @@ export default {
     &:focus {
       background: $app-primary-color;
       box-shadow: -3px 2px 4px #00000040;
-      color: #fff;
+      color: #ffffff;
+    }
+  }
+
+  .el-radio-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    .el-radio {
+      color: #ffffff;
+      margin-left: 20px;
+      height: 20px;
     }
   }
 }
