@@ -441,7 +441,7 @@ export default {
     this.openSearch(this.filter, this.searchInput);
 
     EventBus.on('close-connectivity', () => {
-      this.closeConnectivity();
+      this.expanded = '';
     });
   },
 };
