@@ -247,7 +247,7 @@ export default {
       }
     },
     hoverChanged: function (data) {
-      const payload = data ? { ...data, type: "connectivity" } : data;
+      const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
       this.$emit("hover-changed", payload);
     },
     resetSearch: function () {
@@ -328,6 +328,7 @@ export default {
       this.searchAndFilterUpdate();
       // this.$emit("search-changed", {
       //   value: filters,
+      //   tabType: "connectivity",
       //   type: "filter-update",
       // });
     },
@@ -352,6 +353,7 @@ export default {
         // type: "query-update",
         query: query,
         filter: filters,
+        tabType: "connectivity",
       });
       this.lastSearch = query;
     },
