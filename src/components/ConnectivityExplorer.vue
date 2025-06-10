@@ -238,14 +238,16 @@ export default {
       this.expanded = this.expanded === data.id ? "" : data.id;
       this.expandedData = this.expanded ? data : null;
     },
-    closeConnectivity: function (data) {
-      this.expanded = '';
-      this.$emit('connectivity-item-close');
+    closeConnectivity: function () {
+      if (!this.expanded) {
+        this.$emit('connectivity-item-close');
+      }
     },
     onConnectivityCollapseChange: function (data) {
       // close connectivity event will not trigger emit
       if (this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
         this.collapseChange(data);
+        this.closeConnectivity();
       } else {
         this.expanded = "";
         this.expandedData = null;
