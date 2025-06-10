@@ -198,7 +198,8 @@ export default {
       cascaderIsReady: false,
       displayConnectivity: false,
       initLoading: true,
-      expanded: ""
+      expanded: "",
+      expandedData: null,
     };
   },
   computed: {
@@ -218,6 +219,7 @@ export default {
   watch: {
     connectivityKnowledge: function (newVal, oldVal) {
       this.expanded = ""; // reset expanded state
+      this.expandedData = null;
       this.loadingCards = false;
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         this.results = newVal;
@@ -255,6 +257,7 @@ export default {
     },
     collapseChange:function (data) {
       this.expanded = this.expanded === data.id ? "" : data.id;
+      this.expandedData = this.expanded ? data : null;
     },
     onConnectivityCollapseChange: function (data) {
       // close connectivity event will not trigger emit
@@ -262,6 +265,7 @@ export default {
         this.collapseChange(data);
       } else {
         this.expanded = "";
+        this.expandedData = null;
         // Make sure to emit the change after the next DOM update
         this.$nextTick(() => {
           this.$emit("connectivity-collapse-change", data);
@@ -269,7 +273,14 @@ export default {
       }
     },
     hoverChanged: function (data) {
-      const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
+      let payload = { tabType: "connectivity" };
+
+      if (data) {
+        payload = {...payload, ...data};
+      } else if (this.expandedData) {
+        payload = {...payload, ...this.expandedData};
+      }
+
       this.$emit("hover-changed", payload);
     },
     resetSearch: function () {
@@ -390,6 +401,7 @@ export default {
     },
     searchKnowledge: function (filters, query = "") {
       this.expanded = "";
+      this.expandedData = null;
       this.searchHistoryUpdate(filters, query);
       this.loadingCards = true;
       this.scrollToTop();
@@ -442,6 +454,7 @@ export default {
 
     EventBus.on('close-connectivity', () => {
       this.expanded = '';
+      this.expandedData = null;
     });
   },
 };
