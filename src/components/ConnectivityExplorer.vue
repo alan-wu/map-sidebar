@@ -208,16 +208,17 @@ export default {
         if (this.numberOfHits === 1 && !('ready' in this.results[0])) {
           this.onConnectivityCollapseChange(this.results[0]);
         }
+        if (this.numberOfHits > 0 && ('ready' in this.results[0])) {
+          this.$refs.filtersRef.checkShowAllBoxes();
+          this.searchInput = '';
+          this.filter = [];
+        }
       }
     },
     // watch for connectivityEntry changes
     // card should be expanded if there is only one entry and it is ready
     connectivityEntry: function (newVal, oldVal) {
-      if (newVal.length > 0) {
-        this.$refs.filtersRef.checkShowAllBoxes();
-        this.searchInput = '';
-        this.filter = [];
-      } else if (newVal.length === 1 && newVal[0].ready) {
+      if (newVal.length === 1 && newVal[0].ready) {
         // if the changed property is connectivity source, do not collapse
         if (
           (newVal[0].connectivitySource !== oldVal[0].connectivitySource) &&
