@@ -50,6 +50,7 @@
                 :connectivityEntry="connectivityEntry"
                 :availableAnatomyFacets="availableAnatomyFacets"
                 @filter-visibility="$emit('filter-visibility', $event)"
+                :connectivityFilterOptions="filterOptions"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged(tab.id, $event)"
                 @show-connectivity="showConnectivity"
@@ -162,6 +163,10 @@ export default {
       },
     },
     connectivityKnowledge: {
+      type: Array,
+      default: [],
+    },
+    filterOptions: {
       type: Array,
       default: [],
     },
