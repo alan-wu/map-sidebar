@@ -109,6 +109,7 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
+import EventBus from './EventBus.js'
 import SearchFilters from "./SearchFilters.vue";
 import SearchHistory from "./SearchHistory.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
@@ -176,7 +177,8 @@ export default {
       cascaderIsReady: false,
       displayConnectivity: false,
       initLoading: true,
-      expanded: ""
+      expanded: "",
+      expandedData: null,
     };
   },
   computed: {
@@ -196,6 +198,7 @@ export default {
   watch: {
     connectivityKnowledge: function (newVal, oldVal) {
       this.expanded = ""; // reset expanded state
+      this.expandedData = null;
       this.loadingCards = false;
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         this.results = newVal;
@@ -205,16 +208,17 @@ export default {
         if (this.numberOfHits === 1 && !('ready' in this.results[0])) {
           this.onConnectivityCollapseChange(this.results[0]);
         }
+        if (this.numberOfHits > 0 && ('ready' in this.results[0])) {
+          this.$refs.filtersRef.checkShowAllBoxes();
+          this.searchInput = '';
+          this.filter = [];
+        }
       }
     },
     // watch for connectivityEntry changes
     // card should be expanded if there is only one entry and it is ready
     connectivityEntry: function (newVal, oldVal) {
-      if (newVal.length > 0) {
-        this.$refs.filtersRef.checkShowAllBoxes();
-        this.searchInput = '';
-        this.filter = [];
-      } else if (newVal.length === 1 && newVal[0].ready) {
+      if (newVal.length === 1 && newVal[0].ready) {
         // if the changed property is connectivity source, do not collapse
         if (
           (newVal[0].connectivitySource !== oldVal[0].connectivitySource) &&
@@ -237,13 +241,21 @@ export default {
     },
     collapseChange:function (data) {
       this.expanded = this.expanded === data.id ? "" : data.id;
+      this.expandedData = this.expanded ? data : null;
+    },
+    closeConnectivity: function () {
+      if (!this.expanded) {
+        this.$emit('connectivity-item-close');
+      }
     },
     onConnectivityCollapseChange: function (data) {
       // close connectivity event will not trigger emit
       if (this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
         this.collapseChange(data);
+        this.closeConnectivity();
       } else {
         this.expanded = "";
+        this.expandedData = null;
         // Make sure to emit the change after the next DOM update
         this.$nextTick(() => {
           this.$emit("connectivity-collapse-change", data);
@@ -251,7 +263,14 @@ export default {
       }
     },
     hoverChanged: function (data) {
-      const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
+      let payload = { tabType: "connectivity" };
+
+      if (data) {
+        payload = {...payload, ...data};
+      } else if (this.expandedData) {
+        payload = {...payload, ...this.expandedData};
+      }
+
       this.$emit("hover-changed", payload);
     },
     resetSearch: function () {
@@ -350,6 +369,7 @@ export default {
     },
     searchKnowledge: function (filters, query = "") {
       this.expanded = "";
+      this.expandedData = null;
       this.loadingCards = true;
       this.scrollToTop();
       this.$emit("search-changed", {
@@ -400,6 +420,11 @@ export default {
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
     this.openSearch(this.filter, this.searchInput);
+
+    EventBus.on('close-connectivity', () => {
+      this.expanded = '';
+      this.expandedData = null;
+    });
   },
 };
 </script>
