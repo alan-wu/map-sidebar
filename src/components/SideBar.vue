@@ -39,6 +39,7 @@
                 @confirm-create="$emit('confirm-create', $event)"
                 @cancel-create="$emit('cancel-create')"
                 @confirm-delete="$emit('confirm-delete', $event)"
+                @hover-changed="hoverChanged(tab.id, $event)"
               />
             </template>
             <template v-else-if="tab.type === 'connectivityExplorer'">
