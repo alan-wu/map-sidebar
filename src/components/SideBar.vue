@@ -318,9 +318,16 @@ export default {
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
       this.activeTabId = tabInfo[0].id;
     },
+    highlightAnnotationItem: function (tab) {
+      const annotationTabs = this.$refs['annotationTab_' + tab.id];
+      if (tab.type === 'annotation' && annotationTabs && annotationTabs.length) {
+        annotationTabs[0].emitHoverChanged();
+      }
+    },
     tabClicked: function (tab) {
       this.setActiveTab(tab);
       this.$emit('tabClicked', tab);
+      this.highlightAnnotationItem(tab);
     },
     tabClosed: function (tab) {
       this.$emit('tabClosed', tab);
