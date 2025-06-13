@@ -12,7 +12,7 @@
       class="annotation-popup"
       :annotationEntry="annotationEntry"
       @annotation="$emit('annotation', $event)"
-      @hover-changed="onAnnotationPopupChanged"
+      @hover-changed="$emit('hover-changed', $event)"
     />
     <div v-if="createData && createData.toBeDeleted" class="delete-container">
       <el-row>
@@ -79,15 +79,6 @@ export default {
       annotationPopupData: null,
     };
   },
-  methods: {
-    onAnnotationPopupChanged: function (payload) {
-      this.annotationPopupData = payload;
-      this.emitHoverChanged();
-    },
-    emitHoverChanged: function () {
-      this.$emit('hover-changed', this.annotationPopupData);
-    },
-  }
 }
 </script>
 

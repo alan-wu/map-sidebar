@@ -177,6 +177,8 @@ export default {
       drawerOpen: false,
       availableAnatomyFacets: [],
       activeTabId: 1,
+      activeAnnotationData: null,
+      activeConnectivityData: null,
     }
   },
   methods: {
@@ -197,6 +199,14 @@ export default {
      */
     hoverChanged: function (id, data) {
       this.$emit('hover-changed', {...data,  tabId: id })
+
+      // save the last highlighted data for connectivity and annotation tabs
+      if (this.activeTabId === 2) {
+        this.activeConnectivityData = data;
+      }
+      if (this.activeTabId === 3) {
+        this.activeAnnotationData = data;
+      }
     },
     /**
      * This event is emitted when the show connectivity button is clicked.
@@ -318,16 +328,27 @@ export default {
       const tabInfo = matchedTab.length ? matchedTab : this.tabEntries;
       this.activeTabId = tabInfo[0].id;
     },
-    highlightAnnotationItem: function (tab) {
-      const annotationTabs = this.$refs['annotationTab_' + tab.id];
-      if (tab.type === 'annotation' && annotationTabs && annotationTabs.length) {
-        annotationTabs[0].emitHoverChanged();
+    highlightActiveTabData: function (tab) {
+      let data;
+
+      if (tab.type === 'connectivityExplorer') {
+        data = this.activeConnectivityData;
+      } else if (tab.type === 'annotation') {
+        data = this.activeAnnotationData;
+      } else {
+        // switching to dataset explorer tab will not highlight
+        // the highlight is from the last tab
+        // if needed, to update it here
+      }
+
+      if (data) {
+        this.$emit('hover-changed', {...data,  tabId: tab.id })
       }
     },
     tabClicked: function (tab) {
       this.setActiveTab(tab);
       this.$emit('tabClicked', tab);
-      this.highlightAnnotationItem(tab);
+      this.highlightActiveTabData(tab);
     },
     tabClosed: function (tab) {
       this.$emit('tabClosed', tab);
