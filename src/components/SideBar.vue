@@ -329,7 +329,7 @@ export default {
       this.activeTabId = tabInfo[0].id;
     },
     highlightActiveTabData: function (tab) {
-      let data;
+      let data = null;
 
       if (tab.type === 'connectivityExplorer') {
         data = this.activeConnectivityData;
