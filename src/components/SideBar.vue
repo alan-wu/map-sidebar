@@ -340,7 +340,14 @@ export default {
       let data = null;
 
       if (tab.type === 'connectivityExplorer') {
-        data = {...this.activeConnectivityData};
+        const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer', true);
+        // check if any opened item
+        // if no opened item, highlight items will be based on the results in explorer
+        if (connectivityExplorerTabRef && !connectivityExplorerTabRef.expanded) {
+          data = { tabType: 'connectivity' };
+        } else {
+          data = {...this.activeConnectivityData};
+        }
       } else if (tab.type === 'annotation') {
         data = {...this.activeAnnotationData};
       } else {
