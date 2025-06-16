@@ -75,12 +75,12 @@
             <div>
               <strong>Within categories:</strong> OR
               <br />
-              example: 'heart' OR 'colon'
+              example: {{ entry.helper.within }}
               <br />
               <br />
               <strong>Between categories:</strong> AND
               <br />
-              example: 'rat' AND 'lung'
+              example: {{ entry.helper.between }}
             </div>
           </el-popover>
         </span>
