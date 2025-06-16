@@ -188,7 +188,11 @@ export default {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
         options: this.connectivityFilterOptions,
-        showFilters: true
+        showFilters: true,
+        helper: {
+          within: "'CNS' OR 'Local circuit neuron'",
+          between: "'Somatic lower motor' AND 'Human'"
+        }
       };
     },
     paginatedResults: function () {
