@@ -293,7 +293,7 @@ export default {
     },
     resetSearchIfNoActiveSearch: function() {
       const hasValidFacet = this.filter.some(f => f.facet !== "Show all");
-      if (!this.searchInput && !hasValidFacet) {
+      if ((!this.searchInput && !hasValidFacet) || this.numberOfHits === 0) {
         this.openSearch([], '');
       }
     },
