@@ -1,9 +1,5 @@
 <template>
-  <el-card
-    :body-style="bodyStyle"
-    class="content-card"
-    @mouseleave="onHoverChanged($event, undefined)"
-  >
+  <el-card :body-style="bodyStyle" class="content-card">
     <template #header>
       <div class="header">
         <el-input
