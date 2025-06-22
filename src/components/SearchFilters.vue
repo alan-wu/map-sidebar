@@ -9,7 +9,7 @@
           closable
           @close="cascadeTagClose(presentTags[0])"
         >
-          <p class="tag-text">{{ presentTags[0] }}</p>
+          <span class="tag-text">{{ presentTags[0] }}</span>
         </el-tag>
         <el-popover
           v-if="presentTags.length > 1"
@@ -75,12 +75,12 @@
             <div>
               <strong>Within categories:</strong> OR
               <br />
-              example: 'heart' OR 'colon'
+              example: {{ entry.helper.within }}
               <br />
               <br />
               <strong>Between categories:</strong> AND
               <br />
-              example: 'rat' AND 'lung'
+              example: {{ entry.helper.between }}
             </div>
           </el-popover>
         </span>
@@ -834,8 +834,8 @@ export default {
               result.push(validatedFilter)
               terms.push(validatedFilter.term)
             }
-          })         
-          // make sure unused filter terms' show all checkbox is always checked 
+          })
+          // make sure unused filter terms' show all checkbox is always checked
           this.options.forEach((option)=>{
             if (!terms.includes(option.label)) {
               result.push({
@@ -886,6 +886,7 @@ export default {
 }
 
 .tag-text {
+  display: block;
   max-width: 75px;
   white-space: nowrap;
   overflow: hidden;

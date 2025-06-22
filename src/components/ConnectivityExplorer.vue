@@ -2,7 +2,7 @@
   <el-card
     :body-style="bodyStyle"
     class="content-card"
-    @mouseleave="hoverChanged(undefined)"
+    @mouseleave="onHoverChanged($event, undefined)"
   >
     <template #header>
       <div class="header" @mouseleave="hoverChanged(undefined)">
@@ -55,7 +55,7 @@
       class="content scrollbar"
       v-loading="loadingCards || initLoading"
       ref="content"
-      @mouseleave="hoverChanged(undefined)"
+      @mouseleave="onHoverChanged($event, undefined)"
     >
       <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
         No results found - Please change your search / filter criteria.
@@ -65,7 +65,7 @@
         :key="result.id"
         :ref="'stepItem-'  + result.id"
         class="step-item"
-        @mouseenter="hoverChanged(result)"
+        @mouseenter="onHoverChanged($event, result)"
       >
         <ConnectivityCard
           v-show="expanded !== result.id"
@@ -113,6 +113,7 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
+import EventBus from './EventBus.js'
 import SearchFilters from "./SearchFilters.vue";
 import SearchHistory from "./SearchHistory.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
@@ -178,11 +179,12 @@ export default {
         display: "flex",
       },
       cascaderIsReady: false,
-      freezeTimeout: undefined,
-      freezed: false,
+      // freezeTimeout: undefined,
+      // freezed: false,
       initLoading: true,
       expanded: "",
-      filterVisibility: true
+      filterVisibility: true,
+      expandedData: null,
     };
   },
   computed: {
@@ -192,7 +194,11 @@ export default {
         numberOfHits: this.numberOfHits,
         filterFacets: this.filter,
         options: this.connectivityFilterOptions,
-        showFilters: true
+        showFilters: true,
+        helper: {
+          within: "'CNS' OR 'Local circuit neuron'",
+          between: "'Somatic lower motor' AND 'Human'"
+        }
       };
     },
     paginatedResults: function () {
@@ -202,6 +208,7 @@ export default {
   watch: {
     connectivityKnowledge: function (newVal, oldVal) {
       this.expanded = ""; // reset expanded state
+      this.expandedData = null;
       this.loadingCards = false;
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
         this.results = newVal;
@@ -211,16 +218,17 @@ export default {
         if (this.numberOfHits === 1 && !('ready' in this.results[0])) {
           this.onConnectivityCollapseChange(this.results[0]);
         }
+        if (this.numberOfHits > 0 && ('ready' in this.results[0])) {
+          this.$refs.filtersRef.checkShowAllBoxes();
+          this.searchInput = '';
+          this.filter = [];
+        }
       }
     },
     // watch for connectivityEntry changes
     // card should be expanded if there is only one entry and it is ready
     connectivityEntry: function (newVal, oldVal) {
-      if (newVal.length > 0) {
-        this.$refs.filtersRef.checkShowAllBoxes();
-        this.searchInput = '';
-        this.filter = [];
-      } else if (newVal.length === 1 && newVal[0].ready) {
+      if (newVal.length === 1 && newVal[0].ready) {
         // if the changed property is connectivity source, do not collapse
         if (
           (newVal[0].connectivitySource !== oldVal[0].connectivitySource) &&
@@ -240,21 +248,21 @@ export default {
     },
   },
   methods: {
-    freezeHoverChange: function () {
-      this.freezed = true;
-      if (this.freezeTimeout) {
-        clearTimeout(this.freezeTimeout);
-      }
-      this.freezeTimeout = setTimeout(() => {
-        this.freezed = false;
-      }, 3000)
-    },
+    // freezeHoverChange: function () {
+    //   this.freezed = true;
+    //   if (this.freezeTimeout) {
+    //     clearTimeout(this.freezeTimeout);
+    //   }
+    //   this.freezeTimeout = setTimeout(() => {
+    //     this.freezed = false;
+    //   }, 3000)
+    // },
     onShowConnectivity: function (data) {
-      this.freezeHoverChange();
+      // this.freezeHoverChange();
       this.$emit('show-connectivity', data);
     },
     onShowReferenceConnectivities: function (data) {
-      this.freezeHoverChange();
+      // this.freezeHoverChange();
       this.$emit('show-reference-connectivities', data);
     },
     onConnectivityClicked: function (data) {
@@ -264,25 +272,51 @@ export default {
     },
     collapseChange:function (data) {
       this.expanded = this.expanded === data.id ? "" : data.id;
+      this.expandedData = this.expanded ? data : null;
+    },
+    closeConnectivity: function () {
+      if (!this.expanded) {
+        this.$emit('connectivity-item-close');
+      }
     },
     onConnectivityCollapseChange: function (data) {
       // close connectivity event will not trigger emit
       if (this.connectivityEntry.find(entry => entry.featureId[0] === data.id)) {
         this.collapseChange(data);
+        this.closeConnectivity();
       } else {
         this.expanded = "";
+        this.expandedData = null;
         // Make sure to emit the change after the next DOM update
         this.$nextTick(() => {
           this.$emit("connectivity-collapse-change", data);
         });
       }
     },
-    hoverChanged: function (data) {
-      // disable hover changes when show connectivity is clicked
-      if (!this.freezed) {
-        const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
-        this.$emit("hover-changed", payload);
+    onHoverChanged: function (event, data) {
+      const { target } = event;
+
+      // mouseleave event won't trigger if the connectivity explorer tab is not in view
+      // e.g., switching to annotation tab on item click
+      if (data || (target && target.checkVisibility())) {
+        this.hoverChanged(data)
       }
+    },
+    hoverChanged: function (data) {
+      // // disable hover changes when show connectivity is clicked
+      // if (!this.freezed) {
+      //   const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
+      //   this.$emit("hover-changed", payload);
+      // }
+      let payload = { tabType: "connectivity" };
+
+      if (data) {
+        payload = {...payload, ...data};
+      } else if (this.expandedData) {
+        payload = {...payload, ...this.expandedData};
+      }
+
+      this.$emit("hover-changed", payload);
     },
     resetSearch: function () {
       this.numberOfHits = 0;
@@ -380,6 +414,7 @@ export default {
     },
     searchKnowledge: function (filters, query = "") {
       this.expanded = "";
+      this.expandedData = null;
       this.loadingCards = true;
       this.scrollToTop();
       this.$emit("search-changed", {
@@ -430,6 +465,11 @@ export default {
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
     this.openSearch(this.filter, this.searchInput);
+
+    EventBus.on('close-connectivity', () => {
+      this.expanded = '';
+      this.expandedData = null;
+    });
   },
 };
 </script>
