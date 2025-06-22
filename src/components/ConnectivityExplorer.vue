@@ -179,8 +179,8 @@ export default {
         display: "flex",
       },
       cascaderIsReady: false,
-      // freezeTimeout: undefined,
-      // freezed: false,
+      freezeTimeout: undefined,
+      freezed: false,
       initLoading: true,
       expanded: "",
       filterVisibility: true,
@@ -248,21 +248,21 @@ export default {
     },
   },
   methods: {
-    // freezeHoverChange: function () {
-    //   this.freezed = true;
-    //   if (this.freezeTimeout) {
-    //     clearTimeout(this.freezeTimeout);
-    //   }
-    //   this.freezeTimeout = setTimeout(() => {
-    //     this.freezed = false;
-    //   }, 3000)
-    // },
+    freezeHoverChange: function () {
+      this.freezed = true;
+      if (this.freezeTimeout) {
+        clearTimeout(this.freezeTimeout);
+      }
+      this.freezeTimeout = setTimeout(() => {
+        this.freezed = false;
+      }, 3000)
+    },
     onShowConnectivity: function (data) {
-      // this.freezeHoverChange();
+      this.freezeHoverChange();
       this.$emit('show-connectivity', data);
     },
     onShowReferenceConnectivities: function (data) {
-      // this.freezeHoverChange();
+      this.freezeHoverChange();
       this.$emit('show-reference-connectivities', data);
     },
     onConnectivityClicked: function (data) {
@@ -303,20 +303,18 @@ export default {
       }
     },
     hoverChanged: function (data) {
-      // // disable hover changes when show connectivity is clicked
-      // if (!this.freezed) {
-      //   const payload = data ? { ...data, tabType: "connectivity" } : { tabType: "connectivity" };
-      //   this.$emit("hover-changed", payload);
-      // }
-      let payload = { tabType: "connectivity" };
-
-      if (data) {
-        payload = {...payload, ...data};
-      } else if (this.expandedData) {
-        payload = {...payload, ...this.expandedData};
+      // disable hover changes when show connectivity is clicked
+      if (!this.freezed) {
+        let payload = { tabType: "connectivity" };
+  
+        if (data) {
+          payload = {...payload, ...data};
+        } else if (this.expandedData) {
+          payload = {...payload, ...this.expandedData};
+        }
+  
+        this.$emit("hover-changed", payload);
       }
-
-      this.$emit("hover-changed", payload);
     },
     resetSearch: function () {
       this.numberOfHits = 0;
