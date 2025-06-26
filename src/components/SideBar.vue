@@ -50,6 +50,7 @@
                 :envVars="envVars"
                 :connectivityEntry="connectivityEntry"
                 :availableAnatomyFacets="availableAnatomyFacets"
+                @filter-visibility="$emit('filter-visibility', $event)"
                 :connectivityFilterOptions="filterOptions"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged(tab.id, $event)"
