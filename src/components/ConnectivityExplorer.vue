@@ -27,7 +27,7 @@
         >
           Reset
         </el-button>
-        <el-radio-group v-model="filterVisibility">
+        <el-radio-group v-model="filterVisibility" v-if="showVisibilityFilter">
           <el-radio :value="true">Focused</el-radio>
           <el-radio :value="false">Contextual</el-radio>
         </el-radio-group>
@@ -38,7 +38,7 @@
           popper-class="filter-help-popover"
         >
           <template #reference>
-            <MapSvgIcon icon="help" class="help" />
+            <MapSvgIcon icon="help" class="help"  v-if="showVisibilityFilter"/>
           </template>
           <div>
             <strong>Focused:</strong>
@@ -189,6 +189,10 @@ export default {
       type: Array,
       default: [],
     },
+    showVisibilityFilter: {
+      type: Boolean,
+      default: false,
+    }
   },
   data: function () {
     return {
@@ -203,7 +207,7 @@ export default {
       freezed: false,
       initLoading: true,
       expanded: "",
-      filterVisibility: false,
+      filterVisibility: true,
       expandedData: null,
     };
   },
