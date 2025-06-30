@@ -27,30 +27,32 @@
         >
           Reset
         </el-button>
-        <el-radio-group v-model="filterVisibility" v-if="showVisibilityFilter">
-          <el-radio :value="true">Focused</el-radio>
-          <el-radio :value="false">Contextual</el-radio>
-        </el-radio-group>
-        <el-popover
-          title="How does filter visibility work?"
-          width="250"
-          trigger="hover"
-          popper-class="filter-help-popover"
-        >
-          <template #reference>
-            <MapSvgIcon icon="help" class="help"  v-if="showVisibilityFilter"/>
-          </template>
-          <div>
-            <strong>Focused:</strong>
-            <br />
-            Shows only the selected result
-            <br />
-            <br />
-            <strong>Contextual:</strong>
-            <br />
-            Shows all, highlights selected, greys out others
-          </div>
-        </el-popover>
+        <div v-if="showVisibilityFilter" class="visibility-filter">
+          <el-radio-group v-model="filterVisibility">
+            <el-radio :value="true">Focused</el-radio>
+            <el-radio :value="false">Contextual</el-radio>
+          </el-radio-group>
+          <el-popover
+            title="How does filter visibility work?"
+            width="250"
+            trigger="hover"
+            popper-class="filter-help-popover"
+          >
+            <template #reference>
+              <MapSvgIcon icon="help" class="help" />
+            </template>
+            <div>
+              <strong>Focused:</strong>
+              <br />
+              Shows only the selected result
+              <br />
+              <br />
+              <strong>Contextual:</strong>
+              <br />
+              Shows all, highlights selected, greys out others
+            </div>
+          </el-popover>
+        </div>
       </div>
     </template>
     <SearchFilters
@@ -680,6 +682,11 @@ export default {
     text-decoration-color: transparent;
     box-shadow: none !important;
   }
+}
+
+.visibility-filter {
+  display: flex;
+  align-items: center;
 }
 
 .help {
