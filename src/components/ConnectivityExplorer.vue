@@ -2,27 +2,86 @@
   <el-card :body-style="bodyStyle" class="content-card">
     <template #header>
       <div class="header">
-        <!-- TODO: keep the input and show popup form on keyup -->
-        <!-- <el-input
+        <el-input
           class="search-input"
           placeholder="Search"
           v-model="searchInput"
-          @keyup="searchEvent"
+          ref="searchInputRef"
           clearable
           @clear="clearSearchClicked"
-        ></el-input> -->
-        <!-- TODO: move the autocomplete into popup form -->
-        <el-autocomplete
-          class="search-input"
-          placeholder="Search"
-          v-model="searchInput"
-          :fetch-suggestions="fetchSuggestions"
-          @keyup.enter="searchEvent"
-          @select="searchEvent"
-          :teleported=false
-          clearable
-          popper-class="autocomplete-popper">
-        </el-autocomplete>
+        ></el-input>
+        <el-popover
+          v-if="searchInputRef"
+          ref="searchPopoverRef"
+          :virtual-ref="searchInputRef"
+          trigger="click"
+          virtual-triggering
+          popper-class="search-input-popover"
+          :teleported="false"
+          placement="bottom-start"
+        >
+          <p>Search neuron connections from point A to point B via components.</p>
+          <el-row>
+            <el-col :span="6">
+              Origin:
+            </el-col>
+            <el-col :span="18">
+              <el-autocomplete
+                class="search-input"
+                placeholder="Search origin"
+                v-model="searchInputOrigin"
+                :fetch-suggestions="fetchSuggestions"
+                @keyup.enter="searchEvent"
+                @select="searchEvent"
+                :teleported="false"
+                clearable
+                popper-class="autocomplete-popper">
+              </el-autocomplete>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              Via:
+            </el-col>
+            <el-col :span="18">
+              <el-autocomplete
+                class="search-input"
+                placeholder="Search via"
+                v-model="searchInputVia"
+                :fetch-suggestions="fetchSuggestions"
+                @keyup.enter="searchEvent"
+                @select="searchEvent"
+                :teleported="false"
+                clearable
+                popper-class="autocomplete-popper">
+              </el-autocomplete>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              Destination:
+            </el-col>
+            <el-col :span="18">
+              <el-autocomplete
+                class="search-input"
+                placeholder="Search destination"
+                v-model="searchInputDestination"
+                :fetch-suggestions="fetchSuggestions"
+                @keyup.enter="searchEvent"
+                @select="searchEvent"
+                :teleported="false"
+                clearable
+                popper-class="autocomplete-popper">
+              </el-autocomplete>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col>
+              <el-button class="secondary-button">Clear filters</el-button>
+              <el-button type="primary" class="button">Search</el-button>
+            </el-col>
+          </el-row>
+        </el-popover>
         <el-button
           type="primary"
           class="button"
@@ -111,6 +170,7 @@
 
 <script>
 /* eslint-disable no-alert, no-console */
+import { shallowRef } from 'vue';
 import {
   ElButton as Button,
   ElCard as Card,
@@ -131,6 +191,9 @@ import ConnectivityInfo from "./ConnectivityInfo.vue";
 
 var initial_state = {
   searchInput: "",
+  searchInputOrigin: "",
+  searchInputVia: "",
+  searchInputDestination: "",
   lastSearch: "",
   results: [],
   numberOfHits: 0,
@@ -193,6 +256,8 @@ export default {
       initLoading: true,
       expanded: "",
       expandedData: null,
+      searchInputRef: undefined,
+      searchPopoverRef: undefined,
     };
   },
   computed: {
@@ -480,6 +545,8 @@ export default {
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
     this.openSearch(this.filter, this.searchInput);
+    this.searchInputRef = shallowRef(this.$refs.searchInputRef);
+    this.searchPopoverRef = shallowRef(this.$refs.searchPopoverRef);
 
     EventBus.on('close-connectivity', () => {
       this.expanded = '';
@@ -544,8 +611,6 @@ export default {
   }
 }
 
-/* TODO: to update popup form */
-:deep(.el-autocomplete.search-input),
 .search-input {
   width: 298px !important;
   padding-right: 14px;
@@ -562,6 +627,27 @@ export default {
 :deep(.el-autocomplete.search-input .el-input .el-input__inner),
 .search-input :deep(.el-input__inner) {
   font-family: inherit;
+}
+
+:deep(.search-input-popover.el-popover.el-popper) {
+  width: 528px !important;
+  box-shadow: 8px 8px 16px 0px rgba(0,0,0,0.75);
+
+  p {
+    margin-top: 0;
+  }
+
+  .el-row {
+    align-items: center;
+
+    + .el-row {
+      margin-top: 1rem;
+    }
+
+    &:last-of-type {
+      text-align: end;
+    }
+  }
 }
 
 .header {
