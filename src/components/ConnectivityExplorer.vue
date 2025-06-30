@@ -1,7 +1,8 @@
 <template>
   <el-card :body-style="bodyStyle" class="content-card">
+    <MapSvgSpriteColor />
     <template #header>
-      <div class="header" @mouseleave="hoverChanged(undefined)">
+      <div class="header">
         <el-input
           class="search-input"
           placeholder="Search"
@@ -26,10 +27,32 @@
         >
           Reset
         </el-button>
-        <el-radio-group v-model="filterVisibility">
-          <el-radio :value="true">Focused</el-radio>
-          <el-radio :value="false">Contextual</el-radio>
-        </el-radio-group>
+        <div v-if="showVisibilityFilter" class="visibility-filter">
+          <el-radio-group v-model="filterVisibility">
+            <el-radio :value="true">Focused</el-radio>
+            <el-radio :value="false">Contextual</el-radio>
+          </el-radio-group>
+          <el-popover
+            title="How does filter visibility work?"
+            width="250"
+            trigger="hover"
+            popper-class="filter-help-popover"
+          >
+            <template #reference>
+              <MapSvgIcon icon="help" class="help" />
+            </template>
+            <div>
+              <strong>Focused:</strong>
+              <br />
+              Shows only the selected result
+              <br />
+              <br />
+              <strong>Contextual:</strong>
+              <br />
+              Shows all, highlights selected, greys out others
+            </div>
+          </el-popover>
+        </div>
       </div>
     </template>
     <SearchFilters
@@ -114,6 +137,7 @@ import SearchFilters from "./SearchFilters.vue";
 import SearchHistory from "./SearchHistory.vue";
 import ConnectivityCard from "./ConnectivityCard.vue";
 import ConnectivityInfo from "./ConnectivityInfo.vue";
+import { MapSvgIcon, MapSvgSpriteColor } from "@abi-software/svg-sprite";
 
 var initial_state = {
   searchInput: "",
@@ -138,6 +162,8 @@ export default {
     Icon,
     Input,
     Pagination,
+    MapSvgIcon,
+    MapSvgSpriteColor
   },
   name: "ConnectivityExplorer",
   props: {
@@ -165,6 +191,10 @@ export default {
       type: Array,
       default: [],
     },
+    showVisibilityFilter: {
+      type: Boolean,
+      default: false,
+    }
   },
   data: function () {
     return {
@@ -651,6 +681,39 @@ export default {
   &:hover {
     text-decoration-color: transparent;
     box-shadow: none !important;
+  }
+}
+
+.visibility-filter {
+  display: flex;
+  align-items: center;
+}
+
+.help {
+  width: 24px !important;
+  height: 24px;
+  transform: scale(1.1);
+  cursor: pointer;
+  color: #ffffff !important;
+}
+
+.filter-help-popover {
+  font-family: 'Asap', sans-serif;
+  background: #f3ecf6 !important;
+  border: 1px solid $app-primary-color !important;
+  border-radius: 4px !important;
+  color: #303133 !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+
+  .el-popper__arrow::before {
+    background: #f3ecf6 !important;
+    border-color: $app-primary-color !important;
+  }
+
+  &[data-popper-placement^=bottom] .el-popper__arrow:before {
+    border-bottom-color: transparent !important;
+    border-right-color: transparent !important;
   }
 }
 </style>
