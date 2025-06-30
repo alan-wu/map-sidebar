@@ -26,17 +26,25 @@
               Origin:
             </el-col>
             <el-col :span="18">
-              <el-autocomplete
-                class="search-input"
+              <el-select
+                class="search-multi-input"
                 placeholder="Search origin"
                 v-model="searchInputOrigin"
-                :fetch-suggestions="fetchOriginSuggestions"
-                @keyup.enter="searchEvent"
-                @select="searchEvent"
+                multiple
+                filterable
+                remote
+                reserve-keyword
+                :remote-method="fetchOriginSuggestions"
+                :loading="searchInputOriginLoading"
                 :teleported="false"
-                clearable
-                popper-class="autocomplete-popper">
-              </el-autocomplete>
+              >
+                <el-option
+                  v-for="item in searchInputOriginOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-col>
           </el-row>
           <el-row>
@@ -44,17 +52,25 @@
               Via:
             </el-col>
             <el-col :span="18">
-              <el-autocomplete
-                class="search-input"
+              <el-select
+                class="search-multi-input"
                 placeholder="Search via"
                 v-model="searchInputVia"
-                :fetch-suggestions="fetchViaSuggestions"
-                @keyup.enter="searchEvent"
-                @select="searchEvent"
+                multiple
+                filterable
+                remote
+                reserve-keyword
+                :remote-method="fetchViaSuggestions"
+                :loading="searchInputViaLoading"
                 :teleported="false"
-                clearable
-                popper-class="autocomplete-popper">
-              </el-autocomplete>
+              >
+                <el-option
+                  v-for="item in searchInputViaOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-col>
           </el-row>
           <el-row>
@@ -62,17 +78,25 @@
               Destination:
             </el-col>
             <el-col :span="18">
-              <el-autocomplete
-                class="search-input"
+              <el-select
+                class="search-multi-input"
                 placeholder="Search destination"
                 v-model="searchInputDestination"
-                :fetch-suggestions="fetchDestinationSuggestions"
-                @keyup.enter="searchEvent"
-                @select="searchEvent"
+                multiple
+                filterable
+                remote
+                reserve-keyword
+                :remote-method="fetchDestinationSuggestions"
+                :loading="searchInputDestinationLoading"
                 :teleported="false"
-                clearable
-                popper-class="autocomplete-popper">
-              </el-autocomplete>
+              >
+                <el-option
+                  v-for="item in searchInputDestinationOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-col>
           </el-row>
           <el-row>
@@ -192,8 +216,14 @@ import ConnectivityInfo from "./ConnectivityInfo.vue";
 var initial_state = {
   searchInput: "",
   searchInputOrigin: "",
+  searchInputOriginOptions: [],
+  searchInputOriginLoading: false,
   searchInputVia: "",
+  searchInputViaOptions: [],
+  searchInputViaLoading: false,
   searchInputDestination: "",
+  searchInputDestinationOptions: [],
+  searchInputDestinationLoading: false,
   lastSearch: "",
   results: [],
   numberOfHits: 0,
@@ -439,46 +469,64 @@ export default {
       this.searchInput = "";
       this.searchAndFilterUpdate();
     },
-    fetchSuggestions: function(term, cb, option) {
-      if (term === '') {
-        cb([])
+    getFlatmapKnowledge: function () {
+      let flatmapKnowledge = [];
+      const flatmapKnowledgeRaw = sessionStorage.getItem('flatmap-knowledge');
+      if (flatmapKnowledgeRaw) {
+        flatmapKnowledge = JSON.parse(flatmapKnowledgeRaw);
+      }
+      return flatmapKnowledge;
+    },
+    filterAndTransformResults: function (results, query) {
+      return results
+        .filter((item) => {
+          return JSON.stringify(item).toLowerCase().includes(query.toLowerCase())
+        })
+        .map((item) => {
+          return {
+            label: JSON.stringify(item),
+            value: JSON.stringify(item)
+          }
+        });
+    },
+    fetchOriginSuggestions: function(query) {
+      this.searchInputOriginLoading = true;
+      if (query) {
+        const flatmapKnowledge = this.getFlatmapKnowledge();
+        const results = extractOriginItems(flatmapKnowledge);
+        this.searchInputOriginLoading = false;
+        this.searchInputOriginOptions = this.filterAndTransformResults(results, query);
       } else {
-        let flatmapKnowledge = [];
-        const flatmapKnowledgeRaw = sessionStorage.getItem('flatmap-knowledge');
-        if (flatmapKnowledgeRaw) {
-          flatmapKnowledge = JSON.parse(flatmapKnowledgeRaw);
-        }
-
-        let results = [];
-        if (option === 'origin') {
-          results = extractOriginItems(flatmapKnowledge);
-        } else if (option === 'destination') {
-          results = extractDestinationItems(flatmapKnowledge);
-        } else if (option === 'via') {
-          results = extractViaItems(flatmapKnowledge);
-        }
-
-        const suggestions = results
-          .map((result) => ({
-            value: JSON.stringify(result)
-          }))
-          .filter((suggestion) =>
-            suggestion.value.toLowerCase().includes(term.toLowerCase())
-          );
-
-        cb(suggestions)
+        this.searchInputOriginLoading = false;
+        this.searchInputOriginOptions = []
       }
     },
-    fetchOriginSuggestions: function(term, cb) {
-      this.fetchSuggestions(term, cb, 'origin');
+    fetchViaSuggestions: function(query) {
+      this.searchInputViaLoading = true;
+      if (query) {
+        const flatmapKnowledge = this.getFlatmapKnowledge();
+        const results = extractOriginItems(flatmapKnowledge);
+        this.searchInputViaLoading = false;
+        this.searchInputViaOptions = this.filterAndTransformResults(results, query);
+      } else {
+        this.searchInputViaLoading = false;
+        this.searchInputViaOptions = []
+      }
     },
-    fetchViaSuggestions: function(term, cb) {
-      this.fetchSuggestions(term, cb, 'via');
-    },
-    fetchDestinationSuggestions: function(term, cb) {
-      this.fetchSuggestions(term, cb, 'destination');
+    fetchDestinationSuggestions: function(query) {
+      this.searchInputDestinationLoading = true;
+      if (query) {
+        const flatmapKnowledge = this.getFlatmapKnowledge();
+        const results = extractOriginItems(flatmapKnowledge);
+        this.searchInputDestinationLoading = false;
+        this.searchInputDestinationOptions = this.filterAndTransformResults(results, query);
+      } else {
+        this.searchInputDestinationLoading = false;
+        this.searchInputDestinationOptions = []
+      }
     },
     searchNeuronConnections: function (event = false) {
+      // TODO: to connect API
       console.log('origin', this.searchInputOrigin)
       console.log('via', this.searchInputVia)
       console.log('destination', this.searchInputDestination)
@@ -634,15 +682,12 @@ export default {
   padding-right: 14px;
   font-family: inherit;
   box-sizing: border-box;
-}
-
-:deep(.el-autocomplete.search-input .el-input),
-.search-input {
   height: 40px;
   font-family: inherit;
 }
 
-:deep(.el-autocomplete.search-input .el-input .el-input__inner),
+:deep(.el-select.search-multi-input .el-input),
+:deep(.el-select.search-multi-input .el-input .el-input__inner),
 .search-input :deep(.el-input__inner) {
   font-family: inherit;
 }

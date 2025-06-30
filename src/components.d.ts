@@ -13,7 +13,6 @@ declare module 'vue' {
     ConnectivityExplorer: typeof import('./components/ConnectivityExplorer.vue')['default']
     ConnectivityInfo: typeof import('./components/ConnectivityInfo.vue')['default']
     DatasetCard: typeof import('./components/DatasetCard.vue')['default']
-    ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCascader: typeof import('element-plus/es')['ElCascader']
