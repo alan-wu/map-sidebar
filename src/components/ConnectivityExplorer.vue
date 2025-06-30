@@ -527,9 +527,38 @@ export default {
     },
     searchNeuronConnections: function (event = false) {
       // TODO: to connect API
-      console.log('origin', this.searchInputOrigin)
-      console.log('via', this.searchInputVia)
-      console.log('destination', this.searchInputDestination)
+      const parameters = [];
+
+      const knowledgeSource = sessionStorage.getItem('flatmap-knowledge-source');
+      const source = {
+        column: 'source_id',
+        value: knowledgeSource,
+      };
+
+      const origin = {
+        column: 'source_node_id',
+        value: this.searchInputOrigin,
+      };
+
+      const destination = {
+        column: 'dest_node_id',
+        value: this.searchInputDestination,
+      };
+
+      const via = {
+        column: 'via_node_id',
+        value: this.searchInputVia,
+      };
+      if (!this.searchInputVia.length) {
+        via['negate'] = true;
+      }
+
+      parameters.push(source);
+      parameters.push(origin);
+      parameters.push(destination);
+      parameters.push(via);
+
+      console.log('parameters', parameters)
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
