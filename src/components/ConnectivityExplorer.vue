@@ -2,14 +2,27 @@
   <el-card :body-style="bodyStyle" class="content-card">
     <template #header>
       <div class="header">
-        <el-input
+        <!-- TODO: keep the input and show popup form on keyup -->
+        <!-- <el-input
           class="search-input"
           placeholder="Search"
           v-model="searchInput"
           @keyup="searchEvent"
           clearable
           @clear="clearSearchClicked"
-        ></el-input>
+        ></el-input> -->
+        <!-- TODO: move the autocomplete into popup form -->
+        <el-autocomplete
+          class="search-input"
+          placeholder="Search"
+          v-model="searchInput"
+          :fetch-suggestions="fetchSuggestions"
+          @keyup.enter="searchEvent"
+          @select="searchEvent"
+          :teleported=false
+          clearable
+          popper-class="autocomplete-popper">
+        </el-autocomplete>
         <el-button
           type="primary"
           class="button"
@@ -105,6 +118,11 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
+import {
+  extractOriginItems,
+  extractDestinationItems,
+  extractViaItems,
+} from '@abi-software/map-utilities';
 import EventBus from './EventBus.js'
 import SearchFilters from "./SearchFilters.vue";
 import SearchHistory from "./SearchHistory.vue";
@@ -356,6 +374,32 @@ export default {
       this.searchInput = "";
       this.searchAndFilterUpdate();
     },
+    // TODO: to update suggestions for origin, destination and via (components)
+    fetchSuggestions: function(term, cb) {
+      if (term === '') {
+        cb([])
+      } else {
+        let flatmapKnowledge = [];
+        const flatmapKnowledgeRaw = sessionStorage.getItem('flatmap-knowledge');
+        if (flatmapKnowledgeRaw) {
+          flatmapKnowledge = JSON.parse(flatmapKnowledgeRaw);
+        }
+
+        const results = extractOriginItems(flatmapKnowledge);
+        // const results = extractDestinationItems();
+        // const results = extractViaItems();
+
+        const suggestions = results
+          .map((result) => ({
+            value: JSON.stringify(result)
+          }))
+          .filter((suggestion) =>
+            suggestion.value.toLowerCase().includes(term.toLowerCase())
+          );
+
+        cb(suggestions)
+      }
+    },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.searchInput = this.searchInput.trim();
@@ -500,14 +544,24 @@ export default {
   }
 }
 
+/* TODO: to update popup form */
+:deep(.el-autocomplete.search-input),
 .search-input {
   width: 298px !important;
-  height: 40px;
   padding-right: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
 
-  :deep(.el-input__inner) {
-    font-family: inherit;
-  }
+:deep(.el-autocomplete.search-input .el-input),
+.search-input {
+  height: 40px;
+  font-family: inherit;
+}
+
+:deep(.el-autocomplete.search-input .el-input .el-input__inner),
+.search-input :deep(.el-input__inner) {
+  font-family: inherit;
 }
 
 .header {
