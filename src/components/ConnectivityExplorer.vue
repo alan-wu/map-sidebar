@@ -30,7 +30,7 @@
                 class="search-input"
                 placeholder="Search origin"
                 v-model="searchInputOrigin"
-                :fetch-suggestions="fetchSuggestions"
+                :fetch-suggestions="fetchOriginSuggestions"
                 @keyup.enter="searchEvent"
                 @select="searchEvent"
                 :teleported="false"
@@ -48,7 +48,7 @@
                 class="search-input"
                 placeholder="Search via"
                 v-model="searchInputVia"
-                :fetch-suggestions="fetchSuggestions"
+                :fetch-suggestions="fetchViaSuggestions"
                 @keyup.enter="searchEvent"
                 @select="searchEvent"
                 :teleported="false"
@@ -66,7 +66,7 @@
                 class="search-input"
                 placeholder="Search destination"
                 v-model="searchInputDestination"
-                :fetch-suggestions="fetchSuggestions"
+                :fetch-suggestions="fetchDestinationSuggestions"
                 @keyup.enter="searchEvent"
                 @select="searchEvent"
                 :teleported="false"
@@ -78,7 +78,7 @@
           <el-row>
             <el-col>
               <el-button class="secondary-button">Clear filters</el-button>
-              <el-button type="primary" class="button">Search</el-button>
+              <el-button type="primary" class="button" @click="searchNeuronConnections">Search</el-button>
             </el-col>
           </el-row>
         </el-popover>
@@ -439,8 +439,7 @@ export default {
       this.searchInput = "";
       this.searchAndFilterUpdate();
     },
-    // TODO: to update suggestions for origin, destination and via (components)
-    fetchSuggestions: function(term, cb) {
+    fetchSuggestions: function(term, cb, option) {
       if (term === '') {
         cb([])
       } else {
@@ -450,9 +449,14 @@ export default {
           flatmapKnowledge = JSON.parse(flatmapKnowledgeRaw);
         }
 
-        const results = extractOriginItems(flatmapKnowledge);
-        // const results = extractDestinationItems();
-        // const results = extractViaItems();
+        let results = [];
+        if (option === 'origin') {
+          results = extractOriginItems(flatmapKnowledge);
+        } else if (option === 'destination') {
+          results = extractDestinationItems(flatmapKnowledge);
+        } else if (option === 'via') {
+          results = extractViaItems(flatmapKnowledge);
+        }
 
         const suggestions = results
           .map((result) => ({
@@ -464,6 +468,20 @@ export default {
 
         cb(suggestions)
       }
+    },
+    fetchOriginSuggestions: function(term, cb) {
+      this.fetchSuggestions(term, cb, 'origin');
+    },
+    fetchViaSuggestions: function(term, cb) {
+      this.fetchSuggestions(term, cb, 'via');
+    },
+    fetchDestinationSuggestions: function(term, cb) {
+      this.fetchSuggestions(term, cb, 'destination');
+    },
+    searchNeuronConnections: function (event = false) {
+      console.log('origin', this.searchInputOrigin)
+      console.log('via', this.searchInputVia)
+      console.log('destination', this.searchInputDestination)
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
