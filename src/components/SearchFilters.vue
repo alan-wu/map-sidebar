@@ -1,7 +1,7 @@
 <template>
   <div class="filters">
     <MapSvgSpriteColor />
-    <div v-if="showFilters">
+    <div v-if="showFilters && options.length > 0">
       <div class="cascader-tag" v-if="presentTags.length > 0">
         <el-tag
           class="ml-2"
@@ -230,10 +230,12 @@ export default {
           // Populate the cascader with new options
           this.populateCascader().then(() => {
             this.cascaderIsReady = true
-            this.checkShowAllBoxes()
-            // this.setCascader(this.entry.filterFacets)
-            this.cssMods()
-            this.$emit('cascaderReady')
+            if (this.options.length) {
+              this.checkShowAllBoxes()
+              // this.setCascader(this.entry.filterFacets)
+              this.cssMods()
+              this.$emit('cascaderReady')
+            }
           })
         }
       },
