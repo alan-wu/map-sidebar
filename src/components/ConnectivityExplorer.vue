@@ -28,12 +28,13 @@
           Reset
         </el-button>
         <div v-if="showVisibilityFilter" class="visibility-filter">
-          <el-radio-group v-model="filterVisibility">
-            <el-radio :value="true">Focused</el-radio>
-            <el-radio :value="false">Contextual</el-radio>
-          </el-radio-group>
+          <el-checkbox
+            v-model="filterVisibility"
+          >
+          Focused
+          </el-checkbox>
           <el-popover
-            title="How does filter visibility work?"
+            title="How does focused checkbox work?"
             width="250"
             trigger="hover"
             popper-class="filter-help-popover"
@@ -42,14 +43,14 @@
               <MapSvgIcon icon="help" class="help" />
             </template>
             <div>
-              <strong>Focused:</strong>
+              <strong>Checked:</strong>
               <br />
-              Shows only the selected result
+              Display listed or highlighted items only.
               <br />
               <br />
-              <strong>Contextual:</strong>
+              <strong>Unchecked:</strong>
               <br />
-              Shows all, highlights selected, greys out others
+              Display listed or highlighted items in full colour and non-listed items in greyscale.
             </div>
           </el-popover>
         </div>
@@ -128,6 +129,7 @@
 import {
   ElButton as Button,
   ElCard as Card,
+  ElCheckbox as Checkbox,
   ElIcon as Icon,
   ElInput as Input,
   ElPagination as Pagination,
@@ -159,6 +161,7 @@ export default {
     ConnectivityInfo,
     Button,
     Card,
+    Checkbox,
     Icon,
     Input,
     Pagination,
@@ -584,18 +587,6 @@ export default {
       color: #ffffff;
     }
   }
-
-  .el-radio-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-
-    .el-radio {
-      color: #ffffff;
-      margin-left: 20px;
-      height: 20px;
-    }
-  }
 }
 
 .error-feedback {
@@ -677,6 +668,7 @@ export default {
   background-color: transparent !important;
   padding: 2px !important;
   height: auto !important;
+  margin-left: 4px!important;
 
   &:hover {
     text-decoration-color: transparent;
@@ -687,6 +679,16 @@ export default {
 .visibility-filter {
   display: flex;
   align-items: center;
+  padding-left: 12px;
+
+  :deep(.el-checkbox__label) {
+    padding-left: 4px !important;
+    color: #fff !important;
+  }
+
+  :deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
+    color: #f9f2fc !important;
+  }
 }
 
 .help {
