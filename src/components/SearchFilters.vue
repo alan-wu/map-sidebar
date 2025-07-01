@@ -1162,6 +1162,11 @@ export default {
       padding-left: 0;
       padding-right: 0;
     }
+
+    // hide show all for connection filters
+    + .el-cascader-node {
+      display: none;
+    }
   }
 
   &.hide {
