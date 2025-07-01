@@ -6,106 +6,10 @@
           class="search-input"
           placeholder="Search"
           v-model="searchInput"
-          ref="searchInputRef"
+          @keyup="searchEvent"
           clearable
           @clear="clearSearchClicked"
         ></el-input>
-        <el-popover
-          v-if="searchInputRef"
-          ref="searchPopoverRef"
-          :virtual-ref="searchInputRef"
-          trigger="click"
-          virtual-triggering
-          popper-class="search-input-popover"
-          :teleported="false"
-          placement="bottom-start"
-        >
-          <p>Search neuron connections from point A to point B via components.</p>
-          <el-row>
-            <el-col :span="6">
-              Origin:
-            </el-col>
-            <el-col :span="18">
-              <el-select
-                class="search-multi-input"
-                placeholder="Search origin"
-                v-model="searchInputOrigin"
-                multiple
-                filterable
-                remote
-                reserve-keyword
-                :remote-method="fetchOriginSuggestions"
-                :loading="searchInputOriginLoading"
-                :teleported="false"
-              >
-                <el-option
-                  v-for="item in searchInputOriginOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="6">
-              Via:
-            </el-col>
-            <el-col :span="18">
-              <el-select
-                class="search-multi-input"
-                placeholder="Search via"
-                v-model="searchInputVia"
-                multiple
-                filterable
-                remote
-                reserve-keyword
-                :remote-method="fetchViaSuggestions"
-                :loading="searchInputViaLoading"
-                :teleported="false"
-              >
-                <el-option
-                  v-for="item in searchInputViaOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="6">
-              Destination:
-            </el-col>
-            <el-col :span="18">
-              <el-select
-                class="search-multi-input"
-                placeholder="Search destination"
-                v-model="searchInputDestination"
-                multiple
-                filterable
-                remote
-                reserve-keyword
-                :remote-method="fetchDestinationSuggestions"
-                :loading="searchInputDestinationLoading"
-                :teleported="false"
-              >
-                <el-option
-                  v-for="item in searchInputDestinationOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col>
-              <el-button class="secondary-button">Clear filters</el-button>
-              <el-button type="primary" class="button" @click="searchNeuronConnections">Search</el-button>
-            </el-col>
-          </el-row>
-        </el-popover>
         <el-button
           type="primary"
           class="button"
@@ -194,7 +98,6 @@
 
 <script>
 /* eslint-disable no-alert, no-console */
-import { shallowRef } from 'vue';
 import {
   ElButton as Button,
   ElCard as Card,
@@ -202,11 +105,6 @@ import {
   ElInput as Input,
   ElPagination as Pagination,
 } from "element-plus";
-import {
-  extractOriginItems,
-  extractDestinationItems,
-  extractViaItems,
-} from '@abi-software/map-utilities';
 import EventBus from './EventBus.js'
 import SearchFilters from "./SearchFilters.vue";
 import SearchHistory from "./SearchHistory.vue";
@@ -215,15 +113,6 @@ import ConnectivityInfo from "./ConnectivityInfo.vue";
 
 var initial_state = {
   searchInput: "",
-  searchInputOrigin: "",
-  searchInputOriginOptions: [],
-  searchInputOriginLoading: false,
-  searchInputVia: "",
-  searchInputViaOptions: [],
-  searchInputViaLoading: false,
-  searchInputDestination: "",
-  searchInputDestinationOptions: [],
-  searchInputDestinationLoading: false,
   lastSearch: "",
   results: [],
   numberOfHits: 0,
@@ -286,8 +175,6 @@ export default {
       initLoading: true,
       expanded: "",
       expandedData: null,
-      searchInputRef: undefined,
-      searchPopoverRef: undefined,
     };
   },
   computed: {
@@ -469,97 +356,6 @@ export default {
       this.searchInput = "";
       this.searchAndFilterUpdate();
     },
-    getFlatmapKnowledge: function () {
-      let flatmapKnowledge = [];
-      const flatmapKnowledgeRaw = sessionStorage.getItem('flatmap-knowledge');
-      if (flatmapKnowledgeRaw) {
-        flatmapKnowledge = JSON.parse(flatmapKnowledgeRaw);
-      }
-      return flatmapKnowledge;
-    },
-    filterAndTransformResults: function (results, query) {
-      return results
-        .filter((item) => {
-          return JSON.stringify(item).toLowerCase().includes(query.toLowerCase())
-        })
-        .map((item) => {
-          return {
-            label: JSON.stringify(item),
-            value: JSON.stringify(item)
-          }
-        });
-    },
-    fetchOriginSuggestions: function(query) {
-      this.searchInputOriginLoading = true;
-      if (query) {
-        const flatmapKnowledge = this.getFlatmapKnowledge();
-        const results = extractOriginItems(flatmapKnowledge);
-        this.searchInputOriginLoading = false;
-        this.searchInputOriginOptions = this.filterAndTransformResults(results, query);
-      } else {
-        this.searchInputOriginLoading = false;
-        this.searchInputOriginOptions = []
-      }
-    },
-    fetchViaSuggestions: function(query) {
-      this.searchInputViaLoading = true;
-      if (query) {
-        const flatmapKnowledge = this.getFlatmapKnowledge();
-        const results = extractOriginItems(flatmapKnowledge);
-        this.searchInputViaLoading = false;
-        this.searchInputViaOptions = this.filterAndTransformResults(results, query);
-      } else {
-        this.searchInputViaLoading = false;
-        this.searchInputViaOptions = []
-      }
-    },
-    fetchDestinationSuggestions: function(query) {
-      this.searchInputDestinationLoading = true;
-      if (query) {
-        const flatmapKnowledge = this.getFlatmapKnowledge();
-        const results = extractOriginItems(flatmapKnowledge);
-        this.searchInputDestinationLoading = false;
-        this.searchInputDestinationOptions = this.filterAndTransformResults(results, query);
-      } else {
-        this.searchInputDestinationLoading = false;
-        this.searchInputDestinationOptions = []
-      }
-    },
-    searchNeuronConnections: function (event = false) {
-      // TODO: to connect API
-      const parameters = [];
-
-      const knowledgeSource = sessionStorage.getItem('flatmap-knowledge-source');
-      const source = {
-        column: 'source_id',
-        value: knowledgeSource,
-      };
-
-      const origin = {
-        column: 'source_node_id',
-        value: this.searchInputOrigin,
-      };
-
-      const destination = {
-        column: 'dest_node_id',
-        value: this.searchInputDestination,
-      };
-
-      const via = {
-        column: 'via_node_id',
-        value: this.searchInputVia,
-      };
-      if (!this.searchInputVia.length) {
-        via['negate'] = true;
-      }
-
-      parameters.push(source);
-      parameters.push(origin);
-      parameters.push(destination);
-      parameters.push(via);
-
-      console.log('parameters', parameters)
-    },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
         this.searchInput = this.searchInput.trim();
@@ -640,8 +436,6 @@ export default {
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
     this.openSearch(this.filter, this.searchInput);
-    this.searchInputRef = shallowRef(this.$refs.searchInputRef);
-    this.searchPopoverRef = shallowRef(this.$refs.searchPopoverRef);
 
     EventBus.on('close-connectivity', () => {
       this.expanded = '';
@@ -708,37 +502,12 @@ export default {
 
 .search-input {
   width: 298px !important;
+  height: 40px;
   padding-right: 14px;
   font-family: inherit;
-  box-sizing: border-box;
-  height: 40px;
-  font-family: inherit;
-}
 
-:deep(.el-select.search-multi-input .el-input),
-:deep(.el-select.search-multi-input .el-input .el-input__inner),
-.search-input :deep(.el-input__inner) {
-  font-family: inherit;
-}
-
-:deep(.search-input-popover.el-popover.el-popper) {
-  width: 528px !important;
-  box-shadow: 8px 8px 16px 0px rgba(0,0,0,0.75);
-
-  p {
-    margin-top: 0;
-  }
-
-  .el-row {
-    align-items: center;
-
-    + .el-row {
-      margin-top: 1rem;
-    }
-
-    &:last-of-type {
-      text-align: end;
-    }
+  :deep(.el-input__inner) {
+    font-family: inherit;
   }
 }
 
