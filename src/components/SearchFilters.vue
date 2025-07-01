@@ -273,8 +273,7 @@ export default {
     },
     isFlatmapConnectionsFilterNode: function (node) {
       return (
-        node.pathValues.includes('flatmap.connectivity.source') &&
-        node.pathLabels.includes('Connectivity') &&
+        node.pathValues[0].includes('flatmap.connectivity.source') &&
         node.pathLabels.includes('Filters') &&
         node.isDisabled &&
         node.isLeaf
@@ -299,15 +298,11 @@ export default {
           })
         }
 
-        if (facet.key === 'flatmap.connectivity.source') {
-          this.options[i].children.forEach((child) => {
-            if (child.children) {
-              child.children.unshift({
-                value: this.createCascaderItemValue('ConnectivityFilters'),
-                label: 'Filters',
-                disabled: true,
-              })
-            }
+        if (facet.key.includes('flatmap.connectivity.source')) {
+          this.options[i].children.unshift({
+            value: this.createCascaderItemValue('ConnectivityFilters'),
+            label: 'Filters',
+            disabled: true,
           });
         }
 
@@ -552,14 +547,9 @@ export default {
             let { facet, facet2, term } =
               this.getFacetsFromHierarchyString(hString)
             if (facet2) {
-              if (fs[0] === 'flatmap.connectivity.source') {
-                facetSubPropPath = 'flatmap.connectivity.source.' + facet.toLowerCase()
-                facet = facet2
-              } else {
               // We need to change the propPath if we are at the third level of the cascader
               facet = facet2
               facetSubPropPath = 'anatomy.organ.name'
-              }
             }
             return {
               facetPropPath: propPath,
