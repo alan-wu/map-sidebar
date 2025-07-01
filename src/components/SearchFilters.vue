@@ -552,9 +552,14 @@ export default {
             let { facet, facet2, term } =
               this.getFacetsFromHierarchyString(hString)
             if (facet2) {
+              if (fs[0] === 'flatmap.connectivity.source') {
+                facetSubPropPath = 'flatmap.connectivity.source.' + facet.toLowerCase()
+                facet = facet2
+              } else {
               // We need to change the propPath if we are at the third level of the cascader
               facet = facet2
               facetSubPropPath = 'anatomy.organ.name'
+              }
             }
             return {
               facetPropPath: propPath,
