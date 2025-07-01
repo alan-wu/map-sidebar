@@ -1153,6 +1153,7 @@ export default {
     background-color: white;
     z-index: 20;
     box-shadow: 0px -6px 0px 6px white;
+    cursor: default;
 
     .el-checkbox.is-disabled {
       display: none;
