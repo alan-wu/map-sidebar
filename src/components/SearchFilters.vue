@@ -701,7 +701,7 @@ export default {
         ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
           if (index > 0) {
             const content = li.querySelector('.el-cascader-node__label').textContent;
-            if (content.includes(value)) {
+            if (content.toLowerCase().includes(value.toLowerCase())) {
               li.classList.remove('hide');
             } else {
               li.classList.add('hide');
