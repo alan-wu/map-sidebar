@@ -21,7 +21,7 @@
         <el-button
           link
           class="el-button-link"
-          @click="openSearch([], '')"
+          @click="onResetClick"
           size="large"
         >
           Reset
@@ -299,6 +299,10 @@ export default {
       if ((!this.searchInput && !hasValidFacet) || this.numberOfHits === 0) {
         this.openSearch([], '');
       }
+    },
+    onResetClick: function () {
+      this.openSearch([], '');
+      this.$emit('connectivity-explorer-reset');
     },
     openSearch: function (filter, search = "") {
       this.searchInput = search;
