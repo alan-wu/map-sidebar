@@ -679,7 +679,7 @@ export default {
 .visibility-filter {
   display: flex;
   align-items: center;
-  padding-left: 12px;
+  padding-left: 16px;
 
   :deep(.el-checkbox__label) {
     padding-left: 4px !important;
