@@ -130,7 +130,7 @@ export default {
     Input,
     Pagination
   },
-  name: 'SideBarContent',
+  name: 'DatasetExplorer',
   props: {
     visible: {
       type: Boolean,
