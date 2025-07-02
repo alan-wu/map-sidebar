@@ -56,7 +56,7 @@
             :collapse-tags="true"
             collapse-tags-tooltip
             :options="options"
-            :props="props"
+            :props="cascaderProps"
             @change="cascadeEvent($event)"
             @expand-change="cascadeExpandChange"
             :show-all-levels="true"
@@ -206,7 +206,7 @@ export default {
       filters: [],
       facets: ['Species', 'Gender', 'Organ', 'Datasets'],
       numberDatasetsShown: ['10', '20', '50'],
-      props: { multiple: true },
+      cascaderProps: { multiple: true },
       options: [
         {
           value: 'Species',
