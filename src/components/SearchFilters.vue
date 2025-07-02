@@ -937,12 +937,16 @@ export default {
     },
   },
   mounted: function () {
-    this.algoliaClient = markRaw(new AlgoliaClient(
-      this.envVars.ALGOLIA_ID,
-      this.envVars.ALGOLIA_KEY,
-      this.envVars.PENNSIEVE_API_LOCATION
-    ))
-    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
+    // in populateCascader function,
+    // algoliaClient run only when there are no this.entry.options
+    if (!this.entry.options) {
+      this.algoliaClient = markRaw(new AlgoliaClient(
+        this.envVars.ALGOLIA_ID,
+        this.envVars.ALGOLIA_KEY,
+        this.envVars.PENNSIEVE_API_LOCATION
+      ))
+      this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
+    }
     this.populateCascader().then(() => {
       this.cascaderIsReady = true
       this.checkShowAllBoxes()
