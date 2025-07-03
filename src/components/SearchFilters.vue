@@ -64,13 +64,15 @@
           >
             <template #default="{ node, data }">
               <div v-if="isFlatmapConnectionsFilterNode(node)">
-                <div class="el-input">
+                <div class="sidebar-cascader-search el-input">
                   <div class="el-input__wrapper">
                     <input
                       class="el-input__inner"
                       :ref="'searchInput_' + node.pathValues[0]"
                       :value="searchInputs[node.pathValues[0]]"
                       @input="searchInputChange($event, node)"
+                      @focus="searchInputFocusToggle($event, true)"
+                      @blur="searchInputFocusToggle($event, false)"
                       style="width: 100%"
                       autocomplete="off"
                       placeholder="Search"
@@ -694,17 +696,25 @@ export default {
         this.updateListFilters();
       }
     },
+    searchInputFocusToggle: function (event, option) {
+      const { target } = event;
+      if (!target) return;
+
+      const inputWrapper = target.closest('.el-input__wrapper');
+      if (option === true) {
+        inputWrapper.classList.add('is-focus');
+      } else {
+        inputWrapper.classList.remove('is-focus');
+      }
+    },
     updateListFilters: function () {
       const expandItem = this.__expandItem__[0];
-      const searchValue = this.searchInputs[expandItem];
-
-      if (!searchValue) return;
+      const searchValue = this.searchInputs[expandItem] || '';
 
       this.$nextTick(() => {
         const searchInputEl = this.$refs['searchInput_' + expandItem];
 
         if (searchInputEl) {
-          searchInputEl.focus();
           const ul = searchInputEl.closest('.el-cascader-menu__list');
           ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
             // skip index:0 (search box), and index:1 (Show all)
@@ -716,7 +726,11 @@ export default {
                 li.classList.add('hide');
               }
             }
-          })
+          });
+
+          if (searchValue) {
+            searchInputEl.focus();
+          }
         }
       });
     },
@@ -1197,6 +1211,10 @@ export default {
   &.hide {
     display: none;
   }
+}
+
+.sidebar-cascader-popper .sidebar-cascader-search.el-input {
+  --el-input-focus-border-color: #{$app-primary-color};
 }
 
 .filter-help-popover,
