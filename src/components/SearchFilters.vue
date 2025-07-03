@@ -68,7 +68,8 @@
                   <div class="el-input__wrapper">
                     <input
                       class="el-input__inner"
-                      :value="searchInputs[node.value]"
+                      :ref="'searchInput_' + node.pathValues[0]"
+                      :value="searchInputs[node.pathValues[0]]"
                       @input="searchInputChange($event, node)"
                       style="width: 100%"
                       autocomplete="off"
@@ -680,6 +681,7 @@ export default {
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
       this.__expandItem__ = event
+      this.updateListFilters()
       this.cssMods()
     },
     searchInputChange: function (event, node) {
@@ -687,18 +689,36 @@ export default {
       const { target } = event;
       if (target) {
         const value = target.value;
-        const ul = target.closest('.el-cascader-menu__list');
-        ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
-          if (index > 0) {
-            const content = li.querySelector('.el-cascader-node__label').textContent;
-            if (content.toLowerCase().includes(value.toLowerCase())) {
-              li.classList.remove('hide');
-            } else {
-              li.classList.add('hide');
-            }
-          }
-        })
+
+        this.searchInputs[node.pathValues[0]] = value;
+        this.updateListFilters();
       }
+    },
+    updateListFilters: function () {
+      const expandItem = this.__expandItem__[0];
+      const searchValue = this.searchInputs[expandItem];
+
+      if (!searchValue) return;
+
+      this.$nextTick(() => {
+        const searchInputEl = this.$refs['searchInput_' + expandItem];
+
+        if (searchInputEl) {
+          searchInputEl.focus();
+          const ul = searchInputEl.closest('.el-cascader-menu__list');
+          ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
+            // skip index:0 (search box), and index:1 (Show all)
+            if (index > 1) {
+              const content = li.querySelector('.el-cascader-node__label').textContent;
+              if (content.toLowerCase().includes(searchValue.toLowerCase())) {
+                li.classList.remove('hide');
+              } else {
+                li.classList.add('hide');
+              }
+            }
+          })
+        }
+      });
     },
     numberShownChanged: function (event) {
       this.$emit('numberPerPage', parseInt(event))
