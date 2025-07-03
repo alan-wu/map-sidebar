@@ -684,7 +684,31 @@ export default {
       //work around as the expand item may change on modifying the cascade props
       this.__expandItem__ = event
       this.updateListFilters()
+      this.updateListStyleOrder()
       this.cssMods()
+    },
+    updateListStyleOrder: function () {
+      this.$nextTick(() => {
+        const cascaderRef = this.$refs.cascader;
+        const contentRef = cascaderRef?.contentRef;
+
+        if (contentRef) {
+          const menuList = contentRef.querySelectorAll('.el-cascader-menu__list');
+          if (menuList) {
+            menuList.forEach((ul) => {
+              const searchInput = ul.querySelector('.sidebar-cascader-search');
+
+              // order the list using CSS
+              // active items on top - defined in CSS under .cascader-menu-with-search
+              if (searchInput) {
+                ul.classList.add('cascader-menu-with-search');
+              } else {
+                ul.classList.remove('cascader-menu-with-search');
+              }
+            })
+          }
+        }
+      });
     },
     searchInputChange: function (event, node) {
       event.preventDefault();
@@ -1214,6 +1238,21 @@ export default {
 
 .sidebar-cascader-popper .sidebar-cascader-search.el-input {
   --el-input-focus-border-color: #{$app-primary-color};
+}
+
+.sidebar-cascader-popper .el-cascader-menu__list.cascader-menu-with-search {
+  display: flex;
+  flex-direction: column;
+
+  .el-cascader-node:nth-child(1),
+  .el-cascader-node:nth-child(2),
+  .el-cascader-node.is-active {
+    order: 1;
+  }
+
+  .el-cascader-node {
+    order: 2;
+  }
 }
 
 .filter-help-popover,
