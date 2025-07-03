@@ -713,24 +713,23 @@ export default {
 
       this.$nextTick(() => {
         const searchInputEl = this.$refs['searchInput_' + expandItem];
+        if (!searchInputEl) return;
 
-        if (searchInputEl) {
-          const ul = searchInputEl.closest('.el-cascader-menu__list');
-          ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
-            // skip index:0 (search box), and index:1 (Show all)
-            if (index > 1) {
-              const content = li.querySelector('.el-cascader-node__label').textContent;
-              if (content.toLowerCase().includes(searchValue.toLowerCase())) {
-                li.classList.remove('hide');
-              } else {
-                li.classList.add('hide');
-              }
+        const ul = searchInputEl.closest('.el-cascader-menu__list');
+        ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
+          // skip index:0 (search box), and index:1 (Show all)
+          if (index > 1) {
+            const content = li.querySelector('.el-cascader-node__label').textContent;
+            if (content.toLowerCase().includes(searchValue.toLowerCase())) {
+              li.classList.remove('hide');
+            } else {
+              li.classList.add('hide');
             }
-          });
-
-          if (searchValue) {
-            searchInputEl.focus();
           }
+        });
+
+        if (searchValue) {
+          searchInputEl.focus();
         }
       });
     },
