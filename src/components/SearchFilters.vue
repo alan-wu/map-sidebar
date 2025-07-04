@@ -944,33 +944,47 @@ export default {
       return false
     },
     getHierarchicalValidatedFilters: function (filters) {
+      const result = []
+      const terms = []
+      const notFound = []
+
       if (filters) {
-        if (this.cascaderIsReady) {
-          const result = []
-          const terms = []
-          filters.forEach((filter) => {
-            const validatedFilter =
-              this.validateAndConvertFilterToHierarchical(filter)
-            if (validatedFilter) {
-              result.push(validatedFilter)
-              terms.push(validatedFilter.term)
-            }
-          })
-          // make sure unused filter terms' show all checkbox is always checked
-          this.options.forEach((option)=>{
-            if (!terms.includes(option.label)) {
-              result.push({
-                facet: "Show all",
-                facetPropPath: option.key,
-                label: "Show all",
-                term: option.label
-              })
-            }
-          })
-          return result
-        } else return filters
+        if (!this.cascaderIsReady) {
+          return {
+            result: filters,
+            notFound: notFound,
+          }
+        }
+
+        filters.forEach((filter) => {
+          const validatedFilter =
+            this.validateAndConvertFilterToHierarchical(filter)
+          if (validatedFilter) {
+            result.push(validatedFilter)
+            terms.push(validatedFilter.term)
+          } else {
+            // not found items
+            notFound.push(filter)
+          }
+        })
+
+        // make sure unused filter terms' show all checkbox is always checked
+        this.options.forEach((option)=>{
+          if (!terms.includes(option.label)) {
+            result.push({
+              facet: "Show all",
+              facetPropPath: option.key,
+              label: "Show all",
+              term: option.label
+            })
+          }
+        })
       }
-      return []
+
+      return {
+        result: result,
+        notFound: notFound,
+      }
     },
     hasLineStyles: function(item) {
       return 'colour' in item && item.colourStyle === 'line'
