@@ -207,6 +207,7 @@ export default {
             offset: 113,
           });
         });
+
         //Facets provided but cannot find at least one valid
         //facet. Tell the users the search is invalid and reset
         //facets check boxes.

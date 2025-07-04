@@ -344,13 +344,13 @@ export default {
       // disable hover changes when show connectivity is clicked
       if (!this.freezed) {
         let payload = { tabType: "connectivity" };
-  
+
         if (data) {
           payload = {...payload, ...data};
         } else if (this.expandedData) {
           payload = {...payload, ...this.expandedData};
         }
-  
+
         this.$emit("hover-changed", payload);
       }
     },
@@ -367,7 +367,7 @@ export default {
     },
     onResetClick: function () {
       this.openSearch([], '');
-      this.$emit('connectivity-explorer-reset');
+      this.$emit('connectivity-explorer-reset', []);
     },
     openSearch: function (filter, search = "") {
       this.searchInput = search;
@@ -387,6 +387,11 @@ export default {
             offset: 113,
           });
         });
+
+        if (notFoundItems.length) {
+          this.$emit('connectivity-explorer-reset', notFoundItems);
+        }
+
         //Facets provided but cannot find at least one valid
         //facet. Tell the users the search is invalid and reset
         //facets check boxes.
