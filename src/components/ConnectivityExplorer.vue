@@ -642,6 +642,10 @@ export default {
   .el-icon.el-message__icon {
     display: none;
   }
+
+  .el-message__closeBtn {
+    margin-left: auto;
+  }
 }
 
 .content {
