@@ -446,8 +446,17 @@ export default {
       this.cascaderTags = {}
       this.presentTags = []
       event.map((item) => {
-        const { facet, facet2, term } = item
-        if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facet)) {
+        const { facet, facet2, term, tagLabel, facetPropPath } = item
+        let facetLabel = facet;
+
+        // Connectivity filter has different value and label,
+        // value is used for filter logic
+        // label is used for user interface (and this cascader tag is just user interface)
+        if (facetPropPath && facetPropPath.includes('flatmap.connectivity.source.') && tagLabel) {
+          facetLabel = tagLabel;
+        }
+
+        if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facetLabel)) {
           if (facet2) {
             if (this.correctnessCheck.facet2.has(facet2)) {
               if (term in this.cascaderTags) {
@@ -462,11 +471,14 @@ export default {
             // If 'cascaderTags' has key 'Anatomical structure',
             // it's value type will be Object (because it has nested facets),
             // in this case 'push' action will not available.
-            if (term in this.cascaderTags && term !== 'Anatomical structure')
-              this.cascaderTags[term].push(facet)
-            else {
-              if (facet.toLowerCase() !== "show all") this.cascaderTags[term] = [facet]
-              else this.cascaderTags[term] = []
+            if (term in this.cascaderTags && term !== 'Anatomical structure') {
+              this.cascaderTags[term].push(facetLabel)
+            } else {
+              if (facet.toLowerCase() !== "show all") {
+                this.cascaderTags[term] = [facetLabel]
+              } else {
+                this.cascaderTags[term] = []
+              }
             }
           }
         }
@@ -528,6 +540,13 @@ export default {
         event = this.showAllEventModifier(event)
 
         event = this.showAllEventModifierForAutoCheckAll(event)
+
+        const cascaderRef = this.$refs.cascader;
+        const checkedNodes = cascaderRef?.getCheckedNodes(true);
+        const filteredCheckedNodes = checkedNodes.filter((checkedNode) =>
+          checkedNode.checked && checkedNode.label !== 'Show all'
+        );
+
         /**
          * Move the new added event to the beginning
          * Otherwise, cascader will show different expand item
@@ -549,12 +568,19 @@ export default {
               this.findHierarachyStringAndBooleanString(fs)
             let { facet, facet2, term } =
               this.getFacetsFromHierarchyString(hString)
+
+            const foundNode = filteredCheckedNodes.find((checkedNode) =>
+              fs.join() === checkedNode.pathValues.join()
+            );
+            const tagLabel = foundNode ? foundNode.label : undefined;
+
             return {
               facetPropPath: fs[0],
               facet: facet,
               facet2: facet2,
               term: term,
               AND: bString, // for setting the boolean
+              tagLabel: tagLabel // for connectivity filter's cascader tag
             }
           })
 
