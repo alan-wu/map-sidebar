@@ -86,6 +86,9 @@
                     <div class="path-visual" :style="getLineStyles(data)"></div>
                   </el-col>
                   <el-col :span="20">
+                    <span v-if="isFlatmapConnectionsNode(node)" class="sr-only">
+                      {{ getNodeKey(node.value) }}
+                    </span>
                     <div :style="getBackgroundStyles(data)">
                       {{ data.label }}
                     </div>
@@ -273,6 +276,15 @@ export default {
           `Warning: ${facet2} provided without its parent, this will not be shown in the cascader`
         )
       return value
+    },
+    getNodeKey: function (nodeValue) {
+      return nodeValue ? nodeValue.split('>')[1] : '';
+    },
+    isFlatmapConnectionsNode: function (node) {
+      return (
+        node.pathValues[0].includes('flatmap.connectivity.source') &&
+        node.isLeaf
+      )
     },
     isFlatmapConnectionsFilterNode: function (node) {
       return (
@@ -1304,5 +1316,15 @@ export default {
   width: 25px;
   margin-right: 5px;
   display: inline-block;
+}
+
+.sr-only {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 </style>
