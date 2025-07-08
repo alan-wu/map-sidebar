@@ -317,8 +317,17 @@ export default {
               facetItem.label
             )
           }
-          this.options[i].children[j].value =
-            this.createCascaderItemValue(facet.label, facetItem.label)
+
+          // Use key as value for connectivity source filters
+          if (facetItem.key && facet.key.includes('flatmap.connectivity.source.')) {
+            const childKey = facetItem.key;
+            const parentKey = facet.key;
+            const key = childKey.replace(`${parentKey}.`, '');
+            this.options[i].children[j].value = this.createCascaderItemValue(facet.label, key);
+          } else {
+            this.options[i].children[j].value = this.createCascaderItemValue(facet.label, facetItem.label)
+          }
+
           if (
             this.options[i].children[j].children &&
             this.options[i].children[j].children.length > 0
