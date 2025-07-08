@@ -6,7 +6,13 @@
         <div class="card-title">{{ capitalise(entry.label) }}</div>
         <template v-for="field in displayFields" :key="field">
           <div class="card-details" v-if="entry[field]">
-            <strong>{{ field }}:</strong> {{ entry[field] }}
+            <strong>{{ field }}:</strong>
+            <div v-if="field === 'nerve-label'" class="card-tags">
+              <el-tag type="primary" size="small" v-for="nerve in entry[field]">
+                {{ nerve }}
+              </el-tag>
+            </div>
+            <span v-else>{{ entry[field] }}</span>
           </div>
         </template>
       </div>
@@ -19,7 +25,7 @@ export default {
   name: "ConnectivityCard",
   data() {
     return {
-      displayFields: ["id"],
+      displayFields: ["id", "nerve-label"],
     };
   },
   props: {
@@ -89,5 +95,16 @@ export default {
 .card-details {
   line-height: 1.5;
   letter-spacing: 1.05px;
+}
+
+.card-tags {
+  overflow-y: scroll;
+  max-height: 4.1rem;
+
+  &::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari and Opera */
+  }
+  -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+  scrollbar-width: none;  /* Hide scrollbar for Firefox */
 }
 </style>
