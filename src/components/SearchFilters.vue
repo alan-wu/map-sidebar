@@ -601,12 +601,19 @@ export default {
               facet = facet2
               facetSubPropPath = 'anatomy.organ.name'
             }
+
+            const foundNode = filteredCheckedNodes.find((checkedNode) =>
+              fs.join() === checkedNode.pathValues.join()
+            );
+            const tagLabel = foundNode ? foundNode.label : undefined;
+
             return {
               facetPropPath: propPath,
               facet: facet,
               term: term,
               AND: bString, // for setting the boolean
               facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
+              tagLabel: tagLabel // for connectivity filter's cascader tag
             }
           })
 
