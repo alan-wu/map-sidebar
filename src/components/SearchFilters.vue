@@ -972,7 +972,13 @@ export default {
           for (const firstLayer of this.options) {
             if (firstLayer.value === filter.facetPropPath) {
               for (const secondLayer of firstLayer.children) {
-                if (secondLayer.label?.toLowerCase() === lowercase) {
+                // connectivity filters
+                if (filter.facetPropPath.includes('flatmap.connectivity.source.') && secondLayer.key) {
+                  const value = secondLayer.key.replace(`${filter.facetPropPath}.`, '');
+                  if (value.toLowerCase() === lowercase) {
+                    return filter
+                  }
+                } else if (secondLayer.label?.toLowerCase() === lowercase) {
                   // if we find a match on the second level, the filter will already be correct
                   // Make sure the case matches the one from Algolia
                   filter.facet = secondLayer.label
