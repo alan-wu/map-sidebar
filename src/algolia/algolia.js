@@ -18,12 +18,17 @@ export class AlgoliaClient {
   getAlgoliaFacets(propPathMapping) {
     const facetPropPaths = propPathMapping.map(facet => facet.facetPropPath)
     const facetSubpropPaths = propPathMapping.map(item => item.facetSubpropPath)
+    const facetSubsubpropPaths = propPathMapping.map(
+      item => item.facetSubsubpropPath).filter(
+        i => i !== undefined
+      )
     let facetData = []
     let facetId = 0
+    console.log("getAlgoliaFacets", facetPropPaths.concat(facetSubpropPaths).concat(facetSubsubpropPaths))
     return this.index
       .search('', {
         sortFacetValuesBy: 'alpha',
-        facets: facetPropPaths.concat(facetSubpropPaths),
+        facets: facetPropPaths.concat(facetSubpropPaths).concat(facetSubsubpropPaths),
       })
       .then(response => {
         facetPropPaths.map((facetPropPath) => {

@@ -14,6 +14,7 @@ export const facetPropPathMapping = [
     id: 'anatomy.organ.category',
     facetPropPath: 'anatomy.organ.category.name',
     facetSubpropPath: 'anatomy.organ.subcategory.name',
+    facetSubsubpropPath: 'anatomy.organ.subsubcategory.name',
     facetFilterPath: 'anatomy.organ.name'
   },
   {
