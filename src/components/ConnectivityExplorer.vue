@@ -380,8 +380,9 @@ export default {
 
         // Show not found filter items warning message
         notFoundItems.forEach((notFoundItem) => {
+          const itemLabel = notFoundItem.tagLabel || notFoundItem.facet;
           Message({
-            message: `${notFoundItem.facet} cannot be found in ${notFoundItem.term}!`,
+            message: `${itemLabel} cannot be found in ${notFoundItem.term}!`,
             appendTo: this.$el,
             showClose: true,
             offset: 113,
