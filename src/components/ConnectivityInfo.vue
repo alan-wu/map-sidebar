@@ -110,6 +110,35 @@
       </div>
     </div>
 
+    <div v-if="entry['nerve-label']" class="block">
+      <div class="attribute-title-container">
+        <span class="attribute-title">Nerves</span>
+      </div>
+      <div
+        v-for="(nerve, i) in entry['nerve-label']"
+        class="attribute-content"
+        :origin-item-label="nerve"
+        :key="nerve"
+      >
+        <el-popover
+          width="150"
+          trigger="hover"
+          :teleported="false"
+          popper-class="popover-origin-help"
+        >
+          <template #reference>
+            <el-icon
+              class="magnify-glass"
+            >
+              <el-icon-search />
+            </el-icon>
+          </template>
+          <span>Search nerve</span>
+        </el-popover>
+        <span>{{ capitalise(nerve) }}</span>
+      </div>
+    </div>
+
     <div class="content-container content-container-connectivity" v-show="activeView === 'listView'">
       <connectivity-list
         v-loading="connectivityLoading"
@@ -913,6 +942,48 @@ export default {
 
   &:not([style*="display: none"]) ~ .content-container-references {
     margin-top: -1.25rem;
+  }
+}
+
+.attribute-content {
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.25s ease;
+  position: relative;
+  cursor: default;
+  padding-left: 16px;
+
+  .magnify-glass {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &:hover {
+    color: $app-primary-color;
+
+    .magnify-glass {
+      display: block;
+      padding-top: 4px;
+      cursor: pointer;
+    }
+  }
+
+  + .attribute-content {
+    &::before {
+      content: "";
+      width: 90%;
+      height: 1px;
+      background-color: var(--el-border-color);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+
+  &:last-of-type {
+    margin-bottom: 0.5em;
   }
 }
 </style>
