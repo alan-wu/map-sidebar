@@ -668,7 +668,6 @@ export default {
   background-color: transparent !important;
   padding: 2px !important;
   height: auto !important;
-  margin-left: 4px!important;
 
   &:hover {
     text-decoration-color: transparent;
