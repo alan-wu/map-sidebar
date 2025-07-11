@@ -119,6 +119,8 @@
         class="attribute-content"
         :origin-item-label="nerve"
         :key="nerve"
+        @mouseenter="onConnectivityHovered(nerve)"
+        @mouseleave="onConnectivityHovered()"
       >
         <el-popover
           width="150"
@@ -127,9 +129,7 @@
           popper-class="popover-origin-help"
         >
           <template #reference>
-            <el-icon
-              class="magnify-glass"
-            >
+            <el-icon class="magnify-glass" @click="onConnectivityClicked(nerve)">
               <el-icon-search />
             </el-icon>
           </template>
@@ -500,6 +500,7 @@ export default {
     onConnectivityHovered: function (label) {
       const payload = {
         connectivityInfo: this.entry,
+        label: label,
         data: label ? this.getConnectivityDatasets(label) : [],
       };
       // type: to show error only for click event
