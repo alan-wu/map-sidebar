@@ -348,6 +348,8 @@ export default {
           } else {
             const filePath = simulation.dataset.path
             const id = simulation.identifier
+            //Despite of the name, this method can be used to retreive
+            //the thumbnail information for any none scaffold type thumbnail
             const thumbnail = this.getThumbnailForPlot(
               simulation,
               this.entry.thumbnails
