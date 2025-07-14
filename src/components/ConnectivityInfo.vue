@@ -436,6 +436,14 @@ export default {
         return contentString;
       }
 
+      // Nerves
+      if (this.entry['nerve-label']?.length) {
+        const title = 'Nerves';
+        const nerves = this.entry['nerve-label'];
+        const transformedOrigins = transformData(title, nerves);
+        contentArray.push(transformedOrigins);
+      }
+      
       // Origins
       if (this.origins?.length) {
         const title = 'Origin';
