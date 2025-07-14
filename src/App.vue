@@ -209,8 +209,8 @@ export default {
     // For connectivity input actions
     action: function (action) {
       console.log('action fired: ', action)
-      if (action.label) {
-        let facets = [];
+      let facets = [];
+      if (action.labels) {
         facets.push(
           ...action.labels.map(val => ({
             facet: capitalise(val),
@@ -219,7 +219,7 @@ export default {
           }))
         );
       }
-      if (this.$refs.sideBar && facets) {
+      if (this.$refs.sideBar && facets?.length) {
         console.log('openSearch', facets)
         this.$refs.sideBar.openSearch(facets, "");
       }

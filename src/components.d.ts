@@ -45,7 +45,6 @@ declare module 'vue' {
     SearchFilters: typeof import('./components/SearchFilters.vue')['default']
     SearchHistory: typeof import('./components/SearchHistory.vue')['default']
     SideBar: typeof import('./components/SideBar.vue')['default']
-    SidebarContent: typeof import('./components/SidebarContent.vue')['default']
     Tabs: typeof import('./components/Tabs.vue')['default']
   }
   export interface ComponentCustomProperties {
