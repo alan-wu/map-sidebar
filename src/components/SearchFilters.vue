@@ -1187,7 +1187,7 @@ export default {
     color: #303133 !important;
     background-color: #fff;
     border-color: #dcdfe6 !important;
-    width: 100%;
+    width: auto;
     max-width: 100%;
     justify-content: flex-start;
   }
