@@ -1171,12 +1171,12 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
 
-  .el-tag .el-tag__content {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+:deep(.connectivity-tag .el-tag__content) {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .el-tag {
@@ -1187,7 +1187,9 @@ export default {
     color: #303133 !important;
     background-color: #fff;
     border-color: #dcdfe6 !important;
+    width: 100%;
     max-width: 100%;
+    justify-content: flex-start;
   }
 }
 
