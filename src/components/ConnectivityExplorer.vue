@@ -554,7 +554,7 @@ export default {
   transition: all 0.3s ease;
 
   .connectivity-card {
-    max-height: 210px;
+    max-height: 215px;
   }
   .connectivity-info {
     background-color: #f7faff;
