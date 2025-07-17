@@ -114,28 +114,53 @@
       <div class="attribute-title-container">
         <span class="attribute-title">Nerves</span>
       </div>
-      <div
-        v-for="(nerve, i) in entry['nerve-label']"
-        class="attribute-content"
-        :origin-item-label="nerve"
-        :key="nerve"
-        @mouseenter="onConnectivityHovered(nerve)"
-        @mouseleave="onConnectivityHovered()"
-      >
-        <el-popover
-          width="150"
-          trigger="hover"
-          :teleported="false"
-          popper-class="popover-origin-help"
+      <div v-for="(nerve, i) in entry['nerve-label']">
+        <div
+          class="attribute-content"
+          :origin-item-label="nerve.nerve"
+          :key="nerve.nerve"
+          @mouseenter="onConnectivityHovered(nerve.nerve)"
+          @mouseleave="onConnectivityHovered()"
         >
-          <template #reference>
-            <el-icon class="magnify-glass" @click="onConnectivityClicked(nerve)">
-              <el-icon-search />
-            </el-icon>
-          </template>
-          <span>Search nerve</span>
-        </el-popover>
-        <span>{{ capitalise(nerve) }}</span>
+          <el-popover
+            width="150"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-origin-help"
+          >
+            <template #reference>
+              <el-icon class="magnify-glass" @click="onConnectivityClicked(nerve.nerve)">
+                <el-icon-search />
+              </el-icon>
+            </template>
+            <span>Search nerve</span>
+          </el-popover>
+          <span>{{ capitalise(nerve.nerve) }}</span>
+        </div>
+        <div
+          v-for="(subNerve, i) in nerve.subNerves"
+          class="attribute-content"
+          style="margin-left: 1rem"
+          :origin-item-label="subNerve"
+          :key="subNerve"
+          @mouseenter="onConnectivityHovered(subNerve)"
+          @mouseleave="onConnectivityHovered()"
+        >
+          <el-popover
+            width="150"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-origin-help"
+          >
+            <template #reference>
+              <el-icon class="magnify-glass" @click="onConnectivityClicked(subNerve)">
+                <el-icon-search />
+              </el-icon>
+            </template>
+            <span>Search sub nerve</span>
+          </el-popover>
+          <span>{{ capitalise(subNerve) }}</span>
+        </div>
       </div>
     </div>
 
@@ -440,8 +465,9 @@ export default {
       if (this.entry['nerve-label']?.length) {
         const title = 'Nerves';
         const nerves = this.entry['nerve-label'];
-        const transformedOrigins = transformData(title, nerves);
-        contentArray.push(transformedOrigins);
+        const nerveLabels = nerves.map(nerve => Object.values(nerve)).flat(Infinity);
+        const transformedNerves = transformData(title, nerveLabels);
+        contentArray.push(transformedNerves);
       }
       
       // Origins

@@ -8,9 +8,14 @@
           <div class="card-details" v-if="entry[field]">
             <strong>{{ field }}:</strong>
             <div v-if="field === 'nerve-label'" class="card-tags">
-              <el-tag type="primary" size="small" v-for="nerve in entry[field]">
-                {{ nerve }}
-              </el-tag>
+              <div v-for="nerve in entry[field]" :key="nerve.nerve">
+                <el-tag type="primary" size="small">
+                  {{ nerve.nerve }}
+                </el-tag>
+                <el-tag type="primary" size="small" v-for="subNerve in nerve.subNerves">
+                  {{ subNerve }}
+                </el-tag>
+              </div>
             </div>
             <span v-else>{{ entry[field] }}</span>
           </div>
@@ -104,7 +109,7 @@ export default {
   &::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Chrome, Safari and Opera */
   }
-  -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
-  scrollbar-width: none;  /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
 }
 </style>
