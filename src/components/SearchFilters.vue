@@ -379,7 +379,7 @@ export default {
           this.correctnessCheck.term.add(option.label)
           option.children.map((child) => {
             this.correctnessCheck.facet.add(child.label)
-            if (option.label === 'Anatomical structure' && child.label !== 'Show all') {
+            if (['Anatomical structure', 'Nerves'].includes(option.label) && child.label !== 'Show all') {
               child.children.map((child2) => {
                 this.correctnessCheck.facet2.add(child2.label)
               })
