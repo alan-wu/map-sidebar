@@ -390,7 +390,7 @@ export default {
           } else if (notFoundItem.term.toLowerCase() === 'destination') {
             message = `There are no neuron populations terminating at <strong>${itemLabelLowerCase}</strong>.`;
           } else {
-            message = `${itemLabel} cannot be found in ${notFoundItem.term}!`
+            message = `There are no neuron populations beginning, terminating, or running through <strong>${itemLabelLowerCase}</strong>.`
           }
           Message({
             dangerouslyUseHTMLString: true,
