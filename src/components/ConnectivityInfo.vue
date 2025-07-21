@@ -119,22 +119,7 @@
           class="attribute-content"
           :origin-item-label="nerve.nerve"
           :key="nerve.nerve"
-          @mouseenter="onConnectivityHovered(nerve.nerve)"
-          @mouseleave="onConnectivityHovered()"
         >
-          <el-popover
-            width="150"
-            trigger="hover"
-            :teleported="false"
-            popper-class="popover-origin-help"
-          >
-            <template #reference>
-              <el-icon class="magnify-glass" @click="onConnectivityClicked(nerve.nerve)">
-                <el-icon-search />
-              </el-icon>
-            </template>
-            <span>Search nerve</span>
-          </el-popover>
           <span>{{ capitalise(nerve.nerve) }}</span>
         </div>
         <div
