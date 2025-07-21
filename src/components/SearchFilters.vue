@@ -775,26 +775,8 @@ export default {
 
     cssMods: function () {
       this.makeCascadeLabelsClickable()
-      this.removeTopLevelCascaderCheckboxes()
     },
 
-    removeTopLevelCascaderCheckboxes: function () {
-      // Next tick allows the cascader menu to change
-      this.$nextTick(() => {
-        const cascadePanels = document.querySelectorAll('.sidebar-cascader-popper .el-cascader-menu__list');
-
-        cascadePanels.forEach(panel => {
-          const panelText = panel.textContent;
-          const expandArrow = panel.querySelector('.el-icon.arrow-right');
-
-          if (!panelText.includes('Show all') && expandArrow) {
-            panel.querySelectorAll('.el-checkbox__input').forEach(checkbox => {
-              checkbox.style.display = 'none';
-            });
-          }
-        });
-      })
-    },
     /*
      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
      */
@@ -1051,6 +1033,11 @@ export default {
   color: #292b66;
   text-align: center;
   padding-bottom: 6px;
+  .el-cascader-menu:first-child {
+    .el-checkbox__input {
+      display: None;
+    }
+  }
 }
 
 .sidebar-cascader-popper .el-cascader-node.is-active {
