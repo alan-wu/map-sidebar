@@ -206,7 +206,8 @@ export default {
     const correctnessCheck = markRaw({
       term: new Set(),
       facet: new Set(),
-      facet2: new Set()
+      facet2: new Set(),
+      facet3: new Set(),
     });
     return { cascaderTags, correctnessCheck }
   },
@@ -240,19 +241,41 @@ export default {
     },
   },
   methods: {
-    createCascaderItemValue: function (
-      term,
-      facet1 = undefined,
-      facet2 = undefined
-    ) {
-      let value = term
-      if (facet1) value = `${term}>${facet1}`
-      if (facet1 && facet2) value = `${term}>${facet1}>${facet2}`
-      if (!facet1 && facet2)
-        console.warn(
-          `Warning: ${facet2} provided without its parent, this will not be shown in the cascader`
-        )
-      return value
+    /**
+     * Internal only.
+     * Create value of cascader.
+     * Takes an array of label to create the value
+     */
+    createCascaderItemValue: function (labelsArray) {
+      let value = undefined
+      if (labelsArray?.length) {
+        value = labelsArray[0]
+        for (let i = 1; labelsArray.length > i; i++) {
+          value = `${value}>${labelsArray[i]}`
+        }
+        if (value.includes("undefined")) {
+          console.warn(
+            `Warning: One or more of the facets is undefined, this will not be shown in the cascader`
+          )
+        }
+      }
+      return value;
+    },
+    createChildrenCascaderValue: function(children, facets) {
+      if (children?.length) {
+        children.forEach((facetItem, i) => {
+          //copy the facets into 
+          const newFacets = facets.slice()
+          if (children[i].facetPropPath !== 'pennsieve.organization.name') {
+            children[i].label = convertReadableLabel(
+              facetItem.label
+            )
+          }
+          newFacets.push(facetItem.label)
+          children[i].value = this.createCascaderItemValue(newFacets)
+          this.createChildrenCascaderValue(facetItem.children, newFacets)
+        })
+      }
     },
     processOptions: function () {
       // create top level of options in cascader
@@ -261,44 +284,19 @@ export default {
 
         this.options[i].label = convertReadableLabel(facet.label)
         this.options[i].value = this.createCascaderItemValue(
-          facet.key,
-          undefined
+          [facet.key]
         )
 
         if (!this.options[i].children.find((child) => child.label === 'Show all')) {
           // put "Show all" as first option
           this.options[i].children.unshift({
-            value: this.createCascaderItemValue('Show all'),
+            value: this.createCascaderItemValue(['Show all']),
             label: 'Show all',
           })
         }
 
         // populate second level of options
-        this.options[i].children.forEach((facetItem, j) => {
-          // Format labels except funding program
-          if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
-            this.options[i].children[j].label = convertReadableLabel(
-              facetItem.label
-            )
-          }
-          this.options[i].children[j].value =
-            this.createCascaderItemValue(facet.label, facetItem.label)
-          if (
-            this.options[i].children[j].children &&
-            this.options[i].children[j].children.length > 0
-          ) {
-            this.options[i].children[j].children.forEach((term, k) => {
-              this.options[i].children[j].children[k].label =
-                convertReadableLabel(term.label)
-              this.options[i].children[j].children[k].value =
-                this.createCascaderItemValue(
-                  facet.label,
-                  facetItem.label,
-                  term.label
-                )
-            })
-          }
-        })
+        this.createChildrenCascaderValue(this.options[i].children, [facet.label])
       })
     },
     populateCascader: function () {
@@ -351,15 +349,20 @@ export default {
           } else {
             // loop nested cascader items
             Object.entries(facet).map((entry2) => {
-              const term2 = entry2[0], facet2 = entry2[1] // object key, object value
+              const term2 = entry2[0], facet2 = entry2[1], facet3 = entry2[2] // object key, object value
+              if (facet3) {
 
-              if (term2 === label) {
-                child.children.map((child2) => {
-                  const label2 = child2.label, value2 = child2.value
-                  // push all checked items
-                  if (label2 !== tag && facet2.includes(label2))
-                    manualEvent.push([key, value2])
-                })
+
+
+              } else {
+                if (term2 === label) {
+                  child.children.map((child2) => {
+                    const label2 = child2.label, value2 = child2.value
+                    // push all checked items
+                    if (label2 !== tag && facet2.includes(label2))
+                      manualEvent.push([key, value2])
+                  })
+                }
               }
             })
           }
@@ -372,7 +375,8 @@ export default {
      * Not able to avoid wrong facet at the moment
      */
     tagsChangedCallback: function (event) {
-      if (this.correctnessCheck.term && this.correctnessCheck.facet && this.correctnessCheck.facet2) {
+      if (this.correctnessCheck.term && this.correctnessCheck.facet &&
+      this.correctnessCheck.facet2 && this.correctnessCheck.facet3) {
         this.options.map((option) => {
           this.correctnessCheck.term.add(option.label)
           option.children.map((child) => {
@@ -380,6 +384,11 @@ export default {
             if (option.label === 'Anatomical structure' && child.label !== 'Show all') {
               child.children.map((child2) => {
                 this.correctnessCheck.facet2.add(child2.label)
+                if (child2.children) {
+                  child2.children.map((child3) => {
+                    this.correctnessCheck.facet3.add(child3.label)
+                  })
+                }
               })
             }
           })
@@ -389,16 +398,18 @@ export default {
       this.cascaderTags = {}
       this.presentTags = []
       event.map((item) => {
-        const { facet, facet2, term } = item
+        const { facet, facet2, facet3, term } = item
         if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facet)) {
-          if (facet2) {
-            if (this.correctnessCheck.facet2.has(facet2)) {
+          const childFacet = facet3 ? facet3 : facet2
+          const facetField = facet3 ? "facet3" : "facet2"
+          if (childFacet) {
+            if (this.correctnessCheck[facetField].has(childFacet)) {
               if (term in this.cascaderTags) {
-                if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(facet2)
-                else this.cascaderTags[term][facet] = [facet2]
+                if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(childFacet)
+                else this.cascaderTags[term][facet] = [childFacet]
               } else {
                 this.cascaderTags[term] = {}
-                this.cascaderTags[term][facet] = [facet2]
+                this.cascaderTags[term][facet] = [childFacet]
               }
             }
           } else {
@@ -490,12 +501,13 @@ export default {
           .map((fs) => {
             let { hString, bString } =
               this.findHierarachyStringAndBooleanString(fs)
-            let { facet, facet2, term } =
+            let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
             return {
               facetPropPath: fs[0],
               facet: facet,
               facet2: facet2,
+              facet3: facet3,
               term: term,
               AND: bString, // for setting the boolean
             }
@@ -511,11 +523,12 @@ export default {
               : fs[0]
             let { hString, bString } =
               this.findHierarachyStringAndBooleanString(fs)
-            let { facet, facet2, term } =
+            let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
-            if (facet2) {
+            const childFacet = facet3 ? facet3 : facet2
+            if (childFacet) {
               // We need to change the propPath if we are at the third level of the cascader
-              facet = facet2
+              facet = childFacet
               facetSubPropPath = 'anatomy.organ.name'
             }
             return {
@@ -564,20 +577,13 @@ export default {
     },
     // Splits the terms and facets from the string stored in the cascader
     getFacetsFromHierarchyString(hierarchyString) {
-      let facet,
-        term,
-        facet2 = undefined
       let fsSplit = hierarchyString.split('>')
-      if (fsSplit.length == 3) {
-        // if we are at the third level of the cascader
-        facet2 = fsSplit[2]
-        facet = fsSplit[1]
-        term = fsSplit[0]
-      } else {
-        facet = fsSplit[1]
-        term = fsSplit[0]
+      return {
+        term: fsSplit[0],
+        facet: fsSplit[1],
+        facet2: fsSplit[2],
+        facet3: fsSplit[3],
       }
-      return { facet, facet2, term }
     },
     // showAllEventModifier:  Modifies a cascade event to unclick all selections in category if "show all" is clicked. Also unchecks "Show all" if any secection is clicked
     // *NOTE* Does NOT remove 'Show all' selections from showing in 'cascadeSelected'
@@ -677,17 +683,18 @@ export default {
         const createFilter = (e) => {
           let filters = [
             e.facetPropPath,
-            this.createCascaderItemValue(capitalise(e.term), e.facet),
+            this.createCascaderItemValue([capitalise(e.term), e.facet]),
           ]
           // Add the third level of the cascader if it exists
           if (e.facet2) {
             filters.push(
-              this.createCascaderItemValue(
-                capitalise(e.term),
-                e.facet,
-                e.facet2
-              )
+              this.createCascaderItemValue([capitalise(e.term), e.facet, e.facet2])
             )
+            if (e.facet3) {
+              filters.push(
+                this.createCascaderItemValue([capitalise(e.term), e.facet, e.facet2, e.facet3])
+              )
+            }
           }
           return filters;
         }
@@ -697,7 +704,7 @@ export default {
           return filters
         })
 
-        // Unforttunately the cascader is very particular about it's v-model
+        // Unfortunately the cascader is very particular about it's v-model
         //   to get around this we create a clone of it and use this clone for adding our boolean information
         this.cascadeSelectedWithBoolean = filterFacets.map((e) => {
           let filters = createFilter(e)
@@ -716,20 +723,22 @@ export default {
           this.cascadeSelected.filter((f) => f.term != filter.term)
           this.cascadeSelected.push([
             filter.facetPropPath,
-            this.createCascaderItemValue(filter.term, filter.facet),
+            this.createCascaderItemValue([filter.term, filter.facet]),
             this.createCascaderItemValue(
-              filter.term,
-              filter.facet,
-              filter.facet2
+              [filter.term, filter.facet, filter.facet2]
+            ),
+            this.createCascaderItemValue(
+              [filter.term, filter.facet, filter.facet2, filter.facet3]
             ),
           ])
           this.cascadeSelectedWithBoolean.push([
             filter.facetPropPath,
-            this.createCascaderItemValue(filter.term, filter.facet),
+            this.createCascaderItemValue([filter.term, filter.facet]),
             this.createCascaderItemValue(
-              filter.term,
-              filter.facet,
-              filter.facet2
+              [filter.term, filter.facet,filter.facet2]
+            ),
+            this.createCascaderItemValue(
+              [filter.term, filter.facet, filter.facet2, filter.facet3]
             ),
             filter.AND,
           ])
@@ -786,7 +795,7 @@ export default {
         // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
         // is Inferior vagus x ganglion (there are other cases as well)
         const lowercase = filter.facet.toLowerCase()
-        if (filter.facet2) {
+        if (filter.facet2 || filter.facet3) {
           return filter // if it has a second term we will assume it is hierarchical and return it as is
         } else {
           for (const firstLayer of this.options) {
@@ -800,7 +809,18 @@ export default {
                 } else {
                   if (secondLayer.children && secondLayer.children.length > 0) {
                     for (const thirdLayer of secondLayer.children) {
-                      if (thirdLayer.label?.toLowerCase() === lowercase) {
+                      if (thirdLayer.children && thirdLayer.children.length > 0) {
+                        for (const fourthLayer of thirdLayer.children) {
+                          if (fourthLayer.label?.toLowerCase() === lowercase) {
+                            // If we find a match on the third level, we need to switch facet1 to facet2
+                            //   and populate facet1 with its parents label.
+                            filter.facet3 = fourthLayer.label
+                            filter.facet2 = thirdLayer.label
+                            filter.facet = secondLayer.label
+                            return filter
+                          }
+                        }
+                      } else if (thirdLayer.label?.toLowerCase() === lowercase) {
                         // If we find a match on the third level, we need to switch facet1 to facet2
                         //   and populate facet1 with its parents label.
                         filter.facet2 = thirdLayer.label
@@ -808,6 +828,8 @@ export default {
                         return filter
                       }
                     }
+                  } else {
+
                   }
                 }
               }

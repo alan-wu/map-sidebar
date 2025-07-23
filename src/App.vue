@@ -9,7 +9,7 @@
       <el-button @click="openSearch">search Uberon from refs</el-button>
       <el-button @click="singleFacets">Add heart to Filter (facet2 set)</el-button>
       <el-button @click="addStomach">Add stomach to Filter</el-button>
-      <el-button @click="addSubsubpath">Add lumbar dorsal root ganglion to Filter</el-button>
+      <el-button @click="addSubsubPath">Add lumbar dorsal root ganglion to Filter</el-button>
       <el-button @click="addInferiorVagus">Add inferior vagus to Filter (incorrect case)</el-button>
       <el-button @click="addInvalidTerm">Add invalid term to Filter</el-button>
       <el-button @click="multiFacets">multiple facets</el-button>

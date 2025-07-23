@@ -240,13 +240,13 @@ export class AlgoliaClient {
             'objectID',
             'item.keywords.keyword',
             'anatomy.organ.name',
-            'anatomy.organ.curie'
+            'anatomy.organ.curie',
+            'anatomy.organ.subsubcategory.name'
           ],
         })
         .then(response => {
           // Saving the line below incase we want to starty using keywords again
           // let anatomyAsUberons = this._processAnatomy(response.hits)
-
           resolve({
             forFlatmap: this.processResultsForFlatmap(response.hits),
             forScaffold: this.processResultsForScaffold(response.hits)
