@@ -51,18 +51,18 @@ export const facetPropPathMapping = [
 
 // Same as above, but these show on the sidebar filters
 export const shownFilters = {
-  'anatomy.organ.name' : 'Anatomical Structure',
-  'organisms.primary.species.name' : 'Species',
-  'attributes.subject.sex.value' : 'Sex',
-  'attributes.subject.ageCategory.value' : 'Age Categories',
-  'pennsieve.organization.name' : 'Funding Program',
-  'item.types.name' : 'Data type',
+  'anatomy.organ.name': 'Anatomical Structure',
+  'organisms.primary.species.name': 'Species',
+  'attributes.subject.sex.value': 'Sex',
+  'attributes.subject.ageCategory.value': 'Age Categories',
+  'pennsieve.organization.name': 'Funding Program',
+  'item.types.name': 'Data type',
 }
 
 /* Returns filter for searching algolia. All facets of the same category are joined with OR,
   * and each of those results is then joined with an AND.
   * i.e. (color:blue OR color:red) AND (shape:circle OR shape:red) */
-export function getFilters(selectedFacetArray=undefined) {
+export function getFilters(selectedFacetArray = undefined) {
   // return all datasets if no filter
   if (selectedFacetArray === undefined) {
     return 'NOT item.published.status:embargo'
@@ -74,6 +74,19 @@ export function getFilters(selectedFacetArray=undefined) {
   })
 
   let facets = removeShowAllFacets(selectedFacetArray)
+  //Make sure facets 3 are used the subsubcategory
+  facets.forEach((facet) => {
+    if (facet.facet3) {
+      if (facet.facet3 !== "Others") {
+        facet.facetSubPropPath = 'anatomy.organ.subsubcategory.name'
+        facet.label = `${facet.facet}.${facet.facet2}.${facet.facet3}`
+      }
+    }
+    /*  We cannot avoid lumber root ganglion at this moment as subsubcateogry is not defined everywhere
+        however when it is populated on antaomy.organ.name, the following can be used instead
+        return '(NOT item.published.status:embargo) AND ("anatomy.organ.name":"dorsal root ganglion") AND 
+        (NOT "anatomy.organ.name":"Lumbar dorsal root ganglion")' */
+  })
 
   let filters = "NOT item.published.status:embargo";
   filters = `(${filters}) AND `;
@@ -86,13 +99,13 @@ export function getFilters(selectedFacetArray=undefined) {
     let andFilters = "";
     facetsToBool.map((facet) => {
       let facetPropPathToUse = facet.facetSubPropPath ? facet.facetSubPropPath : facetPropPath // Check if we have a subpath
-      if (facet.AND){
+      if (facet.AND) {
         andFilters += `AND "${facetPropPathToUse}":"${facet.label}"`;
       } else {
         orFilters += `"${facetPropPathToUse}":"${facet.label}" OR `;
       }
     });
-    if (orFilters == "" && andFilters =="") {
+    if (orFilters == "" && andFilters == "") {
       return;
     }
     orFilters = `(${orFilters.substring(0, orFilters.lastIndexOf(" OR "))})` // remove last OR
@@ -105,6 +118,6 @@ export function getFilters(selectedFacetArray=undefined) {
   return filters.substring(0, filters.lastIndexOf(" AND "));
 }
 
-function removeShowAllFacets(facetArray){
-  return facetArray.filter( f => f.label !== 'Show all')
+function removeShowAllFacets(facetArray) {
+  return facetArray.filter(f => f.label !== 'Show all')
 }

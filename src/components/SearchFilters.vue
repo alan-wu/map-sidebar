@@ -525,10 +525,12 @@ export default {
               this.findHierarachyStringAndBooleanString(fs)
             let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
-            const childFacet = facet3 ? facet3 : facet2
-            if (childFacet) {
-              // We need to change the propPath if we are at the third level of the cascader
-              facet = childFacet
+            //REMOVE THIS:Temporary work around.
+            if (facet3 && facet3.toLowerCase() !== "others") {
+              facet = `${facet}.${facet2}.${facet3}`.toLowerCase()
+              facetSubPropPath = 'anatomy.organ.subsubcategory.name'
+            } else if (facet2) {
+              facet = facet2
               facetSubPropPath = 'anatomy.organ.name'
             }
             return {
@@ -558,16 +560,16 @@ export default {
     //  are stored in the cascader
     findHierarachyStringAndBooleanString(cascadeEventItem) {
       let hString, bString
-      if (cascadeEventItem.length >= 3) {
-        if (cascadeEventItem[2] &&
-          (typeof cascadeEventItem[2] === 'string' ||
-          cascadeEventItem[2] instanceof String) &&
-          cascadeEventItem[2].split('>').length > 2) {
-          hString = cascadeEventItem[2]
-          bString = cascadeEventItem.length == 4 ? cascadeEventItem[3] : undefined
+      const layers = cascadeEventItem.length
+      if (layers >= 3) {
+        if (cascadeEventItem[layers - 1] &&
+          (typeof cascadeEventItem[layers - 1] === 'string' ||
+          cascadeEventItem[layers - 1] instanceof String) &&
+          cascadeEventItem[layers - 1].split('>').length > 2) {
+          hString = cascadeEventItem[layers - 1]
         } else {
-          hString = cascadeEventItem[1]
-          bString = cascadeEventItem[2]
+          hString = cascadeEventItem[layers - 2]
+          bString = cascadeEventItem[layers - 1]
         }
       } else {
         hString = cascadeEventItem[1]
@@ -721,27 +723,16 @@ export default {
         let filter = this.validateAndConvertFilterToHierarchical(filterToAdd)
         if (filter) {
           this.cascadeSelected.filter((f) => f.term != filter.term)
-          this.cascadeSelected.push([
+          const paths = [
             filter.facetPropPath,
             this.createCascaderItemValue([filter.term, filter.facet]),
-            this.createCascaderItemValue(
-              [filter.term, filter.facet, filter.facet2]
-            ),
-            this.createCascaderItemValue(
-              [filter.term, filter.facet, filter.facet2, filter.facet3]
-            ),
-          ])
-          this.cascadeSelectedWithBoolean.push([
-            filter.facetPropPath,
-            this.createCascaderItemValue([filter.term, filter.facet]),
-            this.createCascaderItemValue(
-              [filter.term, filter.facet,filter.facet2]
-            ),
-            this.createCascaderItemValue(
-              [filter.term, filter.facet, filter.facet2, filter.facet3]
-            ),
-            filter.AND,
-          ])
+            this.createCascaderItemValue([filter.term, filter.facet, filter.facet2]),
+          ]
+          if (filter.facet3) {
+            paths.push(this.createCascaderItemValue([filter.term, filter.facet, filter.facet2, filter.facet3]))
+          }
+          this.cascadeSelected.push([...paths])
+          this.cascadeSelectedWithBoolean.push([...paths, filter.AND])
           // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
           return true
         }

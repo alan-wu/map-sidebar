@@ -80,6 +80,16 @@ export class AlgoliaClient {
                       }
                     )
                   });
+                  //REMOVE ME LATER: This is a hack to add an extra item for subsubcategory
+                  if (fullPath === "nerves and ganglia.dorsal root ganglion") {
+                    childrenSubsubfacets.push(
+                      {
+                        label: "Others",
+                        id: facetId++,
+                        facetPropPath: `${parentFacet ? parentFacet.facetSubsubpropPath : undefined}`
+                      }
+                    )
+                  }
                 }
                 childrenSubfacets.push(
                   {
@@ -255,11 +265,26 @@ export class AlgoliaClient {
     })
   }
   processResultsForFlatmap(hits) {
-    let curieForDatsets = hits.map(h=>({
-      id: h.objectID,
-      terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
-    }))
-    return curieForDatsets 
+    let curieForDatasets = hits.map(h=>{
+      const data = {
+        id: h.objectID,
+        terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
+      }
+      if (h.anatomy?.organ) {
+        h.anatomy.organ.forEach(organ => {
+          if (organ.subsubcategory) {
+            organ.subsubcategory.forEach((item) => {
+              if (item.name === "nerves and ganglia.dorsal root ganglion.lumbar dorsal root ganglion") {
+                data.terms.push("UBERON:0002836")
+              }
+            })
+          }
+        })
+      }
+      return data
+    })
+
+    return curieForDatasets 
   }
   processResultsForScaffold(hits) {
     let numberOfDatasetsForAnatomy = {}
