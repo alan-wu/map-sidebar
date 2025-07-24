@@ -194,6 +194,8 @@ export default {
           search: '',
           filters: [],
         },
+        connectivityEntry: this.connectivityEntry,
+        annotationEntry: this.annotationEntry,
       },
     }
   },
@@ -407,11 +409,25 @@ export default {
       this.state.dataset.filters = datasetExplorerTabRef.getFilters();
       this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
       this.state.connectivity.filters = connectivityExplorerTabRef.getFilters();
+      this.state.connectivityEntry = this.connectivityEntry;
+      this.state.annotationEntry = this.annotationEntry;
     },
+    /**
+     * This function returns the current state of the sidebar
+     * to store in the map state.
+     * @returns {Object} state
+     * @public
+     */
     getState: function () {
       this.updateState();
       return this.state;
     },
+    /**
+     * This function restores the state of the sidebar
+     * from the provided state object.
+     * @param state {Object} state
+     * @public
+     */
     setState: function (state) {
       // if state is not provided or formatted incorrectly, do nothing
       if (!state || !state.dataset || !state.connectivity) return;
