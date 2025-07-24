@@ -407,7 +407,16 @@ export default {
     closeConnectivity: function () {
       EventBus.emit('close-connectivity');
     },
+    updateState: function () {
+      const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer');
+      const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer');
+      this.state.dataset.search = datasetExplorerTabRef.getSearch();
+      this.state.dataset.filters = datasetExplorerTabRef.getFilters();
+      this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
+      this.state.connectivity.filters = connectivityExplorerTabRef.getFilters();
+    },
     getState: function () {
+      this.updateState();
       return this.state;
     },
     setState: function (state) {
