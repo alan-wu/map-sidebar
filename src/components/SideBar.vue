@@ -185,6 +185,16 @@ export default {
       activeTabId: 1,
       activeAnnotationData: { tabType: "annotation" },
       activeConnectivityData: { tabType: "connectivity" },
+      state: {
+        dataset: {
+          search: '',
+          filters: [],
+        },
+        connectivity:  {
+          search: '',
+          filters: [],
+        },
+      },
     }
   },
   methods: {
@@ -391,16 +401,14 @@ export default {
       EventBus.emit('close-connectivity');
     },
     getState: function () {
-      return {
-        dataset: {
-          search: '',
-          filters: [],
-        },
-        connectivity:  {
-          search: '',
-          filters: [],
-        },
-      };
+      return this.state;
+    },
+    setState: function (state) {
+      // if state is not provided or formatted incorrectly, do nothing
+      if (!state || !state.dataset || !state.connectivity) return;
+      this.state = state;
+      this.openSearch(state.dataset.filters, state.dataset.search);
+      this.openConnectivitySearch(state.connectivity.filters, state.connectivity.search);
     },
   },
   computed: {
