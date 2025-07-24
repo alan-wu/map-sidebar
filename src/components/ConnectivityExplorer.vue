@@ -495,6 +495,12 @@ export default {
         }
       });
     },
+    getSearch: function () {
+      return this.searchInput;
+    },
+    getFilters: function () {
+      return this.filter;
+    },
   },
   mounted: function () {
     localStorage.removeItem('connectivity-active-view');
