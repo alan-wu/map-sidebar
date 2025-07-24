@@ -390,6 +390,18 @@ export default {
     closeConnectivity: function () {
       EventBus.emit('close-connectivity');
     },
+    getState: function () {
+      return {
+        dataset: {
+          search: '',
+          filters: [],
+        },
+        connectivity:  {
+          search: '',
+          filters: [],
+        },
+      };
+    },
   },
   computed: {
     // This should respect the information provided by the property
