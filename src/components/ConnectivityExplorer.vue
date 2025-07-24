@@ -303,7 +303,6 @@ export default {
     },
     onConnectivityClicked: function (data) {
       this.searchInput = data.query;
-      this.filter = data.filter;
       this.searchAndFilterUpdate();
     },
     collapseChange:function (data) {
