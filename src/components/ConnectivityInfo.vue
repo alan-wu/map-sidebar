@@ -592,6 +592,10 @@ export default {
 
           return await response.json();
         } catch (error) {
+          EventBus.emit('connectivity-source-change', {
+            entry: this.entry,
+            connectivitySource: "sckan",
+          });
           throw new Error(error);
         }
       }
