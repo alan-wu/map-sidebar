@@ -1067,8 +1067,13 @@ export default {
             result.push(validatedFilter)
             terms.push(validatedFilter.term)
           } else {
-            // not found items
-            notFound.push(filter)
+            const validOption = this.options.find((option) => {
+              return option.key === filter.facetPropPath;
+            });
+            if (validOption) {
+              // not found items
+              notFound.push(filter)
+            }
           }
         })
 
