@@ -92,7 +92,7 @@
       <div class="block buttons-row">
         <span>Connectivity from:</span>
         <el-radio-group v-model="connectivitySource" @change="onConnectivitySourceChange">
-          <el-radio value="map">Map</el-radio>
+          <el-radio value="map" :disabled="noMapConnectivity">Map</el-radio>
           <el-radio value="sckan">SCKAN</el-radio>
         </el-radio-group>
         <el-button
@@ -228,7 +228,8 @@ export default {
       updatedCopyContent: '',
       activeView: 'listView',
       connectivityLoading: false,
-      connectivitySource: 'sckan',
+      connectivitySource: 'map', // sckan
+      noMapConnectivity: false,
       connectivityError: {},
       graphViewLoaded: false,
       connectivityFromMap: null,
@@ -277,7 +278,7 @@ export default {
       return this.entry.destinationsWithDatasets;
     },
     resources: function () {
-      return this.entry.hyperlinks;
+      return this.entry.hyperlinks || [];
     },
     sckanVersion: function () {
       return this.entry.knowledgeSource;
@@ -300,6 +301,7 @@ export default {
             this.graphViewLoaded = true;
           }
           this.connectivitySource = this.entry.connectivitySource;
+          this.noMapConnectivity = this.entry.noMapConnectivity;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
           // only emit to scroll when entire entry content changes
@@ -528,17 +530,17 @@ export default {
       }
     },
     getConnectionsFromMap: async function () {
-      if (this.entry.mapuuid) {        
+      if (this.entry.mapuuid) {
         const url =
           this.flatmapApi +
           `flatmap/${this.entry.mapuuid}/connectivity/${this.entry.featureId[0]}`;
-  
+
         try {
           const response = await fetch(url);
           if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
           }
-  
+
           return await response.json();
         } catch (error) {
           throw new Error(error);
