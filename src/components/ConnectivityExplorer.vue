@@ -471,7 +471,6 @@ export default {
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
       this.searchKnowledge(this.filter, this.searchInput);
-      this.$refs.filtersRef.setCascader(this.filter);
       this.searchHistoryUpdate(this.filter, this.searchInput);
     },
     searchHistoryUpdate: function (filters, search) {
