@@ -471,7 +471,6 @@ export default {
     searchAndFilterUpdate: function () {
       this.resetPageNavigation();
       this.searchKnowledge(this.filter, this.searchInput);
-      this.$refs.filtersRef.setCascader(this.filter);
       this.searchHistoryUpdate(this.filter, this.searchInput);
     },
     searchHistoryUpdate: function (filters, search) {
@@ -505,7 +504,10 @@ export default {
     pageChange: function (page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
-      this.searchKnowledge(this.filter, this.searchInput);
+      this.expanded = "";
+      this.expandedData = null;
+      this.scrollToTop();
+      // this.searchKnowledge(this.filter, this.searchInput);
     },
     scrollToTop: function () {
       if (this.$refs.content) {

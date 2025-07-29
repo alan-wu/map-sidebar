@@ -500,7 +500,7 @@ export default {
             // If 'cascaderTags' has key 'Anatomical structure',
             // it's value type will be Object (because it has nested facets),
             // in this case 'push' action will not available.
-            if (term in this.cascaderTags && term !== 'Anatomical structure') {
+            if (term in this.cascaderTags && !['Anatomical structure', 'Nerves'].includes(term)) {
               this.cascaderTags[term].push(facetLabel)
               // connectivity exploration mode tags
               if (termId) {
