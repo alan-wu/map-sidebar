@@ -438,7 +438,7 @@ export default {
     setState: function (state) {
       // if state is not provided or formatted incorrectly, do nothing
       if (!state || !state.dataset || !state.connectivity) return;
-      this.state = state;
+      this.state = JSON.parse(JSON.stringify(state)); // deep copy to avoid reference issues
       this.openSearch(state.dataset.filters, state.dataset.search);
       this.openConnectivitySearch(state.connectivity.filters, state.connectivity.search);
     },
