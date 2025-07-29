@@ -504,6 +504,9 @@ export default {
     pageChange: function (page) {
       this.start = (page - 1) * this.numberPerPage;
       this.page = page;
+      this.expanded = "";
+      this.expandedData = null;
+      this.scrollToTop();
       // this.searchKnowledge(this.filter, this.searchInput);
     },
     scrollToTop: function () {
