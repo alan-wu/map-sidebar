@@ -102,6 +102,15 @@ export default {
   letter-spacing: 1.05px;
 }
 
+.el-tag {
+  border-radius: 4px!important;
+  font-size: 0.75rem!important;
+  margin: 2px!important;
+  background: #f9f2fc!important;
+  border: 1px solid $app-primary-color!important;
+  color: $app-primary-color!important;
+}
+
 .card-tags {
   overflow-y: scroll;
   max-height: 4.1rem;
