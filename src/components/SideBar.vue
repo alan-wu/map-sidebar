@@ -195,7 +195,7 @@ export default {
           search: '',
           filters: [],
         },
-        connectivityEntry: this.connectivityEntry,
+        connectivityEntries: [],
         annotationEntry: this.annotationEntry,
         activeTabId: this.activeTabId,
       },
@@ -418,7 +418,7 @@ export default {
       this.state.dataset.filters = datasetExplorerTabRef.getFilters();
       this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
       this.state.connectivity.filters = connectivityExplorerTabRef.getFilters();
-      this.state.connectivityEntry = this.connectivityEntry;
+      this.state.connectivityEntries = this.connectivityEntry.map((entry) => entry.id);
       this.state.annotationEntry = this.annotationEntry;
     },
     /**
