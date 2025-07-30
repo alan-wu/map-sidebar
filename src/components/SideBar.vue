@@ -197,6 +197,7 @@ export default {
         },
         connectivityEntry: this.connectivityEntry,
         annotationEntry: this.annotationEntry,
+        activeTabId: this.activeTabId,
       },
     }
   },
@@ -412,6 +413,7 @@ export default {
     updateState: function () {
       const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer');
       const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer');
+      this.state.activeTabId = this.activeTabId;
       this.state.dataset.search = datasetExplorerTabRef.getSearch();
       this.state.dataset.filters = datasetExplorerTabRef.getFilters();
       this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
@@ -441,6 +443,9 @@ export default {
       this.state = JSON.parse(JSON.stringify(state)); // deep copy to avoid reference issues
       this.openSearch(state.dataset.filters, state.dataset.search);
       this.openConnectivitySearch(state.connectivity.filters, state.connectivity.search);
+      this.$nextTick(() => {
+        this.activeTabId = state.activeTabId;
+      });
     },
   },
   computed: {
