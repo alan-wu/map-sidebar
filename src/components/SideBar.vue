@@ -55,6 +55,7 @@
                 :showVisibilityFilter="showVisibilityFilter"
                 @search-changed="searchChanged(tab.id, $event)"
                 @hover-changed="hoverChanged(tab.id, $event)"
+                @connectivity-explorer-reset="onConnectivityExplorerReset"
                 @show-connectivity="showConnectivity"
                 @show-reference-connectivities="onShowReferenceConnectivities"
                 @connectivity-hovered="onConnectivityHovered"
@@ -185,6 +186,16 @@ export default {
       activeTabId: 1,
       activeAnnotationData: { tabType: "annotation" },
       activeConnectivityData: { tabType: "connectivity" },
+      state: {
+        dataset: {
+          search: '',
+          filters: [],
+        },
+        connectivity:  {
+          search: '',
+          filters: [],
+        },
+      },
     }
   },
   methods: {
@@ -214,6 +225,12 @@ export default {
       if (activeTabType === 'annotation') {
         this.activeAnnotationData = data;
       }
+    },
+    /**
+     * This event is emitted after clicking reset button in connectivity explorer
+     */
+    onConnectivityExplorerReset: function (payload) {
+      this.$emit('connectivity-explorer-reset', payload);
     },
     /**
      * This event is emitted when the show connectivity button is clicked.
@@ -389,6 +406,25 @@ export default {
     },
     closeConnectivity: function () {
       EventBus.emit('close-connectivity');
+    },
+    updateState: function () {
+      const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer');
+      const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer');
+      this.state.dataset.search = datasetExplorerTabRef.getSearch();
+      this.state.dataset.filters = datasetExplorerTabRef.getFilters();
+      this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
+      this.state.connectivity.filters = connectivityExplorerTabRef.getFilters();
+    },
+    getState: function () {
+      this.updateState();
+      return this.state;
+    },
+    setState: function (state) {
+      // if state is not provided or formatted incorrectly, do nothing
+      if (!state || !state.dataset || !state.connectivity) return;
+      this.state = state;
+      this.openSearch(state.dataset.filters, state.dataset.search);
+      this.openConnectivitySearch(state.connectivity.filters, state.connectivity.search);
     },
   },
   computed: {

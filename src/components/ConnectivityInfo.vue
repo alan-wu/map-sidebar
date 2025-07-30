@@ -92,7 +92,7 @@
       <div class="block buttons-row">
         <span>Connectivity from:</span>
         <el-radio-group v-model="connectivitySource" @change="onConnectivitySourceChange">
-          <el-radio value="map">Map</el-radio>
+          <el-radio value="map" :disabled="noMapConnectivity">Map</el-radio>
           <el-radio value="sckan">SCKAN</el-radio>
         </el-radio-group>
         <el-button
@@ -107,6 +107,45 @@
         >
           Graph view
         </el-button>
+      </div>
+    </div>
+
+    <div v-if="entry['nerve-label']" class="block">
+      <div class="attribute-title-container">
+        <span class="attribute-title">Nerves</span>
+      </div>
+      <div v-for="(nerve, i) in entry['nerve-label']">
+        <div
+          class="attribute-content"
+          :origin-item-label="nerve.nerve"
+          :key="nerve.nerve"
+        >
+          <span>{{ capitalise(nerve.nerve) }}</span>
+        </div>
+        <div
+          v-for="(subNerve, i) in nerve.subNerves"
+          class="attribute-content"
+          style="margin-left: 1rem"
+          :origin-item-label="subNerve"
+          :key="subNerve"
+          @mouseenter="onConnectivityHovered(subNerve)"
+          @mouseleave="onConnectivityHovered()"
+        >
+          <el-popover
+            width="150"
+            trigger="hover"
+            :teleported="false"
+            popper-class="popover-origin-help"
+          >
+            <template #reference>
+              <el-icon class="magnify-glass" @click="onConnectivityClicked(subNerve)">
+                <el-icon-search />
+              </el-icon>
+            </template>
+            <span>Search sub nerve</span>
+          </el-popover>
+          <span>{{ capitalise(subNerve) }}</span>
+        </div>
       </div>
     </div>
 
@@ -228,7 +267,8 @@ export default {
       updatedCopyContent: '',
       activeView: 'listView',
       connectivityLoading: false,
-      connectivitySource: 'sckan',
+      connectivitySource: 'map', // sckan
+      noMapConnectivity: false,
       connectivityError: {},
       graphViewLoaded: false,
       connectivityFromMap: null,
@@ -277,7 +317,7 @@ export default {
       return this.entry.destinationsWithDatasets;
     },
     resources: function () {
-      return this.entry.hyperlinks;
+      return this.entry.hyperlinks || [];
     },
     sckanVersion: function () {
       return this.entry.knowledgeSource;
@@ -300,6 +340,7 @@ export default {
             this.graphViewLoaded = true;
           }
           this.connectivitySource = this.entry.connectivitySource;
+          this.noMapConnectivity = this.entry.noMapConnectivity;
           this.updateGraphConnectivity();
           this.connectivityLoading = false;
           // only emit to scroll when entire entry content changes
@@ -407,6 +448,15 @@ export default {
         return contentString;
       }
 
+      // Nerves
+      if (this.entry['nerve-label']?.length) {
+        const title = 'Nerves';
+        const nerves = this.entry['nerve-label'];
+        const nerveLabels = nerves.map(nerve => Object.values(nerve)).flat(Infinity);
+        const transformedNerves = transformData(title, nerveLabels);
+        contentArray.push(transformedNerves);
+      }
+      
       // Origins
       if (this.origins?.length) {
         const title = 'Origin';
@@ -471,6 +521,7 @@ export default {
     onConnectivityHovered: function (label) {
       const payload = {
         connectivityInfo: this.entry,
+        label: label,
         data: label ? this.getConnectivityDatasets(label) : [],
       };
       // type: to show error only for click event
@@ -528,19 +579,23 @@ export default {
       }
     },
     getConnectionsFromMap: async function () {
-      if (this.entry.mapuuid) {        
+      if (this.entry.mapuuid) {
         const url =
           this.flatmapApi +
           `flatmap/${this.entry.mapuuid}/connectivity/${this.entry.featureId[0]}`;
-  
+
         try {
           const response = await fetch(url);
           if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
           }
-  
+
           return await response.json();
         } catch (error) {
+          EventBus.emit('connectivity-source-change', {
+            entry: this.entry,
+            connectivitySource: "sckan",
+          });
           throw new Error(error);
         }
       }
@@ -913,6 +968,48 @@ export default {
 
   &:not([style*="display: none"]) ~ .content-container-references {
     margin-top: -1.25rem;
+  }
+}
+
+.attribute-content {
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.25s ease;
+  position: relative;
+  cursor: default;
+  padding-left: 16px;
+
+  .magnify-glass {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &:hover {
+    color: $app-primary-color;
+
+    .magnify-glass {
+      display: block;
+      padding-top: 4px;
+      cursor: pointer;
+    }
+  }
+
+  + .attribute-content {
+    &::before {
+      content: "";
+      width: 90%;
+      height: 1px;
+      background-color: var(--el-border-color);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+
+  &:last-of-type {
+    margin-bottom: 0.5em;
   }
 }
 </style>
