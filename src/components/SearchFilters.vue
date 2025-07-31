@@ -443,22 +443,22 @@ export default {
      * Not able to avoid wrong facet at the moment
      */
     tagsChangedCallback: function (event) {
-      if (this.correctnessCheck.term && this.correctnessCheck.facet &&
-      this.correctnessCheck.facet2 && this.correctnessCheck.facet3) {
+      if (
+        this.correctnessCheck.term &&
+        this.correctnessCheck.facet &&
+        this.correctnessCheck.facet2 &&
+        this.correctnessCheck.facet3
+      ) {
         this.options.map((option) => {
           this.correctnessCheck.term.add(option.label)
-          option.children.map((child) => {
+          option.children?.map((child) => {
             this.correctnessCheck.facet.add(child.label)
-            if (['Anatomical structure', 'Nerves'].includes(option.label) && child.label !== 'Show all') {
-              child.children.map((child2) => {
-                this.correctnessCheck.facet2.add(child2.label)
-                if (child2.children) {
-                  child2.children.map((child3) => {
-                    this.correctnessCheck.facet3.add(child3.label)
-                  })
-                }
+            child.children?.map((child2) => {
+              this.correctnessCheck.facet2.add(child2.label)
+              child2.children?.map((child3) => {
+                this.correctnessCheck.facet3.add(child3.label)
               })
-            }
+            })
           })
         })
       }
