@@ -203,7 +203,6 @@ export class AlgoliaClient {
    * This is using fetch from the Algolia API
    */
   search(filter, query = '', hitsperPage = 10, page = 1) {
-    console.log(filter)
     return new Promise(resolve => {
       this.index
         .search(query, {
@@ -270,17 +269,6 @@ export class AlgoliaClient {
       const data = {
         id: h.objectID,
         terms: h.anatomy? h.anatomy.organ.map(o=>o.curie) : []
-      }
-      if (h.anatomy?.organ) {
-        h.anatomy.organ.forEach(organ => {
-          if (organ.subsubcategory) {
-            organ.subsubcategory.forEach((item) => {
-              if (item.name === "nerves and ganglia.dorsal root ganglion.lumbar dorsal root ganglion") {
-                data.terms.push("UBERON:0002836")
-              }
-            })
-          }
-        })
       }
       return data
     })
