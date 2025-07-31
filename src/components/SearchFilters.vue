@@ -399,9 +399,14 @@ export default {
     flattenToEvents: function (tag, facetObject, targetOption, filterKey = undefined) {
       const eventsArray = []
 
+      // loop nested object
+      // if a object has no value and not match with the 'tag', it should be checked in the cascader
+      // otherwise continue looping to find matched facet
       for (const [key, value] of Object.entries(facetObject)) {
         const option = targetOption.find((option) => option.label === key)
         if (Object.entries(value).length) {
+          // 'show all' has no facetPropPath
+          // therefore passed in the filter option key
           const fKey = option.key || filterKey
           const events = this.flattenToEvents(tag, value, option.children, fKey)
           eventsArray.push(...events)
@@ -425,6 +430,9 @@ export default {
     flattenToTags: function (facetObject) {
       const tagsArray = []
 
+      // loop nested object
+      // if a object has no value, it will be display as tag
+      // otherwise continue looping through
       for (const [key, value] of Object.entries(facetObject)) {
         if (Object.entries(value).length) {
           const tags = this.flattenToTags(value)
@@ -470,14 +478,15 @@ export default {
         const { facet, facet2, facet3, term, tagLabel, facetPropPath } = item
         let facetLabel = facet;
         let termId = '';
-        // Connectivity filter has different value and label,
-        // value is used for filter logic
-        // label is used for user interface (and this cascader tag is just user interface)
+        // Connectivity filter has different value and label
         if (facetPropPath && facetPropPath.includes('flatmap.connectivity.source.') && tagLabel) {
           facetLabel = tagLabel;
           termId = term.charAt(0);
         }
 
+        // cascaderTags will be a nested object
+        // term and facets will be the keys
+        // values will be either empty object or another object with next level's facet as key
         if (term && this.correctnessCheck.term.has(term)) {
           if (!(term in this.cascaderTags)) {            
             this.cascaderTags[term] = {}
