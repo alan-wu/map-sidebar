@@ -427,6 +427,8 @@ export default {
               if (facet3) {
 
 
+    flattenToTags: function (facetObject) {
+      const tagsArray = []
 
               } else {
                 if (term2 === label) {
@@ -439,10 +441,20 @@ export default {
                 }
               }
             })
+      for (const [key, value] of Object.entries(facetObject)) {
+        if (Object.entries(value).length) {
+          const tags = this.flattenToTags(value)
+          tagsArray.push(...tags)
+        } else {
+          if (key !== "Show all") {
+            tagsArray.push(key)
           }
         }
       })
       this.cascadeEvent(manualEvent)
+      }
+
+      return tagsArray
     },
     /**
      * Re-generate 'cascaderTags' and 'presentTags'
@@ -484,61 +496,37 @@ export default {
           termId = term.charAt(0);
         }
 
-        if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facetLabel)) {
-          const childFacet = facet3 ? facet3 : facet2
-          const facetField = facet3 ? "facet3" : "facet2"
-          if (childFacet) {
-            if (this.correctnessCheck[facetField].has(childFacet)) {
-              if (term in this.cascaderTags) {
-                if (facet in this.cascaderTags[term]){
-                  this.cascaderTags[term][facet].push(childFacet)
-                  this.cascaderTagsClone[term][facet].push(childFacet)
-                }
-                else {
-                  this.cascaderTags[term][facet] = [childFacet]
-                  this.cascaderTagsClone[term][facet] = [childFacet]
-                }
+        if (term && this.correctnessCheck.term.has(term)) {
+          if (!(term in this.cascaderTags)) {            
+            this.cascaderTags[term] = {}
+            this.cascaderTagsClone[term] = {}
+          }
+          if (facetLabel && this.correctnessCheck.facet.has(facetLabel)) {
+            if (!(facetLabel in this.cascaderTags[term])) {            
+              this.cascaderTags[term][facetLabel] = {}
+              if (termId) {
+                this.cascaderTagsClone[term][termId + ':' + facetLabel] = {}
               } else {
-                this.cascaderTags[term] = {}
-                this.cascaderTags[term][facet] = [childFacet]
-                this.cascaderTagsClone[term] = {}
-                this.cascaderTagsClone[term][facet] = [childFacet]
+                this.cascaderTagsClone[term][facetLabel] = {}
               }
             }
-          } else {
-            // If 'cascaderTags' has key 'Anatomical structure',
-            // it's value type will be Object (because it has nested facets),
-            // in this case 'push' action will not available.
-            if (term in this.cascaderTags && !['Anatomical structure', 'Nerves'].includes(term)) {
-              this.cascaderTags[term].push(facetLabel)
-              // connectivity exploration mode tags
-              if (termId) {
-                this.cascaderTagsClone[term].push(termId + ':' + facetLabel);
-              } else {
-                this.cascaderTagsClone[term].push(facetLabel);
+            if (facet2 && this.correctnessCheck.facet2.has(facet2)) {
+              if (!(facet2 in this.cascaderTags[term][facetLabel])) {            
+                this.cascaderTags[term][facetLabel][facet2] = {}
+                this.cascaderTagsClone[term][facetLabel][facet2] = {}
               }
-            } else {
-              if (facet.toLowerCase() !== "show all") {
-                this.cascaderTags[term] = [facetLabel]
-                // connectivity exploration mode tags
-                if (termId) {
-                  this.cascaderTagsClone[term] = [termId + ':' + facetLabel];
-                } else {
-                  this.cascaderTagsClone[term] = [facetLabel]
+              if (facet3 && this.correctnessCheck.facet3.has(facet3)) {
+                if (!(facet3 in this.cascaderTags[term][facetLabel][facet2])) {            
+                  this.cascaderTags[term][facetLabel][facet2][facet3] = {}
+                  this.cascaderTagsClone[term][facetLabel][facet2][facet3] = {}
                 }
-              } else {
-                this.cascaderTags[term] = []
-                this.cascaderTagsClone[term] = []
               }
             }
           }
         }
       })
 
-      Object.values(this.cascaderTagsClone).map((value) => {
-        const extend = Array.isArray(value) ? value : Object.values(value).flat(1)
-        this.presentTags = [...this.presentTags, ...extend]
-      })
+      this.presentTags = [...this.presentTags, ...this.flattenToTags(this.cascaderTagsClone)]
       this.presentTags = [...new Set(this.presentTags)]
       if (this.presentTags.length > 0) this.showFiltersText = false
       else this.showFiltersText = true
