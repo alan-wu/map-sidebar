@@ -443,9 +443,11 @@ export default {
       this.state = JSON.parse(JSON.stringify(state)); // deep copy to avoid reference issues
       this.openSearch(state.dataset.filters, state.dataset.search);
       this.openConnectivitySearch(state.connectivity.filters, state.connectivity.search);
-      this.$nextTick(() => {
-        this.activeTabId = state.activeTabId;
-      });
+      if (state.activeTabId) {
+        this.$nextTick(() => {
+          this.activeTabId = state.activeTabId;
+        });
+      }
     },
   },
   computed: {
