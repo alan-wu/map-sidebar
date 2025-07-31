@@ -196,7 +196,7 @@ export default {
           filters: [],
         },
         connectivityEntries: [],
-        annotationEntry: this.annotationEntry,
+        annotationEntries: [],
         activeTabId: this.activeTabId,
       },
     }
@@ -419,7 +419,7 @@ export default {
       this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
       this.state.connectivity.filters = connectivityExplorerTabRef.getFilters();
       this.state.connectivityEntries = this.connectivityEntry.map((entry) => entry.id);
-      this.state.annotationEntry = this.annotationEntry;
+      this.state.annotationEntries = this.annotationEntry.map((entry) => entry.models);
     },
     /**
      * This function returns the current state of the sidebar
