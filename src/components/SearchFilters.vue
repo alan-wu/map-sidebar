@@ -624,7 +624,6 @@ export default {
               fs.join() === checkedNode.pathValues.join()
             );
             const tagLabel = foundNode ? foundNode.label : undefined;
-
             return {
               facetPropPath: fs[0],
               facet: facet,
@@ -924,20 +923,22 @@ export default {
     addFilter: function (filterToAdd) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filterToAdd) {
-        let filter = this.validateAndConvertFilterToHierarchical(filterToAdd)
-        if (filter) {
-          this.cascadeSelected.filter((f) => f.term != filter.term)
-          const paths = [
-            filter.facetPropPath,
-            this.createCascaderItemValue([filter.term, filter.facet]),
-            this.createCascaderItemValue([filter.term, filter.facet, filter.facet2]),
-          ]
-          if (filter.facet3) {
-            paths.push(this.createCascaderItemValue([filter.term, filter.facet, filter.facet2, filter.facet3]))
-          }
-          this.cascadeSelected.push([...paths])
-          this.cascadeSelectedWithBoolean.push([...paths, filter.AND])
-          // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+        let filters = this.validateAndConvertFilterToHierarchical(filterToAdd)
+        if (filters && filters.length) {
+          filters.forEach((filter) => {
+            this.cascadeSelected.filter((f) => f.term != filter.term)
+            const paths = [
+              filter.facetPropPath,
+              this.createCascaderItemValue([filter.term, filter.facet]),
+              this.createCascaderItemValue([filter.term, filter.facet, filter.facet2]),
+            ]
+            if (filter.facet3) {
+              paths.push(this.createCascaderItemValue([filter.term, filter.facet, filter.facet2, filter.facet3]))
+            }
+            this.cascadeSelected.push([...paths])
+            this.cascadeSelectedWithBoolean.push([...paths, filter.AND])
+            // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+          });
           return true
         }
       }
@@ -991,7 +992,7 @@ export default {
         // is Inferior vagus x ganglion (there are other cases as well)
         const lowercase = filter.facet.toLowerCase()
         if (filter.facet2 || filter.facet3) {
-          return filter // if it has a second term we will assume it is hierarchical and return it as is
+          return [filter] // if it has a second term we will assume it is hierarchical and return it as is
         } else {
           for (const firstLayer of this.options) {
             if (firstLayer.value === filter.facetPropPath) {
@@ -1000,17 +1001,18 @@ export default {
                 if (filter.facetPropPath.includes('flatmap.connectivity.source.') && secondLayer.key) {
                   const value = secondLayer.key.replace(`${filter.facetPropPath}.`, '');
                   if (value.toLowerCase() === lowercase) {
-                    return filter
+                    return [filter]
                   }
                 } else if (secondLayer.label?.toLowerCase() === lowercase) {
                   // if we find a match on the second level, the filter will already be correct
                   // Make sure the case matches the one from Algolia
                   filter.facet = secondLayer.label
-                  return filter
+                  return [filter]
                 } else {
                   if (secondLayer.children && secondLayer.children.length > 0) {
                     for (const thirdLayer of secondLayer.children) {
                       if (thirdLayer.children && thirdLayer.children.length > 0) {
+                        const filters = []
                         for (const fourthLayer of thirdLayer.children) {
                           if (fourthLayer.label?.toLowerCase() === lowercase) {
                             // If we find a match on the third level, we need to switch facet1 to facet2
@@ -1018,19 +1020,26 @@ export default {
                             filter.facet3 = fourthLayer.label
                             filter.facet2 = thirdLayer.label
                             filter.facet = secondLayer.label
-                            return filter
+                            return [filter]
+                          } else if (thirdLayer.label?.toLowerCase() === lowercase) {
+                            //Match facet2 but facet 3 is not specified, include all children of facet2
+                            const filterClone = {...filter}
+                            filterClone.facet3 = fourthLayer.label
+                            filterClone.facet2 = thirdLayer.label
+                            filterClone.facet = secondLayer.label
+                            filterClone.AND = undefined
+                            filters.push(filterClone)
                           }
                         }
+                        return filters
                       } else if (thirdLayer.label?.toLowerCase() === lowercase) {
                         // If we find a match on the third level, we need to switch facet1 to facet2
                         //   and populate facet1 with its parents label.
                         filter.facet2 = thirdLayer.label
                         filter.facet = secondLayer.label
-                        return filter
+                        return [filter]
                       }
                     }
-                  } else {
-
                   }
                 }
               }
@@ -1054,11 +1063,13 @@ export default {
         }
 
         filters.forEach((filter) => {
-          const validatedFilter =
+          const validatedFilters =
             this.validateAndConvertFilterToHierarchical(filter)
-          if (validatedFilter) {
-            result.push(validatedFilter)
-            terms.push(validatedFilter.term)
+          if (validatedFilters && validatedFilters.length) {
+            validatedFilters.forEach(validatedFilter => {
+              result.push(validatedFilter)
+              terms.push(validatedFilter.term)
+            });
           } else {
             const validOption = this.options.find((option) => {
               return option.key === filter.facetPropPath;

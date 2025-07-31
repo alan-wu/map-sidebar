@@ -78,14 +78,16 @@ export function getFilters(selectedFacetArray = undefined) {
   facets.forEach((facet) => {
     if (facet.facet3) {
       if (facet.facet3 !== "Others") {
-        facet.facetSubPropPath = 'anatomy.organ.subsubcategory.name'
-        facet.label = `${facet.facet}.${facet.facet2}.${facet.facet3}`
-      }
-    }
-    /*  We cannot avoid lumber root ganglion at this moment as subsubcateogry is not defined everywhere
+        /*  We cannot avoid lumber root ganglion at this moment as subsubcateogry is not defined everywhere
         however when it is populated on antaomy.organ.name, the following can be used instead
         return '(NOT item.published.status:embargo) AND ("anatomy.organ.name":"dorsal root ganglion") AND 
         (NOT "anatomy.organ.name":"Lumbar dorsal root ganglion")' */
+        facet.facetSubPropPath = 'anatomy.organ.subsubcategory.name'
+        facet.label = `${facet.facet}.${facet.facet2}.${facet.facet3}`
+      } else {
+        facet.label = facet.facet2
+      }
+    }
   })
 
   let filters = "NOT item.published.status:embargo";

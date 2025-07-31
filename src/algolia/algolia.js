@@ -203,6 +203,7 @@ export class AlgoliaClient {
    * This is using fetch from the Algolia API
    */
   search(filter, query = '', hitsperPage = 10, page = 1) {
+    console.log(filter)
     return new Promise(resolve => {
       this.index
         .search(query, {
