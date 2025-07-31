@@ -396,51 +396,35 @@ export default {
       }
       return '';
     },
+    flattenToEvents: function (tag, facetObject, targetOption, filterKey = undefined) {
+      const eventsArray = []
+
+      for (const [key, value] of Object.entries(facetObject)) {
+        const option = targetOption.find((option) => option.label === key)
+        if (Object.entries(value).length) {
+          const fKey = option.key || filterKey
+          const events = this.flattenToEvents(tag, value, option.children, fKey)
+          eventsArray.push(...events)
+        } else {
+          if (key !== tag) {
+            eventsArray.push([filterKey, option.value])
+          }
+        }
+      }
+
+      return eventsArray
+    },
     /**
      * Create manual events when cascader tag is closed
      */
     cascadeTagClose: function (_tag) {
       const tag = this.isConnectivityTag(_tag) ? this.getConnectivityTag(_tag) : _tag;
-      let manualEvent = []
-
-      Object.entries(this.cascaderTags).map((entry) => {
-        const term = entry[0], facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
-        const option = this.options.filter((option) => option.label == term)[0]
-        const key = option.key
-
-        for (let index = 0; index < option.children.length; index++) {
-          const child = option.children[index]
-          const label = child.label, value = child.value
-
-          if (Array.isArray(facet)) {
-            // push "Show all" if there is no item checked
-            if (facet.length === 0 && label.toLowerCase() === "show all") {
-              manualEvent.push([key, value])
-              break
-              // push all checked items
-            } else if (label !== tag && facet.includes(label))
-              manualEvent.push([key, value])
-          } else {
-            // loop nested cascader items
-            Object.entries(facet).map((entry2) => {
-              const term2 = entry2[0], facet2 = entry2[1], facet3 = entry2[2] // object key, object value
-              if (facet3) {
-
-
+      const manualEvent = this.flattenToEvents(tag, this.cascaderTags, this.options)
+      this.cascadeEvent(manualEvent)
+    },
     flattenToTags: function (facetObject) {
       const tagsArray = []
 
-              } else {
-                if (term2 === label) {
-                  child.children.map((child2) => {
-                    const label2 = child2.label, value2 = child2.value
-                    // push all checked items
-                    if (label2 !== tag && facet2.includes(label2))
-                      manualEvent.push([key, value2])
-                  })
-                }
-              }
-            })
       for (const [key, value] of Object.entries(facetObject)) {
         if (Object.entries(value).length) {
           const tags = this.flattenToTags(value)
@@ -450,8 +434,6 @@ export default {
             tagsArray.push(key)
           }
         }
-      })
-      this.cascadeEvent(manualEvent)
       }
 
       return tagsArray
