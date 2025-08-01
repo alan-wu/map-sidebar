@@ -445,7 +445,10 @@ export default {
       this.openConnectivitySearch(state.connectivity.filters, state.connectivity.search);
       if (state.activeTabId) {
         this.$nextTick(() => {
-          this.activeTabId = state.activeTabId;
+          const hasTab = this.tabEntries.find((t) => t.id === state.activeTabId);
+          if (hasTab) {
+            this.activeTabId = state.activeTabId;
+          }
         });
       }
     },
