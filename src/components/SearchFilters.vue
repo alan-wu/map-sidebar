@@ -396,7 +396,7 @@ export default {
       }
       return '';
     },
-    flattenToEvents: function (tag, facetObject, targetOption, filterKey = undefined) {
+    flattenToEvents: function (tag, facetObject, targetOption, optionKey = undefined) {
       const eventsArray = []
 
       // loop nested object
@@ -407,12 +407,12 @@ export default {
         if (Object.entries(value).length) {
           // 'show all' has no facetPropPath
           // therefore passed in the filter option key
-          const fKey = option.key || filterKey
-          const events = this.flattenToEvents(tag, value, option.children, fKey)
+          const oKey = option.key || optionKey
+          const events = this.flattenToEvents(tag, value, option.children, oKey)
           eventsArray.push(...events)
         } else {
           if (key !== tag) {
-            eventsArray.push([filterKey, option.value])
+            eventsArray.push([optionKey, option.value])
           }
         }
       }
