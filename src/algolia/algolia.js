@@ -84,7 +84,7 @@ export class AlgoliaClient {
                   if (fullPath === "nerves and ganglia.dorsal root ganglion") {
                     childrenSubsubfacets.push(
                       {
-                        label: "Others",
+                        label: "Non specific",
                         id: facetId++,
                         facetPropPath: `${parentFacet ? parentFacet.facetSubsubpropPath : undefined}`
                       }

@@ -648,12 +648,13 @@ export default {
             let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
             //REMOVE THIS:Temporary work around.
-            if (facet3 && facet3.toLowerCase() !== "others") {
-              facet = `${facet}.${facet2}.${facet3}`.toLowerCase()
-              facetSubPropPath = 'anatomy.organ.subsubcategory.name'
-            } else if (facet2) {
-              facet = facet2
+            if (facet3) {
               facetSubPropPath = 'anatomy.organ.name'
+              if (facet3 === "Non specific") {
+                facet = facet2
+              } else {
+                facet = facet3
+              }
             }
 
             const foundNode = filteredCheckedNodes.find((checkedNode) =>
@@ -1014,7 +1015,8 @@ export default {
                       if (thirdLayer.children && thirdLayer.children.length > 0) {
                         const filters = []
                         for (const fourthLayer of thirdLayer.children) {
-                          if (fourthLayer.label?.toLowerCase() === lowercase) {
+                          if (fourthLayer.label?.toLowerCase() === lowercase ||
+                            fourthLayer.label === "Non specific") {
                             // If we find a match on the third level, we need to switch facet1 to facet2
                             //   and populate facet1 with its parents label.
                             filter.facet3 = fourthLayer.label

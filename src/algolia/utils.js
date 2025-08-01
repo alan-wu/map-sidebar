@@ -77,7 +77,7 @@ export function getFilters(selectedFacetArray = undefined) {
   //Make sure facets 3 are used the subsubcategory
   facets.forEach((facet) => {
     if (facet.facet3) {
-      if (facet.facet3 === "Others") {
+      if (facet.facet3 === "Non specific") {
         facet.label = facet.facet2
       }
     }
