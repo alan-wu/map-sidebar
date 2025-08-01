@@ -445,14 +445,12 @@ export default {
       const connectivityFilters = state.connectivity.filters;
       const datasetSearch = state.dataset.search;
       const connectivitySearch = state.connectivity.search;
-      const hasDatasetFilters = datasetFilters.some((df) => df.facet.toLowerCase() !== 'show all');
-      const hasConnectivityFilters = connectivityFilters.some((df) => df.facet.toLowerCase() !== 'show all');
 
-      if (hasDatasetFilters || datasetSearch) {
+      if (datasetFilters.length || datasetSearch) {
         this.openSearch(datasetFilters, datasetSearch);
       }
 
-      if (hasConnectivityFilters || connectivitySearch) {
+      if (connectivityFilters.length || connectivitySearch) {
         this.openConnectivitySearch(connectivityFilters, connectivitySearch);
       }
 
