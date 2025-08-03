@@ -639,7 +639,6 @@ export default {
         let filters = event
           .filter((selection) => selection !== undefined)
           .map((fs) => {
-            let facetSubPropPath = undefined
             let propPath = fs[0].includes('duplicate')
               ? fs[0].split('duplicate')[0]
               : fs[0]
@@ -648,9 +647,12 @@ export default {
             let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
             //REMOVE THIS:Temporary work around.
-            if (facet3 && facet3.toLowerCase() !== "others") {
-              facet = `${facet}.${facet2}.${facet3}`.toLowerCase()
-              facetSubPropPath = 'anatomy.organ.subsubcategory.name'
+            if (facet3) {
+              if (facet3 === "Non specific") {
+                facet = facet2
+              } else {
+                facet = facet3
+              }
             } else if (facet2) {
               facet = facet2
             }
@@ -665,7 +667,6 @@ export default {
               facet: facet,
               term: term,
               AND: bString, // for setting the boolean
-              facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
               tagLabel: tagLabel // for connectivity filter's cascader tag
             }
           })
