@@ -92,15 +92,21 @@ export function getFilters(selectedFacetArray = undefined) {
 
   let filters = "NOT item.published.status:embargo";
   filters = `(${filters}) AND `;
-  const facetPropPaths = facetPropPathMapping.map((f) => f.facetPropPath);
-  facetPropPaths.map((facetPropPath) => {
+  const facetPropPaths = facetPropPathMapping.map(
+    (f) => [f.facetPropPath, f.facetFilterPath]
+  );
+  facetPropPaths.map(([facetPropPath, facetFilterPath]) => {
     let facetsToBool = facets.filter(
       (facet) => facet.facetPropPath == facetPropPath
     );
     let orFilters = "";
     let andFilters = "";
     facetsToBool.map((facet) => {
-      let facetPropPathToUse = facet.facetSubPropPath ? facet.facetSubPropPath : facetPropPath // Check if we have a subpath
+      // for customization
+      // facetSubPropPath have the priority
+      let facetPropPathToUse = facet.facetSubPropPath ?
+        facet.facetSubPropPath : facetFilterPath ?
+          facetFilterPath : facetPropPath
       if (facet.AND) {
         andFilters += `AND "${facetPropPathToUse}":"${facet.label}"`;
       } else {

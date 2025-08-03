@@ -653,7 +653,6 @@ export default {
               facetSubPropPath = 'anatomy.organ.subsubcategory.name'
             } else if (facet2) {
               facet = facet2
-              facetSubPropPath = 'anatomy.organ.name'
             }
 
             const foundNode = filteredCheckedNodes.find((checkedNode) =>
