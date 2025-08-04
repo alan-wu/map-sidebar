@@ -74,17 +74,10 @@ export function getFilters(selectedFacetArray = undefined) {
   })
 
   let facets = removeShowAllFacets(selectedFacetArray)
-  //Make sure facets 3 are used the subsubcategory
+  //Facet 3 Non specific is the same as facet.facet2 the subsubcategory
   facets.forEach((facet) => {
     if (facet.facet3) {
-      if (facet.facet3 !== "Others") {
-        /*  We cannot avoid lumber root ganglion at this moment as subsubcateogry is not defined everywhere
-        however when it is populated on antaomy.organ.name, the following can be used instead
-        return '(NOT item.published.status:embargo) AND ("anatomy.organ.name":"dorsal root ganglion") AND 
-        (NOT "anatomy.organ.name":"Lumbar dorsal root ganglion")' */
-        facet.facetSubPropPath = 'anatomy.organ.subsubcategory.name'
-        facet.label = `${facet.facet}.${facet.facet2}.${facet.facet3}`
-      } else {
+      if (facet.facet3 === "Non specific") {
         facet.label = facet.facet2
       }
     }
@@ -92,15 +85,21 @@ export function getFilters(selectedFacetArray = undefined) {
 
   let filters = "NOT item.published.status:embargo";
   filters = `(${filters}) AND `;
-  const facetPropPaths = facetPropPathMapping.map((f) => f.facetPropPath);
-  facetPropPaths.map((facetPropPath) => {
+  const facetPropPaths = facetPropPathMapping.map(
+    (f) => [f.facetPropPath, f.facetFilterPath]
+  );
+  facetPropPaths.map(([facetPropPath, facetFilterPath]) => {
     let facetsToBool = facets.filter(
       (facet) => facet.facetPropPath == facetPropPath
     );
     let orFilters = "";
     let andFilters = "";
     facetsToBool.map((facet) => {
-      let facetPropPathToUse = facet.facetSubPropPath ? facet.facetSubPropPath : facetPropPath // Check if we have a subpath
+      // for customization
+      // facetSubPropPath have the priority
+      let facetPropPathToUse = facet.facetSubPropPath ?
+        facet.facetSubPropPath : facetFilterPath ?
+          facetFilterPath : facetPropPath
       if (facet.AND) {
         andFilters += `AND "${facetPropPathToUse}":"${facet.label}"`;
       } else {
