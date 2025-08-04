@@ -639,7 +639,6 @@ export default {
         let filters = event
           .filter((selection) => selection !== undefined)
           .map((fs) => {
-            let facetSubPropPath = undefined
             let propPath = fs[0].includes('duplicate')
               ? fs[0].split('duplicate')[0]
               : fs[0]
@@ -649,7 +648,6 @@ export default {
               this.getFacetsFromHierarchyString(hString)
             //REMOVE THIS:Temporary work around.
             if (facet3) {
-              facetSubPropPath = 'anatomy.organ.name'
               if (facet3 === "Non specific") {
                 facet = facet2
               } else {
@@ -657,7 +655,6 @@ export default {
               }
             } else if (facet2) {
               facet = facet2
-              facetSubPropPath = 'anatomy.organ.name'
             }
 
             const foundNode = filteredCheckedNodes.find((checkedNode) =>
@@ -670,7 +667,6 @@ export default {
               facet: facet,
               term: term,
               AND: bString, // for setting the boolean
-              facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
               tagLabel: tagLabel // for connectivity filter's cascader tag
             }
           })
@@ -986,70 +982,74 @@ export default {
       this.makeCascadeLabelsClickable()
     },
 
+    flattenToFilters: function (filter, targetOption, previousMatched = false) {
+      let filtersArray = []
+
+      if (targetOption) {
+        // Convert terms to lower case.
+        // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
+        // is Inferior vagus x ganglion (there are other cases as well)
+        const facetLabel = filter.facet.toLowerCase()
+        let nonSpecificFound = false
+        for (const child of targetOption) {
+          const isConnectivity = filter.facetPropPath.includes('flatmap.connectivity.source.') && child.key
+          const labelMatched = isConnectivity ?
+            child.key.replace(`${filter.facetPropPath}.`, '').toLowerCase() === facetLabel :
+            child.label.toLowerCase() === facetLabel
+          if (child.children && child.children.length) {
+            const matched = labelMatched || previousMatched
+            const filters = this.flattenToFilters(filter, child.children, matched)
+            filtersArray.push(...filters)
+          } else {
+            // 'show all' or first item will be skipped
+            if (child.facetPropPath || child.key) {
+              const [term, facet, facet2, facet3] = child.value.split('>');
+              if (facet3 === "Non specific") {
+                nonSpecificFound = true
+              }
+              const fObject = {
+                term,
+                facet,
+                facetPropPath: filter.facetPropPath,
+                ...(facet2 && { facet2 }),
+                ...(facet3 && { facet3 })
+              };
+              // all the child fact will be checked if parent is matched
+              if (previousMatched || labelMatched) {
+                if (isConnectivity) {
+                  filtersArray.push(filter)
+                } else {
+                  filtersArray.push(fObject)
+                }
+              }
+            }
+          }
+        }
+        //Previously matched and Non specific found
+        if (previousMatched && nonSpecificFound) {
+          filtersArray = filtersArray.filter((item) => {
+            if (!item.facet3 || item.facet3 === "Non specific") {
+              return true
+            } else {
+              return false
+            }
+          })
+        }
+      }
+
+      return filtersArray
+    },
     /*
      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
      */
     validateAndConvertFilterToHierarchical: function (filter) {
       if (filter && filter.facet && filter.term) {
-        // Convert terms to lower case.
-        // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
-        // is Inferior vagus x ganglion (there are other cases as well)
-        const lowercase = filter.facet.toLowerCase()
         if (filter.facet2 || filter.facet3) {
           return [filter] // if it has a second term we will assume it is hierarchical and return it as is
         } else {
-          for (const firstLayer of this.options) {
-            if (firstLayer.value === filter.facetPropPath) {
-              for (const secondLayer of firstLayer.children) {
-                // connectivity filters
-                if (filter.facetPropPath.includes('flatmap.connectivity.source.') && secondLayer.key) {
-                  const value = secondLayer.key.replace(`${filter.facetPropPath}.`, '');
-                  if (value.toLowerCase() === lowercase) {
-                    return [filter]
-                  }
-                } else if (secondLayer.label?.toLowerCase() === lowercase) {
-                  // if we find a match on the second level, the filter will already be correct
-                  // Make sure the case matches the one from Algolia
-                  filter.facet = secondLayer.label
-                  return [filter]
-                } else {
-                  if (secondLayer.children && secondLayer.children.length > 0) {
-                    for (const thirdLayer of secondLayer.children) {
-                      if (thirdLayer.children && thirdLayer.children.length > 0) {
-                        const filters = []
-                        for (const fourthLayer of thirdLayer.children) {
-                          if (fourthLayer.label?.toLowerCase() === lowercase ||
-                            fourthLayer.label === "Non specific") {
-                            // If we find a match on the third level, we need to switch facet1 to facet2
-                            //   and populate facet1 with its parents label.
-                            filter.facet3 = fourthLayer.label
-                            filter.facet2 = thirdLayer.label
-                            filter.facet = secondLayer.label
-                            return [filter]
-                          } else if (thirdLayer.label?.toLowerCase() === lowercase) {
-                            //Match facet2 but facet 3 is not specified, include all children of facet2
-                            const filterClone = {...filter}
-                            filterClone.facet3 = fourthLayer.label
-                            filterClone.facet2 = thirdLayer.label
-                            filterClone.facet = secondLayer.label
-                            filterClone.AND = undefined
-                            filters.push(filterClone)
-                          }
-                        }
-                        return filters
-                      } else if (thirdLayer.label?.toLowerCase() === lowercase) {
-                        // If we find a match on the third level, we need to switch facet1 to facet2
-                        //   and populate facet1 with its parents label.
-                        filter.facet2 = thirdLayer.label
-                        filter.facet = secondLayer.label
-                        return [filter]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          const option = this.options.find(option => option.label === filter.term)
+          const filters = this.flattenToFilters(filter, option.children)
+          return filters
         }
       }
       return false
