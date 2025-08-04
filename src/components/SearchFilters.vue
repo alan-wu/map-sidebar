@@ -395,13 +395,29 @@ export default {
         return 'connectivity-tag';
       }
       return '';
-    },
+    },    
     /**
      * Create manual events when cascader tag is closed
      */
     cascadeTagClose: function (_tag) {
       const tag = this.isConnectivityTag(_tag) ? this.getConnectivityTag(_tag) : _tag;
       let manualEvent = []
+
+      const addToArray = (tag, facetArray, child, key) => {
+        let items = []
+        if (child?.children?.length ) {
+          child.children.map((child2) => {
+            const label2 = child2.label, value2 = child2.value
+            // push all checked items
+            if (label2 !== tag && facetArray.includes(label2)) {
+              items.push([key, value2])
+            } else {
+              items.push(...addToArray(tag, facetArray, child2, key))
+            }
+          })
+        }
+        return items
+      }
 
       Object.entries(this.cascaderTags).map((entry) => {
         const term = entry[0], facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
@@ -411,7 +427,6 @@ export default {
         for (let index = 0; index < option.children.length; index++) {
           const child = option.children[index]
           const label = child.label, value = child.value
-
           if (Array.isArray(facet)) {
             // push "Show all" if there is no item checked
             if (facet.length === 0 && label.toLowerCase() === "show all") {
@@ -423,25 +438,15 @@ export default {
           } else {
             // loop nested cascader items
             Object.entries(facet).map((entry2) => {
-              const term2 = entry2[0], facet2 = entry2[1], facet3 = entry2[2] // object key, object value
-              if (facet3) {
-
-
-
-              } else {
-                if (term2 === label) {
-                  child.children.map((child2) => {
-                    const label2 = child2.label, value2 = child2.value
-                    // push all checked items
-                    if (label2 !== tag && facet2.includes(label2))
-                      manualEvent.push([key, value2])
-                  })
-                }
+              const term2 = entry2[0], facet2 = entry2[1] // object key, object value
+              if (term2 === label) {
+                manualEvent.push(...addToArray(tag, facet2, child, key))
               }
             })
           }
         }
       })
+
       this.cascadeEvent(manualEvent)
     },
     /**
