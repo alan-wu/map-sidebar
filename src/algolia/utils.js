@@ -74,7 +74,7 @@ export function getFilters(selectedFacetArray = undefined) {
   })
 
   let facets = removeShowAllFacets(selectedFacetArray)
-  //Make sure facets 3 are used the subsubcategory
+  //Facet 3 Non specific is the same as facet.facet2 the subsubcategory
   facets.forEach((facet) => {
     if (facet.facet3) {
       if (facet.facet3 === "Non specific") {

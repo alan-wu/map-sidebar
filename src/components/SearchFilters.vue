@@ -983,13 +983,14 @@ export default {
     },
 
     flattenToFilters: function (filter, targetOption, previousMatched = false) {
-      const filtersArray = []
+      let filtersArray = []
 
       if (targetOption) {
         // Convert terms to lower case.
         // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
         // is Inferior vagus x ganglion (there are other cases as well)
         const facetLabel = filter.facet.toLowerCase()
+        let nonSpecificFound = false
         for (const child of targetOption) {
           const isConnectivity = filter.facetPropPath.includes('flatmap.connectivity.source.') && child.key
           const labelMatched = isConnectivity ?
@@ -1003,6 +1004,9 @@ export default {
             // 'show all' or first item will be skipped
             if (child.facetPropPath || child.key) {
               const [term, facet, facet2, facet3] = child.value.split('>');
+              if (facet3 === "Non specific") {
+                nonSpecificFound = true
+              }
               const fObject = {
                 term,
                 facet,
@@ -1020,6 +1024,16 @@ export default {
               }
             }
           }
+        }
+        //Previously matched and Non specific found
+        if (previousMatched && nonSpecificFound) {
+          filtersArray = filtersArray.filter((item) => {
+            if (!item.facet3 || item.facet3 === "Non specific") {
+              return true
+            } else {
+              return false
+            }
+          })
         }
       }
 
