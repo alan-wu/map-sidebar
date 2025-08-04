@@ -518,7 +518,7 @@ export default {
       })
 
       this.presentTags = [...this.presentTags, ...this.flattenToTags(this.cascaderTagsClone)]
-      this.presentTags = [...new Set(this.presentTags)]
+      this.presentTags = [...new Set(this.presentTags)].sort()
       if (this.presentTags.length > 0) this.showFiltersText = false
       else this.showFiltersText = true
     },
