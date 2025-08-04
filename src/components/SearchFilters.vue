@@ -395,81 +395,78 @@ export default {
         return 'connectivity-tag';
       }
       return '';
-    },    
+    },
+    flattenToEvents: function (tag, facetObject, targetOption, optionKey = undefined) {
+      const eventsArray = []
+
+      // loop nested object
+      // if a object has no value and not match with the 'tag', it should be checked in the cascader
+      // otherwise continue looping to find matched facet
+      for (const [key, value] of Object.entries(facetObject)) {
+        const option = targetOption.find((option) => option.label === key)
+        if (Object.entries(value).length) {
+          // 'show all' has no facetPropPath
+          // therefore passed in the filter option key
+          const oKey = option.key || optionKey
+          const events = this.flattenToEvents(tag, value, option.children, oKey)
+          eventsArray.push(...events)
+        } else {
+          if (key !== tag) {
+            eventsArray.push([optionKey, option.value])
+          }
+        }
+      }
+
+      return eventsArray
+    },
     /**
      * Create manual events when cascader tag is closed
      */
     cascadeTagClose: function (_tag) {
       const tag = this.isConnectivityTag(_tag) ? this.getConnectivityTag(_tag) : _tag;
-      let manualEvent = []
+      const manualEvent = this.flattenToEvents(tag, this.cascaderTags, this.options)
+      this.cascadeEvent(manualEvent)
+    },
+    flattenToTags: function (facetObject) {
+      const tagsArray = []
 
-      const addToArray = (tag, facetArray, child, key) => {
-        let items = []
-        if (child?.children?.length ) {
-          child.children.map((child2) => {
-            const label2 = child2.label, value2 = child2.value
-            // push all checked items
-            if (label2 !== tag && facetArray.includes(label2)) {
-              items.push([key, value2])
-            } else {
-              items.push(...addToArray(tag, facetArray, child2, key))
-            }
-          })
-        }
-        return items
-      }
-
-      Object.entries(this.cascaderTags).map((entry) => {
-        const term = entry[0], facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
-        const option = this.options.filter((option) => option.label == term)[0]
-        const key = option.key
-
-        for (let index = 0; index < option.children.length; index++) {
-          const child = option.children[index]
-          const label = child.label, value = child.value
-          if (Array.isArray(facet)) {
-            // push "Show all" if there is no item checked
-            if (facet.length === 0 && label.toLowerCase() === "show all") {
-              manualEvent.push([key, value])
-              break
-              // push all checked items
-            } else if (label !== tag && facet.includes(label))
-              manualEvent.push([key, value])
-          } else {
-            // loop nested cascader items
-            Object.entries(facet).map((entry2) => {
-              const term2 = entry2[0], facet2 = entry2[1] // object key, object value
-              if (term2 === label) {
-                manualEvent.push(...addToArray(tag, facet2, child, key))
-              }
-            })
+      // loop nested object
+      // if a object has no value, it will be display as tag
+      // otherwise continue looping through
+      for (const [key, value] of Object.entries(facetObject)) {
+        if (Object.entries(value).length) {
+          const tags = this.flattenToTags(value)
+          tagsArray.push(...tags)
+        } else {
+          if (key !== "Show all") {
+            tagsArray.push(key)
           }
         }
-      })
+      }
 
-      this.cascadeEvent(manualEvent)
+      return tagsArray
     },
     /**
      * Re-generate 'cascaderTags' and 'presentTags'
      * Not able to avoid wrong facet at the moment
      */
     tagsChangedCallback: function (event) {
-      if (this.correctnessCheck.term && this.correctnessCheck.facet &&
-      this.correctnessCheck.facet2 && this.correctnessCheck.facet3) {
+      if (
+        this.correctnessCheck.term &&
+        this.correctnessCheck.facet &&
+        this.correctnessCheck.facet2 &&
+        this.correctnessCheck.facet3
+      ) {
         this.options.map((option) => {
           this.correctnessCheck.term.add(option.label)
-          option.children.map((child) => {
+          option.children?.map((child) => {
             this.correctnessCheck.facet.add(child.label)
-            if (['Anatomical structure', 'Nerves'].includes(option.label) && child.label !== 'Show all') {
-              child.children.map((child2) => {
-                this.correctnessCheck.facet2.add(child2.label)
-                if (child2.children) {
-                  child2.children.map((child3) => {
-                    this.correctnessCheck.facet3.add(child3.label)
-                  })
-                }
+            child.children?.map((child2) => {
+              this.correctnessCheck.facet2.add(child2.label)
+              child2.children?.map((child3) => {
+                this.correctnessCheck.facet3.add(child3.label)
               })
-            }
+            })
           })
         })
       }
@@ -481,69 +478,46 @@ export default {
         const { facet, facet2, facet3, term, tagLabel, facetPropPath } = item
         let facetLabel = facet;
         let termId = '';
-        // Connectivity filter has different value and label,
-        // value is used for filter logic
-        // label is used for user interface (and this cascader tag is just user interface)
+        // Connectivity filter has different value and label
         if (facetPropPath && facetPropPath.includes('flatmap.connectivity.source.') && tagLabel) {
           facetLabel = tagLabel;
           termId = term.charAt(0);
         }
 
-        if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facetLabel)) {
-          const childFacet = facet3 ? facet3 : facet2
-          const facetField = facet3 ? "facet3" : "facet2"
-          if (childFacet) {
-            if (this.correctnessCheck[facetField].has(childFacet)) {
-              if (term in this.cascaderTags) {
-                if (facet in this.cascaderTags[term]){
-                  this.cascaderTags[term][facet].push(childFacet)
-                  this.cascaderTagsClone[term][facet].push(childFacet)
-                }
-                else {
-                  this.cascaderTags[term][facet] = [childFacet]
-                  this.cascaderTagsClone[term][facet] = [childFacet]
-                }
+        // cascaderTags will be a nested object
+        // term and facets will be the keys
+        // values will be either empty object or another object with next level's facet as key
+        if (term && this.correctnessCheck.term.has(term)) {
+          if (!(term in this.cascaderTags)) {            
+            this.cascaderTags[term] = {}
+            this.cascaderTagsClone[term] = {}
+          }
+          if (facetLabel && this.correctnessCheck.facet.has(facetLabel)) {
+            if (!(facetLabel in this.cascaderTags[term])) {            
+              this.cascaderTags[term][facetLabel] = {}
+              if (termId) {
+                this.cascaderTagsClone[term][termId + ':' + facetLabel] = {}
               } else {
-                this.cascaderTags[term] = {}
-                this.cascaderTags[term][facet] = [childFacet]
-                this.cascaderTagsClone[term] = {}
-                this.cascaderTagsClone[term][facet] = [childFacet]
+                this.cascaderTagsClone[term][facetLabel] = {}
               }
             }
-          } else {
-            // If 'cascaderTags' has key 'Anatomical structure',
-            // it's value type will be Object (because it has nested facets),
-            // in this case 'push' action will not available.
-            if (term in this.cascaderTags && !['Anatomical structure', 'Nerves'].includes(term)) {
-              this.cascaderTags[term].push(facetLabel)
-              // connectivity exploration mode tags
-              if (termId) {
-                this.cascaderTagsClone[term].push(termId + ':' + facetLabel);
-              } else {
-                this.cascaderTagsClone[term].push(facetLabel);
+            if (facet2 && this.correctnessCheck.facet2.has(facet2)) {
+              if (!(facet2 in this.cascaderTags[term][facetLabel])) {            
+                this.cascaderTags[term][facetLabel][facet2] = {}
+                this.cascaderTagsClone[term][facetLabel][facet2] = {}
               }
-            } else {
-              if (facet.toLowerCase() !== "show all") {
-                this.cascaderTags[term] = [facetLabel]
-                // connectivity exploration mode tags
-                if (termId) {
-                  this.cascaderTagsClone[term] = [termId + ':' + facetLabel];
-                } else {
-                  this.cascaderTagsClone[term] = [facetLabel]
+              if (facet3 && this.correctnessCheck.facet3.has(facet3)) {
+                if (!(facet3 in this.cascaderTags[term][facetLabel][facet2])) {            
+                  this.cascaderTags[term][facetLabel][facet2][facet3] = {}
+                  this.cascaderTagsClone[term][facetLabel][facet2][facet3] = {}
                 }
-              } else {
-                this.cascaderTags[term] = []
-                this.cascaderTagsClone[term] = []
               }
             }
           }
         }
       })
 
-      Object.values(this.cascaderTagsClone).map((value) => {
-        const extend = Array.isArray(value) ? value : Object.values(value).flat(1)
-        this.presentTags = [...this.presentTags, ...extend]
-      })
+      this.presentTags = [...this.presentTags, ...this.flattenToTags(this.cascaderTagsClone)]
       this.presentTags = [...new Set(this.presentTags)]
       if (this.presentTags.length > 0) this.showFiltersText = false
       else this.showFiltersText = true
