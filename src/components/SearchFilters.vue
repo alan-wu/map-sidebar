@@ -1027,11 +1027,13 @@ export default {
           return [filter] // if it has a second term we will assume it is hierarchical and return it as is
         } else {
           const option = this.options.find(option => option.label === filter.term)
-          const filters = this.flattenToFilters(filter, option.children)
-          return filters
+          if (option) {
+            const filters = this.flattenToFilters(filter, option.children)
+            return filters
+          }
         }
       }
-      return false
+      return undefined
     },
     getHierarchicalValidatedFilters: function (filters) {
       const result = []
