@@ -122,3 +122,5 @@ export function getFilters(selectedFacetArray = undefined) {
 function removeShowAllFacets(facetArray) {
   return facetArray.filter(f => f.label !== 'Show all')
 }
+
+export { removeShowAllFacets }

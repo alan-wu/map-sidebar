@@ -93,6 +93,7 @@ import EventBus from './EventBus.js'
 import Tabs from './Tabs.vue'
 import AnnotationTool from './AnnotationTool.vue'
 import ConnectivityExplorer from './ConnectivityExplorer.vue'
+import { removeShowAllFacets } from '../algolia/utils.js'
 
 /**
  * Aims to provide a sidebar for searching capability for SPARC portal.
@@ -415,7 +416,7 @@ export default {
       const connectivityExplorerTabRef = this.getTabRef(undefined, 'connectivityExplorer');
       this.state.activeTabId = this.activeTabId;
       this.state.dataset.search = datasetExplorerTabRef.getSearch();
-      this.state.dataset.filters = datasetExplorerTabRef.getFilters();
+      this.state.dataset.filters = removeShowAllFacets(datasetExplorerTabRef.getFilters());
       this.state.connectivity.search = connectivityExplorerTabRef.getSearch();
       this.state.connectivity.filters = connectivityExplorerTabRef.getFilters();
       this.state.connectivityEntries = this.connectivityEntry.map((entry) => entry.id);
