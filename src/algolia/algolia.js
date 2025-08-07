@@ -287,9 +287,9 @@ export class AlgoliaClient {
     const anatomyOrganName = facets['anatomy.organ.name']
     const anatomyOrganCategoryName = facets['anatomy.organ.category.name']
     const anatomyOrganSubcategoryName = facets['anatomy.organ.subcategory.name']
-    const anatomyOrganNames = Object.keys(anatomyOrganName)
-    const anatomyOrganCategoryNames = Object.keys(anatomyOrganCategoryName)
-    const anatomyOrganSubcategoryNames = Object.keys(anatomyOrganSubcategoryName)
+    const anatomyOrganNames = anatomyOrganName ? Object.keys(anatomyOrganName) : []
+    const anatomyOrganCategoryNames = anatomyOrganCategoryName ? Object.keys(anatomyOrganCategoryName) : []
+    const anatomyOrganSubcategoryNames = anatomyOrganSubcategoryName ? Object.keys(anatomyOrganSubcategoryName) : []
     const filteredOrganNames = [];
     anatomyOrganCategoryNames.forEach((_categoryName) => {
       const categoryName = _categoryName.toLowerCase();
