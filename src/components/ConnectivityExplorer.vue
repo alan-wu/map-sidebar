@@ -366,7 +366,11 @@ export default {
     },
     onResetClick: function () {
       this.openSearch([], '');
-      this.$emit('connectivity-explorer-reset', []);
+      this.$emit('search-changed', {
+        value: [],
+        tabType: 'dataset',
+        type: 'reset-update',
+      })
     },
     openSearch: function (filter, search = "") {
       this.searchInput = search;
@@ -403,7 +407,11 @@ export default {
         });
 
         if (notFoundItems.length) {
-          this.$emit('connectivity-explorer-reset', notFoundItems);
+          this.$emit('search-changed', {
+            value: notFoundItems,
+            tabType: 'dataset',
+            type: 'reset-update',
+          })
         }
 
         //Facets provided but cannot find at least one valid
