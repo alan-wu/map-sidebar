@@ -21,7 +21,7 @@
         <el-button
           link
           class="el-button-link"
-          @click="openSearch([], '')"
+          @click="onResetClick"
           size="large"
         >
           Reset
@@ -258,6 +258,14 @@ export default {
     clearSearchClicked: function () {
       this.searchInput = '';
       this.searchAndFilterUpdate();
+    },
+    onResetClick: function () {
+      this.openSearch([], '')
+      this.$emit('search-changed', {
+        value: this.searchInput,
+        tabType: 'dataset',
+        type: 'reset-update',
+      })
     },
     searchEvent: function (event = false) {
       if (event.keyCode === 13 || event instanceof MouseEvent) {
