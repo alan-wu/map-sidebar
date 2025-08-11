@@ -677,11 +677,12 @@ export default {
           hString = cascadeEventItem[layers - 1]
         } else {
           hString = cascadeEventItem[layers - 2]
-          bString = cascadeEventItem[layers - 1]
         }
       } else {
         hString = cascadeEventItem[1]
-        bString = undefined
+      }
+      if (layers >= 3 && typeof cascadeEventItem[layers - 1] === "boolean") {
+        bString = cascadeEventItem[layers - 1]
       }
       return { hString, bString }
     },
@@ -991,8 +992,11 @@ export default {
                 facet,
                 facetPropPath: filter.facetPropPath,
                 ...(facet2 && { facet2 }),
-                ...(facet3 && { facet3 })
+                ...(facet3 && { facet3 }),
               };
+              if ('AND' in filter) {
+                fObject.AND = filter.AND
+              }
               // all the child fact will be checked if parent is matched
               if (previousMatched || labelMatched) {
                 if (isConnectivity) {
