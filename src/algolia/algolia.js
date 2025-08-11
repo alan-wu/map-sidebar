@@ -304,12 +304,12 @@ export class AlgoliaClient {
         const found = anatomyOrganSubcategoryNames.some((_subcategoryName) => {
           const subcategoryName = _subcategoryName.toLowerCase();
           if (subcategoryName === fullName) {
-            // currently push all sub-sub category organ names
-            // since those are not available in organNames yet
-            // when available, we should include looking in organNames
             const foundNameInSubsub = anatomyOrganSubsubcategoryNames.find((name) => name.toLocaleLowerCase().includes(subcategoryName))
             if (foundNameInSubsub) {
-              foundNamesInSubsub.push(foundNameInSubsub.replace(`${subcategoryName}.`, ''))
+              const subsubOrganName = foundNameInSubsub.replace(`${subcategoryName}.`, '');
+              if (anatomyOrganNames.map((name) => name.toLowerCase()).includes(subsubOrganName)) {
+                foundNamesInSubsub.push(subsubOrganName)
+              }
             }
             return true
           }
