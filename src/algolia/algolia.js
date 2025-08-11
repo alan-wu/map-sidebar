@@ -287,22 +287,37 @@ export class AlgoliaClient {
     const anatomyOrganName = facets['anatomy.organ.name']
     const anatomyOrganCategoryName = facets['anatomy.organ.category.name']
     const anatomyOrganSubcategoryName = facets['anatomy.organ.subcategory.name']
+    const anatomyOrganSubsubcategoryName = facets['anatomy.organ.subsubcategory.name']
     const anatomyOrganNames = anatomyOrganName ? Object.keys(anatomyOrganName) : []
     const anatomyOrganCategoryNames = anatomyOrganCategoryName ? Object.keys(anatomyOrganCategoryName) : []
     const anatomyOrganSubcategoryNames = anatomyOrganSubcategoryName ? Object.keys(anatomyOrganSubcategoryName) : []
+    const anatomyOrganSubsubcategoryNames = anatomyOrganSubsubcategoryName ? Object.keys(anatomyOrganSubsubcategoryName) : []
+
     const filteredOrganNames = [];
     anatomyOrganCategoryNames.forEach((_categoryName) => {
       const categoryName = _categoryName.toLowerCase();
       anatomyOrganNames.forEach((_organName) => {
         const organName = _organName.toLowerCase();
         const fullName = `${categoryName}.${organName}`
+        const foundNamesInSubsub = []
 
         const found = anatomyOrganSubcategoryNames.some((_subcategoryName) => {
           const subcategoryName = _subcategoryName.toLowerCase();
           if (subcategoryName === fullName) {
+            // currently push all sub-sub category organ names
+            // since those are not available in organNames yet
+            // when available, we should include looking in organNames
+            const foundNameInSubsub = anatomyOrganSubsubcategoryNames.find((name) => name.toLocaleLowerCase().includes(subcategoryName))
+            if (foundNameInSubsub) {
+              foundNamesInSubsub.push(foundNameInSubsub.replace(`${subcategoryName}.`, ''))
+            }
             return true
           }
         });
+
+        if (foundNamesInSubsub.length) {
+          filteredOrganNames.push(...foundNamesInSubsub.map(name => name.toLowerCase()))
+        }
 
         if (found) {
           filteredOrganNames.push(organName);
