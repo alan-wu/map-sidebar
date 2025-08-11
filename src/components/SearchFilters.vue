@@ -923,6 +923,15 @@ export default {
         }
       }
     },
+    addFilters: function (filters) {
+      let filterHasChanged = false
+      if (this.cascaderIsReady) {
+        filters.forEach(filter => {
+          filterHasChanged = filterHasChanged || this.addFilter(filter)
+        })
+      }
+      return filterHasChanged
+    },
     initiateSearch: function () {
       this.cascadeEvent(this.cascadeSelectedWithBoolean)
     },
