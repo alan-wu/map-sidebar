@@ -240,14 +240,14 @@ export default {
       if (this.cascaderIsReady) {
         this.resetPageNavigation()
         if (filter) {
-          if (this.$refs.filtersRef.addFilter(filter))
+          if (this.$refs.filtersRef.addFilters(filter))
             this.$refs.filtersRef.initiateSearch()
         }
       } else {
         if (Array.isArray(this.filter)) {
-          this.filter.push(filter)
+          this.filter.push(...filter)
         } else {
-          this.filter = [filter]
+          this.filter = [...filter]
         }
       }
     },

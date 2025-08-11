@@ -313,14 +313,21 @@ export default {
      * @public
      */
     addFilter: function (filter) {
-      this.drawerOpen = true
-      filter.AND = true // When we add a filter external, it is currently only with an AND boolean
-
-      // Because refs are in v-for, nextTick is needed here
-      this.$nextTick(() => {
-        const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
-        datasetExplorerTabRef.addFilter(filter)
-      })
+      if (filter) {
+        this.drawerOpen = true
+        let filterToAdd = filter;
+        if (Array.isArray(filter)) {
+          filterToAdd.forEach(item => item.AND = true);
+        } else {
+          filter.AND = true // When we add a filter external, it is currently only with an AND boolean
+          filterToAdd = [filter]
+        }
+        // Because refs are in v-for, nextTick is needed here
+        this.$nextTick(() => {
+          const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
+          datasetExplorerTabRef.addFilter(filterToAdd)
+        })
+      }
     },
     openNeuronSearch: function (neuron) {
       this.drawerOpen = true
