@@ -1,7 +1,7 @@
 <template>
   <div class="filters">
     <MapSvgSpriteColor />
-    <div v-if="showFilters">
+    <div v-if="showFilters && options.length > 0">
       <div class="cascader-tag" v-if="presentTags.length > 0">
         <el-tag
           class="ml-2"
@@ -9,7 +9,7 @@
           closable
           @close="cascadeTagClose(presentTags[0])"
         >
-          <span class="tag-text">{{ presentTags[0] }}</span>
+          <span class="tag-text" :class="modifyCascaderTagStyle(presentTags[0])">{{ presentTags[0] }}</span>
         </el-tag>
         <el-popover
           v-if="presentTags.length > 1"
@@ -24,6 +24,7 @@
                 v-for="(tag, i) in presentTags.slice(1)"
                 :key="i"
                 class="ml-2"
+                :class="modifyCascaderTagStyle(tag)"
                 type="info"
                 closable
                 @close="cascadeTagClose(tag)"
@@ -56,23 +57,45 @@
             :collapse-tags="true"
             collapse-tags-tooltip
             :options="options"
-            :props="props"
+            :props="cascaderProps"
             @change="cascadeEvent($event)"
             @expand-change="cascadeExpandChange"
             :show-all-levels="true"
             popper-class="sidebar-cascader-popper"
           >
             <template #default="{ node, data }">
-              <el-row>
-                <el-col :span="4" v-if="hasLineStyles(data)">
-                  <div class="path-visual" :style="getLineStyles(data)"></div>
-                </el-col>
-                <el-col :span="20">
-                  <div :style="getBackgroundStyles(data)">
-                    {{ data.label }}
+              <div v-if="isFlatmapConnectionsFilterNode(node)">
+                <div class="sidebar-cascader-search el-input">
+                  <div class="el-input__wrapper">
+                    <input
+                      class="el-input__inner"
+                      :ref="'searchInput_' + node.pathValues[0]"
+                      :value="searchInputs[node.pathValues[0]]"
+                      @input="searchInputChange($event, node)"
+                      @focus="searchInputFocusToggle($event, true)"
+                      @blur="searchInputFocusToggle($event, false)"
+                      style="width: 100%"
+                      autocomplete="off"
+                      placeholder="Search"
+                    />
                   </div>
-                </el-col>
-              </el-row>
+                </div>
+              </div>
+              <div v-else>
+                <el-row>
+                  <el-col :span="4" v-if="hasLineStyles(data)">
+                    <div class="path-visual" :style="getLineStyles(data)"></div>
+                  </el-col>
+                  <el-col :span="20">
+                    <span v-if="isFlatmapConnectionsNode(node)" class="sr-only">
+                      {{ getNodeKey(node.value) }}
+                    </span>
+                    <div :style="getBackgroundStyles(data)">
+                      {{ data.label }}
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
             </template>
           </el-cascader>
           <div v-if="showFiltersText" class="filter-default-value">Filters</div>
@@ -190,7 +213,7 @@ export default {
       filters: [],
       facets: ['Species', 'Gender', 'Organ', 'Datasets'],
       numberDatasetsShown: ['10', '20', '50'],
-      props: { multiple: true },
+      cascaderProps: { multiple: true },
       options: [
         {
           value: 'Species',
@@ -199,6 +222,7 @@ export default {
         },
       ],
       presentTags:[],
+      searchInputs: {},
     }
   },
   setup() {
@@ -206,7 +230,8 @@ export default {
     const correctnessCheck = markRaw({
       term: new Set(),
       facet: new Set(),
-      facet2: new Set()
+      facet2: new Set(),
+      facet3: new Set(),
     });
     return { cascaderTags, correctnessCheck }
   },
@@ -230,29 +255,77 @@ export default {
           // Populate the cascader with new options
           this.populateCascader().then(() => {
             this.cascaderIsReady = true
-            this.checkShowAllBoxes()
-            // this.setCascader(this.entry.filterFacets)
-            this.cssMods()
-            this.$emit('cascaderReady')
+            if (this.options.length) {
+              this.checkShowAllBoxes()
+              // this.setCascader(this.entry.filterFacets)
+              this.cssMods()
+              this.$emit('cascaderReady')
+            }
           })
         }
       },
     },
   },
   methods: {
-    createCascaderItemValue: function (
-      term,
-      facet1 = undefined,
-      facet2 = undefined
-    ) {
-      let value = term
-      if (facet1) value = `${term}>${facet1}`
-      if (facet1 && facet2) value = `${term}>${facet1}>${facet2}`
-      if (!facet1 && facet2)
-        console.warn(
-          `Warning: ${facet2} provided without its parent, this will not be shown in the cascader`
-        )
-      return value
+    /**
+     * Internal only.
+     * Create value of cascader.
+     * Takes an array of label to create the value
+     */
+    createCascaderItemValue: function (labelsArray) {
+      let value = undefined
+      if (labelsArray?.length) {
+        value = labelsArray[0]
+        for (let i = 1; labelsArray.length > i; i++) {
+          value = `${value}>${labelsArray[i]}`
+        }
+        if (value.includes("undefined")) {
+          console.warn(
+            `Warning: One or more of the facets is undefined, this will not be shown in the cascader`
+          )
+        }
+      }
+      return value;
+    },
+    createChildrenCascaderValue: function(children, facet, facets) {
+      if (children?.length) {
+        children.forEach((facetItem, i) => {
+          //copy the facets into
+          if (children[i].facetPropPath !== 'pennsieve.organization.name') {
+            children[i].label = convertReadableLabel(
+              facetItem.label
+            )
+          }
+          if (facetItem.key && facet.key.includes('flatmap.connectivity.source.')) {
+            const childKey = facetItem.key;
+            const parentKey = facet.key;
+            const key = childKey.replace(`${parentKey}.`, '');
+            children[i].value = this.createCascaderItemValue([facet.label, key]);
+          } else {
+            const newFacets = facets.slice()
+            newFacets.push(facetItem.label)
+            children[i].value = this.createCascaderItemValue(newFacets)
+            this.createChildrenCascaderValue(facetItem.children, facet, newFacets)
+          }
+        })
+      }
+    },
+    getNodeKey: function (nodeValue) {
+      return nodeValue ? nodeValue.split('>')[1] : '';
+    },
+    isFlatmapConnectionsNode: function (node) {
+      return (
+        node.pathValues[0].includes('flatmap.connectivity.source') &&
+        node.isLeaf
+      )
+    },
+    isFlatmapConnectionsFilterNode: function (node) {
+      return (
+        node.pathValues[0].includes('flatmap.connectivity.source') &&
+        node.pathLabels.includes('Filters') &&
+        node.isDisabled &&
+        node.isLeaf
+      )
     },
     processOptions: function () {
       // create top level of options in cascader
@@ -261,44 +334,27 @@ export default {
 
         this.options[i].label = convertReadableLabel(facet.label)
         this.options[i].value = this.createCascaderItemValue(
-          facet.key,
-          undefined
+          [facet.key]
         )
 
         if (!this.options[i].children.find((child) => child.label === 'Show all')) {
           // put "Show all" as first option
           this.options[i].children.unshift({
-            value: this.createCascaderItemValue('Show all'),
+            value: this.createCascaderItemValue(['Show all']),
             label: 'Show all',
           })
         }
 
+        if (facet.key.includes('flatmap.connectivity.source')) {
+          this.options[i].children.unshift({
+            value: this.createCascaderItemValue(['ConnectivityFilters']),
+            label: 'Filters',
+            disabled: true,
+          });
+        }
+
         // populate second level of options
-        this.options[i].children.forEach((facetItem, j) => {
-          // Format labels except funding program
-          if (this.options[i].children[j].facetPropPath !== 'pennsieve.organization.name') {
-            this.options[i].children[j].label = convertReadableLabel(
-              facetItem.label
-            )
-          }
-          this.options[i].children[j].value =
-            this.createCascaderItemValue(facet.label, facetItem.label)
-          if (
-            this.options[i].children[j].children &&
-            this.options[i].children[j].children.length > 0
-          ) {
-            this.options[i].children[j].children.forEach((term, k) => {
-              this.options[i].children[j].children[k].label =
-                convertReadableLabel(term.label)
-              this.options[i].children[j].children[k].value =
-                this.createCascaderItemValue(
-                  facet.label,
-                  facetItem.label,
-                  term.label
-                )
-            })
-          }
-        })
+        this.createChildrenCascaderValue(this.options[i].children, facet, [facet.label])
       })
     },
     populateCascader: function () {
@@ -325,101 +381,144 @@ export default {
           })
       })
     },
+    isConnectivityTag: function (tag) {
+      const regex = /^[A-Za-z]:/; // starts with O: D: V:
+      return regex.test(tag);
+    },
+    getConnectivityTag: function (tag) {
+      const index = tag.indexOf(":");
+      const result = index !== -1 ? tag.substring(index + 1) : tag;
+      return result;
+    },
+    modifyCascaderTagStyle: function (tag) {
+      if (this.isConnectivityTag(tag)) {
+        return 'connectivity-tag';
+      }
+      return '';
+    },
+    flattenToEvents: function (tag, facetObject, targetOption, optionKey = undefined) {
+      const eventsArray = []
+
+      // loop nested object
+      // if a object has no value and not match with the 'tag', it should be checked in the cascader
+      // otherwise continue looping to find matched facet
+      for (const [key, value] of Object.entries(facetObject)) {
+        const option = targetOption.find((option) => option.label === key)
+        if (Object.entries(value).length) {
+          // 'show all' has no facetPropPath
+          // therefore passed in the filter option key
+          const oKey = option.key || optionKey
+          const events = this.flattenToEvents(tag, value, option.children, oKey)
+          eventsArray.push(...events)
+        } else {
+          if (key !== tag) {
+            eventsArray.push([optionKey, option.value])
+          }
+        }
+      }
+
+      return eventsArray
+    },
     /**
      * Create manual events when cascader tag is closed
      */
-    cascadeTagClose: function (tag) {
-      let manualEvent = []
+    cascadeTagClose: function (_tag) {
+      const tag = this.isConnectivityTag(_tag) ? this.getConnectivityTag(_tag) : _tag;
+      const manualEvent = this.flattenToEvents(tag, this.cascaderTags, this.options)
+      this.cascadeEvent(manualEvent)
+    },
+    flattenToTags: function (facetObject) {
+      const tagsArray = []
 
-      Object.entries(this.cascaderTags).map((entry) => {
-        const term = entry[0], facet = entry[1] // Either "Array" or "Object", depends on the cascader item level
-        const option = this.options.filter((option) => option.label == term)[0]
-        const key = option.key
-
-        for (let index = 0; index < option.children.length; index++) {
-          const child = option.children[index]
-          const label = child.label, value = child.value
-
-          if (Array.isArray(facet)) {
-            // push "Show all" if there is no item checked
-            if (facet.length === 0 && label.toLowerCase() === "show all") {
-              manualEvent.push([key, value])
-              break
-              // push all checked items
-            } else if (label !== tag && facet.includes(label))
-              manualEvent.push([key, value])
-          } else {
-            // loop nested cascader items
-            Object.entries(facet).map((entry2) => {
-              const term2 = entry2[0], facet2 = entry2[1] // object key, object value
-
-              if (term2 === label) {
-                child.children.map((child2) => {
-                  const label2 = child2.label, value2 = child2.value
-                  // push all checked items
-                  if (label2 !== tag && facet2.includes(label2))
-                    manualEvent.push([key, value2])
-                })
-              }
-            })
+      // loop nested object
+      // if a object has no value, it will be display as tag
+      // otherwise continue looping through
+      for (const [key, value] of Object.entries(facetObject)) {
+        if (Object.entries(value).length) {
+          const tags = this.flattenToTags(value)
+          tagsArray.push(...tags)
+        } else {
+          if (key !== "Show all") {
+            tagsArray.push(key)
           }
         }
-      })
-      this.cascadeEvent(manualEvent)
+      }
+
+      return tagsArray
     },
     /**
      * Re-generate 'cascaderTags' and 'presentTags'
      * Not able to avoid wrong facet at the moment
      */
     tagsChangedCallback: function (event) {
-      if (this.correctnessCheck.term && this.correctnessCheck.facet && this.correctnessCheck.facet2) {
+      if (
+        this.correctnessCheck.term &&
+        this.correctnessCheck.facet &&
+        this.correctnessCheck.facet2 &&
+        this.correctnessCheck.facet3
+      ) {
         this.options.map((option) => {
           this.correctnessCheck.term.add(option.label)
-          option.children.map((child) => {
+          option.children?.map((child) => {
             this.correctnessCheck.facet.add(child.label)
-            if (option.label === 'Anatomical structure' && child.label !== 'Show all') {
-              child.children.map((child2) => {
-                this.correctnessCheck.facet2.add(child2.label)
+            child.children?.map((child2) => {
+              this.correctnessCheck.facet2.add(child2.label)
+              child2.children?.map((child3) => {
+                this.correctnessCheck.facet3.add(child3.label)
               })
-            }
+            })
           })
         })
       }
 
       this.cascaderTags = {}
+      this.cascaderTagsClone = {}
       this.presentTags = []
       event.map((item) => {
-        const { facet, facet2, term } = item
-        if (this.correctnessCheck.term.has(term) && this.correctnessCheck.facet.has(facet)) {
-          if (facet2) {
-            if (this.correctnessCheck.facet2.has(facet2)) {
-              if (term in this.cascaderTags) {
-                if (facet in this.cascaderTags[term]) this.cascaderTags[term][facet].push(facet2)
-                else this.cascaderTags[term][facet] = [facet2]
+        const { facet, facet2, facet3, term, tagLabel, facetPropPath } = item
+        let facetLabel = facet;
+        let termId = '';
+        // Connectivity filter has different value and label
+        if (facetPropPath && facetPropPath.includes('flatmap.connectivity.source.') && tagLabel) {
+          facetLabel = tagLabel;
+          termId = term.charAt(0);
+        }
+
+        // cascaderTags will be a nested object
+        // term and facets will be the keys
+        // values will be either empty object or another object with next level's facet as key
+        if (term && this.correctnessCheck.term.has(term)) {
+          if (!(term in this.cascaderTags)) {
+            this.cascaderTags[term] = {}
+            this.cascaderTagsClone[term] = {}
+          }
+          if (facetLabel && this.correctnessCheck.facet.has(facetLabel)) {
+            if (!(facetLabel in this.cascaderTags[term])) {
+              this.cascaderTags[term][facetLabel] = {}
+              if (termId) {
+                this.cascaderTagsClone[term][termId + ':' + facetLabel] = {}
               } else {
-                this.cascaderTags[term] = {}
-                this.cascaderTags[term][facet] = [facet2]
+                this.cascaderTagsClone[term][facetLabel] = {}
               }
             }
-          } else {
-            // If 'cascaderTags' has key 'Anatomical structure',
-            // it's value type will be Object (because it has nested facets),
-            // in this case 'push' action will not available.
-            if (term in this.cascaderTags && term !== 'Anatomical structure')
-              this.cascaderTags[term].push(facet)
-            else {
-              if (facet.toLowerCase() !== "show all") this.cascaderTags[term] = [facet]
-              else this.cascaderTags[term] = []
+            if (facet2 && this.correctnessCheck.facet2.has(facet2)) {
+              if (!(facet2 in this.cascaderTags[term][facetLabel])) {
+                this.cascaderTags[term][facetLabel][facet2] = {}
+                this.cascaderTagsClone[term][facetLabel][facet2] = {}
+              }
+              if (facet3 && this.correctnessCheck.facet3.has(facet3)) {
+                if (!(facet3 in this.cascaderTags[term][facetLabel][facet2])) {
+                  this.cascaderTags[term][facetLabel][facet2][facet3] = {}
+                  this.cascaderTagsClone[term][facetLabel][facet2][facet3] = {}
+                }
+              }
             }
           }
         }
       })
 
-      Object.values(this.cascaderTags).map((value) => {
-        const extend = Array.isArray(value) ? value : Object.values(value).flat(1)
-        this.presentTags = [...this.presentTags, ...extend]
-      })
-      this.presentTags = [...new Set(this.presentTags)]
+      this.presentTags = [...this.presentTags, ...this.flattenToTags(this.cascaderTagsClone)]
+      this.presentTags = [...new Set(this.presentTags)].sort()
       if (this.presentTags.length > 0) this.showFiltersText = false
       else this.showFiltersText = true
     },
@@ -471,6 +570,13 @@ export default {
         event = this.showAllEventModifier(event)
 
         event = this.showAllEventModifierForAutoCheckAll(event)
+
+        const cascaderRef = this.$refs.cascader;
+        const checkedNodes = cascaderRef?.getCheckedNodes(true);
+        const filteredCheckedNodes = checkedNodes.filter((checkedNode) =>
+          checkedNode.checked && checkedNode.label !== 'Show all'
+        );
+
         /**
          * Move the new added event to the beginning
          * Otherwise, cascader will show different expand item
@@ -490,14 +596,21 @@ export default {
           .map((fs) => {
             let { hString, bString } =
               this.findHierarachyStringAndBooleanString(fs)
-            let { facet, facet2, term } =
+            let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
+
+            const foundNode = filteredCheckedNodes.find((checkedNode) =>
+              fs.join() === checkedNode.pathValues.join()
+            );
+            const tagLabel = foundNode ? foundNode.label : undefined;
             return {
               facetPropPath: fs[0],
               facet: facet,
               facet2: facet2,
+              facet3: facet3,
               term: term,
               AND: bString, // for setting the boolean
+              tagLabel: tagLabel // for connectivity filter's cascader tag
             }
           })
 
@@ -505,25 +618,35 @@ export default {
         let filters = event
           .filter((selection) => selection !== undefined)
           .map((fs) => {
-            let facetSubPropPath = undefined
             let propPath = fs[0].includes('duplicate')
               ? fs[0].split('duplicate')[0]
               : fs[0]
             let { hString, bString } =
               this.findHierarachyStringAndBooleanString(fs)
-            let { facet, facet2, term } =
+            let { facet, facet2, facet3, term } =
               this.getFacetsFromHierarchyString(hString)
-            if (facet2) {
-              // We need to change the propPath if we are at the third level of the cascader
+            //REMOVE THIS:Temporary work around.
+            if (facet3) {
+              if (facet3 === "Non specific") {
+                facet = facet2
+              } else {
+                facet = facet3
+              }
+            } else if (facet2) {
               facet = facet2
-              facetSubPropPath = 'anatomy.organ.name'
             }
+
+            const foundNode = filteredCheckedNodes.find((checkedNode) =>
+              fs.join() === checkedNode.pathValues.join()
+            );
+            const tagLabel = foundNode ? foundNode.label : undefined;
+
             return {
               facetPropPath: propPath,
               facet: facet,
               term: term,
               AND: bString, // for setting the boolean
-              facetSubPropPath: facetSubPropPath, // will be used for filters if we are at the third level of the cascader
+              tagLabel: tagLabel // for connectivity filter's cascader tag
             }
           })
 
@@ -545,39 +668,33 @@ export default {
     //  are stored in the cascader
     findHierarachyStringAndBooleanString(cascadeEventItem) {
       let hString, bString
-      if (cascadeEventItem.length >= 3) {
-        if (cascadeEventItem[2] &&
-          (typeof cascadeEventItem[2] === 'string' ||
-          cascadeEventItem[2] instanceof String) &&
-          cascadeEventItem[2].split('>').length > 2) {
-          hString = cascadeEventItem[2]
-          bString = cascadeEventItem.length == 4 ? cascadeEventItem[3] : undefined
+      const layers = cascadeEventItem.length
+      if (layers >= 3) {
+        if (cascadeEventItem[layers - 1] &&
+          (typeof cascadeEventItem[layers - 1] === 'string' ||
+          cascadeEventItem[layers - 1] instanceof String) &&
+          cascadeEventItem[layers - 1].split('>').length > 2) {
+          hString = cascadeEventItem[layers - 1]
         } else {
-          hString = cascadeEventItem[1]
-          bString = cascadeEventItem[2]
+          hString = cascadeEventItem[layers - 2]
         }
       } else {
         hString = cascadeEventItem[1]
-        bString = undefined
+      }
+      if (layers >= 3 && typeof cascadeEventItem[layers - 1] === "boolean") {
+        bString = cascadeEventItem[layers - 1]
       }
       return { hString, bString }
     },
     // Splits the terms and facets from the string stored in the cascader
     getFacetsFromHierarchyString(hierarchyString) {
-      let facet,
-        term,
-        facet2 = undefined
       let fsSplit = hierarchyString.split('>')
-      if (fsSplit.length == 3) {
-        // if we are at the third level of the cascader
-        facet2 = fsSplit[2]
-        facet = fsSplit[1]
-        term = fsSplit[0]
-      } else {
-        facet = fsSplit[1]
-        term = fsSplit[0]
+      return {
+        term: fsSplit[0],
+        facet: fsSplit[1],
+        facet2: fsSplit[2],
+        facet3: fsSplit[3],
       }
-      return { facet, facet2, term }
     },
     // showAllEventModifier:  Modifies a cascade event to unclick all selections in category if "show all" is clicked. Also unchecks "Show all" if any secection is clicked
     // *NOTE* Does NOT remove 'Show all' selections from showing in 'cascadeSelected'
@@ -647,7 +764,81 @@ export default {
     cascadeExpandChange: function (event) {
       //work around as the expand item may change on modifying the cascade props
       this.__expandItem__ = event
+      if (this.__expandItem__) {
+        this.updateListFilters(this.__expandItem__[0])
+      }
+      this.updateListStyleOrder()
       this.cssMods()
+    },
+    updateListStyleOrder: function () {
+      this.$nextTick(() => {
+        const cascaderRef = this.$refs.cascader;
+        const contentRef = cascaderRef?.contentRef;
+
+        if (contentRef) {
+          const menuList = contentRef.querySelectorAll('.el-cascader-menu__list');
+          if (menuList) {
+            menuList.forEach((ul) => {
+              const searchInput = ul.querySelector('.sidebar-cascader-search');
+
+              // order the list using CSS
+              // active items on top - defined in CSS under .cascader-menu-with-search
+              if (searchInput) {
+                ul.classList.add('cascader-menu-with-search');
+              } else {
+                ul.classList.remove('cascader-menu-with-search');
+              }
+            })
+          }
+        }
+      });
+    },
+    searchInputChange: function (event, node) {
+      event.preventDefault();
+      const { target } = event;
+      if (target) {
+        const value = target.value;
+        const expandItem = node.pathValues[0];
+
+        this.searchInputs[expandItem] = value;
+        this.updateListFilters(expandItem);
+      }
+    },
+    searchInputFocusToggle: function (event, option) {
+      const { target } = event;
+      if (!target) return;
+
+      const inputWrapper = target.closest('.el-input__wrapper');
+      if (option === true) {
+        inputWrapper.classList.add('is-focus');
+      } else {
+        inputWrapper.classList.remove('is-focus');
+      }
+    },
+    updateListFilters: function (expandItem) {
+      const searchValue = this.searchInputs[expandItem] || '';
+
+      this.$nextTick(() => {
+        const searchInputEl = this.$refs['searchInput_' + expandItem];
+        if (!searchInputEl) return;
+
+        const ul = searchInputEl.closest('.el-cascader-menu__list');
+        ul.querySelectorAll('.el-cascader-node').forEach((li, index) => {
+          // skip index:0 (search box), and index:1 (Show all)
+          if (index > 1) {
+            const content = li.querySelector('.el-cascader-node__label').textContent;
+            if (content.toLowerCase().includes(searchValue.toLowerCase())) {
+              li.classList.remove('hide');
+            } else {
+              li.classList.add('hide');
+            }
+          }
+        });
+
+        if (searchValue) {
+          searchInputEl.focus();
+        }
+      });
     },
     numberShownChanged: function (event) {
       this.$emit('numberPerPage', parseInt(event))
@@ -677,17 +868,18 @@ export default {
         const createFilter = (e) => {
           let filters = [
             e.facetPropPath,
-            this.createCascaderItemValue(capitalise(e.term), e.facet),
+            this.createCascaderItemValue([capitalise(e.term), e.facet]),
           ]
           // Add the third level of the cascader if it exists
           if (e.facet2) {
             filters.push(
-              this.createCascaderItemValue(
-                capitalise(e.term),
-                e.facet,
-                e.facet2
-              )
+              this.createCascaderItemValue([capitalise(e.term), e.facet, e.facet2])
             )
+            if (e.facet3) {
+              filters.push(
+                this.createCascaderItemValue([capitalise(e.term), e.facet, e.facet2, e.facet3])
+              )
+            }
           }
           return filters;
         }
@@ -697,7 +889,7 @@ export default {
           return filters
         })
 
-        // Unforttunately the cascader is very particular about it's v-model
+        // Unfortunately the cascader is very particular about it's v-model
         //   to get around this we create a clone of it and use this clone for adding our boolean information
         this.cascadeSelectedWithBoolean = filterFacets.map((e) => {
           let filters = createFilter(e)
@@ -711,32 +903,34 @@ export default {
     addFilter: function (filterToAdd) {
       //Do not set the value unless it is ready
       if (this.cascaderIsReady && filterToAdd) {
-        let filter = this.validateAndConvertFilterToHierarchical(filterToAdd)
-        if (filter) {
-          this.cascadeSelected.filter((f) => f.term != filter.term)
-          this.cascadeSelected.push([
-            filter.facetPropPath,
-            this.createCascaderItemValue(filter.term, filter.facet),
-            this.createCascaderItemValue(
-              filter.term,
-              filter.facet,
-              filter.facet2
-            ),
-          ])
-          this.cascadeSelectedWithBoolean.push([
-            filter.facetPropPath,
-            this.createCascaderItemValue(filter.term, filter.facet),
-            this.createCascaderItemValue(
-              filter.term,
-              filter.facet,
-              filter.facet2
-            ),
-            filter.AND,
-          ])
-          // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+        let filters = this.validateAndConvertFilterToHierarchical(filterToAdd)
+        if (filters && filters.length) {
+          filters.forEach((filter) => {
+            this.cascadeSelected.filter((f) => f.term != filter.term)
+            const paths = [
+              filter.facetPropPath,
+              this.createCascaderItemValue([filter.term, filter.facet]),
+              this.createCascaderItemValue([filter.term, filter.facet, filter.facet2]),
+            ]
+            if (filter.facet3) {
+              paths.push(this.createCascaderItemValue([filter.term, filter.facet, filter.facet2, filter.facet3]))
+            }
+            this.cascadeSelected.push([...paths])
+            this.cascadeSelectedWithBoolean.push([...paths, filter.AND])
+            // The 'AND' her is to set the boolean value when we search on the filters. It can be undefined without breaking anything
+          });
           return true
         }
       }
+    },
+    addFilters: function (filters) {
+      let filterHasChanged = false
+      if (this.cascaderIsReady) {
+        filters.forEach(filter => {
+          filterHasChanged = filterHasChanged || this.addFilter(filter)
+        })
+      }
+      return filterHasChanged
     },
     initiateSearch: function () {
       this.cascadeEvent(this.cascadeSelectedWithBoolean)
@@ -775,94 +969,134 @@ export default {
 
     cssMods: function () {
       this.makeCascadeLabelsClickable()
-      this.removeTopLevelCascaderCheckboxes()
     },
 
-    removeTopLevelCascaderCheckboxes: function () {
-      // Next tick allows the cascader menu to change
-      this.$nextTick(() => {
-        const cascadePanels = document.querySelectorAll('.sidebar-cascader-popper .el-cascader-menu__list');
+    flattenToFilters: function (filter, targetOption, previousMatched = false) {
+      let filtersArray = []
 
-        cascadePanels.forEach(panel => {
-          const panelText = panel.textContent;
-          const expandArrow = panel.querySelector('.el-icon.arrow-right');
-
-          if (!panelText.includes('Show all') && expandArrow) {
-            panel.querySelectorAll('.el-checkbox__input').forEach(checkbox => {
-              checkbox.style.display = 'none';
-            });
+      if (targetOption) {
+        // Convert terms to lower case.
+        // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
+        // is Inferior vagus x ganglion (there are other cases as well)
+        const facetLabel = filter.facet.toLowerCase()
+        let nonSpecificFound = false
+        for (const child of targetOption) {
+          const isConnectivity = filter.facetPropPath.includes('flatmap.connectivity.source.') && child.key
+          const labelMatched = isConnectivity ?
+            child.key.replace(`${filter.facetPropPath}.`, '').toLowerCase() === facetLabel :
+            child.label.toLowerCase() === facetLabel
+          if (child.children && child.children.length) {
+            const matched = labelMatched || previousMatched
+            const filters = this.flattenToFilters(filter, child.children, matched)
+            filtersArray.push(...filters)
+          } else {
+            // 'show all' or first item will be skipped
+            if (child.facetPropPath || child.key) {
+              const [term, facet, facet2, facet3] = child.value.split('>');
+              if (facet3 === "Non specific") {
+                nonSpecificFound = true
+              }
+              const fObject = {
+                term,
+                facet,
+                facetPropPath: filter.facetPropPath,
+                ...(facet2 && { facet2 }),
+                ...(facet3 && { facet3 }),
+              };
+              if ('AND' in filter) {
+                fObject.AND = filter.AND
+              }
+              // all the child fact will be checked if parent is matched
+              if (previousMatched || labelMatched) {
+                if (isConnectivity) {
+                  filtersArray.push(filter)
+                } else {
+                  filtersArray.push(fObject)
+                }
+              }
+            }
           }
-        });
-      })
+        }
+        //Previously matched and Non specific found
+        if (previousMatched && nonSpecificFound) {
+          filtersArray = filtersArray.filter((item) => {
+            if (!item.facet3 || item.facet3 === "Non specific") {
+              return true
+            } else {
+              return false
+            }
+          })
+        }
+      }
+
+      return filtersArray
     },
     /*
      * Given a filter, the function below returns the filter in the format of the cascader, returns false if facet is not found
      */
     validateAndConvertFilterToHierarchical: function (filter) {
       if (filter && filter.facet && filter.term) {
-        // Convert terms to lower case.
-        // Flatmap gives us Inferior vagus X ganglion but the term in Algolia
-        // is Inferior vagus x ganglion (there are other cases as well)
-        const lowercase = filter.facet.toLowerCase()
-        if (filter.facet2) {
-          return filter // if it has a second term we will assume it is hierarchical and return it as is
+        if (filter.facet2 || filter.facet3) {
+          return [filter] // if it has a second term we will assume it is hierarchical and return it as is
         } else {
-          for (const firstLayer of this.options) {
-            if (firstLayer.value === filter.facetPropPath) {
-              for (const secondLayer of firstLayer.children) {
-                if (secondLayer.label?.toLowerCase() === lowercase) {
-                  // if we find a match on the second level, the filter will already be correct
-                  // Make sure the case matches the one from Algolia
-                  filter.facet = secondLayer.label
-                  return filter
-                } else {
-                  if (secondLayer.children && secondLayer.children.length > 0) {
-                    for (const thirdLayer of secondLayer.children) {
-                      if (thirdLayer.label?.toLowerCase() === lowercase) {
-                        // If we find a match on the third level, we need to switch facet1 to facet2
-                        //   and populate facet1 with its parents label.
-                        filter.facet2 = thirdLayer.label
-                        filter.facet = secondLayer.label
-                        return filter
-                      }
-                    }
-                  }
-                }
-              }
-            }
+          const option = this.options.find(option => option.label === filter.term)
+          if (option) {
+            const filters = this.flattenToFilters(filter, option.children)
+            return filters
           }
         }
       }
-      return false
+      return undefined
     },
     getHierarchicalValidatedFilters: function (filters) {
+      const result = []
+      const terms = []
+      const notFound = []
+
       if (filters) {
-        if (this.cascaderIsReady) {
-          const result = []
-          const terms = []
-          filters.forEach((filter) => {
-            const validatedFilter =
-              this.validateAndConvertFilterToHierarchical(filter)
-            if (validatedFilter) {
+        if (!this.cascaderIsReady) {
+          return {
+            result: filters,
+            notFound: notFound,
+          }
+        }
+
+        filters.forEach((filter) => {
+          const validatedFilters =
+            this.validateAndConvertFilterToHierarchical(filter)
+          if (validatedFilters && validatedFilters.length) {
+            validatedFilters.forEach(validatedFilter => {
               result.push(validatedFilter)
               terms.push(validatedFilter.term)
+            });
+          } else {
+            const validOption = this.options.find((option) => {
+              return option.key === filter.facetPropPath;
+            });
+            if (validOption) {
+              // not found items
+              notFound.push(filter)
             }
-          })
-          // make sure unused filter terms' show all checkbox is always checked
-          this.options.forEach((option)=>{
-            if (!terms.includes(option.label)) {
-              result.push({
-                facet: "Show all",
-                facetPropPath: option.key,
-                label: "Show all",
-                term: option.label
-              })
-            }
-          })
-          return result
-        } else return filters
+          }
+        })
+
+        // make sure unused filter terms' show all checkbox is always checked
+        this.options.forEach((option)=>{
+          if (!terms.includes(option.label)) {
+            result.push({
+              facet: "Show all",
+              facetPropPath: option.key,
+              label: "Show all",
+              term: option.label
+            })
+          }
+        })
       }
-      return []
+
+      return {
+        result: result,
+        notFound: notFound,
+      }
     },
     hasLineStyles: function(item) {
       return 'colour' in item && item.colourStyle === 'line'
@@ -886,12 +1120,16 @@ export default {
     },
   },
   mounted: function () {
-    this.algoliaClient = markRaw(new AlgoliaClient(
-      this.envVars.ALGOLIA_ID,
-      this.envVars.ALGOLIA_KEY,
-      this.envVars.PENNSIEVE_API_LOCATION
-    ))
-    this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
+    // in populateCascader function,
+    // algoliaClient run only when there are no this.entry.options
+    if (!this.entry.options) {
+      this.algoliaClient = markRaw(new AlgoliaClient(
+        this.envVars.ALGOLIA_ID,
+        this.envVars.ALGOLIA_KEY,
+        this.envVars.PENNSIEVE_API_LOCATION
+      ))
+      this.algoliaClient.initIndex(this.envVars.ALGOLIA_INDEX)
+    }
     this.populateCascader().then(() => {
       this.cascaderIsReady = true
       this.checkShowAllBoxes()
@@ -924,12 +1162,31 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.connectivity-tag::first-letter,
+:deep(.connectivity-tag .el-tag__content::first-letter) {
+  display: inline-block;
+  padding: 0 2px;
+  margin-right: 2px;
+  color: white;
+  background-color: $app-primary-color;
+  font-style: italic;
+  font-size: 90%;
+  border-radius: 2px;
 }
 
 .el-tags-container {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+:deep(.connectivity-tag .el-tag__content) {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .el-tag {
@@ -940,6 +1197,9 @@ export default {
     color: #303133 !important;
     background-color: #fff;
     border-color: #dcdfe6 !important;
+    width: auto;
+    max-width: 100%;
+    justify-content: flex-start;
   }
 }
 
@@ -1051,6 +1311,11 @@ export default {
   color: #292b66;
   text-align: center;
   padding-bottom: 6px;
+  .el-cascader-menu:first-child {
+    .el-checkbox__input {
+      display: None;
+    }
+  }
 }
 
 .sidebar-cascader-popper .el-cascader-node.is-active {
@@ -1093,6 +1358,56 @@ export default {
   border-color: $app-primary-color;
 }
 
+.sidebar-cascader-popper .el-cascader-menu:last-child .el-cascader-node {
+  &.is-disabled {
+    border-bottom: 1px solid #e4e7ed;
+    padding-bottom: 0.5rem;
+    position: sticky;
+    top: 0.5rem;
+    background-color: white;
+    z-index: 20;
+    box-shadow: 0px -6px 0px 6px white;
+    cursor: default;
+
+    .el-checkbox.is-disabled {
+      display: none;
+    }
+
+    .el-cascader-node__label {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    // hide show all for connection filters
+    + .el-cascader-node {
+      display: none;
+    }
+  }
+
+  &.hide {
+    display: none;
+  }
+}
+
+.sidebar-cascader-popper .sidebar-cascader-search.el-input {
+  --el-input-focus-border-color: #{$app-primary-color};
+}
+
+.sidebar-cascader-popper .el-cascader-menu__list.cascader-menu-with-search {
+  display: flex;
+  flex-direction: column;
+
+  .el-cascader-node:nth-child(1),
+  .el-cascader-node:nth-child(2),
+  .el-cascader-node.is-active {
+    order: 1;
+  }
+
+  .el-cascader-node {
+    order: 2;
+  }
+}
+
 .filter-help-popover,
 .cascade-tags-popover {
   font-family: 'Asap', sans-serif;
@@ -1119,5 +1434,15 @@ export default {
   width: 25px;
   margin-right: 5px;
   display: inline-block;
+}
+
+.sr-only {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 </style>
