@@ -135,6 +135,7 @@ export default {
         PENNSIEVE_API_LOCATION: import.meta.env.VITE_APP_PENNSIEVE_API_LOCATION,
         BL_SERVER_URL: import.meta.env.VITE_APP_BL_SERVER_URL,
         ROOT_URL: import.meta.env.VITE_APP_ROOT_URL,
+        TEST_DATA_LOCATION: import.meta.env.VITE_APP_TEST_DATA_LOCATION,
         FLATMAPAPI_LOCATION: import.meta.env.VITE_FLATMAPAPI_LOCATION,
       },
       connectivityEntry: [],

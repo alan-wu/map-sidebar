@@ -145,20 +145,22 @@ export default {
           if (flatmap.associated_flatmap?.identifier) {
             const filePath = flatmap.dataset.path
             const id = flatmap.identifier
-            const thumbnail = this.getThumbnailForPlot(
-              flatmap,
-              this.entry.thumbnails
-            )
-            let thumbnailURL = undefined
+            let thumbnailURL = flatmap.thumbnail?.url
             let mimetype = ''
-            if (thumbnail) {
-              thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
-                id,
-                prefix: this.getS3Prefix(),
-                file_path: thumbnail.dataset.path,
-                s3Bucket: this.s3Bucket,
-              })
-              mimetype = thumbnail.mimetype.name
+            if (!thumbnailURL) {
+              let thumbnail = this.getThumbnailForPlot(
+                flatmap,
+                this.entry.thumbnails
+              )
+              if (thumbnail) {
+                thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
+                  id,
+                  prefix: this.getS3Prefix(),
+                  file_path: thumbnail.dataset.path,
+                  s3Bucket: this.s3Bucket,
+                })
+                mimetype = thumbnail.mimetype.name
+              }
             }
             let action = {
               label: capitalise(this.label),
@@ -343,22 +345,27 @@ export default {
             const id = simulation.identifier
             //Despite of the name, this method can be used to retreive
             //the thumbnail information for any none scaffold type thumbnail
-            const thumbnail = this.getThumbnailForPlot(
-              simulation,
-              this.entry.thumbnails
-            )
-            let thumbnailURL = undefined
+            let thumbnailURL = simulation.thumbnail?.url
             let mimetype = ''
-            if (thumbnail) {
-              thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
-                id,
-                prefix: this.getS3Prefix(),
-                file_path: thumbnail.dataset.path,
-                s3Bucket: this.s3Bucket,
-              })
-              mimetype = thumbnail.mimetype.name
+            if (!thumbnailURL) {
+              const thumbnail = this.getThumbnailForPlot(
+                simulation,
+                this.entry.thumbnails
+              )
+              if (thumbnail) {
+                thumbnailURL = this.getImageURL(this.envVars.API_LOCATION, {
+                  id,
+                  prefix: this.getS3Prefix(),
+                  file_path: thumbnail.dataset.path,
+                  s3Bucket: this.s3Bucket,
+                })
+                mimetype = thumbnail.mimetype.name
+              }
             }
-            const resource = `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${filePath}${this.getS3Args()}`
+            let resource = `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${filePath}${this.getS3Args()}`
+            if (simulation.resource?.url) {
+              resource = simulation.resource.url
+            }
             let action = {
               label: capitalise(this.label),
               resource: resource,

@@ -230,6 +230,9 @@ export default {
           })
           .then((data) => {
             this.thumbnail = data.banner
+            if (this.entry.thumbnail) {
+              this.thumbnail = this.entry.thumbnail
+            }
             this.discoverId = data.id
             this.version = data.version
             this.dataLocation = `https://sparc.science/datasets/${data.id}?type=dataset`
@@ -239,6 +242,9 @@ export default {
           .catch(() => {
             //set defaults if we hit an error
             this.thumbnail = MissingImage
+            if (this.entry.thumbnail) {
+              this.thumbnail = this.entry.thumbnail
+            }
             this.discoverId = Number(this.entry.datasetId)
             this.loading = false
           })
