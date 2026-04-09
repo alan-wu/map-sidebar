@@ -243,7 +243,8 @@ export default {
             //set defaults if we hit an error
             this.thumbnail = MissingImage
             if (this.entry.thumbnail) {
-              this.thumbnail = this.entry.thumbnail
+              const resolved = new URL(this.entry.thumbnail, this.envVars.TEST_DATA_LOCATION);
+              this.thumbnail = resolved.href;
             }
             this.discoverId = Number(this.entry.datasetId)
             this.loading = false

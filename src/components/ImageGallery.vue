@@ -25,8 +25,13 @@ const baseName = (str) => {
   return str.split('\\').pop().split('/').pop()
 }
 
-const capitalise = function (string) {
+const capitalise = (string) => {
   return string.replace(/\b\w/g, (v) => v.toUpperCase())
+}
+
+const resolveURL = (relative, base) => {
+  const resolved = new URL(relative, base);
+  return resolved.href;
 }
 
 import GalleryHelper from '@abi-software/gallery/src/mixins/GalleryHelpers.js'
@@ -145,7 +150,11 @@ export default {
           if (flatmap.associated_flatmap?.identifier) {
             const filePath = flatmap.dataset.path
             const id = flatmap.identifier
-            let thumbnailURL = flatmap.thumbnail?.url
+            let thumbnailURL = undefined
+            if (flatmap.thumbnail?.url) {
+              thumbnailURL = resolveURL(flatmap.thumbnail.url,
+                this.envVars.TEST_DATA_LOCATION)
+            }
             let mimetype = ''
             if (!thumbnailURL) {
               let thumbnail = this.getThumbnailForPlot(
@@ -345,7 +354,11 @@ export default {
             const id = simulation.identifier
             //Despite of the name, this method can be used to retreive
             //the thumbnail information for any none scaffold type thumbnail
-            let thumbnailURL = simulation.thumbnail?.url
+            let thumbnailURL = undefined;
+            if (simulation.thumbnail?.url) {
+              thumbnailURL = resolveURL(simulation.thumbnail.url,
+                this.envVars.TEST_DATA_LOCATION)
+            }
             let mimetype = ''
             if (!thumbnailURL) {
               const thumbnail = this.getThumbnailForPlot(
@@ -364,7 +377,8 @@ export default {
             }
             let resource = `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${filePath}${this.getS3Args()}`
             if (simulation.resource?.url) {
-              resource = simulation.resource.url
+              resource = resolveURL(simulation.resource.url,
+                this.envVars.TEST_DATA_LOCATION)
             }
             let action = {
               label: capitalise(this.label),
