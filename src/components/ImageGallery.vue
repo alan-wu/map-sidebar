@@ -29,13 +29,9 @@ const capitalise = (string) => {
   return string.replace(/\b\w/g, (v) => v.toUpperCase())
 }
 
-const resolveURL = (relative, base) => {
-  const resolved = new URL(relative, base);
-  return resolved.href;
-}
-
 import GalleryHelper from '@abi-software/gallery/src/mixins/GalleryHelpers.js'
 import Gallery from "@abi-software/gallery";
+import { resolveURL } from "./scripts/utilities.js";
 import "@abi-software/gallery/dist/style.css";
 //provide the s3Bucket related methods and data.
 import S3Bucket from '../mixins/S3Bucket.vue';
@@ -93,6 +89,7 @@ export default {
         Images: [],
         Scaffolds: [],
         Simulations: [],
+        "Protocol Data": [],
         Videos: [],
         Plots: [],
       },
@@ -123,6 +120,7 @@ export default {
       this.createFlatmapItems()
       this.createScaffoldItems()
       this.createSimulationItems()
+      this.createProtocolDataItems()
       this.createPlotItems()
       /* Disable these two
       this.createImageItems();
@@ -402,6 +400,35 @@ export default {
         })
       }
     },
+    createProtocolDataItems: function () {
+      if (this.entry['protocol-data']) {
+        this.entry['protocol-data'].forEach((protocol) => {
+          //Despite of the name, this method can be used to retreive
+          //the thumbnail information for any none scaffold type thumbnail
+          let thumbnailURL = protocol.thumbnail
+          let mimetype = ''
+          let resource = protocol.protocol
+          let action = {
+            label: capitalise(this.label),
+            csv_file: protocol.csv_file,
+            column: protocol.column,
+            resource: resource,
+            title: 'View protocol',
+            type: 'Protocol',
+            discoverId: this.discoverId,
+            version: this.datasetVersion,
+          }
+          this.items['Protocol Data'].push({
+            title: protocol.description,
+            type: 'Protocol',
+            thumbnail: thumbnailURL,
+            userData: action,
+            hideType: true,
+            mimetype,
+          })
+        })
+      }
+    },
     createVideoItems: function () {
       if (this.entry.videos) {
         this.entry.videos.forEach((video) => {
@@ -450,6 +477,7 @@ export default {
       let items = [...this.items['Dataset']]
       if (this.category === 'All') {
         for (const [key, value] of Object.entries(this.items)) {
+          console.log(key, value)
           if (key !== 'Dataset') items = items.concat(value)
         }
         return items

@@ -73,6 +73,7 @@ export default {
         this.addToCategories(this.entry.flatmaps, 'Flatmaps')
         this.addToCategories(this.entry.plots, 'Plots')
         this.addToCategories(this.entry.scaffolds, 'Scaffolds')
+        this.addToCategories(this.entry['protocol-data'], 'Protocol Data')
         this.addSimulationsToCategories(this.entry.simulation)
         /** disable the following
         this.addToCategories(this.entry.images, 'Images');

@@ -116,11 +116,12 @@ import {
   ElPagination as Pagination,
   ElMessage as Message,
 } from 'element-plus'
-import 'element-plus/es/components/message/style/css';
+import 'element-plus/es/components/message/style/css'
 import SearchFilters from './SearchFilters.vue'
 import SearchHistory from './SearchHistory.vue'
 import DatasetCard from './DatasetCard.vue'
 import EventBus from './EventBus.js'
+import { processProtocolsData } from './scripts/utilities.js'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
 import { getFilters, facetPropPathMapping } from '../algolia/utils.js'
@@ -418,7 +419,7 @@ export default {
           })
           .then((data) => {
             if (this.searchInput.toLowerCase().includes("reveal")) {
-              this.results.unshift(...data)
+              processProtocolsData(this.results, data, this.envVars.TEST_DATA_LOCATION)
             }
           })
       }
@@ -478,6 +479,8 @@ export default {
         let i = this.results.findIndex((res) =>
           element.doi ? element.doi.includes(res.doi) : false
         )
+
+
         // Assign scicrunch results to the object
         Object.assign(this.results[i], element)
         // Assign the attributes that need some processing
