@@ -10,11 +10,17 @@
     >
       <el-table-column type="expand">
         <template #default="props">
-          <div m="4">
-            <p m="t-0 b-2">File path: {{ props.row.filePath }}</p>
+          <div class="file-details" m="4">
             <p m="t-0 b-2" v-if="props.row.description">
               Description: {{ props.row.description }}
             </p>
+            <p m="t-0 b-2" v-if="props.row.protocol">
+              Protocol: {{ props.row.protocol }}
+            </p>
+            <div v-for="(val, key) in props.row.columns">
+              <p :key="key" m="t-0 b-2">Column {{ key + 1 }}: {{ val }}</p>
+            </div>
+            <p m="t-0 b-2">File path: {{ props.row.filePath }}</p>
           </div>
         </template>
       </el-table-column>
@@ -127,11 +133,17 @@ export default {
             const entry = {
               action: item.userData,
               description: item.description ? item.description : "",
+              protocol: item.protocol ? item.protocol : "",
+              columns: [],
               fileName: item.title,
               filePath: item.filePath,
               mimetype: item.mimetype,
               type: key,
             }
+            if (item.columns && item.columns.length > 0) {
+              item.columns.forEach((column) => entry.columns.push(JSON.stringify(column)))
+            }
+
             this.tableData.push(entry)
             if (item.thumbnail?.includes("encodeBase64")) {
               this.downloadThumbnail(item.thumbnail, entry)
@@ -146,12 +158,20 @@ export default {
   computed: {
     fileLists() {
       if (!this.search) return this.tableData
-      const keys = ["fileName", "filePath", "description", "type"]
+      const keys = ["fileName", "filePath", "description", "type", "protocol"]
       const lower = this.search.toLowerCase()
       const list = this.tableData.filter((data) => {
         for (let key of keys) {
           if (data[key] && data[key].toLowerCase().includes(lower)) {
             return true
+          }
+        }
+        if (data.columns) {
+          for (let column of data.columns) {
+            if (column.toLowerCase().includes(lower)) {
+              console.log(column)
+              return true
+            }
           }
         }
       })
@@ -166,5 +186,9 @@ export default {
   .title-text {
     font-size: 10px;
   }
+}
+
+.file-details {
+  font-size: 10px;
 }
 </style>

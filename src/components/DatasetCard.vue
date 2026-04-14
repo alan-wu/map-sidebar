@@ -213,7 +213,6 @@ export default {
         this.createPlotItems()
         this.createProtocolDataItems()
         this.$nextTick(() => {
-          console.log("here", {...this.items})
           this.$emit("fileInfoReady", {instance: this, id: this.discoverId})
         })
       }
@@ -509,10 +508,11 @@ export default {
           let thumbnailURL = protocol.thumbnail
           let mimetype = ''
           let resource = protocol.protocol
+          console.log(protocol)
           let action = {
             label: capitalise(this.label),
             csv_file: protocol.csv_file,
-            column: protocol.column,
+            columns: protocol.columns,
             resource: resource,
             title: 'View protocol',
             type: 'Protocol',
@@ -520,10 +520,11 @@ export default {
             version: this.version,
           }
           this.items['Protocol Data'].push({
-            title: baseName(resource),
+            title: baseName(protocol.csv_file),
             description: protocol.description,
-            filePath: resource,
+            filePath: protocol.csv_file,
             protocol: protocol.protocol,
+            columns: protocol.columns,
             type: 'Protocol',
             thumbnail: thumbnailURL,
             userData: action,
