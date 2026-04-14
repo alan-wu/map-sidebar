@@ -202,15 +202,18 @@ export default {
       this.currentCategory = name
     },
     createSciCurnchItems: function () {
-      this.updateS3Bucket(this.entry.s3uri)
-      this.createDatasetItem()
-      this.createFlatmapItems()
-      this.createScaffoldItems()
-      this.createSimulationItems()
-      this.createPlotItems()
-      this.$nextTick(() => {
-        this.$emit("fileInfoReady", {instance: this, id: this.discoverId})
-      })
+      if (this.entry.detailsReady) {
+        this.updateS3Bucket(this.entry.s3uri)
+        this.createDatasetItem()
+        this.createFlatmapItems()
+        this.createScaffoldItems()
+        this.createSimulationItems()
+        this.createPlotItems()
+        this.$nextTick(() => {
+          console.log("here", {...this.items})
+          this.$emit("fileInfoReady", {instance: this, id: this.discoverId})
+        })
+      }
 
       /* Disable these two
       this.createImageItems();
