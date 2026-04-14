@@ -370,7 +370,7 @@ export default {
       this.connectivityEntry = [...exampleConnectivityInput]
     },
     displayFileInfo: function() {
-      this.$refs.sideBar.displayFileInfo(462, "baseline", "fc map")
+      this.$refs.sideBar.displayFileInfo(1024, "csv", "reveal")
 
     }
   },

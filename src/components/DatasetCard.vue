@@ -490,6 +490,7 @@ export default {
             this.items['Simulations'].push({
               id,
               title: baseName(filePath),
+              filePath: filePath,
               type: 'Simulation',
               thumbnail: thumbnailURL,
               userData: action,
