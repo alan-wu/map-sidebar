@@ -1,108 +1,120 @@
 <template>
-  <el-card :body-style="bodyStyle" class="content-card">
-    <template #header>
-      <div class="header">
-        <div class="search-input-container" :class="{'is-focus': searchInput}">
-          <el-input
-            class="search-input"
-            placeholder="Search"
-            v-model="searchInput"
-            @keyup="searchEvent"
-            clearable
-            @clear="clearSearchClicked"
-          ></el-input>
-          <el-popover
-            width="350"
-            trigger="hover"
-            popper-class="filter-help-popover"
+  <div>
+    <el-card :body-style="bodyStyle" class="content-card">
+      <template #header>
+        <div class="header">
+          <div class="search-input-container" :class="{'is-focus': searchInput}">
+            <el-input
+              class="search-input"
+              placeholder="Search"
+              v-model="searchInput"
+              @keyup="searchEvent"
+              clearable
+              @clear="clearSearchClicked"
+            ></el-input>
+            <el-popover
+              width="350"
+              trigger="hover"
+              popper-class="filter-help-popover"
+            >
+              <template #reference>
+                <MapSvgIcon icon="help" class="help" />
+              </template>
+              <div>
+                <strong>Search rules:</strong>
+                <ul>
+                  <li>
+                    <strong>Multiple Terms:</strong> Separate terms with a comma (<code>,</code>).
+                    This will find datasets that match any of the terms (an "OR" search).
+                  </li>
+                  <li>
+                    <strong>Exact Phrase:</strong> Terms within a comma block will be matched as an exact phrase.
+                  </li>
+                </ul>
+                <br/>
+                <strong>Examples:</strong>
+                <ul>
+                  <li>
+                    <strong>To find by exact phrase:</strong>
+                    Searching for <code>vagus nerve</code> will find any dataset containing <code>"vagus nerve"</code>.
+                  </li>
+                  <li>
+                    <strong>To find by multiple terms:</strong>
+                    Searching for <code>nerve, vagus</code> will find data that contains either <code>nerve</code> OR <code>vagus</code>.
+                  </li>
+                </ul>
+              </div>
+            </el-popover>
+          </div>
+          <el-button
+            type="primary"
+            class="button"
+            @click="searchEvent"
+            size="large"
           >
-            <template #reference>
-              <MapSvgIcon icon="help" class="help" />
-            </template>
-            <div>
-              <strong>Search rules:</strong>
-              <ul>
-                <li>
-                  <strong>Multiple Terms:</strong> Separate terms with a comma (<code>,</code>).
-                  This will find datasets that match any of the terms (an "OR" search).
-                </li>
-                <li>
-                  <strong>Exact Phrase:</strong> Terms within a comma block will be matched as an exact phrase.
-                </li>
-              </ul>
-              <br/>
-              <strong>Examples:</strong>
-              <ul>
-                <li>
-                  <strong>To find by exact phrase:</strong>
-                  Searching for <code>vagus nerve</code> will find any dataset containing <code>"vagus nerve"</code>.
-                </li>
-                <li>
-                  <strong>To find by multiple terms:</strong>
-                  Searching for <code>nerve, vagus</code> will find data that contains either <code>nerve</code> OR <code>vagus</code>.
-                </li>
-              </ul>
-            </div>
-          </el-popover>
+            Search
+          </el-button>
+          <el-button
+            link
+            class="el-button-link"
+            @click="onResetClick"
+            size="large"
+          >
+            Reset
+          </el-button>
         </div>
-        <el-button
-          type="primary"
-          class="button"
-          @click="searchEvent"
-          size="large"
-        >
-          Search
-        </el-button>
-        <el-button
-          link
-          class="el-button-link"
-          @click="onResetClick"
-          size="large"
-        >
-          Reset
-        </el-button>
+      </template>
+      <SearchFilters
+        class="filters"
+        ref="filtersRef"
+        :entry="filterEntry"
+        :envVars="envVars"
+        @filterResults="filterUpdate"
+        @numberPerPage="numberPerPageUpdate"
+        @loading="filtersLoading"
+        @cascaderReady="cascaderReady"
+      ></SearchFilters>
+      <SearchHistory
+        ref="searchHistory"
+        localStorageKey="sparc.science-dataset-search-history"
+        @search="searchHistorySearch"
+      ></SearchHistory>
+      <div class="content scrollbar" v-loading="loadingCards" ref="content">
+        <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
+          No results found - Please change your search / filter criteria.
+        </div>
+        <div v-for="result in results" :key="result.doi" class="step-item">
+          <DatasetCard
+            class="dataset-card"
+            :entry="result"
+            :envVars="envVars"
+            @mouseenter="hoverChanged(result)"
+            @mouseleave="hoverChanged(undefined)"
+            @openFileBrowser="openFileBrowser"
+            @fileInfoReady="fileInfoReady"
+          />
+        </div>
+        <el-pagination
+          class="pagination"
+          v-model:current-page="page"
+          hide-on-single-page
+          large
+          layout="prev, pager, next"
+          :page-size="numberPerPage"
+          :total="numberOfHits"
+          @current-change="pageChange"
+        ></el-pagination>
       </div>
-    </template>
-    <SearchFilters
-      class="filters"
-      ref="filtersRef"
-      :entry="filterEntry"
-      :envVars="envVars"
-      @filterResults="filterUpdate"
-      @numberPerPage="numberPerPageUpdate"
-      @loading="filtersLoading"
-      @cascaderReady="cascaderReady"
-    ></SearchFilters>
-    <SearchHistory
-      ref="searchHistory"
-      localStorageKey="sparc.science-dataset-search-history"
-      @search="searchHistorySearch"
-    ></SearchHistory>
-    <div class="content scrollbar" v-loading="loadingCards" ref="content">
-      <div class="error-feedback" v-if="results.length === 0 && !loadingCards">
-        No results found - Please change your search / filter criteria.
-      </div>
-      <div v-for="result in results" :key="result.doi" class="step-item">
-        <DatasetCard
-          class="dataset-card"
-          :entry="result"
-          :envVars="envVars"
-          @mouseenter="hoverChanged(result)"
-          @mouseleave="hoverChanged(undefined)"
-        />
-      </div>
-      <el-pagination
-        class="pagination"
-        v-model:current-page="page"
-        hide-on-single-page
-        large
-        layout="prev, pager, next"
-        :page-size="numberPerPage"
-        :total="numberOfHits"
-        @current-change="pageChange"
-      ></el-pagination>
-    </div>
-  </el-card>
+
+    </el-card>
+    <el-dialog
+      v-model="fileBrowserVisible"
+      title="File browser"
+      width="700"
+      top="16px">
+      <FileBrowser ref="fileBrowserRef" />
+    </el-dialog>
+  </div>
 </template>
 
 <script>
@@ -110,6 +122,7 @@
 import {
   ElButton as Button,
   ElCard as Card,
+  ElDialog as Dialog,
   ElDrawer as Drawer,
   ElIcon as Icon,
   ElInput as Input,
@@ -120,6 +133,7 @@ import 'element-plus/es/components/message/style/css';
 import SearchFilters from './SearchFilters.vue'
 import SearchHistory from './SearchHistory.vue'
 import DatasetCard from './DatasetCard.vue'
+import FileBrowser from './FileBrowser.vue'
 import EventBus from './EventBus.js'
 
 import { AlgoliaClient } from '../algolia/algolia.js'
@@ -158,11 +172,13 @@ var initial_state = {
 
 export default {
   components: {
-    SearchFilters,
     DatasetCard,
+    FileBrowser,
+    SearchFilters,
     SearchHistory,
     Button,
     Card,
+    Dialog,
     Drawer,
     Icon,
     Input,
@@ -199,6 +215,12 @@ export default {
         display: 'flex',
       },
       cascaderIsReady: false,
+      fileBrowserVisible: false,
+      fileSearch: {
+        onGoing: false,
+        datasetId: undefined,
+        searchTerm: undefined,
+      }
     }
   },
   computed: {
@@ -216,6 +238,21 @@ export default {
     },
   },
   methods: {
+    fileInfoReady: function(payload) {
+      if (this.fileSearch.onGoing) {
+        if (payload.id === this.fileSearch.datasetID) {
+          console.log(payload.id)
+          payload.instance.openFileBrowser()
+        }
+      }
+    },
+    displayFileInfo: function(datasetID, fileSearch, searchTerm = "") {
+      let query = searchTerm ? searchTerm : datasetID
+      this.openSearch([], query)
+      this.fileSearch.onGoing = true
+      this.fileSearch.datasetID = datasetID
+      this.fileSearch.searchTerm = fileSearch
+    },
     hoverChanged: function (data) {
       const payload = data ? { ...data, tabType: 'dataset' } : { tabType: 'dataset' }
       this.$emit('hover-changed', payload)
@@ -226,6 +263,18 @@ export default {
       this._dois = []
       this.results = []
       this.loadingCards = false
+    },
+    openFileBrowser: function(data) {
+      this.fileBrowserVisible = true
+      this.$nextTick(() => {
+        this.fileSearch.onGoing = false
+        console.log({...data.items})
+        this.$refs.fileBrowserRef.setData(data.items)
+        if (this.fileSearch.datasetID === data.datasetID) {
+          console.log("correct")
+          this.$refs.fileBrowserRef.setSearchTerm(this.fileSearch.searchTerm)
+        }
+      })
     },
     openSearch: function (filter, search = '') {
       this.searchInput = search

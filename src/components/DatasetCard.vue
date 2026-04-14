@@ -39,7 +39,15 @@
               @categoryChanged="categoryChanged"
             />
           </div>
-
+          <div v-if="totalFiles" class="browsable-list" @click="openFiles">
+            <el-button
+              @click="openFileBrowser"
+              size="small"
+              class="button"
+              :icon="ElIconView"
+              >Open file browser</el-button
+            >
+          </div>
           <!-- Copy to clipboard button container -->
           <div class="float-button-container">
             <CopyToClipboard :content="copyContent" />
@@ -113,10 +121,8 @@ export default {
       items: {
         Dataset: [],
         Flatmaps:[],
-        Images: [],
         Scaffolds: [],
         Simulations: [],
-        Videos: [],
         Plots: [],
       },
       loading: true,
@@ -142,6 +148,15 @@ export default {
         }
       }
       return text
+    },
+    totalFiles: function() {
+      let total = 0
+      Object.keys(this.items).forEach(key => {
+        if (key !== 'Dataset') {
+          total += this.items[key].length
+        }
+      });
+      return total
     },
     samples: function () {
       let text = ''
@@ -193,6 +208,10 @@ export default {
       this.createScaffoldItems()
       this.createSimulationItems()
       this.createPlotItems()
+      this.$nextTick(() => {
+        this.$emit("fileInfoReady", {instance: this, id: this.discoverId})
+      })
+
       /* Disable these two
       this.createImageItems();
       this.createVideoItems();
@@ -245,6 +264,7 @@ export default {
             this.items['Flatmaps'].push({
               id,
               title: baseName(filePath),
+              filePath: filePath,
               type: 'Flatmap',
               thumbnail: thumbnailURL,
               userData: action,
@@ -264,6 +284,7 @@ export default {
           this.items['Images'].push({
             id,
             title: baseName(filePath),
+            filePath: filePath,
             type: 'Image',
             link: linkUrl,
             hideType: true,
@@ -332,6 +353,7 @@ export default {
           this.items['Plots'].push({
             id,
             title: baseName(filePath),
+            filePath: filePath,
             type: 'Plot',
             thumbnail: thumbnailURL,
             userData: action,
@@ -379,6 +401,7 @@ export default {
           this.items['Scaffolds'].push({
             id,
             title: baseName(filePath),
+            filePath: filePath,
             type: 'Scaffold',
             thumbnail: thumbnailURL,
             userData: action,
@@ -445,6 +468,7 @@ export default {
             this.items['Simulations'].push({
               id,
               title: baseName(filePath),
+              filePath: filePath,
               type: 'Simulation',
               thumbnail: thumbnailURL,
               userData: action,
@@ -498,6 +522,9 @@ export default {
     },
     openDataset: function () {
       window.open(this.dataLocation, '_blank')
+    },
+    openFileBrowser: function() {
+      this.$emit('openFileBrowser', {datasetID: this.discoverId, items: this.items})
     },
     openRepository: function () {
       let apiLocation = this.envVars.API_LOCATION
@@ -737,6 +764,10 @@ export default {
   stroke: $app-primary-color;
 }
 
+.browsable-list {
+  margin-top: 12px;
+}
+
 .float-button-container {
   position: absolute;
   bottom: 8px;
@@ -749,4 +780,5 @@ export default {
     visibility: visible;
   }
 }
+
 </style>

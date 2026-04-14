@@ -38,10 +38,8 @@ export default {
         return  {
           Dataset: [],
           Flatmaps:[],
-          Images: [],
           Scaffolds: [],
           Simulations: [],
-          Videos: [],
           Plots: [],
         }
       }
@@ -77,7 +75,6 @@ export default {
       this.maxWidth = this.$el.clientWidth
       // this.$emit('resize', this.$el.clientWidth)
     },
-
   },
   computed: {
     galleryItems() {

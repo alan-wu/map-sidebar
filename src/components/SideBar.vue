@@ -299,6 +299,14 @@ export default {
         datasetExplorerTabRef.openSearch(facets, query);
       })
     },
+    displayFileInfo: function (datasetID, fileSearch, searchTerm = "") {
+      this.drawerOpen = true
+      // Because refs are in v-for, nextTick is needed here
+      this.$nextTick(() => {
+        const datasetExplorerTabRef = this.getTabRef(undefined, 'datasetExplorer', true);
+        datasetExplorerTabRef.displayFileInfo(datasetID, fileSearch, searchTerm);
+      })
+    },
     /**
      * Get the ref id of the tab by id and type.
      */

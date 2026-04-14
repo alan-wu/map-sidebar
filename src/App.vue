@@ -19,6 +19,7 @@
       <el-button @click="getFacets">Get facets</el-button>
       <el-button @click="toggleCreateData">Create Data/Annotation</el-button>
       <el-button @click="openConnectivitySearch()">Connectivity Search</el-button>
+      <el-button @click="displayFileInfo()">Display file info</el-button>
     </div>
     <SideBar
       :envVars="envVars"
@@ -366,6 +367,10 @@ export default {
     },
     onConnectivityCollapseChange: function () {
       this.connectivityEntry = [...exampleConnectivityInput]
+    },
+    displayFileInfo: function() {
+      this.$refs.sideBar.displayFileInfo(462, "baseline", "fc")
+
     }
   },
   mounted: async function () {

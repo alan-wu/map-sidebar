@@ -1,0 +1,165 @@
+<template>
+  <div>
+
+    <el-table
+      v-if="fileLists"
+      :data="fileLists"
+      style="width: 100%;"
+      height="600"
+      :stripe="true"
+    >
+      <el-table-column type="expand">
+        <template #default="props">
+          <div m="4">
+            <p m="t-0 b-2">File path: {{ props.row.filePath }}</p>
+            <p m="t-0 b-2" v-if="props.row.description">
+              Description: {{ props.row.description }}
+            </p>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="thumbnail"
+        label="Thumbnail"
+        width="170"
+      >
+        <template #default="scope">
+          <el-image
+            v-if="scope.row.thumbnail"
+            :src="scope.row.thumbnail"
+            style="max-width: 150px; max-height: 150px"
+            fit="contain"
+            lazy
+          />
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="fileName"
+        label="File name"
+        width="200"
+        class-name="title-text"
+      />
+      <el-table-column
+        prop="type"
+        label="Type"
+        width="100"
+      />
+      <el-table-column
+        fixed="right"
+      >
+        <template #header>
+          <el-input v-model="search" size="small" placeholder="Type to search" />
+        </template>
+        <template #default="scope">
+          <el-button
+            size="small"
+            @click="handleView(scope.row)"
+          >
+            View
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+//provide the s3Bucket related methods and data.
+import {
+  ElButton as Button,
+  ElImage as Image,
+  ElInput as Input,
+  ElTable as Table,
+  ElTableColumn as TableColumn
+} from "element-plus";
+import EventBus from './EventBus.js'
+import { ref } from 'vue'
+
+export default {
+  name: 'FileBrowser',
+  components: {
+    Button,
+    Image,
+    Input,
+    Table,
+    TableColumn
+  },
+  data() {
+    return {
+      category: "All",
+      search: "",
+      tableData: undefined,
+    }
+  },
+  methods: {
+    setSearchTerm: function(searchTerm) {
+      this.search = searchTerm
+    },
+    handleView: function(row) {
+      EventBus.emit('PopoverActionClick', row.action)
+      EventBus.emit('contextUpdate', row.action) // Pass to mapintegratedvuer
+    },
+    downloadThumbnail: async function(url, entry) {
+      const response = await fetch(url)
+      if (response.ok) {
+        let data = await response.text()
+        if (typeof data === 'string' && data.startsWith('data:')) {
+          entry.thumbnail = data
+        } else {
+          if (entry.mimetype) {
+            entry.thumbnail = `data:${entry.mimetype};base64,${data}`
+          } else {
+            entry.thumbnail = data
+          }
+          let index = this.tableData.findIndex((item) => item.filePath === entry.filePath);
+          if (index > -1) {
+            this.tableData[index] = {...entry}
+          }
+        }
+      }
+    },
+    setData: function(data) {
+      this.tableData = ref([])
+      Object.keys(data).forEach((key) => {
+        if (key !== "Dataset") {
+          data[key].forEach((item) => {
+            const entry = {
+              action: item.userData,
+              description: item.description ? item.description : "",
+              fileName: item.title,
+              filePath: item.filePath,
+              mimetype: item.mimetype,
+              type: key,
+            }
+            this.tableData.push(entry)
+            this.downloadThumbnail(item.thumbnail, entry)
+          })
+        }
+      })
+    }
+  },
+  computed: {
+    fileLists() {
+      if (!this.search) return this.tableData
+      const keys = ["fileName", "filePath", "description", "type"]
+      const lower = this.search.toLowerCase()
+      const list = this.tableData.filter((data) => {
+        for (let key of keys) {
+          if (data[key].toLowerCase().includes(lower)) {
+            return true
+          }
+        }
+      })
+      return list
+    }
+  },
+}
+</script>
+
+<style lang="scss" scoped>
+:deep(.el-table__body-wrapper) {
+  .title-text {
+    font-size: 10px;
+  }
+}
+</style>
