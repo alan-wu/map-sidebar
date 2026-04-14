@@ -120,6 +120,7 @@ export default {
     },
     setData: function(data) {
       this.tableData = ref([])
+      this.search = ""
       Object.keys(data).forEach((key) => {
         if (key !== "Dataset") {
           data[key].forEach((item) => {
@@ -149,7 +150,7 @@ export default {
       const lower = this.search.toLowerCase()
       const list = this.tableData.filter((data) => {
         for (let key of keys) {
-          if (data[key].toLowerCase().includes(lower)) {
+          if (data[key] && data[key].toLowerCase().includes(lower)) {
             return true
           }
         }

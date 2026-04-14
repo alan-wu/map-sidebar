@@ -289,7 +289,7 @@ export default {
         this.entry.images.forEach((image) => {
           const filePath = image.dataset.path
           const id = image.identifier
-          const linkUrl = `${this.envVars.ROOT_URL}/datasets/imageviewer?dataset_id=${this.discoverid}&dataset_version=${this.version}&file_path=${filePath}&mimetype=${image.mimetype.name}`
+          const linkUrl = `${this.envVars.ROOT_URL}/datasets/imageviewer?dataset_id=${this.discoverId}&dataset_version=${this.version}&file_path=${filePath}&mimetype=${image.mimetype.name}`
           this.items['Images'].push({
             id,
             title: baseName(filePath),
@@ -537,7 +537,7 @@ export default {
             this.version,
             video.dataset.path
           )
-          const linkUrl = `${this.envVars.ROOT_URL}/datasets/videoviewer?dataset_version=${this.version}&dataset_id=${this.discoverid}&file_path=${filePath}&mimetype=${video.mimetype.name}`
+          const linkUrl = `${this.envVars.ROOT_URL}/datasets/videoviewer?dataset_version=${this.version}&dataset_id=${this.discoverId}&file_path=${filePath}&mimetype=${video.mimetype.name}`
           this.items['Videos'].push({
             title: video.name,
             type: 'Video',
