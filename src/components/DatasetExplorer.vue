@@ -1,5 +1,4 @@
 <template>
-  <div>
     <el-card :body-style="bodyStyle" class="content-card">
       <template #header>
         <div class="header">
@@ -105,16 +104,15 @@
           @current-change="pageChange"
         ></el-pagination>
       </div>
-
+      <el-dialog
+        v-model="fileBrowserVisible"
+        title="File browser"
+        width="700"
+        top="16px">
+        <FileBrowser ref="fileBrowserRef" />
+      </el-dialog>
     </el-card>
-    <el-dialog
-      v-model="fileBrowserVisible"
-      title="File browser"
-      width="700"
-      top="16px">
-      <FileBrowser ref="fileBrowserRef" />
-    </el-dialog>
-  </div>
+
 </template>
 
 <script>
@@ -268,12 +266,12 @@ export default {
     openFileBrowser: function(data) {
       this.fileBrowserVisible = true
       this.$nextTick(() => {
-        this.fileSearch.onGoing = false
-        console.log({...data.items})
         this.$refs.fileBrowserRef.setData(data.items)
-        if (this.fileSearch.datasetID === data.datasetID) {
-          console.log("correct")
-          this.$refs.fileBrowserRef.setSearchTerm(this.fileSearch.searchTerm)
+        if (this.fileSearch.onGoing) {
+          if (this.fileSearch.datasetID === data.datasetID) {
+            this.$refs.fileBrowserRef.setSearchTerm(this.fileSearch.searchTerm)
+          }
+          this.fileSearch.onGoing = false
         }
       })
     },
