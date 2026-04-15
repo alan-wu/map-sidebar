@@ -61,7 +61,7 @@
             size="small"
             @click="handleView(scope.row)"
           >
-            View
+            {{ getActionLabel(scope.row.type) }}
           </el-button>
         </template>
       </el-table-column>
@@ -98,6 +98,13 @@ export default {
     }
   },
   methods: {
+    getActionLabel: function(type) {
+      if (type === "Simulations" || type === "Protocol Data") {
+        return "Run"
+      } else {
+        return "View"
+      }
+    },
     setSearchTerm: function(searchTerm) {
       this.search = searchTerm
     },
@@ -169,7 +176,6 @@ export default {
         if (data.columns) {
           for (let column of data.columns) {
             if (column.toLowerCase().includes(lower)) {
-              console.log(column)
               return true
             }
           }

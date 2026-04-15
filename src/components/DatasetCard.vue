@@ -508,7 +508,6 @@ export default {
           let thumbnailURL = protocol.thumbnail
           let mimetype = ''
           let resource = protocol.protocol
-          console.log(protocol)
           let action = {
             label: capitalise(this.label),
             csv_file: protocol.csv_file,
