@@ -108,8 +108,12 @@
         v-model="fileBrowserVisible"
         title="File browser"
         width="700"
-        top="16px">
-        <FileBrowser ref="fileBrowserRef" />
+        top="16px"
+      >
+        <FileBrowser
+          ref="fileBrowserRef"
+          @fileActionTriggered="fileActionTriggered"
+        />
       </el-dialog>
     </el-card>
 
@@ -236,10 +240,14 @@ export default {
     },
   },
   methods: {
+    fileActionTriggered: function(action) {
+      this.fileBrowserVisible = false
+      EventBus.emit('PopoverActionClick', action)
+      EventBus.emit('contextUpdate', action) // Pass to mapintegratedvuer
+    },
     fileInfoReady: function(payload) {
       if (this.fileSearch.onGoing) {
         if (payload.id === this.fileSearch.datasetID) {
-          console.log(payload.id)
           payload.instance.openFileBrowser()
         }
       }

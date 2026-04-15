@@ -96,8 +96,7 @@ export default {
       this.search = searchTerm
     },
     handleView: function(row) {
-      EventBus.emit('PopoverActionClick', row.action)
-      EventBus.emit('contextUpdate', row.action) // Pass to mapintegratedvuer
+      this.$emit("fileActionTriggered", row.action)
     },
     downloadThumbnail: async function(url, entry) {
       const response = await fetch(url)
