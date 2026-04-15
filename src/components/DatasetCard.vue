@@ -394,10 +394,10 @@ export default {
             resource: `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${filePath}${this.getS3Args()}`,
             title: "View 3D scaffold",
             type: "Scaffold",
-            discoverId: this.discoverid,
+            discoverId: this.discoverId,
             apiLocation: this.envVars.API_LOCATION,
             version: this.version,
-            banner: this.datasetThumbnail,
+            banner: this.thumbnail,
             s3uri: this.entry.s3uri,
             contextCardUrl: this.getContextCardUrl(i),
           }
