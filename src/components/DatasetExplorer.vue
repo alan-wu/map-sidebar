@@ -243,9 +243,9 @@ export default {
   },
   methods: {
     fileActionTriggered: function(action) {
-      this.fileBrowserVisible = false
       EventBus.emit('PopoverActionClick', action)
       EventBus.emit('contextUpdate', action) // Pass to mapintegratedvuer
+      this.fileBrowserVisible = true
     },
     fileInfoReady: function(payload) {
       if (this.fileSearch.onGoing) {
