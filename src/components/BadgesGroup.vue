@@ -1,5 +1,5 @@
 <template>
-  <div v-if="categories['All'].size > 1" class="container" ref="container">
+  <div v-if="visible" class="container" ref="container">
     <div v-if="displayText">View data types:</div>
     <template v-for="(item, key) in categories">
       <el-button
@@ -50,8 +50,16 @@ export default {
   data: function () {
     return {
       //Always start with 1 image - the dataset thumbnail itself
-      categories: { All: { size: 1 }, Dataset: { size: 1 } },
+      categories: { },
       active: 'All',
+      totalSize: 0,
+    }
+  },
+  computed: {
+    // This computed property populates filter data's entry object with $data from this sidebar
+    visible: function () {
+      return (this.displayDataset && this.totalSize > 1) ||
+        (!this.displayDataset && this.totalSize > 0)
     }
   },
   methods: {
@@ -59,7 +67,7 @@ export default {
       const array = this.items[name]
       if (array && array.length > 0) {
         this.categories[name] = { size: array.length }
-        this.categories['All'].size += array.length
+        this.totalSize += array.length
       }
     },
     categoryClicked: function (name) {
@@ -73,14 +81,28 @@ export default {
       immediate: true,
       handler: function () {
         this.categories = {}
-        if (this.displayDataset) {
-          this.categories.All = { size: 1 }
-          this.categories.Dataset = { size: 1 }
-        } else {
-          this.categories.All = { size: 0 }
-        }
+        this.totalSize = 0
         let keys = ['Flatmaps', 'Plots', 'Protocol Data', 'Scaffolds', 'Simulations']
         keys.forEach(key => this.addToCategories(key))
+        if (this.displayDataset) {
+          this.totalSize += 1
+          this.categories.All = { size: this.totalSize }
+          this.categories.Dataset = { size: 1 }
+        } else {
+          const keys = Object.keys(this.categories)
+          if (keys.length > 1) {
+            this.categories.All = { size: this.totalSize }
+          } else if (keys.length === 1) {
+            this.categoryClicked(keys[0])
+          }
+        }
+        this.categories = Object.keys(this.categories).sort().reduce(
+          (obj, key) => {
+            obj[key] = this.categories[key];
+            return obj;
+          },
+          {}
+        );
         /** disable the following
         this.addToCategories(this.entry.images, 'Images');
         this.addToCategories(this.entry.videos, 'Videos');
