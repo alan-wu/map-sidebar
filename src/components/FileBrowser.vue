@@ -19,7 +19,7 @@
         <template #default="props">
           <div class="file-details" m="4">
             <p m="t-0 b-2" v-if="props.row.description">
-              <b>>Description:</b> {{ props.row.description }}
+              <b>Description:</b> {{ props.row.description }}
             </p>
             <p m="t-0 b-2" v-if="props.row.protocol">
               <b>Protocol</b>: {{ props.row.protocol }}
