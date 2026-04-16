@@ -68,11 +68,11 @@
         </template>
         <template #default="scope">
           <el-button
-            size="small"
+            class="file-button"
             @click="handleView(scope.row)"
-          >
-            {{ getActionLabel(scope.row.type) }}
-          </el-button>
+            :icon="ElIconView"
+            type="primary"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -81,21 +81,29 @@
 
 <script>
 //provide the s3Bucket related methods and data.
+import { shallowRef } from 'vue';
 import BadgesGroup from './BadgesGroup.vue'
 import {
   ElButton as Button,
   ElImage as Image,
+  ElIcon as Icon,
   ElInput as Input,
   ElTable as Table,
   ElTableColumn as TableColumn
 } from "element-plus";
 import { ref } from 'vue'
+import {
+  View as ElIconView,
+} from '@element-plus/icons-vue'
+
 
 export default {
   name: 'FileBrowser',
   components: {
     BadgesGroup,
     Button,
+    ElIconView,
+    Icon,
     Image,
     Input,
     Table,
@@ -104,6 +112,7 @@ export default {
   data() {
     return {
       category: "All",
+      ElIconView: shallowRef(ElIconView),
       items: {
         Dataset: [],
         Flatmaps:[],
@@ -118,13 +127,6 @@ export default {
   methods: {
     categoryChanged: function(name) {
       this.category = name
-    },
-    getActionLabel: function(type) {
-      if (type === "Simulations" || type === "Protocol Data") {
-        return "Run"
-      } else {
-        return "View"
-      }
     },
     setSearchTerm: function(searchTerm) {
       this.search = searchTerm
@@ -222,6 +224,16 @@ export default {
 :deep(.el-table__body-wrapper) {
   .column-text {
     font-size: 12px;
+  }
+}
+
+.file-button {
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  padding:5px;
+  :deep(svg) {
+    scale: 1.2;
   }
 }
 
