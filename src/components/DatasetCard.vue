@@ -265,7 +265,7 @@ export default {
               }
             }
             let action = {
-              label: capitalise(this.label),
+              label: baseName(filePath),
               resource: flatmap.associated_flatmap.identifier,
               title: 'View Flatmap',
               type: 'Flatmap',
@@ -354,7 +354,7 @@ export default {
           }
 
           let action = {
-            label: capitalise(this.label),
+            label: baseName(filePath),
             resource: resource,
             s3uri: this.entry.s3uri,
             title: 'View plot',
@@ -482,7 +482,7 @@ export default {
                 this.envVars.TEST_DATA_LOCATION)
             }
             let action = {
-              label:  baseName(filePath),
+              label: baseName(filePath),
               resource: resource,
               s3uri: this.entry.s3uri,
               title: 'View simulation',
