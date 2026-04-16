@@ -35,7 +35,7 @@
           </div>
           <div class="badges-container">
             <BadgesGroup
-              :entry="entry"
+              :items="items"
               @categoryChanged="categoryChanged"
             />
           </div>
@@ -210,7 +210,6 @@ export default {
         this.createSimulationItems()
         this.createPlotItems()
         this.$nextTick(() => {
-          console.log("here", {...this.items})
           this.$emit("fileInfoReady", {instance: this, id: this.discoverId})
         })
       }
@@ -266,6 +265,7 @@ export default {
             }
             this.items['Flatmaps'].push({
               id,
+              description: flatmap.description,
               title: baseName(filePath),
               filePath: filePath,
               type: 'Flatmap',
@@ -355,6 +355,7 @@ export default {
           }
           this.items['Plots'].push({
             id,
+            description: plot.description,
             title: baseName(filePath),
             filePath: filePath,
             type: 'Plot',
@@ -403,6 +404,7 @@ export default {
           }
           this.items['Scaffolds'].push({
             id,
+            description: scaffold.description,
             title: baseName(filePath),
             filePath: filePath,
             type: 'Scaffold',
@@ -416,6 +418,7 @@ export default {
     },
     createSimulationItems: function () {
       if (this.entry.simulation) {
+        console.log(this.entry.simulation)
         this.entry.simulation.forEach((simulation) => {
           if (simulation.additional_mimetype.name === "application/x.vnd.abi.simulation+json") {
             let action = {
@@ -470,6 +473,7 @@ export default {
             }
             this.items['Simulations'].push({
               id,
+              description: simulation.description,
               title: baseName(filePath),
               filePath: filePath,
               type: 'Simulation',
@@ -527,7 +531,11 @@ export default {
       window.open(this.dataLocation, '_blank')
     },
     openFileBrowser: function() {
-      this.$emit('openFileBrowser', {datasetID: this.discoverId, items: this.items})
+      this.$emit('openFileBrowser', {
+        datasetID: this.discoverId,
+        datasetName: this.entry.name,
+        items: this.items,
+      })
     },
     openRepository: function () {
       let apiLocation = this.envVars.API_LOCATION

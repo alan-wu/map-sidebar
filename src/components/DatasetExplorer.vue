@@ -106,9 +106,10 @@
       </div>
       <el-dialog
         v-model="fileBrowserVisible"
-        title="File browser"
+        :title="fileBrowserTitle"
         width="700"
         top="16px"
+        :modal="false"
       >
         <FileBrowser
           ref="fileBrowserRef"
@@ -217,6 +218,7 @@ export default {
         display: 'flex',
       },
       cascaderIsReady: false,
+      fileBrowserTitle: "File Browser",
       fileBrowserVisible: false,
       fileSearch: {
         onGoing: false,
@@ -273,6 +275,15 @@ export default {
     openFileBrowser: function(data) {
       this.fileBrowserVisible = true
       this.$nextTick(() => {
+        if (data.datasetID) {
+          this.fileBrowserTitle = `Dataset ${data.datasetID}`
+          if (data.datasetName) {
+            this.fileBrowserTitle += `: ${data.datasetName}`
+          }
+        } else {
+          this.fileBrowserTitle = "File Browser"
+        }
+
         this.$refs.fileBrowserRef.setData(data.items)
         if (this.fileSearch.onGoing) {
           if (this.fileSearch.datasetID === data.datasetID) {
@@ -662,6 +673,45 @@ export default {
   border: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+
+  :deep(.el-card__header) {
+    background-color: #292b66;
+    padding: 1rem;
+  }
+  :deep(.el-card__body) {
+    background-color: #f7faff;
+    overflow-y: hidden;
+    padding: 1rem;
+  }
+  :deep(.el-card__body) {
+    background-color: #f7faff;
+    overflow-y: hidden;
+    padding: 1rem;
+  }
+
+  :deep(.el-dialog) {
+    background: #f7faff;
+    padding: 8px;
+    border-width:1px;
+    .el-dialog__header {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+  }
+
+  :deep(.el-message) {
+    position: absolute !important;
+    width: 80%;
+    font-size: 12px;
+    border-radius: var(--el-border-radius-base);
+    --el-message-bg-color: var(--el-color-error-light-9);
+    --el-message-border-color: var(--el-color-error);
+    --el-message-text-color: var(--el-text-color-primary);
+
+    .el-icon.el-message__icon {
+      display: none;
+    }
+  }
 }
 
 .step-item {
@@ -677,30 +727,6 @@ export default {
   padding-top: 15px;
 }
 
-.content-card :deep(.el-card__header) {
-  background-color: #292b66;
-  padding: 1rem;
-}
-
-.content-card :deep(.el-card__body) {
-  background-color: #f7faff;
-  overflow-y: hidden;
-  padding: 1rem;
-}
-
-.content-card :deep(.el-message) {
-  position: absolute !important;
-  width: 80%;
-  font-size: 12px;
-  border-radius: var(--el-border-radius-base);
-  --el-message-bg-color: var(--el-color-error-light-9);
-  --el-message-border-color: var(--el-color-error);
-  --el-message-text-color: var(--el-text-color-primary);
-
-  .el-icon.el-message__icon {
-    display: none;
-  }
-}
 
 .content {
   // width: 515px;
@@ -711,21 +737,29 @@ export default {
   overflow-y: scroll;
   scrollbar-width: thin;
   border-radius: var(--el-border-radius-base);
-}
 
-.content :deep(.el-loading-spinner .path) {
-  stroke: $app-primary-color;
-}
+  :deep(.el-loading-spinner .path) {
+    stroke: $app-primary-color;
+  }
 
-.content :deep(.step-item:first-child .seperator-path) {
-  display: none;
-}
+  :deep(.step-item:first-child .seperator-path) {
+    display: none;
+  }
 
-.content :deep(.step-item:not(:first-child) .seperator-path) {
-  width: 455px;
-  height: 0px;
-  border: solid 1px #e4e7ed;
-  background-color: #e4e7ed;
+  :deep(.step-item:not(:first-child) .seperator-path) {
+    width: 455px;
+    height: 0px;
+    border: solid 1px #e4e7ed;
+    background-color: #e4e7ed;
+  }
+
+  :deep(.el-loading-spinner .path) {
+    stroke: $app-primary-color;
+  }
+
+  :deep(.step-item:first-child .seperator-path) {
+    display: none;
+  }
 }
 
 .scrollbar::-webkit-scrollbar-track {
@@ -768,4 +802,5 @@ export default {
     box-shadow: none !important;
   }
 }
+
 </style>

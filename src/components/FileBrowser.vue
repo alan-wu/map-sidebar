@@ -1,6 +1,13 @@
 <template>
   <div>
-
+    <div class="badges-container">
+        <BadgesGroup
+          :displayDataset="false"
+          :displayText="false"
+          :items="items"
+          @categoryChanged="categoryChanged"
+        />
+      </div>
     <el-table
       v-if="fileLists"
       :data="fileLists"
@@ -12,15 +19,17 @@
         <template #default="props">
           <div class="file-details" m="4">
             <p m="t-0 b-2" v-if="props.row.description">
-              Description: {{ props.row.description }}
+              <b>>Description:</b> {{ props.row.description }}
             </p>
             <p m="t-0 b-2" v-if="props.row.protocol">
-              Protocol: {{ props.row.protocol }}
+              <b>Protocol</b>: {{ props.row.protocol }}
             </p>
             <div v-for="(val, key) in props.row.columns">
               <p :key="key" m="t-0 b-2">Column {{ key + 1 }}: {{ val }}</p>
             </div>
-            <p m="t-0 b-2">File path: {{ props.row.filePath }}</p>
+            <p m="t-0 b-2">
+              <b>File path:</b> {{ props.row.filePath }}
+            </p>
           </div>
         </template>
       </el-table-column>
@@ -43,12 +52,13 @@
         prop="fileName"
         label="File name"
         width="200"
-        class-name="title-text"
+        class-name="column-text"
       />
       <el-table-column
         prop="type"
         label="Type"
         width="100"
+        class-name="column-text"
       />
       <el-table-column
         fixed="right"
@@ -71,6 +81,7 @@
 
 <script>
 //provide the s3Bucket related methods and data.
+import BadgesGroup from './BadgesGroup.vue'
 import {
   ElButton as Button,
   ElImage as Image,
@@ -78,12 +89,12 @@ import {
   ElTable as Table,
   ElTableColumn as TableColumn
 } from "element-plus";
-import EventBus from './EventBus.js'
 import { ref } from 'vue'
 
 export default {
   name: 'FileBrowser',
   components: {
+    BadgesGroup,
     Button,
     Image,
     Input,
@@ -93,11 +104,21 @@ export default {
   data() {
     return {
       category: "All",
+      items: {
+        Dataset: [],
+        Flatmaps:[],
+        Scaffolds: [],
+        Simulations: [],
+        Plots: [],
+      },
       search: "",
       tableData: undefined,
     }
   },
   methods: {
+    categoryChanged: function(name) {
+      this.category = name
+    },
     getActionLabel: function(type) {
       if (type === "Simulations" || type === "Protocol Data") {
         return "Run"
@@ -131,7 +152,9 @@ export default {
       }
     },
     setData: function(data) {
+      Object.assign(this.items, data)
       this.tableData = ref([])
+      this.category = "All"
       this.search = ""
       Object.keys(data).forEach((key) => {
         if (key !== "Dataset") {
@@ -163,10 +186,15 @@ export default {
   },
   computed: {
     fileLists() {
-      if (!this.search) return this.tableData
+      if (!this.search && this.category === "All") return this.tableData
       const keys = ["fileName", "filePath", "description", "type", "protocol"]
       const lower = this.search.toLowerCase()
       const list = this.tableData.filter((data) => {
+        if (this.category !== "All") {
+          if (data.type !== this.category) {
+            return false
+          }
+        }
         for (let key of keys) {
           if (data[key] && data[key].toLowerCase().includes(lower)) {
             return true
@@ -187,13 +215,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.badges-container {
+  padding-bottom: 8px;
+}
+
 :deep(.el-table__body-wrapper) {
-  .title-text {
-    font-size: 10px;
+  .column-text {
+    font-size: 12px;
   }
 }
 
 .file-details {
-  font-size: 10px;
+  padding-left: 8px;
+  font-size: 12px;
 }
 </style>
