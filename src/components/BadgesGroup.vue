@@ -82,6 +82,7 @@ export default {
       handler: function () {
         this.categories = {}
         this.totalSize = 0
+        this.active = "All"
         let keys = ['Flatmaps', 'Plots', 'Protocol Data', 'Scaffolds', 'Simulations']
         keys.forEach(key => this.addToCategories(key))
         if (this.displayDataset) {
