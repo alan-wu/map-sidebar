@@ -64,7 +64,7 @@
         fixed="right"
       >
         <template #header>
-          <el-input v-model="search" size="small" placeholder="Type to search" />
+          <el-input v-model="search" size="small" placeholder="Type to search" clearable/>
         </template>
         <template #default="scope">
           <el-button
