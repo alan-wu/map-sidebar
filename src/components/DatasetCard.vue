@@ -400,7 +400,7 @@ export default {
             mimetype = thumbnail.mimetype.name
           }
           let action = {
-            label: capitalise(this.label),
+            label: baseName(filePath),
             resource: `${this.envVars.API_LOCATION}s3-resource/${this.getS3Prefix()}files/${filePath}${this.getS3Args()}`,
             title: "View 3D scaffold",
             type: "Scaffold",
@@ -482,7 +482,7 @@ export default {
                 this.envVars.TEST_DATA_LOCATION)
             }
             let action = {
-              label: capitalise(this.label),
+              label:  baseName(filePath),
               resource: resource,
               s3uri: this.entry.s3uri,
               title: 'View simulation',
@@ -514,7 +514,7 @@ export default {
           let mimetype = ''
           let resource = protocol.protocol
           let action = {
-            label: capitalise(this.label),
+            label: baseName(protocol.csv_file),
             csv_file: protocol.csv_file,
             columns: protocol.columns,
             resource: resource,
