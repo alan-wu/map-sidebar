@@ -12,7 +12,7 @@
       v-if="fileLists"
       :data="fileLists"
       style="width: 100%;"
-      height="600"
+      height="100%"
       :stripe="true"
     >
       <el-table-column type="expand">
