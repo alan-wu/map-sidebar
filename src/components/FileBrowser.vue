@@ -1,81 +1,83 @@
 <template>
-  <div>
+  <div class="file-browser-container">
     <div class="badges-container">
-        <BadgesGroup
-          :displayDataset="false"
-          :displayText="false"
-          :items="items"
-          @categoryChanged="categoryChanged"
-        />
-      </div>
-    <el-table
-      v-if="fileLists"
-      :data="fileLists"
-      style="width: 100%;"
-      height="100%"
-      :stripe="true"
-    >
-      <el-table-column type="expand">
-        <template #default="props">
-          <div class="file-details" m="4">
-            <p m="t-0 b-2" v-if="props.row.description">
-              <b>Description:</b> {{ props.row.description }}
-            </p>
-            <p m="t-0 b-2">
-              <b>File path:</b> {{ props.row.filePath }}
-            </p>
-            <p m="t-0 b-2" v-if="props.row.protocol">
-              <b>Protocol</b>: {{ props.row.protocol }}
-            </p>
-            <div v-for="(val, key) in props.row.columns">
-              <p :key="key" m="t-0 b-2"><b>Column {{ key + 1 }}</b>: {{ val }}</p>
+      <BadgesGroup
+        :displayDataset="false"
+        :displayText="false"
+        :items="items"
+        @categoryChanged="categoryChanged"
+      />
+    </div>
+    <div class="table-container">
+      <el-table
+        v-if="fileLists"
+        :data="fileLists"
+        style="width: 100%;"
+        height="100%"
+        :stripe="true"
+      >
+        <el-table-column type="expand">
+          <template #default="props">
+            <div class="file-details" m="4">
+              <p m="t-0 b-2" v-if="props.row.description">
+                <b>>Description:</b> {{ props.row.description }}
+              </p>
+              <p m="t-0 b-2" v-if="props.row.protocol">
+                <b>Protocol</b>: {{ props.row.protocol }}
+              </p>
+              <div v-for="(val, key) in props.row.columns">
+                <p :key="key" m="t-0 b-2">Column {{ key + 1 }}: {{ val }}</p>
+              </div>
+              <p m="t-0 b-2">
+                <b>File path:</b> {{ props.row.filePath }}
+              </p>
             </div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="thumbnail"
-        label="Thumbnail"
-        width="170"
-      >
-        <template #default="scope">
-          <el-image
-            v-if="scope.row.thumbnail"
-            :src="scope.row.thumbnail"
-            style="max-width: 150px; max-height: 150px"
-            fit="contain"
-            lazy
-          />
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="fileName"
-        label="File name"
-        width="200"
-        class-name="column-text"
-      />
-      <el-table-column
-        prop="type"
-        label="Type"
-        width="100"
-        class-name="column-text"
-      />
-      <el-table-column
-        fixed="right"
-      >
-        <template #header>
-          <el-input v-model="search" size="small" placeholder="Type to search" clearable/>
-        </template>
-        <template #default="scope">
-          <el-button
-            class="file-button"
-            @click="handleView(scope.row)"
-            :icon="ElIconView"
-            type="primary"
-          />
-        </template>
-      </el-table-column>
-    </el-table>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="thumbnail"
+          label="Thumbnail"
+          width="170"
+        >
+          <template #default="scope">
+            <el-image
+              v-if="scope.row.thumbnail"
+              :src="scope.row.thumbnail"
+              style="max-width: 150px; max-height: 150px"
+              fit="contain"
+              lazy
+            />
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="fileName"
+          label="File name"
+          width="200"
+          class-name="column-text"
+        />
+        <el-table-column
+          prop="type"
+          label="Type"
+          width="100"
+          class-name="column-text"
+        />
+        <el-table-column
+          fixed="right"
+        >
+          <template #header>
+            <el-input v-model="search" size="small" placeholder="Type to search" clearable/>
+          </template>
+          <template #default="scope">
+            <el-button
+              class="file-button"
+              @click="handleView(scope.row)"
+              :icon="ElIconView"
+              type="primary"
+            />
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
   </div>
 </template>
 
@@ -240,5 +242,11 @@ export default {
 .file-details {
   padding-left: 8px;
   font-size: 12px;
+}
+
+
+.file-browser-container {
+  max-height: 75vh;
+  overflow: auto;
 }
 </style>

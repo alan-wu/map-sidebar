@@ -111,12 +111,10 @@
         top="16px"
         :modal="false"
       >
-        <div class="file-browser-container">
-          <FileBrowser
-            ref="fileBrowserRef"
-            @fileActionTriggered="fileActionTriggered"
-          />
-        </div>
+        <FileBrowser
+          ref="fileBrowserRef"
+          @fileActionTriggered="fileActionTriggered"
+        />
       </el-dialog>
     </el-card>
 
@@ -830,9 +828,6 @@ export default {
   }
 }
 
-.file-browser-container {
-  max-height: 75vh;
-  overflow: hidden;
-}
+
 
 </style>
