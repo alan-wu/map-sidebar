@@ -20,13 +20,13 @@
           <template #default="props">
             <div class="file-details" m="4">
               <p m="t-0 b-2" v-if="props.row.description">
-                <b>>Description:</b> {{ props.row.description }}
+                <b>Description:</b> {{ props.row.description }}
               </p>
               <p m="t-0 b-2" v-if="props.row.protocol">
                 <b>Protocol</b>: {{ props.row.protocol }}
               </p>
               <div v-for="(val, key) in props.row.columns">
-                <p :key="key" m="t-0 b-2">Column {{ key + 1 }}: {{ val }}</p>
+                <p :key="key" m="t-0 b-2"><b>Column {{ key + 1 }}</b>: {{ val }}</p>
               </div>
               <p m="t-0 b-2">
                 <b>File path:</b> {{ props.row.filePath }}
