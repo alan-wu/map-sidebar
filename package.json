@@ -81,5 +81,10 @@
     "vitepress": "^1.0.2",
     "vue-custom-element": "^3.3.0",
     "vue-docgen-api": "^4.79.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "4.59.0",
+    "@rollup/rollup-linux-x64-gnu": "4.59.0",
+    "@rollup/rollup-win32-x64-msvc": "4.59.0"
   }
 }
