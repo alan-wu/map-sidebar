@@ -1216,7 +1216,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/connectivity-explorer.scss';
+@use '../assets/connectivity-explorer.scss';
 
 .connectivity-info-title {
   padding: 0;
