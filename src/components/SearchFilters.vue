@@ -208,6 +208,10 @@ export default {
       showFiltersText: true,
       cascadeSelected: [],
       cascadeSelectedWithBoolean: [],
+      // Re-entrancy lock: el-cascader can echo an extra @change
+      // after we reassign cascadeSelected in setCascader;
+      // stays locked until the filterTimeout debounce below unlocks it.
+      cascadeEventLocked: false,
       filterTimeout: null,
       numberShown: 10,
       filters: [],
@@ -570,6 +574,12 @@ export default {
     },
     // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (eventIn) {
+      // Ignore the echoed @change el-cascader fires
+      // after we reassign cascadeSelected in setCascader
+      if (this.cascadeEventLocked) {
+        return
+      }
+      this.cascadeEventLocked = true
       let event = [...eventIn]
       if (event) {
         // Check for show all in selected cascade options
@@ -668,6 +678,7 @@ export default {
         this.filterTimeout = setTimeout(() => {
           this.$emit('filterResults', filters) // emit filters for apps above sidebar
           this.cssMods() // update css for the cascader
+          this.cascadeEventLocked = false // safe to process real cascader changes again
         }, 600);
       }
     },
