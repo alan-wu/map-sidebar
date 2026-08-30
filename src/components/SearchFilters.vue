@@ -208,6 +208,10 @@ export default {
       showFiltersText: true,
       cascadeSelected: [],
       cascadeSelectedWithBoolean: [],
+      // Re-entrancy lock: el-cascader can echo an extra @change
+      // after we reassign cascadeSelected in setCascader;
+      // stays locked until the filterTimeout debounce below unlocks it.
+      cascadeEventLocked: false,
       filterTimeout: null,
       numberShown: 10,
       filters: [],
@@ -258,7 +262,6 @@ export default {
             if (this.options.length) {
               this.checkShowAllBoxes()
               // this.setCascader(this.entry.filterFacets)
-              this.cssMods()
               this.$emit('cascaderReady')
             }
           })
@@ -570,6 +573,12 @@ export default {
     },
     // cascadeEvent: initiate searches based off cascader changes
     cascadeEvent: function (eventIn) {
+      // Ignore the echoed @change el-cascader fires
+      // after we reassign cascadeSelected in setCascader
+      if (this.cascadeEventLocked) {
+        return
+      }
+      this.cascadeEventLocked = true
       let event = [...eventIn]
       if (event) {
         // Check for show all in selected cascade options
@@ -667,7 +676,7 @@ export default {
 
         this.filterTimeout = setTimeout(() => {
           this.$emit('filterResults', filters) // emit filters for apps above sidebar
-          this.cssMods() // update css for the cascader
+          this.cascadeEventLocked = false // safe to process real cascader changes again
         }, 600);
       }
     },
@@ -775,7 +784,6 @@ export default {
         this.updateListFilters(this.__expandItem__[0])
       }
       this.updateListStyleOrder()
-      this.cssMods()
     },
     updateListStyleOrder: function () {
       this.$nextTick(() => {
@@ -954,30 +962,6 @@ export default {
         })
       )
     },
-    makeCascadeLabelsClickable: function () {
-      // Next tick allows the cascader menu to change
-      this.$nextTick(() => {
-        document
-          .querySelectorAll('.sidebar-cascader-popper .el-cascader-node__label')
-          .forEach((el) => {
-            // step through each cascade label
-            el.onclick = function () {
-              const checkbox = this.previousElementSibling
-              if (checkbox) {
-                if (!checkbox.parentElement.attributes['aria-owns']) {
-                  // check if we are at the lowest level of cascader
-                  this.previousElementSibling.click() // Click the checkbox
-                }
-              }
-            }
-          })
-      })
-    },
-
-    cssMods: function () {
-      this.makeCascadeLabelsClickable()
-    },
-
     flattenToFilters: function (filter, targetOption, previousMatched = false) {
       let filtersArray = []
 
@@ -1142,7 +1126,6 @@ export default {
       this.cascaderIsReady = true
       this.checkShowAllBoxes()
       this.setCascader(this.entry.filterFacets)
-      this.cssMods()
       this.$emit('cascaderReady')
     })
   },
