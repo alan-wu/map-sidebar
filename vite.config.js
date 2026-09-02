@@ -38,7 +38,12 @@ export default defineConfig({
             fileName: 'map-side-bar',
         },
         rollupOptions: {
-            external: ["vue", "@abi-software/map-utilities", "@element-plus/icons-vue"],
+            external: [
+              "vue",
+              "@abi-software/map-utilities",
+              "@element-plus/icons-vue",
+              "@abi-software/map-utilities/dist/style.css"
+            ],
             output: {
               globals: {
                 vue: "Vue",
