@@ -3,7 +3,7 @@
   "version": "2.17.0",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=20"
+    "node": "^24.20.0"
   },
   "repository": {
     "type": "git",
@@ -91,5 +91,11 @@
     "@rollup/rollup-darwin-arm64": "4.63.0",
     "@rollup/rollup-linux-x64-gnu": "4.63.0",
     "@rollup/rollup-win32-x64-msvc": "4.63.0"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "cypress@15.21.1": true,
+    "fsevents@2.3.3": true,
+    "esbuild@0.21.5": true
   }
 }
