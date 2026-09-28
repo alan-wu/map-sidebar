@@ -26,14 +26,17 @@
                 </div>
               </template>
               <template v-for="field in displayFields" :key="field['name']">
-                <div class="details" >
+                <div class="details">
                   <strong>{{ field['name'] }}: </strong>
                   <template v-if="field['name'] === 'Link'">
                     <a :href="entry['Link']" target="_blank">
                       <span>
-                        Click here for more information
+                        {{ entry['Link'] }}
                       </span>
                     </a>
+                  </template>
+                  <template v-else-if="field['name'] === 'Reference'">
+                    <div v-html="formatReference(entry[field['name']])"></div>
                   </template>
                   <template v-else>
                     <span
@@ -81,16 +84,19 @@ export default {
       expanded: [],
       tags: [],
       displayFields: [
+        {name: "Link", isEditing: false},
         {name: "Synonym", isEditing: false},
+        {name: "Pinyin Name", isEditing: false},
         {name: "Chinese Name", isEditing: false},
-        {name: "English Name", isEditing: false},
         {name: "Meridian", isEditing: false},
         {name: "Reference", isEditing: false},
         {name: "Indications", isEditing: false},
         {name: "Acupuncture Method", isEditing: false},
-        {name: "Vasculature", isEditing: false},
         {name: "Innervation", isEditing: false},
-        {name: "Link", isEditing: false},
+        {name: "Nearby Nerve", isEditing: false},
+        {name: "Vasculature", isEditing: false},
+        {name: "Nearby Artery", isEditing: false},
+        {name: "Nearby Vein", isEditing: false},
         //{name: "Notes", isEditing: false},
       ]
     }
@@ -138,6 +144,25 @@ export default {
     },
     inputMounted: function(event) {
       event.el?.querySelector('textarea')?.focus();
+    },
+    formatReference: function(text) {
+      if (!text) {
+        return 'Not Available';
+      }
+      // Escape HTML first so only the markup added below is rendered
+      const escaped = String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+      return escaped
+        // Bold and italicise square-bracketed labels, e.g. [Acupoint Location, Pinyin Label]
+        .replace(/\[([^\]\n]+)\]/g, '<strong><em>[$1]</em></strong>')
+        // Turn http(s) URLs into links, leaving trailing punctuation outside
+        .replace(/https?:\/\/[^\s<]+?(?=[.,;:!?)]*(?:\s|<|$))/g,
+          (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`)
+        .replace(/\n/g, '<br>');
     },
     setFieldToEditing: function(field) {
       if (this.allowEditing) {
