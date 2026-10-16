@@ -28,10 +28,10 @@
               <template v-for="field in displayFields" :key="field['name']">
                 <div class="details">
                   <strong>{{ field['name'] }}: </strong>
-                  <template v-if="field['name'] === 'Link'">
-                    <a :href="entry['Link']" target="_blank">
+                  <template v-if="field['name'] === 'Acupoint Curie'">
+                    <a :href="entry['Acupoint IRI']" target="_blank">
                       <span>
-                        {{ entry['Link'] }}
+                        {{ entry['Acupoint Curie'] }}
                       </span>
                     </a>
                   </template>
@@ -84,19 +84,24 @@ export default {
       expanded: [],
       tags: [],
       displayFields: [
-        {name: "Link", isEditing: false},
+        {name: "Acupoint Curie", isEditing: false},
+        {name: "Acupoint", isEditing: false},
+        {name: "Acupoint Category", isEditing: false},
         {name: "Synonym", isEditing: false},
         {name: "Pinyin Name", isEditing: false},
         {name: "Chinese Name", isEditing: false},
         {name: "Meridian", isEditing: false},
-        {name: "Reference", isEditing: false},
-        {name: "Indications", isEditing: false},
+        {name: "Special Point Role", isEditing: false},
+        {name: "Location", isEditing: false},
+        {name: "Location Anatomy", isEditing: false},
         {name: "Acupuncture Method", isEditing: false},
+        {name: "Indications", isEditing: false},
         {name: "Innervation", isEditing: false},
         {name: "Nearby Nerve", isEditing: false},
         {name: "Vasculature", isEditing: false},
         {name: "Nearby Artery", isEditing: false},
         {name: "Nearby Vein", isEditing: false},
+        {name: "Reference", isEditing: false},
         //{name: "Notes", isEditing: false},
       ]
     }
